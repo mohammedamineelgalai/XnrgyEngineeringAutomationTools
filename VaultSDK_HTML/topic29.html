@@ -1,0 +1,166 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns:innovasys xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+    <!--DXMETADATA start type="MetaCharset" --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"><!--DXMETADATA end-->
+    <meta content="history" name="save" />
+    <meta name="GENERATOR" content="Innovasys HelpStudio (http://www.innovasys.com)" />
+    <!--DXMETADATA start type="ItemTitle" format="<title>%%ItemTitle%%</title>" --><title>Handling Exceptions in Your Custom Command</title><!--DXMETADATA end-->
+    <link rel="stylesheet" type="text/css" href="stylesheets/helpstudio.css" />
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/community.css"">" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Literal" condition="helpversion:value=2" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/help2.css"">" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Stylesheets" --><link rel="stylesheet" type="text/css" href="stylesheets/hs-boxes.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-simpletab.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-heading-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-tabstrip.css"></link><!--DXMETADATA end-->
+    <script src="script/helpstudio.js" type="text/javascript"></script>
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<script src=""script/community.js""></script>" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Scripts" --><script src="script/hs-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-enlargeimage.js" type="text/javascript"></script>
+    <script src="script/swfobject.js" type="text/javascript"></script>
+    <script src="script/hs-common.js" type="text/javascript"></script>
+    <script src="script/hs-heading-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-tabstrip.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Variable" name="BannerColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {background-color: %%Variable%%}</style>" blankformat="" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Variable" name="BannerTextColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {color: %%Variable:Name=BannerTextColor%%}</style>" blankformat="" --><!--DXMETADATA end -->
+	<!--DXMETADATA start type="Variable" name="TopicXMLIsland" condition="helpversion:value=2" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="DesignTime" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CanonicalLink" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CustomHeadContent" --><!--DXMETADATA end-->
+</head>
+<body id="hsbody">
+	<!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_PROPERTIES" --><!--DXMETADATA end -->
+    <div style="display: none">
+        <input type="hidden" id="userDataCache" class="userDataStyle" name="userDataCache" />
+        <input type="hidden" id="hiddenScrollOffset" name="hiddenScrollOffset" />
+    </div>
+    <img id="collapseImage" style="display:none; height:0; width:0;" src="images/collapse.gif">
+    <img id="expandImage" style="display:none; height:0; width:0;" src="images/expand.gif"/>
+    <img id="copyImage" style="display:none; height:0; width:0;" src="images/copycode.gif"/>
+    <img id="copyHoverImage" style="display:none; height:0; width:0;" src="images/copycodeHighlight.gif">
+    <img id="dropDownImage" style="display:none; height:0; width:0;" src="images/drpdown.gif"/>
+    <img id="dropDownHoverImage" style="display:none; height:0; width:0;" src="images/drpdown_orange.gif"/>
+    <div id="pagetop">
+        <!--DXMETADATA start type="DesignBanner" --><!--DXMETADATA end -->
+        <table width="100%" id="pagetoptable2" cellspacing="0" cellpadding="0">
+        	<tr>
+        		<td><!--DXMETADATA start type="Literal" condition="communityenabled" value="%%scrap:name=_COMMUNITY_RATING%%%%scrap:name=_COMMUNITY_DROPDOWN%%" --><!--DXMETADATA end --></td>
+        	</tr>
+        </table>
+        <table width="100%" id="pagetoptable1">
+            <tr id="pagetoptable1row1">
+                <td align="left">
+                    <span id="projecttitle">
+                        <!--DXMETADATA start type="ProjectTitle" -->Vault SDK<!--DXMETADATA end-->
+                    </span>
+                </td>
+                <td align="right" rowspan="2">
+                    <!--DXMETADATA start type="LogoImage" --><!--DXMETADATA end-->
+                </td>
+            </tr>
+            <tr id="pagetoptable1row2">
+                <td align="left">
+                    <span id="pagetitle">
+                        <!--DXMETADATA start type="ItemTitle" -->Handling Exceptions in Your Custom Command<!--DXMETADATA end-->
+                    </span>
+                </td>
+            </tr>
+            <tr id="pagetoptable1row3">
+            	<td colspan="2">
+            		<!--DXMETADATA start type="Literal" condition="childitems:itemtype=linkcategory" value="<a href=""#seealsobookmark"">%%Phrase:Name=SeeAlso,BlankFormat=See Also%%</a>" --><!--DXMETADATA end -->
+            		<span id="feedbacklink"><!--DXMETADATA start type="Variable" name="FeedbackLink" format="" --><a href="http://forums.autodesk.com/t5/vault-customization/bd-p/301 " rel="noopener noreferrer" target="_blank">Send Feedback</a><!--DXMETADATA end --></span>
+            	</td>
+            </tr>
+        </table>
+        <!--DXMETADATA start type="Breadcrumbs" scrap="_BREADCRUMBS" --><table width="100%" id="pagetopbreadcrumbs" cellspacing="0" cellpadding="0"><tr><td>
+<a href="topic46.html">Knowledge Base</a>
+ > Handling Exceptions in Your Custom Command</td></tr></table><!--DXMETADATA end -->
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_MENU" --><!--DXMETADATA end -->
+    </div>
+    <div class="hspopupbubble" id="hsglossaryitembox">
+        <p>Glossary Item Box</p>
+    </div>
+    <div id="pagebody">
+        <div id="mainbody">
+<!--DXMETADATA start type="TopicSection" name="BodyText"--><p>by Doug Redmond, It's All Just Ones and Zeros<br />
+3/8/2011</p>
+
+<p>If you have a custom command and an exception is thrown within your code, good programming practice is to handle that exception and not let it bubble up to the hosting application.&nbsp; The reason is that the hosting application may not know how to handle the exception properly.&nbsp; Some API's may have built in support for passing specific types of exceptions up the stack, but Vault Explorer does not have one of those APIs.</p>
+
+<p>Let me explain what happens when you throw an exception from a custom command within Vault Explorer.&nbsp; If the exception is directly on Vault Explorer's call stack, it will get "eaten" by Vault Explorer.&nbsp; In other words, Vault Explorer will catch the exception then do nothing with it. This is the intended behavior for Vault Explorer.&nbsp; However, there are a few cases that result in un-intended behavior.</p>
+
+<p>One interesting back door is when the exception comes from an event in custom UI.&nbsp; For example, your command launches a custom dialog, and your OnClick event code has an exception that you don't handle.&nbsp; In this case, the Vault Explorer treats it like an exception from any of the built-in dialogs and attempts to handle the issue.&nbsp; Usually the handling involves parsing the error and displaying a formatted error dialog.&nbsp;</p>
+
+<p>In the case of server errors (SOAPExceptions), this is great because Vault Explorer will parse the error for you and display it in the proper language.&nbsp;&nbsp;<br />
+<img border="0" alt="" src="SOAPError.png" /><br />
+I'll admit, this is pretty nice back door.&nbsp; The only downside that I can see is that the error text was written with Vault Explorer in mind and may not make sense in the context of your application.</p>
+
+<p>But if the exception is not a SOAP Exception you will likely get a CER dialog, like the one shown below.</p>
+
+<p><img border="0" alt="" src="CER.png" /><br />
+You want to avoid this dialog.</p>
+
+<p>&nbsp;</p>
+
+<p>An even worse case comes up if your command spawns a thread which bubbles up an exception.&nbsp; In that case, the CER pops up and the application crashes.&nbsp;<br />
+<img border="0" alt="" src="AppCrash.png" /><br />
+You <strong>really</strong> want to avoid this dialog.</p>
+
+<p>&nbsp;</p>
+
+<p>The best way to avoid these bad cases is to handle your exceptions.&nbsp; When in doubt, you can always wrap everything in a try/catch block.&nbsp; See examples below.</p>
+
+<p>C#:</p>
+
+<table cellspacing="0" cellpadding="2" width="400" border="1">
+    <tbody>
+        <tr>
+            <td valign="top" width="450">
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; LINE-HEIGHT: 115%"><span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,128,0)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: green">// the Execute method for a custom command<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: blue">void</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'">CustomCommandHandler(<span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">object</span></span> s, <span style="COLOR: rgb(43,145,175)"><span style="COLOR: rgb(43,145,175)">CommandItemEventArgs</span></span> e)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'">{<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">try<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> {<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">// do stuff<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> }<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">catch</span></span> (<span style="COLOR: rgb(43,145,175)"><span style="COLOR: rgb(43,145,175)">Exception</span></span> ex)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> {<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">// handle exception<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> }<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; LINE-HEIGHT: 115%">}<br />
+                <br /></span></span></span></p>
+
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal"><span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,128,0)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: green">// an event in a custom dialog<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: blue">private void</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'">button1_Click(<span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">object</span></span> sender, <span style="COLOR: rgb(43,145,175)"><span style="COLOR: rgb(43,145,175)">EventArgs</span></span> e)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'">{<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">try<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> {<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">// do stuff<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> }<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">catch</span></span> (<span style="COLOR: rgb(43,145,175)"><span style="COLOR: rgb(43,145,175)">Exception</span></span> ex)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> {<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">// handle exception<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> }<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; LINE-HEIGHT: 115%">}</span></span></p>
+
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal">&nbsp;</p>
+
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal"><span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,128,0)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: green">// the start function on a thread<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: blue">public</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">static</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">void</span></span> ThreadStart(<span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">object</span></span> input)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'">{<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">try<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> {<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">// do stuff<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> }<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">catch</span></span> (<span style="COLOR: rgb(43,145,175)"><span style="COLOR: rgb(43,145,175)">Exception</span></span> ex)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> {<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">// handle exception<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> }<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; LINE-HEIGHT: 115%">}</span></span></p>
+            </td>
+        </tr>
+    </tbody>
+</table><br />
+
+<p>VB:</p>
+
+<table cellspacing="0" cellpadding="2" width="450" border="1">
+    <tbody>
+        <tr>
+            <td valign="top" width="450">
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal"><span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,128,0)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: green">' the Execute method for a custom command<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: blue">Private</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Sub</span></span> CustomCommandHandler(<span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">ByVal</span></span> s <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">As</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Object</span></span>, <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">ByVal</span></span> e <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">As</span></span> CommandItemEventArgs)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Try<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">' do stuff<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Catch</span></span> ex <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">As</span></span> Exception<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">' handle exception<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">End</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Try<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: blue; LINE-HEIGHT: 115%">End</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; LINE-HEIGHT: 115%"><span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Sub</span></span></span></span></p>
+
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal">&nbsp;</p>
+
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal"><span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,128,0)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: green">'</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,128,0)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: green">an event in a custom dialog<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: blue">Private</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Sub</span></span> button1_Click(<span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">ByVal</span></span> sender <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">As</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Object</span></span>, <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">ByVal</span></span> e <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">As</span></span> EventArgs)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Try<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">' do stuff<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Catch</span></span> ex <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">As</span></span> Exception<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">' handle exception<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">End</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Try<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: blue; LINE-HEIGHT: 115%">End</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; LINE-HEIGHT: 115%"><span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Sub</span></span></span></span></p>
+
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal">&nbsp;</p>
+
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal"><span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,128,0)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: green">'</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,128,0)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: green">the start function on a thread<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: blue; LINE-HEIGHT: 115%">Private</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; LINE-HEIGHT: 115%"><span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Shared</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Sub</span></span> ThreadStart(input <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">As</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Object</span></span>)</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><br /></span></span><span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Try<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">' do stuff<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Catch</span></span> ex <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">As</span></span> Exception<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,128,0)"><span style="COLOR: green">' handle exception<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">End</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Try<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; COLOR: blue; LINE-HEIGHT: 115%">End</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Courier New"><span style="FONT-SIZE: 10pt; FONT-FAMILY: 'Courier New'; LINE-HEIGHT: 115%"><span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">Sub</span></span></span></span></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p><!--DXMETADATA end-->
+            <a name="seealsobookmark"></a>
+            <!--DXMETADATA start type="FilteredItemList" scrap="CATEGORISED_LINKS" namespace="linkcategory" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=seealso,caption=""%%phrase:name=SeeAlso%%%%designlist:tagidentifier=seealso,itemtype=See Also%%""%%%%filtereditemlist%%</div>"--><!--DXMETADATA end-->
+        </div>
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_FOOTER" --><!--DXMETADATA end -->
+        <div id="pagefooter">
+            <!--DXMETADATA start type="Variable" name="CopyrightNotice" format="<p>&nbsp;</p><p>&nbsp;</p><hr style=""height: 1px"" /><p>%%variable%%</p>" --><!--DXMETADATA end -->
+        </div>
+        <!--DXMETADATA start type="FeedbackSection" --><!--DXMETADATA end -->
+    </div>
+    <!--DXMETADATA start type="Variable" name="NonScrollingPageFooter" format="<div id=nonscrollingpagefooter>%%variable%%</div>" --><div id=nonscrollingpagefooter>&copy;2025. All Rights Reserved.</div><!--DXMETADATA end -->
+</body>
+</html>

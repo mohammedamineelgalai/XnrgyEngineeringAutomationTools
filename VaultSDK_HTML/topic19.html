@@ -1,0 +1,149 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns:innovasys xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+    <!--DXMETADATA start type="MetaCharset" --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"><!--DXMETADATA end-->
+    <meta content="history" name="save" />
+    <meta name="GENERATOR" content="Innovasys HelpStudio (http://www.innovasys.com)" />
+    <!--DXMETADATA start type="ItemTitle" format="<title>%%ItemTitle%%</title>" --><title>Debugging a Custom Command</title><!--DXMETADATA end-->
+    <link rel="stylesheet" type="text/css" href="stylesheets/helpstudio.css" />
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/community.css"">" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Literal" condition="helpversion:value=2" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/help2.css"">" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Stylesheets" --><link rel="stylesheet" type="text/css" href="stylesheets/hs-boxes.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-simpletab.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-heading-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-tabstrip.css"></link><!--DXMETADATA end-->
+    <script src="script/helpstudio.js" type="text/javascript"></script>
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<script src=""script/community.js""></script>" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Scripts" --><script src="script/hs-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-enlargeimage.js" type="text/javascript"></script>
+    <script src="script/swfobject.js" type="text/javascript"></script>
+    <script src="script/hs-common.js" type="text/javascript"></script>
+    <script src="script/hs-heading-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-tabstrip.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Variable" name="BannerColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {background-color: %%Variable%%}</style>" blankformat="" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Variable" name="BannerTextColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {color: %%Variable:Name=BannerTextColor%%}</style>" blankformat="" --><!--DXMETADATA end -->
+	<!--DXMETADATA start type="Variable" name="TopicXMLIsland" condition="helpversion:value=2" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="DesignTime" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CanonicalLink" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CustomHeadContent" --><!--DXMETADATA end-->
+</head>
+<body id="hsbody">
+	<!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_PROPERTIES" --><!--DXMETADATA end -->
+    <div style="display: none">
+        <input type="hidden" id="userDataCache" class="userDataStyle" name="userDataCache" />
+        <input type="hidden" id="hiddenScrollOffset" name="hiddenScrollOffset" />
+    </div>
+    <img id="collapseImage" style="display:none; height:0; width:0;" src="images/collapse.gif">
+    <img id="expandImage" style="display:none; height:0; width:0;" src="images/expand.gif"/>
+    <img id="copyImage" style="display:none; height:0; width:0;" src="images/copycode.gif"/>
+    <img id="copyHoverImage" style="display:none; height:0; width:0;" src="images/copycodeHighlight.gif">
+    <img id="dropDownImage" style="display:none; height:0; width:0;" src="images/drpdown.gif"/>
+    <img id="dropDownHoverImage" style="display:none; height:0; width:0;" src="images/drpdown_orange.gif"/>
+    <div id="pagetop">
+        <!--DXMETADATA start type="DesignBanner" --><!--DXMETADATA end -->
+        <table width="100%" id="pagetoptable2" cellspacing="0" cellpadding="0">
+        	<tr>
+        		<td><!--DXMETADATA start type="Literal" condition="communityenabled" value="%%scrap:name=_COMMUNITY_RATING%%%%scrap:name=_COMMUNITY_DROPDOWN%%" --><!--DXMETADATA end --></td>
+        	</tr>
+        </table>
+        <table width="100%" id="pagetoptable1">
+            <tr id="pagetoptable1row1">
+                <td align="left">
+                    <span id="projecttitle">
+                        <!--DXMETADATA start type="ProjectTitle" -->Vault SDK<!--DXMETADATA end-->
+                    </span>
+                </td>
+                <td align="right" rowspan="2">
+                    <!--DXMETADATA start type="LogoImage" --><!--DXMETADATA end-->
+                </td>
+            </tr>
+            <tr id="pagetoptable1row2">
+                <td align="left">
+                    <span id="pagetitle">
+                        <!--DXMETADATA start type="ItemTitle" -->Debugging a Custom Command<!--DXMETADATA end-->
+                    </span>
+                </td>
+            </tr>
+            <tr id="pagetoptable1row3">
+            	<td colspan="2">
+            		<!--DXMETADATA start type="Literal" condition="childitems:itemtype=linkcategory" value="<a href=""#seealsobookmark"">%%Phrase:Name=SeeAlso,BlankFormat=See Also%%</a>" --><!--DXMETADATA end -->
+            		<span id="feedbacklink"><!--DXMETADATA start type="Variable" name="FeedbackLink" format="" --><a href="http://forums.autodesk.com/t5/vault-customization/bd-p/301 " rel="noopener noreferrer" target="_blank">Send Feedback</a><!--DXMETADATA end --></span>
+            	</td>
+            </tr>
+        </table>
+        <!--DXMETADATA start type="Breadcrumbs" scrap="_BREADCRUMBS" --><table width="100%" id="pagetopbreadcrumbs" cellspacing="0" cellpadding="0"><tr><td>
+<a href="topic46.html">Knowledge Base</a>
+ > Debugging a Custom Command</td></tr></table><!--DXMETADATA end -->
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_MENU" --><!--DXMETADATA end -->
+    </div>
+    <div class="hspopupbubble" id="hsglossaryitembox">
+        <p>Glossary Item Box</p>
+    </div>
+    <div id="pagebody">
+        <div id="mainbody">
+<!--DXMETADATA start type="TopicSection" name="BodyText"--><div class="mainpage">
+    <p>by Doug Redmond, It's All Just Ones and Zeros<br />
+    04/19/2010</p><br />
+
+    <p>Everyone who writes a custom Vault Explorer command ends up with the same development environment, more or less.&nbsp; So I thought I would quickly go over the setup that I use, just to have it documented somewhere.</p>
+
+    <p><strong>Goal</strong><br />
+    A typical development process for writing a program is 1) write code 2) build 3) debug 4) repeat.&nbsp; The goal of the development environment is to make those steps as painless as possible.</p>
+
+    <p><strong>The development computer</strong><br />
+    There are a bunch of things you will want to have on your computer.&nbsp; Item 1 is the only hard requirement, but items 2 and 3 will make your life much easier.</p>
+
+    <ol>
+        <li>Visual Studio</li>
+
+        <li>The Vault client.&nbsp; Base Vault doesn't have the ability to run custom commands.&nbsp; So use either Workgroup, Collaboration, or Professional depending on your requirements.</li>
+
+        <li>The Vault SDK.&nbsp; If you don't have the Vault Server installed on your computer, copy the&nbsp;SDK over from the server machine.</li>
+    </ol>
+
+    <p>Note: I'm using Visual Studio 2008 Team Edition.&nbsp; I do not know if the Express Editions have all the capabilities that I am about to go over.</p>
+
+    <p><strong>Visual Studio project references</strong><br />
+    OK, your computer is set up.&nbsp; Now you can create your Class Library project.&nbsp; You will need to reference Autodesk.Connectivity.Explorer.Extensibility.dll from your Vault client's "Explorer" folder.&nbsp; This DLL is already part of the client.&nbsp; So tell Visual Studio <strong>not</strong> to copy the DLL to the output folder.<br />
+    <a href="vsSetting1.png"><img border="0" alt="" src="vsSetting1.png" /></a></p>
+
+    <p>If you are making server calls, you will probably want to reference Autodesk.Connectivity.WebServices.dll from the SDK.&nbsp; This DLL is not part of the client, so you want to keep the default setting of having the DLL copied to your output folder.</p>
+
+    <p><strong>Creating the .vcet.config file</strong><br />
+    Add a new XML file to your project and change the name to [project name].vcet.config.&nbsp; You can look at the SDK documentation for more information on the XML syntax.&nbsp; However there are some things I want to add.</p>
+
+    <p>If you are deploying anything more than 1 DLL, you need to set AddFolderToAssemblyProbingPath to true.&nbsp; In fact, you can set this to true always.&nbsp; I don't see a reason for ever setting this to false.</p>
+
+    <p>In the Visual Studio properties on the .vcet.config file, set the Copy to Output Directory setting to "copy if newer".&nbsp; This way, when you build, the config file goes with you.&nbsp;<br /></p>
+</div>
+
+<div class="mainpage">
+    <p><strong><img border="0" alt="" src="vsSetting2.png" /></strong></p>
+
+    <p>&nbsp;</p>
+
+    <p><strong>Debug settings</strong><br />
+    For debug mode, you can just set the build target to be the Extensions folder for your Vault Explorer client.&nbsp; (ex. C:\Program Files (x86)\Autodesk\Vault Professional 2011\Explorer\Extensions\HelloWorld\ ).</p>
+
+    <p>Next go to the Debug settings and set the Start Action to "Start External Program".&nbsp; Supply the path to your Vault Explorer EXE (ex. C:\Program Files (x86)\Autodesk\Vault Professional 2011\Explorer\Connectivity.VaultPro.exe ).&nbsp; And set the working folder to the EXE directory.<br />
+    <img border="0" alt="" src="vsSetting3.png" /></p>
+
+    <p><strong>Debugging</strong><br />
+    You should be all set now.&nbsp; When you run in debug mode, it should start up Vault Explorer and halt at any breakpoints you set in your code.<br />
+    <img style="HEIGHT: 302px; WIDTH: 450px" alt="" src="breakpoint.png" /></p>
+</div>
+
+<p></p><!--DXMETADATA end-->
+            <a name="seealsobookmark"></a>
+            <!--DXMETADATA start type="FilteredItemList" scrap="CATEGORISED_LINKS" namespace="linkcategory" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=seealso,caption=""%%phrase:name=SeeAlso%%%%designlist:tagidentifier=seealso,itemtype=See Also%%""%%%%filtereditemlist%%</div>"--><!--DXMETADATA end-->
+        </div>
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_FOOTER" --><!--DXMETADATA end -->
+        <div id="pagefooter">
+            <!--DXMETADATA start type="Variable" name="CopyrightNotice" format="<p>&nbsp;</p><p>&nbsp;</p><hr style=""height: 1px"" /><p>%%variable%%</p>" --><!--DXMETADATA end -->
+        </div>
+        <!--DXMETADATA start type="FeedbackSection" --><!--DXMETADATA end -->
+    </div>
+    <!--DXMETADATA start type="Variable" name="NonScrollingPageFooter" format="<div id=nonscrollingpagefooter>%%variable%%</div>" --><div id=nonscrollingpagefooter>&copy;2025. All Rights Reserved.</div><!--DXMETADATA end -->
+</body>
+</html>

@@ -1,0 +1,173 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns:innovasys xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+    <!--DXMETADATA start type="MetaCharset" --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"><!--DXMETADATA end-->
+    <meta content="history" name="save" />
+    <meta name="GENERATOR" content="Innovasys HelpStudio (http://www.innovasys.com)" />
+    <!--DXMETADATA start type="ItemTitle" format="<title>%%ItemTitle%%</title>" --><title>How to Create Custom Jobs</title><!--DXMETADATA end-->
+    <link rel="stylesheet" type="text/css" href="stylesheets/helpstudio.css" />
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/community.css"">" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Literal" condition="helpversion:value=2" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/help2.css"">" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Stylesheets" --><link rel="stylesheet" type="text/css" href="stylesheets/hs-boxes.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-simpletab.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-heading-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-tabstrip.css"></link><!--DXMETADATA end-->
+    <script src="script/helpstudio.js" type="text/javascript"></script>
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<script src=""script/community.js""></script>" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Scripts" --><script src="script/hs-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-enlargeimage.js" type="text/javascript"></script>
+    <script src="script/swfobject.js" type="text/javascript"></script>
+    <script src="script/hs-common.js" type="text/javascript"></script>
+    <script src="script/hs-heading-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-tabstrip.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Variable" name="BannerColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {background-color: %%Variable%%}</style>" blankformat="" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Variable" name="BannerTextColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {color: %%Variable:Name=BannerTextColor%%}</style>" blankformat="" --><!--DXMETADATA end -->
+	<!--DXMETADATA start type="Variable" name="TopicXMLIsland" condition="helpversion:value=2" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="DesignTime" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CanonicalLink" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CustomHeadContent" --><!--DXMETADATA end-->
+</head>
+<body id="hsbody">
+	<!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_PROPERTIES" --><!--DXMETADATA end -->
+    <div style="display: none">
+        <input type="hidden" id="userDataCache" class="userDataStyle" name="userDataCache" />
+        <input type="hidden" id="hiddenScrollOffset" name="hiddenScrollOffset" />
+    </div>
+    <img id="collapseImage" style="display:none; height:0; width:0;" src="images/collapse.gif">
+    <img id="expandImage" style="display:none; height:0; width:0;" src="images/expand.gif"/>
+    <img id="copyImage" style="display:none; height:0; width:0;" src="images/copycode.gif"/>
+    <img id="copyHoverImage" style="display:none; height:0; width:0;" src="images/copycodeHighlight.gif">
+    <img id="dropDownImage" style="display:none; height:0; width:0;" src="images/drpdown.gif"/>
+    <img id="dropDownHoverImage" style="display:none; height:0; width:0;" src="images/drpdown_orange.gif"/>
+    <div id="pagetop">
+        <!--DXMETADATA start type="DesignBanner" --><!--DXMETADATA end -->
+        <table width="100%" id="pagetoptable2" cellspacing="0" cellpadding="0">
+        	<tr>
+        		<td><!--DXMETADATA start type="Literal" condition="communityenabled" value="%%scrap:name=_COMMUNITY_RATING%%%%scrap:name=_COMMUNITY_DROPDOWN%%" --><!--DXMETADATA end --></td>
+        	</tr>
+        </table>
+        <table width="100%" id="pagetoptable1">
+            <tr id="pagetoptable1row1">
+                <td align="left">
+                    <span id="projecttitle">
+                        <!--DXMETADATA start type="ProjectTitle" -->Vault SDK<!--DXMETADATA end-->
+                    </span>
+                </td>
+                <td align="right" rowspan="2">
+                    <!--DXMETADATA start type="LogoImage" --><!--DXMETADATA end-->
+                </td>
+            </tr>
+            <tr id="pagetoptable1row2">
+                <td align="left">
+                    <span id="pagetitle">
+                        <!--DXMETADATA start type="ItemTitle" -->How to Create Custom Jobs<!--DXMETADATA end-->
+                    </span>
+                </td>
+            </tr>
+            <tr id="pagetoptable1row3">
+            	<td colspan="2">
+            		<!--DXMETADATA start type="Literal" condition="childitems:itemtype=linkcategory" value="<a href=""#seealsobookmark"">%%Phrase:Name=SeeAlso,BlankFormat=See Also%%</a>" --><!--DXMETADATA end -->
+            		<span id="feedbacklink"><!--DXMETADATA start type="Variable" name="FeedbackLink" format="" --><a href="http://forums.autodesk.com/t5/vault-customization/bd-p/301 " rel="noopener noreferrer" target="_blank">Send Feedback</a><!--DXMETADATA end --></span>
+            	</td>
+            </tr>
+        </table>
+        <!--DXMETADATA start type="Breadcrumbs" scrap="_BREADCRUMBS" --><table width="100%" id="pagetopbreadcrumbs" cellspacing="0" cellpadding="0"><tr><td>
+<a href="topic11.html">Getting Started</a>
+ > How to Create Custom Jobs</td></tr></table><!--DXMETADATA end -->
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_MENU" --><!--DXMETADATA end -->
+    </div>
+    <div class="hspopupbubble" id="hsglossaryitembox">
+        <p>Glossary Item Box</p>
+    </div>
+    <div id="pagebody">
+        <div id="mainbody">
+<!--DXMETADATA start type="TopicSection" name="BodyText"--><div class="mainpage">
+    Jobserver is a nice feature that lets you distribute work across the network.&nbsp; Instead of performing a task directly, a job can be queued up so that the work can be done elsewhere.&nbsp; Vault comes with a few built-in job types, but the real power comes in creating your own.<br />
+    <br />
+    <br />
+    <span style="FONT-WEIGHT: bold">Availability</span><br />
+    This feature is not available in base Vault.&nbsp; Vault Workgroup, Vault Collaboration or Vault Professional is required.<br />
+    <br />
+    <br style="FONT-WEIGHT: bold" />
+    <span style="FONT-WEIGHT: bold">Creating Your Custom Job Type</span><br />
+    This part is just about deciding how you want things to work.&nbsp; Once you have decided what you want your job to do, you can work out some of the specifics.<br />
+    What you need...<br />
+
+    <ul>
+        <li>A name for the job type.&nbsp; This just has to be a string.&nbsp; We recommend starting with your company name to prevent any possible collisions.&nbsp;<br />
+        Example name: <span style="COLOR: rgb(255,0,0)">Autodesk.TestJob</span></li>
+
+        <li><span style="COLOR: rgb(255,0,0)"><span style="COLOR: rgb(0,0,0)">The parameters for the job.&nbsp; This is just a collection of key-value strings.&nbsp; What goes into this depends on what you want to do.&nbsp; You might not need any parameters at all.</span></span></li>
+    </ul>Now you are ready to code.<br />
+    <br />
+    <br />
+    <span style="FONT-WEIGHT: bold">Queuing Your Job</span><br />
+    <span style="COLOR: rgb(255,0,0)"><span style="COLOR: rgb(0,0,0)">There are two ways to get your Job on the queue.&nbsp; You can add it yourself using <a href="topic4022.html">AddJob</a> or you can use the Lifecycle Event Editor utility to have your jobs fire automatically when things change lifecycle state.<br />
+    <br />
+    If you are adding the job yourself you will need to create the application or plug-in that connects to the Vault Server and calls AddJob.&nbsp; See the AddJob documentation for more information.<br />
+    <br />
+    If you are adding the job through lifecycle state changes, then you don't get to decide the parameters.&nbsp; See the Lifecycle Event Editor documentation for more information.<br />
+    <br />
+    <span style="FONT-WEIGHT: bold"><br />
+    Handling Your Job<br /></span></span></span><span style="COLOR: rgb(255,0,0)"><span style="COLOR: rgb(0,0,0)">Now that you have code to get the job on the queue, you need to write the code to execute the job when it goes off the queue.&nbsp; The best thing to do is write a Job Processor extension.&nbsp; JobProcessor.exe will handle things like managing the queue and logging errors.&nbsp; All you need to worry about is the actual Job itself.&nbsp;<br />
+    <br /></span></span>The first thing is to set up your project in Visual Studio or other IDE.&nbsp; You want to create a library project (DLL) and it has to use the .NET framework.&nbsp;<br />
+    <br />
+    The next step is to create a public class which implements the <a href="topic543.html">IJobHandler</a> interface.&nbsp; This step requires you to fill in the logic for a bunch of functions.&nbsp; See the IJobHandler documentation for more details on the functions you need to implement.<br />
+    <br />
+    There are&nbsp; 5 assembly attributes you need to have in your code:<br />
+
+    <ol>
+        <li>AssemblyCompany - The name of your company.&nbsp;</li>
+
+        <li>AssemblyProduct - The name of the product.&nbsp;</li>
+
+        <li>AssemblyDescription - A description of your product.</li>
+
+        <li><a href="topic426.html">ExtensionId</a> - A unique GUID for your product.&nbsp; Visual Studio has a tool that can generate one for you.&nbsp; Do not copy a GUID from another extension.</li>
+
+        <li><a href="topic332.html">ApiVersion</a> - A string indicating which API schema your product works with.&nbsp; Enter in "<span style="COLOR: rgb(255,0,0)">19.0</span>" to work with Vault 2026.<br /></li>
+    </ol>Items 1-3 are provided by Visual Studio in the AssemblyInfo file.&nbsp; You just need to check that they have accurate data.&nbsp; Items 4 and 5 need to be created by you.<br />
+    <br />
+    Once you have everything coded and built, it's time to deploy it.&nbsp; To deploy you create a folder for your extension under <span style="COLOR: rgb(255,0,0)">%ProgramData%/Autodesk/Vault 2026/Extensions/</span>.&nbsp; You can name your folder whatever you want, but it's probably best to name it the same as your product name.&nbsp; For example, if you DLL is called JobProcessorApiSamples, you would deploy to a folder called <span style="COLOR: rgb(255,0,0)"><span style="COLOR: rgb(0,0,0)">"%ProgramData%/Autodesk/Vault 2026/Extensions/</span>JobProcessorApiSamples/<span style="COLOR: rgb(0,0,0)">".<br />
+    You need to deploy your DLL, any referenced DLLs and any other files you may need to live alongside the DLL.&nbsp; You also need a .vcet.config file to go in your folder (see below).<br />
+    <br /></span></span><span style="COLOR: rgb(255,0,0)"><span style="COLOR: rgb(0,0,0)">NOTE: The %programData% variable may not be set for all operating systems.&nbsp; In Windows XP and 2003, this is usually "C:\Documents and Settings\All Users\Application Data".&nbsp; In Vista and above, this is usually "C:\ProgramData".</span></span><br />
+    <span style="COLOR: rgb(255,0,0)"><span style="COLOR: rgb(0,0,0)"><br />
+    NOTE:&nbsp; You should not deploy <span style="FONT-WEIGHT: bold">Autodesk.Connectivity.JobProcessor.Extensibility.dll</span>, <span style="FONT-WEIGHT: bold">Autodesk.Connectivity.WebServices.dll</span> or <span style="FONT-WEIGHT: bold">Autodesk.Connectivity.Extensibility.Framework.dll</span> since they are already part of the Job Processor runtime.<br />
+    <br /></span></span><span style="COLOR: rgb(255,0,0)"><span style="COLOR: rgb(0,0,0)">Once everything is deployed, you can start (or restart) JobProcessor to see your handler in action.<br />
+    <br />
+    <br />
+    <span style="FONT-WEIGHT: bold">The .vcet.config File</span><br />
+    This files tells the Vault extensions framework how to load your extension.&nbsp; It's an XML file with a specific syntax.&nbsp; Here is what the file should look like for a Job Handler extenstion.<br /></span></span>
+
+    <table style="WIDTH: 100%; TEXT-ALIGN: left" cellspacing="2" cellpadding="2" border="1">
+        <tbody>
+            <tr>
+                <td style="VERTICAL-ALIGN: top">&lt;configuration&gt;<br />
+                &nbsp; &lt;connectivity.ExtensionSettings3&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&lt;extension<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; interface="Autodesk.Connectivity.JobProcessor.Extensibility.IJobHandler, Autodesk.Connectivity.JobProcessor.Extensibility, Version=31.0.0.0, Culture=neutral, PublicKeyToken=215b0879a7566597"<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; type="<span style="VERTICAL-ALIGN: top; COLOR: red">MyNamespace.MyClassName, MyAssemblyName</span>"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;setting key="JobType1" value="<span style="VERTICAL-ALIGN: top; COLOR: red">MyJobType</span>"/&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/extension&gt;<br />
+                &nbsp; &lt;/connectivity.ExtensionSettings3&gt;<br />
+                &lt;/configuration&gt;</td>
+            </tr>
+        </tbody>
+    </table><span style="COLOR: rgb(255,0,0)"><span style="COLOR: rgb(0,0,0)"><span style="COLOR: rgb(255,0,0)"><span style="COLOR: rgb(0,0,0)">You should&nbsp;replace "MyNamespace.MyClassName" with the full class name if the IJobHandler implementation class.&nbsp; And you should replace "MyAssemblyName" with the assembly name of your DLL.&nbsp; Replace "MyJobType" with the job type that your extension implements.&nbsp; If you support multiple job types, add additional &lt;setting&gt; elements with keys that follow the pattern "JobType2", "JobType3" and so on.<br /></span></span><br /></span></span><span style="FONT-WEIGHT: bold">Sample Application</span><br />
+    See the JobProcessorApiSamples sample in the&nbsp;SDK for a simple example of how to customize Job Processor.<br />
+</div>
+
+<p></p><!--DXMETADATA end-->
+            <a name="seealsobookmark"></a>
+            <!--DXMETADATA start type="FilteredItemList" scrap="CATEGORISED_LINKS" namespace="linkcategory" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=seealso,caption=""%%phrase:name=SeeAlso%%%%designlist:tagidentifier=seealso,itemtype=See Also%%""%%%%filtereditemlist%%</div>"--><!--DXMETADATA end-->
+        </div>
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_FOOTER" --><!--DXMETADATA end -->
+        <div id="pagefooter">
+            <!--DXMETADATA start type="Variable" name="CopyrightNotice" format="<p>&nbsp;</p><p>&nbsp;</p><hr style=""height: 1px"" /><p>%%variable%%</p>" --><!--DXMETADATA end -->
+        </div>
+        <!--DXMETADATA start type="FeedbackSection" --><!--DXMETADATA end -->
+    </div>
+    <!--DXMETADATA start type="Variable" name="NonScrollingPageFooter" format="<div id=nonscrollingpagefooter>%%variable%%</div>" --><div id=nonscrollingpagefooter>&copy;2025. All Rights Reserved.</div><!--DXMETADATA end -->
+</body>
+</html>

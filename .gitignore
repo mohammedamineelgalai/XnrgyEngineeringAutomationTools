@@ -1,0 +1,35 @@
+﻿# Build outputs
+bin/
+obj/
+Debug/
+Release/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.cache
+
+# NuGet packages
+packages/
+
+# Binaries
+*.exe
+*.dll
+*.msi
+!nuget.exe
+
+# Logs
+*.log
+Logs/
+
+# Backups
+Backup/
+OLD/
+
+# Temporaires
+*.tmp
+~$*
+
+# Node modules
+node_modules/

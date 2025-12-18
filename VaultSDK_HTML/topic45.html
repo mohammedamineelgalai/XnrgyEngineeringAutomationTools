@@ -1,0 +1,301 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns:innovasys xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+    <!--DXMETADATA start type="MetaCharset" --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"><!--DXMETADATA end-->
+    <meta content="history" name="save" />
+    <meta name="GENERATOR" content="Innovasys HelpStudio (http://www.innovasys.com)" />
+    <!--DXMETADATA start type="ItemTitle" format="<title>%%ItemTitle%%</title>" --><title>XML Serialization</title><!--DXMETADATA end-->
+    <link rel="stylesheet" type="text/css" href="stylesheets/helpstudio.css" />
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/community.css"">" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Literal" condition="helpversion:value=2" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/help2.css"">" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Stylesheets" --><link rel="stylesheet" type="text/css" href="stylesheets/hs-boxes.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-simpletab.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-heading-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-tabstrip.css"></link><!--DXMETADATA end-->
+    <script src="script/helpstudio.js" type="text/javascript"></script>
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<script src=""script/community.js""></script>" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Scripts" --><script src="script/hs-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-enlargeimage.js" type="text/javascript"></script>
+    <script src="script/swfobject.js" type="text/javascript"></script>
+    <script src="script/hs-common.js" type="text/javascript"></script>
+    <script src="script/hs-heading-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-tabstrip.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Variable" name="BannerColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {background-color: %%Variable%%}</style>" blankformat="" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Variable" name="BannerTextColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {color: %%Variable:Name=BannerTextColor%%}</style>" blankformat="" --><!--DXMETADATA end -->
+	<!--DXMETADATA start type="Variable" name="TopicXMLIsland" condition="helpversion:value=2" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="DesignTime" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CanonicalLink" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CustomHeadContent" --><!--DXMETADATA end-->
+</head>
+<body id="hsbody">
+	<!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_PROPERTIES" --><!--DXMETADATA end -->
+    <div style="display: none">
+        <input type="hidden" id="userDataCache" class="userDataStyle" name="userDataCache" />
+        <input type="hidden" id="hiddenScrollOffset" name="hiddenScrollOffset" />
+    </div>
+    <img id="collapseImage" style="display:none; height:0; width:0;" src="images/collapse.gif">
+    <img id="expandImage" style="display:none; height:0; width:0;" src="images/expand.gif"/>
+    <img id="copyImage" style="display:none; height:0; width:0;" src="images/copycode.gif"/>
+    <img id="copyHoverImage" style="display:none; height:0; width:0;" src="images/copycodeHighlight.gif">
+    <img id="dropDownImage" style="display:none; height:0; width:0;" src="images/drpdown.gif"/>
+    <img id="dropDownHoverImage" style="display:none; height:0; width:0;" src="images/drpdown_orange.gif"/>
+    <div id="pagetop">
+        <!--DXMETADATA start type="DesignBanner" --><!--DXMETADATA end -->
+        <table width="100%" id="pagetoptable2" cellspacing="0" cellpadding="0">
+        	<tr>
+        		<td><!--DXMETADATA start type="Literal" condition="communityenabled" value="%%scrap:name=_COMMUNITY_RATING%%%%scrap:name=_COMMUNITY_DROPDOWN%%" --><!--DXMETADATA end --></td>
+        	</tr>
+        </table>
+        <table width="100%" id="pagetoptable1">
+            <tr id="pagetoptable1row1">
+                <td align="left">
+                    <span id="projecttitle">
+                        <!--DXMETADATA start type="ProjectTitle" -->Vault SDK<!--DXMETADATA end-->
+                    </span>
+                </td>
+                <td align="right" rowspan="2">
+                    <!--DXMETADATA start type="LogoImage" --><!--DXMETADATA end-->
+                </td>
+            </tr>
+            <tr id="pagetoptable1row2">
+                <td align="left">
+                    <span id="pagetitle">
+                        <!--DXMETADATA start type="ItemTitle" -->XML Serialization<!--DXMETADATA end-->
+                    </span>
+                </td>
+            </tr>
+            <tr id="pagetoptable1row3">
+            	<td colspan="2">
+            		<!--DXMETADATA start type="Literal" condition="childitems:itemtype=linkcategory" value="<a href=""#seealsobookmark"">%%Phrase:Name=SeeAlso,BlankFormat=See Also%%</a>" --><!--DXMETADATA end -->
+            		<span id="feedbacklink"><!--DXMETADATA start type="Variable" name="FeedbackLink" format="" --><a href="http://forums.autodesk.com/t5/vault-customization/bd-p/301 " rel="noopener noreferrer" target="_blank">Send Feedback</a><!--DXMETADATA end --></span>
+            	</td>
+            </tr>
+        </table>
+        <!--DXMETADATA start type="Breadcrumbs" scrap="_BREADCRUMBS" --><table width="100%" id="pagetopbreadcrumbs" cellspacing="0" cellpadding="0"><tr><td>
+<a href="topic46.html">Knowledge Base</a>
+ > XML Serialization</td></tr></table><!--DXMETADATA end -->
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_MENU" --><!--DXMETADATA end -->
+    </div>
+    <div class="hspopupbubble" id="hsglossaryitembox">
+        <p>Glossary Item Box</p>
+    </div>
+    <div id="pagebody">
+        <div id="mainbody">
+<!--DXMETADATA start type="TopicSection" name="BodyText"--><div class="mainpage">
+    <p>by Doug Redmond, It's All Just Ones and Zeros<br />
+    11/09/2009</p><br />
+
+    <p>One thing you might not be aware of is that all the API classes are XML Serializable.&nbsp; This means that it’s very easy to convert on object to XML text and vice versa.&nbsp;</p>
+
+    <p>There many uses for this feature.&nbsp; For example…</p>
+
+    <ul>
+        <li>It can you in your debugging.&nbsp; If you have a large object with lots of data, it’s sometimes helpful to have an XML view of that object.&nbsp; At the bottom of this page is a XML serilization of a LfCycDef object.</li>
+
+        <li>If you are logging a case with ADN, you can include serialized objects as part of your problem description.</li>
+
+        <li>Store information for later use.&nbsp; Just keep in mind that the class might change in the next release.</li>
+
+        <li>You can use it as a way to check if things have been changed.&nbsp; For example, you wrote a program that requires a very specific lifecycle setup.&nbsp; You want your program to detect if somebody comes along and tampers with the settings.</li>
+    </ul>
+
+    <p>Here is some sample code to go along with my last example.</p>
+
+    <div id="Syntax_CS" class="LanguageSpecific" data-title="CS" data-itemid="CS">
+        <table class="syntaxtable" cellspacing="0" cellpadding="0">
+            <tbody>
+                <tr>
+                    <th class="codeboxtitlecell">C Sharp</th>
+
+                    <th class="codeboxactioncell"><span class="hs-onlineonly"><span onclick="copyCode(this)" tabindex="0" onkeypress="CopyCode_CheckKey(this)" onmouseover="changeCopyCodeIcon(this,true)" onfocusin="changeCopyCodeIcon(this,true)" onmouseout="changeCopyCodeIcon(this,false)" onfocusout="changeCopyCodeIcon(this,false)" class="copyCode"><img class="copyCodeImage" name="ccImage" src="images/copycode.gif" align="absmiddle" />Copy Code</span></span></th>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">public</font></font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">bool</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">DidItChange(</font></font><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">LfCycDef</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">def)</font></font></p>
+
+                        <p><font size="2" face="Consolas"><font size="2" face="Consolas">{</font></font></p>
+
+                        <p><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; // serialize the object</font></font></font></p>
+
+                        <p><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; StringBuilder</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">currentXML =</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">new</font></font></font> <font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">StringBuilder</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">();</font></font></p>
+
+                        <p><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; XmlSerializer</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">serializer =</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">new</font></font></font> <font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">XmlSerializer</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">(</font></font><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">typeof</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">(</font></font><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">LfCycDef</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">));</font></font></p>
+
+                        <p><font size="2" face="Consolas"><font size="2" face="Consolas">　</font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; using</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">(</font></font><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">TextWriter</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">writer =</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">new</font></font></font> <font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">StringWriter</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">(currentXML))</font></font></p>
+
+                        <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp;&nbsp;&nbsp; {</font></font></p>
+
+                        <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; serializer.Serialize(writer, def);</font></font></p>
+
+                        <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp;&nbsp;&nbsp; }</font></font></p>
+
+                        <p><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; // read in the stored XML</font></font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; string</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">originalXML = System.IO.</font></font><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">File</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">.ReadAllText(</font></font><font color="#A31515" size="2" face="Consolas"><font color="#A31515" size="2" face="Consolas"><font color="#A31515" size="2" face="Consolas">"correct.xml"</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">);</font></font></p>
+
+                        <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp;</font></font></p>
+
+                        <p><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; // now all you have to do is compare the two</font></font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; return</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">(originalXML != currentXML.ToString());</font></font></p>
+
+                        <p><font size="2" face="Consolas"><font size="2" face="Consolas">}</font></font></p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="Syntax_VB" class="LanguageSpecific" data-title="VB" data-itemid="VB">
+        <table class="syntaxtable" cellspacing="0" cellpadding="0">
+            <tbody>
+                <tr>
+                    <th class="codeboxtitlecell">VB.NET</th>
+
+                    <th class="codeboxactioncell"><span class="hs-onlineonly"><span onclick="copyCode(this)" tabindex="0" onkeypress="CopyCode_CheckKey(this)" onmouseover="changeCopyCodeIcon(this,true)" onfocusin="changeCopyCodeIcon(this,true)" onmouseout="changeCopyCodeIcon(this,false)" onfocusout="changeCopyCodeIcon(this,false)" class="copyCode"><img class="copyCodeImage" name="ccImage" src="images/copycode.gif" align="absmiddle" />Copy Code</span></span></th>
+                </tr>
+
+                <tr>
+                    <td colspan="2">
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">Private</font></font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">Function</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">DidItChange(def</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">As</font></font></font> <font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">LfCycDef</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">)</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">As</font></font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">Boolean</font></font></font></p>
+
+                        <p><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; ' serialize the object</font></font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; Dim</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">currentXML</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">As</font></font></font> <font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">StringBuilder</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">=</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">New</font></font></font> <font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">StringBuilder</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">()</font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; Dim</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">serializer</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">As</font></font></font> <font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">XmlSerializer</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">=</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">New</font></font></font> <font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">XmlSerializer</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">(</font></font><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">GetType</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">(</font></font><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">LfCycDef</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">))</font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; Using</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">writer</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">As</font></font></font> <font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">TextWriter</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">=</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">New</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">System.IO.</font></font><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">StringWriter</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">(currentXML)</font></font></p>
+
+                        <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; serializer.Serialize(writer, def)</font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; End</font></font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">Using</font></font></font></p>
+
+                        <p>&nbsp;</p>
+
+                        <p><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; ' read in the stored XML</font></font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; Dim</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">originalXML</font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">As</font></font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">String</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">= System.IO.</font></font><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas"><font color="#2B91AF" size="2" face="Consolas">File</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">.ReadAllText(</font></font><font color="#A31515" size="2" face="Consolas"><font color="#A31515" size="2" face="Consolas"><font color="#A31515" size="2" face="Consolas">"flex.xml"</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">)</font></font></p>
+
+                        <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp;</font></font></p>
+
+                        <p><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; ' now all you have to do is compare the two</font></font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">&nbsp;&nbsp;&nbsp; Return</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">(originalXML &lt;&gt; currentXML.ToString())</font></font></p>
+
+                        <p><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">End</font></font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">Function</font></font></font></p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>&nbsp;</p>
+
+    <p>Serialized object:<br />
+    &nbsp;</p>
+
+    <table style="WIDTH: 100%; TEXT-ALIGN: left" cellspacing="2" cellpadding="2" border="1">
+        <tbody>
+            <tr>
+                <td style="VERTICAL-ALIGN: top">&lt;?xml version="1.0" encoding="utf-16"?&gt;<br />
+                &lt;LfCycDef xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Id="2" Name="Flexible Release Process" SystemName="Flexible Release Process" DispName="Flexible Release Process" Descr="Flexible manufacturing lifecycle process for release control"&gt;<br />
+                &nbsp; &lt;StateArray xmlns="http://AutodeskDM/Services/DocumentServiceExtensions/1/26/2009/"&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;State Id="5" Name="Work in Progress" DispName="Work in Progress" Descr="State for free-form design creation and modifications" IsDflt="true" LfCycDefId="2" StateBasedSec="false" ReleasedState="false" RestrictPurgeOption="FirstAndLast"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Comm&gt;Available for editing&lt;/Comm&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Comm&gt;Change request&lt;/Comm&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/State&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;State Id="6" Name="For Review" DispName="For Review" Descr="State for targeted design reviews" IsDflt="false" LfCycDefId="2" StateBasedSec="false" ReleasedState="false" RestrictPurgeOption="FirstAndLast"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Comm&gt;Under review&lt;/Comm&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Comm&gt;Submit for pre-release&lt;/Comm&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Comm&gt;Change request&lt;/Comm&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/State&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;State Id="7" Name="Released" DispName="Released" Descr="State for controlling access and modifications" IsDflt="false" LfCycDefId="2" StateBasedSec="true" ReleasedState="true" RestrictPurgeOption="All"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Comm&gt;Released to manufacturing&lt;/Comm&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/State&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;State Id="8" Name="Quick-Change" DispName="Quick-Change" Descr="State for controlling access and modifications" IsDflt="false" LfCycDefId="2" StateBasedSec="true" ReleasedState="false" RestrictPurgeOption="FirstAndLast"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Comm&gt;Release to manufacturing&lt;/Comm&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/State&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;State Id="9" Name="Obsolete" DispName="Obsolete" Descr="State for retirement" IsDflt="false" LfCycDefId="2" StateBasedSec="true" ReleasedState="false" RestrictPurgeOption="FirstAndLast"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Comm&gt;No longer in production&lt;/Comm&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/CommArray&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/State&gt;<br />
+                &nbsp; &lt;/StateArray&gt;<br />
+                &nbsp; &lt;TransArray xmlns="http://AutodeskDM/Services/DocumentServiceExtensions/1/26/2009/"&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="13" FromId="5" ToId="6" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="false" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="15" FromId="5" ToId="7" Bump="None" SyncPropOption="None" SyncCld="true" TransBasedSec="false"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;RuleSet DispName="Property Compliance" Desc="Property Compliance is TRUE" Id="4"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;CondArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Cond PropDefId="162" Oper="EqualTo" Val="0" /&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/CondArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/RuleSet&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/Trans&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="16" FromId="5" ToId="8" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="true" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="14" FromId="5" ToId="9" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="false" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="17" FromId="6" ToId="5" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="false" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="19" FromId="6" ToId="7" Bump="None" SyncPropOption="None" SyncCld="true" TransBasedSec="false"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;RuleSet DispName="Property Compliance" Desc="Property Compliance is TRUE" Id="5"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;CondArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Cond PropDefId="162" Oper="EqualTo" Val="0" /&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/CondArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/RuleSet&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/Trans&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="20" FromId="6" ToId="8" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="true" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="18" FromId="6" ToId="9" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="false" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="21" FromId="7" ToId="5" Bump="BumpPrimary" SyncPropOption="None" SyncCld="false" TransBasedSec="false" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="22" FromId="7" ToId="6" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="false" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="24" FromId="7" ToId="8" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="true" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="23" FromId="7" ToId="9" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="false" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="29" FromId="8" ToId="5" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="true" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="30" FromId="8" ToId="6" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="true" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="31" FromId="8" ToId="7" Bump="None" SyncPropOption="None" SyncCld="true" TransBasedSec="true"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;RuleSet DispName="Property Compliance" Desc="Property Compliance is TRUE" Id="7"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;CondArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Cond PropDefId="162" Oper="EqualTo" Val="0" /&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/CondArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/RuleSet&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/Trans&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="32" FromId="8" ToId="9" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="true" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="25" FromId="9" ToId="5" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="false" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="26" FromId="9" ToId="6" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="false" /&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="27" FromId="9" ToId="7" Bump="None" SyncPropOption="None" SyncCld="true" TransBasedSec="false"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;RuleSet DispName="Property Compliance" Desc="Property Compliance is TRUE" Id="6"&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;CondArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;Cond PropDefId="162" Oper="EqualTo" Val="0" /&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/CondArray&gt;<br />
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;/RuleSet&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;/Trans&gt;<br />
+                &nbsp;&nbsp;&nbsp; &lt;Trans Id="28" FromId="9" ToId="8" Bump="None" SyncPropOption="None" SyncCld="false" TransBasedSec="true" /&gt;<br />
+                &nbsp; &lt;/TransArray&gt;<br />
+                &lt;/LfCycDef&gt;<br /></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<p></p><!--DXMETADATA end-->
+            <a name="seealsobookmark"></a>
+            <!--DXMETADATA start type="FilteredItemList" scrap="CATEGORISED_LINKS" namespace="linkcategory" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=seealso,caption=""%%phrase:name=SeeAlso%%%%designlist:tagidentifier=seealso,itemtype=See Also%%""%%%%filtereditemlist%%</div>"--><!--DXMETADATA end-->
+        </div>
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_FOOTER" --><!--DXMETADATA end -->
+        <div id="pagefooter">
+            <!--DXMETADATA start type="Variable" name="CopyrightNotice" format="<p>&nbsp;</p><p>&nbsp;</p><hr style=""height: 1px"" /><p>%%variable%%</p>" --><!--DXMETADATA end -->
+        </div>
+        <!--DXMETADATA start type="FeedbackSection" --><!--DXMETADATA end -->
+    </div>
+    <!--DXMETADATA start type="Variable" name="NonScrollingPageFooter" format="<div id=nonscrollingpagefooter>%%variable%%</div>" --><div id=nonscrollingpagefooter>&copy;2025. All Rights Reserved.</div><!--DXMETADATA end -->
+</body>
+</html>

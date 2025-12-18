@@ -1,0 +1,1136 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Views.VaultUploadWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:XnrgyEngineeringAutomationTools"
+        mc:Ignorable="d"
+        Title="Vault Upload - XNRGY Engineering Automation Tools" 
+        Height="950" Width="1550"
+        MinWidth="1400"
+        MinHeight="800"
+        WindowStartupLocation="CenterOwner"
+        Background="#F0F0F0">
+
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        <local:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <local:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <local:BooleanToTextConverter x:Key="BooleanToTextConverter" TrueText="Connecté" FalseText="Déconnecté"/>
+        <local:BooleanToColorConverter x:Key="BooleanToColorConverter"/>
+        <local:ProgressToWidthConverter x:Key="ProgressToWidthConverter"/>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- STYLES - Inspirés du WinForm Add-In mais en MODERNE WPF -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        
+        <!-- Bouton Primaire (Bleu Microsoft) -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#005A9E"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#D0D0D0"/>
+                    <Setter Property="Foreground" Value="#888888"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- Bouton Succès (Vert - Check-In) avec effet REACTIVE -->
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#107C10"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="scaleTransform" ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <!-- Hover effect -->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#0D5C0D"/>
+                            </Trigger>
+                            <!-- Click effect (amortisseur moderne) -->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleX"
+                                                           To="0.95" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleY"
+                                                           To="0.95" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleX"
+                                                           To="1.0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <ElasticEase Oscillations="1" Springiness="3"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleY"
+                                                           To="1.0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <ElasticEase Oscillations="1" Springiness="3"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="Background" Value="#084A08"/>
+                            </Trigger>
+                            <!-- Disabled state -->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#D0D0D0"/>
+                                <Setter Property="Foreground" Value="#888888"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Bouton Danger (Rouge - Stop) avec effet REACTIVE -->
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#D13438"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="scaleTransform" ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#A72B2E"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleX"
+                                                           To="0.95" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleY"
+                                                           To="0.95" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleX"
+                                                           To="1.0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <ElasticEase Oscillations="1" Springiness="3"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleY"
+                                                           To="1.0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <ElasticEase Oscillations="1" Springiness="3"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="Background" Value="#7D1F21"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#D0D0D0"/>
+                                <Setter Property="Foreground" Value="#888888"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Bouton Warning (Orange - Pause) avec effet REACTIVE -->
+        <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="#F7630C"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="scaleTransform" ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#C44E09"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleX"
+                                                           To="0.95" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleY"
+                                                           To="0.95" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleX"
+                                                           To="1.0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <ElasticEase Oscillations="1" Springiness="3"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform"
+                                                           Storyboard.TargetProperty="ScaleY"
+                                                           To="1.0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction>
+                                                    <ElasticEase Oscillations="1" Springiness="3"/>
+                                                </DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                                <Setter TargetName="border" Property="Background" Value="#933807"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#D0D0D0"/>
+                                <Setter Property="Foreground" Value="#888888"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Bouton Secondaire (Blanc bordure) -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#FFFFFF"/>
+            <Setter Property="Foreground" Value="#1E1E1E"/>
+            <Setter Property="BorderBrush" Value="Black"/>
+            <Setter Property="BorderThickness" Value="1.5"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                            VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F5F5F5"/>
+                    <Setter Property="BorderBrush" Value="Black"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Background" Value="#F0F0F0"/>
+                    <Setter Property="Foreground" Value="#999999"/>
+                    <Setter Property="Cursor" Value="Arrow"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/> <!-- Sélection du module -->
+            <RowDefinition Height="7*"/>   <!-- ✅ PLUS DE PLACE pour les 2 tableaux (5* → 7*) -->
+            <RowDefinition Height="Auto"/> <!-- Connexion Vault -->
+            <RowDefinition Height="Auto"/> <!-- Statistiques projet -->
+            <RowDefinition Height="Auto"/> <!-- Commentaire -->
+            <RowDefinition Height="Auto"/> <!-- Bouton Check-In -->
+            <RowDefinition Height="Auto"/> <!-- Barre de progression -->
+        </Grid.RowDefinitions>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 1 : Sélection du projet -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <GroupBox Grid.Row="0" Padding="10" Margin="0,0,0,8"
+                  Background="White"
+                  BorderBrush="Black"
+                  BorderThickness="1">
+            <GroupBox.Header>
+                <TextBlock Text="📂 Sélection du Module" 
+                           FontSize="13" 
+                           FontWeight="SemiBold"
+                           Foreground="#0078D4"/>
+            </GroupBox.Header>
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox Grid.Column="0" 
+                             Text="{Binding ProjectPath, UpdateSourceTrigger=PropertyChanged}"
+                             FontSize="12"
+                             Padding="6,4"
+                             Height="28"
+                             VerticalContentAlignment="Center"
+                             BorderBrush="Black"
+                             BorderThickness="1.5"
+                             IsReadOnly="False"/>
+
+                    <Button Grid.Column="1" 
+                            Content="📋 Sélection Module" 
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding SelectModuleCommand}"
+                            Margin="10,0,0,0"
+                            Width="145"
+                            Height="28"
+                            ToolTip="Afficher la liste des modules du projet"/>
+
+                    <Button Grid.Column="2" 
+                            Content="📁 Parcourir..." 
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding BrowseFolderCommand}"
+                            Margin="10,0,0,0"
+                            Width="120"
+                            Height="28"/>
+
+                    <Button Grid.Column="3" 
+                            Content="🔧 Depuis Inventor" 
+                            Style="{StaticResource SecondaryButton}"
+                            Command="{Binding GetFromInventorCommand}"
+                            Margin="10,0,0,0"
+                            Width="140"
+                            Height="28"/>
+
+                    <Button Grid.Column="4" 
+                            Content="🔍 Scanner" 
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding ScanProjectCommand}"
+                            Margin="10,0,0,0"
+                            Width="100"
+                            Height="28"/>
+                </Grid>
+
+                <!-- Affichage des propriétés détectées -->
+                <Border Background="#E3F2FD" 
+                        CornerRadius="4" 
+                        Padding="12" 
+                        Margin="0,10,0,0"
+                        Visibility="{Binding ProjectProperties, Converter={StaticResource NullToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock FontWeight="Bold" FontSize="13" Foreground="#0277BD" Margin="0,0,0,5">
+                            ✅ Propriétés détectées :
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋 Projet : " FontWeight="SemiBold" Foreground="#555"/>
+                            <TextBlock Text="{Binding ProjectProperties.ProjectNumber}" Foreground="#0277BD" FontWeight="Bold" Margin="5,0,20,0"/>
+
+                            <TextBlock Text="📑 Référence : " FontWeight="SemiBold" Foreground="#555"/>
+                            <TextBlock Text="{Binding ProjectProperties.Reference}" Foreground="#0277BD" FontWeight="Bold" Margin="5,0,20,0"/>
+
+                            <TextBlock Text="📦 Module : " FontWeight="SemiBold" Foreground="#555"/>
+                            <TextBlock Text="{Binding ProjectProperties.Module}" Foreground="#0277BD" FontWeight="Bold" Margin="5,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 1b : Connexion à Vault (COMPACTE - GARDÉE!) -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <GroupBox Grid.Row="2" Padding="10" Margin="0,0,0,8"
+                  Background="White"
+                  BorderBrush="Black"
+                  BorderThickness="1">
+            <GroupBox.Header>
+                <TextBlock Text="🔐 Connexion Vault" 
+                           FontSize="13" 
+                           FontWeight="SemiBold"
+                           Foreground="#0078D4"/>
+            </GroupBox.Header>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Type de connexion -->
+                <StackPanel Grid.Column="0" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBlock Text="Type" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                    <ComboBox SelectedIndex="0" Padding="4" FontSize="11" Width="120">
+                        <ComboBoxItem Content="Vault Account"/>
+                        <ComboBoxItem Content="Autodesk ID"/>
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Serveur -->
+                <StackPanel Grid.Column="1" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBlock Text="Serveur" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                    <TextBox Text="{Binding Configuration.VaultConfig.ServerName, UpdateSourceTrigger=PropertyChanged}" 
+                             Padding="4" FontSize="11" VerticalContentAlignment="Center"
+                             BorderBrush="Black" BorderThickness="1.5"/>
+                </StackPanel>
+
+                <!-- Vault -->
+                <StackPanel Grid.Column="2" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBlock Text="Vault" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                    <TextBox Text="{Binding Configuration.VaultConfig.VaultName, UpdateSourceTrigger=PropertyChanged}" 
+                             Padding="4" FontSize="11" VerticalContentAlignment="Center"
+                             BorderBrush="Black" BorderThickness="1.5"/>
+                </StackPanel>
+
+                <!-- Utilisateur -->
+                <StackPanel Grid.Column="3" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBlock Text="Utilisateur" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                    <TextBox Text="{Binding Configuration.VaultConfig.Username, UpdateSourceTrigger=PropertyChanged}" 
+                             Padding="4" FontSize="11" VerticalContentAlignment="Center"
+                             BorderBrush="Black" BorderThickness="1.5"/>
+                </StackPanel>
+
+                <!-- Mot de passe -->
+                <StackPanel Grid.Column="4" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBlock Text="Mot de passe" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                    <PasswordBox x:Name="PasswordBox" 
+                                 PasswordChanged="PasswordBox_PasswordChanged"
+                                 Padding="4" FontSize="11" 
+                                 VerticalContentAlignment="Center"
+                                 Height="24"
+                                 BorderBrush="Black" BorderThickness="1.5"/>
+                </StackPanel>
+
+                <!-- Bouton Connecter/Déconnecter (dynamique) -->
+                <StackPanel Grid.Column="5" Orientation="Vertical" Margin="0,0,8,0">
+                    <TextBlock Text="Action" FontSize="10" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                    <Button Content="{Binding ConnectionButtonText}" 
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding ToggleConnectionCommand}"
+                            Padding="8,4"
+                            FontSize="11"
+                            Width="100"
+                            Height="24"/>
+                </StackPanel>
+
+                <!-- Statut de connexion + Case à cocher Enregistrer -->
+                <StackPanel Grid.Column="6" Orientation="Vertical" Margin="0,0,0,0">
+                    <!-- Case à cocher : Enregistrer les identifications (EN HAUT) -->
+                    <CheckBox Content="💾 Enregistrer" 
+                              IsChecked="{Binding SaveCredentials, Mode=TwoWay}"
+                              FontSize="9" 
+                              Margin="0,0,0,4"
+                              ToolTip="Cochez pour sauvegarder votre nom d'utilisateur et mot de passe"/>
+                    
+                    <!-- Statut Connecté/Déconnecté (EN BAS) -->
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse Width="10" Height="10">
+                            <Ellipse.Fill>
+                                <SolidColorBrush Color="{Binding IsConnected, Converter={StaticResource BooleanToColorConverter}}"/>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                        <TextBlock Text="{Binding IsConnected, Converter={StaticResource BooleanToTextConverter}}" 
+                                   FontSize="11" FontWeight="Bold" Margin="6,0,0,0"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </GroupBox>
+
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 2 : Statistiques du projet -->
+        <!-- ═══════════════════════════════════════════════════════════════ -->
+    <Border Grid.Row="3" 
+                Background="White" 
+                BorderBrush="#DDDDDD" 
+                BorderThickness="1" 
+                CornerRadius="4" 
+                Padding="8" 
+                Margin="0,0,0,8"
+                Visibility="{Binding ProjectInfo, Converter={StaticResource NullToVisibilityConverter}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding ProjectInfo.TotalFiles}" 
+                               FontSize="20" 
+                               FontWeight="Bold" 
+                               Foreground="#0078D4"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Total Fichiers" 
+                               FontSize="11" 
+                               Foreground="#666"
+                               HorizontalAlignment="Center"
+                               Margin="0,3,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding ProjectInfo.InventorFiles}" 
+                               FontSize="20" 
+                               FontWeight="Bold" 
+                               Foreground="#107C10"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Fichiers Inventor" 
+                               FontSize="11" 
+                               Foreground="#666"
+                               HorizontalAlignment="Center"
+                               Margin="0,3,0,0"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                    <TextBlock Text="{Binding ProjectInfo.NonInventorFiles}" 
+                               FontSize="20" 
+                               FontWeight="Bold" 
+                               Foreground="#0078D4"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Autres Fichiers" 
+                               FontSize="11" 
+                               Foreground="#666"
+                               HorizontalAlignment="Center"
+                               Margin="0,3,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 3 : DOUBLE LISTE - Fichiers Inventor / Fichiers Non-Inventor -->
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="1" Margin="0,0,0,8">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- LISTE 1 : FICHIERS INVENTOR (Haut) -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <GroupBox Grid.Row="0" Padding="10"
+                      Background="White"
+                      BorderBrush="Black"
+                      BorderThickness="1">
+                <GroupBox.Header>
+                    <TextBlock Text="📋 Fichiers Inventor (.ipt, .iam, .idw, .ipn)" 
+                               FontSize="13" 
+                               FontWeight="SemiBold"
+                               Foreground="#107C10"/>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Boutons de contrôle INVENTOR + LOGO -->
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Boutons de contrôle INVENTOR (gauche) -->
+                        <StackPanel Grid.Column="0" Orientation="Horizontal">
+                            <Button Content="✅ Tout sélectionner" 
+                                    Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding SelectAllInventorCommand}"
+                                    Width="140"
+                                    Height="28"/>
+                            <Button Content="❌ Tout désélectionner" 
+                                    Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding DeselectAllInventorCommand}"
+                                    Margin="10,0,0,0"
+                                    Width="150"
+                                    Height="28"/>
+                            
+                            <!-- Recherche INVENTOR -->
+                            <TextBox Text="{Binding SearchFilterInventor, UpdateSourceTrigger=PropertyChanged}"
+                                     Width="200"
+                                     Height="28"
+                                     Margin="15,0,0,0"
+                                     Padding="6,4"
+                                     BorderBrush="Black"
+                                     BorderThickness="1.5"
+                                     FontSize="11"
+                                     VerticalContentAlignment="Center">
+                                <TextBox.Style>
+                                    <Style TargetType="TextBox">
+                                        <Setter Property="Background" Value="White"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="Text" Value="">
+                                                <Setter Property="Background" Value="#F9F9F9"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBox.Style>
+                            </TextBox>
+                            <TextBlock Text="🔍 Rechercher"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"
+                                       FontSize="11"
+                                       Foreground="#666"/>
+                            
+                            <!-- Catégorie INVENTOR -->
+                            <ComboBox ItemsSource="{Binding AvailableCategories}"
+                                      SelectedItem="{Binding SelectedCategoryInventor}"
+                                      DisplayMemberPath="Name"
+                                      Width="180"
+                                      Height="28"
+                                      Margin="15,0,0,0"
+                                      Padding="6,4"
+                                      BorderBrush="Black"
+                                      BorderThickness="1.5"
+                                      FontSize="11"
+                                      VerticalContentAlignment="Center">
+                                <ComboBox.Style>
+                                    <Style TargetType="ComboBox">
+                                        <Setter Property="Background" Value="White"/>
+                                    </Style>
+                                </ComboBox.Style>
+                            </ComboBox>
+                            <TextBlock Text="📦 Catégorie"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"
+                                       FontSize="11"
+                                       Foreground="#666"/>
+                            
+                            <!-- State INVENTOR -->
+                            <ComboBox ItemsSource="{Binding AvailableStatesInventor}"
+                                      SelectedItem="{Binding SelectedStateInventor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      DisplayMemberPath="Name"
+                                      Width="140"
+                                      Height="28"
+                                      Margin="15,0,0,0"
+                                      Padding="6,4"
+                                      BorderBrush="Black"
+                                      BorderThickness="1.5"
+                                      FontSize="11"
+                                      VerticalContentAlignment="Center">
+                                <ComboBox.Style>
+                                    <Style TargetType="ComboBox">
+                                        <Setter Property="Background" Value="White"/>
+                                    </Style>
+                                </ComboBox.Style>
+                            </ComboBox>
+                            <TextBlock Text="🔄 State"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"
+                                       FontSize="11"
+                                       Foreground="#666"/>
+                        </StackPanel>
+
+                        <!-- LOGO APPLICATION (droite) -->
+                        <Image Grid.Column="2" 
+                               Source="pack://application:,,,/Resources/VaultAutomationTool.png" 
+                               Width="60" 
+                               Height="60"
+                               Stretch="Uniform"
+                               VerticalAlignment="Top"
+                               HorizontalAlignment="Right"
+                               Margin="20,-10,10,0"
+                               ToolTip="Check-In Module v1.0 - XNRGY Climate Systems"/>
+                    </Grid>
+
+                    <!-- DataGrid INVENTOR -->
+                    <DataGrid Grid.Row="1"
+                              x:Name="InventorDataGrid"
+                              ItemsSource="{Binding InventorFiles}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="False"
+                              GridLinesVisibility="Horizontal"
+                              AlternatingRowBackground="#F0F8F0"
+                              RowHeight="32"
+                              SelectionMode="Single"
+                              SelectionUnit="FullRow"
+                              MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
+                        <!-- ✅ Style pour centrer verticalement le texte (comme Excel) -->
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Grid Background="{TemplateBinding Background}">
+                                                <ContentPresenter VerticalAlignment="Center" 
+                                                                Margin="4,0"/>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.CellStyle>
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="☑" 
+                                                    Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" 
+                                                    Width="40"/>
+                            <DataGridTextColumn Header="📄 Nom du fichier" 
+                                                Binding="{Binding FileName}" 
+                                                Width="200" 
+                                                IsReadOnly="True"/>
+                            <DataGridTextColumn Header="📂 Type" 
+                                                Binding="{Binding FileType}" 
+                                                Width="80" 
+                                                IsReadOnly="True"/>
+                            <DataGridTextColumn Header="📊 Taille" 
+                                                Binding="{Binding FileSizeFormatted}" 
+                                                Width="100" 
+                                                IsReadOnly="True"/>
+                            <DataGridTextColumn Header="📁 Chemin complet" 
+                                                Binding="{Binding FullPath}" 
+                                                Width="*" 
+                                                IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="ToolTip" Value="{Binding FullPath}"/>
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="✅ Statut" 
+                                                Binding="{Binding Status}" 
+                                                Width="200" 
+                                                IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </GroupBox>
+
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <!-- LISTE 2 : FICHIERS NON-INVENTOR (Bas) -->
+            <!-- ═══════════════════════════════════════════════════════════════ -->
+            <GroupBox Grid.Row="2" Padding="10"
+                      Background="White"
+                      BorderBrush="Black"
+                      BorderThickness="1">
+                <GroupBox.Header>
+                    <TextBlock Text="📋 Fichiers Non-Inventor (.pdf, .xlsx, .docx, images, etc.)" 
+                               FontSize="13" 
+                               FontWeight="SemiBold"
+                               Foreground="#0078D4"/>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Boutons de contrôle NON-INVENTOR -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="✅ Tout sélectionner" 
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding SelectAllNonInventorCommand}"
+                                Width="140"
+                                Height="28"/>
+                        <Button Content="❌ Tout désélectionner" 
+                                Style="{StaticResource SecondaryButton}"
+                                Command="{Binding DeselectAllNonInventorCommand}"
+                                Margin="10,0,0,0"
+                                Width="150"
+                                Height="28"/>
+                        
+                        <!-- Recherche NON-INVENTOR -->
+                        <TextBox Text="{Binding SearchFilterNonInventor, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="200"
+                                 Height="28"
+                                 Margin="20,0,0,0"
+                                 Padding="6,4"
+                                 BorderBrush="Black"
+                                 BorderThickness="1.5"
+                                 FontSize="11"
+                                 VerticalContentAlignment="Center">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox">
+                                    <Setter Property="Background" Value="White"/>
+                                    <Style.Triggers>
+                                        <Trigger Property="Text" Value="">
+                                            <Setter Property="Background" Value="#F9F9F9"/>
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                        </TextBox>
+                        <TextBlock Text="🔍 Rechercher"
+                                   VerticalAlignment="Center"
+                                   Margin="8,0,0,0"
+                                   FontSize="11"
+                                   Foreground="#666"/>
+                        
+                        <!-- Catégorie NON-INVENTOR -->
+                        <ComboBox ItemsSource="{Binding AvailableCategories}"
+                                  SelectedItem="{Binding SelectedCategoryNonInventor}"
+                                  DisplayMemberPath="Name"
+                                  Width="180"
+                                  Height="28"
+                                  Margin="20,0,0,0"
+                                  Padding="6,4"
+                                  BorderBrush="Black"
+                                  BorderThickness="1.5"
+                                  FontSize="11"
+                                  VerticalContentAlignment="Center">
+                            <ComboBox.Style>
+                                <Style TargetType="ComboBox">
+                                    <Setter Property="Background" Value="White"/>
+                                </Style>
+                            </ComboBox.Style>
+                        </ComboBox>
+                            <TextBlock Text="📦 Catégorie"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"
+                                       FontSize="11"
+                                       Foreground="#666"/>
+                            
+                            <!-- State NON-INVENTOR -->
+                            <ComboBox ItemsSource="{Binding AvailableStatesNonInventor}"
+                                      SelectedItem="{Binding SelectedStateNonInventor, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      DisplayMemberPath="Name"
+                                      Width="140"
+                                      Height="28"
+                                      Margin="20,0,0,0"
+                                      Padding="6,4"
+                                      BorderBrush="Black"
+                                      BorderThickness="1.5"
+                                      FontSize="11"
+                                      VerticalContentAlignment="Center">
+                                <ComboBox.Style>
+                                    <Style TargetType="ComboBox">
+                                        <Setter Property="Background" Value="White"/>
+                                    </Style>
+                                </ComboBox.Style>
+                            </ComboBox>
+                            <TextBlock Text="🔄 State"
+                                       VerticalAlignment="Center"
+                                       Margin="8,0,0,0"
+                                       FontSize="11"
+                                       Foreground="#666"/>
+                        </StackPanel>
+
+                    <!-- DataGrid NON-INVENTOR -->
+                    <DataGrid Grid.Row="1"
+                              x:Name="NonInventorDataGrid"
+                              ItemsSource="{Binding NonInventorFiles}"
+                              AutoGenerateColumns="False"
+                              CanUserAddRows="False"
+                              CanUserDeleteRows="False"
+                              IsReadOnly="False"
+                              GridLinesVisibility="Horizontal"
+                              AlternatingRowBackground="#E8F4FD"
+                              RowHeight="32"
+                              SelectionMode="Single"
+                              SelectionUnit="FullRow"
+                              MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
+                        <!-- ✅ Style pour centrer verticalement le texte (comme Excel) -->
+                        <DataGrid.CellStyle>
+                            <Style TargetType="DataGridCell">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="DataGridCell">
+                                            <Grid Background="{TemplateBinding Background}">
+                                                <ContentPresenter VerticalAlignment="Center" 
+                                                                Margin="4,0"/>
+                                            </Grid>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </DataGrid.CellStyle>
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="☑" 
+                                                    Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" 
+                                                    Width="40"/>
+                            <DataGridTextColumn Header="📄 Nom du fichier" 
+                                                Binding="{Binding FileName}" 
+                                                Width="200" 
+                                                IsReadOnly="True"/>
+                            <DataGridTextColumn Header="📂 Type" 
+                                                Binding="{Binding FileType}" 
+                                                Width="80" 
+                                                IsReadOnly="True"/>
+                            <DataGridTextColumn Header="📊 Taille" 
+                                                Binding="{Binding FileSizeFormatted}" 
+                                                Width="100" 
+                                                IsReadOnly="True"/>
+                            <DataGridTextColumn Header="📁 Chemin complet" 
+                                                Binding="{Binding FullPath}" 
+                                                Width="*" 
+                                                IsReadOnly="True">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="ToolTip" Value="{Binding FullPath}"/>
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="✅ Statut" 
+                                                Binding="{Binding Status}" 
+                                                Width="200" 
+                                                IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </GroupBox>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 4 : Commentaire -->
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <GroupBox Grid.Row="4" Padding="8" Margin="0,0,0,8"
+                  Background="White"
+                  BorderBrush="Black"
+                  BorderThickness="1">
+            <GroupBox.Header>
+                <TextBlock Text="💬 Commentaire Check-In" 
+                           FontSize="13" 
+                           FontWeight="SemiBold"
+                           Foreground="#0078D4"/>
+            </GroupBox.Header>
+            <TextBox Text="{Binding Comment, UpdateSourceTrigger=PropertyChanged}"
+                     Height="40"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     VerticalScrollBarVisibility="Auto"
+                     Padding="6"
+                     BorderBrush="Black"
+                     BorderThickness="1.5"
+                     FontSize="12"/>
+        </GroupBox>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 5 : CONTRÔLES D'OPÉRATION (Hauteur réduite pour gagner espace) -->
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="5" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Bouton Check-In Principal (Vert) OU Barre de progression -->
+            <Grid Grid.Column="0" Margin="0,0,10,0">
+                <!-- Bouton visible AVANT le traitement -->
+                <Button Content="▶️ CHECK-IN AUTOMATIQUE VERS VAULT"
+                        Style="{StaticResource SuccessButton}"
+                        Height="35"
+                        FontSize="13"
+                        FontWeight="Bold"
+                        Command="{Binding AutoCheckInCommand}"
+                        Visibility="{Binding IsProcessing, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                
+                <!-- Barre de progression visible PENDANT le traitement -->
+                <Border Background="White"
+                        BorderBrush="#0078D4"
+                        BorderThickness="2"
+                        CornerRadius="3"
+                        Height="35"
+                        Visibility="{Binding IsProcessing, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid>
+                        <!-- Barre verte qui se remplit -->
+                        <Border Background="#107C10"
+                                HorizontalAlignment="Left"
+                                CornerRadius="2">
+                            <Border.Width>
+                                <MultiBinding Converter="{StaticResource ProgressToWidthConverter}">
+                                    <Binding Path="ProgressValue"/>
+                                    <Binding Path="ProgressMaximum"/>
+                                    <Binding RelativeSource="{RelativeSource AncestorType=Border}" Path="ActualWidth"/>
+                                </MultiBinding>
+                            </Border.Width>
+                        </Border>
+                        
+                        <!-- Texte avec pourcentage -->
+                        <TextBlock HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="#1E1E1E"
+                                   Text="{Binding ProgressText}"/>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ✅ Bouton PAUSE/REPRENDRE (Orange) - Change dynamiquement -->
+            <Button Grid.Column="1"
+                    Content="{Binding PauseButtonText}"
+                    Style="{StaticResource WarningButton}"
+                    Height="35"
+                    Width="120"
+                    FontSize="12"
+                    Command="{Binding PauseCommand}"
+                    Margin="0,0,10,0"
+                    IsEnabled="{Binding IsProcessing}"/>
+
+            <!-- ✅ Bouton ARRÊTER (Orange foncé) -->
+            <Button Grid.Column="2"
+                    Content="⏹️ ARRÊTER"
+                    Style="{StaticResource WarningButton}"
+                    Height="35"
+                    Width="120"
+                    FontSize="12"
+                    Command="{Binding StopProcessingCommand}"
+                    Margin="0,0,10,0"
+                    IsEnabled="{Binding IsProcessing}"/>
+
+            <!-- ✅ Bouton ANNULER (Rouge) -->
+            <Button Grid.Column="3"
+                    Content="❌ ANNULER"
+                    Style="{StaticResource DangerButton}"
+                    Height="35"
+                    Width="120"
+                    FontSize="12"
+                    Command="{Binding CancelProcessingCommand}"
+                    Margin="0,0,10,0"
+                    IsEnabled="{Binding IsProcessing}"/>
+        </Grid>
+
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 6 : Barre de progression, contrôles et statut -->
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <!-- SECTION 6 : PROGRESSION ET STATUT (comme Add-In WinForm) -->
+        <!-- ═══════════════════════════════════════════════════════════════════════ -->
+        <Grid Grid.Row="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Barre de progression (Style moderne) -->
+            <Border Grid.Row="0" 
+                    Background="White"
+                    BorderBrush="Black"
+                    BorderThickness="1"
+                    CornerRadius="3"
+                    Padding="2"
+                    Height="28"
+                    Margin="0,0,0,8"
+                    Visibility="{Binding IsCheckingIn, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <Grid>
+                    <ProgressBar Minimum="0"
+                                 Maximum="{Binding ProgressMaximum}"
+                                 Value="{Binding ProgressValue}"
+                                 Height="24"
+                                 Foreground="#107C10"
+                                 Background="Transparent"
+                                 BorderThickness="0"/>
+                    <TextBlock Text="{Binding ProgressText}" 
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"
+                               FontSize="11"
+                               FontWeight="SemiBold"
+                               Foreground="#1E1E1E"/>
+                </Grid>
+            </Border>
+
+            <!-- Barre de statut (Style moderne avec bordure) -->
+            <Border Grid.Row="1" 
+                    Background="White"
+                    BorderBrush="#0078D4"
+                    BorderThickness="0,2,0,0"
+                    Padding="10,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Icône de statut -->
+                    <Ellipse Grid.Column="0" 
+                             Width="12" 
+                             Height="12"
+                             VerticalAlignment="Center"
+                             Margin="0,0,10,0">
+                        <Ellipse.Fill>
+                            <SolidColorBrush Color="{Binding IsConnected, Converter={StaticResource BooleanToColorConverter}}"/>
+                        </Ellipse.Fill>
+                    </Ellipse>
+
+                    <!-- Message de statut -->
+                    <TextBlock Grid.Column="1" 
+                               Text="{Binding StatusMessage}" 
+                               Foreground="#1E1E1E"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               TextWrapping="Wrap"/>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>

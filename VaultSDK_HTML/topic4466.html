@@ -1,0 +1,311 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <!--DXMETADATA start type="MetaCharset" --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"><!--DXMETADATA end-->
+    <meta http-equiv="X-UA-Compatible" value="IE=9" />
+
+    <!--DXMETADATA start type="IsTemplateFileFeatureEnabled" name="Responsive" format="<meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" />" --><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="Literal" condition="helpversion:value=3" value="<meta name=""Microsoft.Help.SelfBranded"" content=""true"" />" --><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="ItemTitle" format="<title>%%ItemTitle%%</title>" --><title>AddNumberingScheme Method (NumberingService)</title><!--DXMETADATA end-->
+    <!--DXMETADATA start type="ItemTitle" format="<meta name=""Title"" content=""%%ItemTitleNoQuotes%%""/>" --><meta name="Title" content=""/><!--DXMETADATA end-->
+    
+    
+    <!--DXMETADATA start type="PackageLink" packagename="jquery" filetype="script" firstlinkattributes="id=""mshs_support_script"""--><script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="jquery-ui" filetype="script"--><script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="jquery-ui" filetype="css"--><link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="TemplateSettingsJson" format="<script type=""text/javascript"">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:%%TemplateSettingsJson%%});</script>" --><script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="PackageLink" packagename="plugins-dotnet" filetype="css"--><link rel="stylesheet" type="text/css" href="template/packages/plugins-dotnet/css/chm.mshc/jquery-plugins.css"></link><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="core-dotnet" filetype="css" firstlinkattributes=" data-mshv2-stylesheet=""/template/packages/core-dotnet/dx.net.mshv2.css"" data-mshv1-stylesheet=""/template/packages/core-dotnet/dx.net.mshv1.css"" data-responsive-mobile=""template/packages/core-dotnet/dx.net.mobile.css"" data-responsive-tablet=""template/packages/core-dotnet/dx.net.tablet.css"""--><link rel="stylesheet" type="text/css" href="template/packages/core-dotnet/css/dx.net.css"  data-mshv2-stylesheet="/template/packages/core-dotnet/dx.net.mshv2.css" data-mshv1-stylesheet="/template/packages/core-dotnet/dx.net.mshv1.css" data-responsive-mobile="template/packages/core-dotnet/dx.net.mobile.css" data-responsive-tablet="template/packages/core-dotnet/dx.net.tablet.css"></link><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="plugins-dotnet" filetype="script"--><script src="template/packages/plugins-dotnet/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="core-dotnet" filetype="script"--><script src="template/packages/core-dotnet/script/dx.net.min.js" type="text/javascript"></script><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="TopicId" format="<meta name=""Microsoft.Help.Id"" content=""%%TopicId%%""/>" --><meta name="Microsoft.Help.Id" content="Autodesk.Connectivity.WebServices~Autodesk.Connectivity.WebServices.NumberingService~AddNumberingScheme"/><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Synopsis" StripHtmlTags="True" MaxLength="250" format="<meta name=""Description"" content=""%%Synopsis%%"" />"--><meta name="Description" content="Creates a new Numbering Scheme for Files, Items, or Change Orders." /><!--DXMETADATA end-->
+    <!--DXMETADATA start type="TocParentId" format="<meta name=""Microsoft.Help.TocParent"" content=""%%TocParentId%%""/>" --><meta name="Microsoft.Help.TocParent" content="Autodesk.Connectivity.WebServices~Autodesk.Connectivity.WebServices.NumberingService_methods"/><!--DXMETADATA end-->
+    <meta name="Microsoft.Help.ContentType" content="Reference" /><!--DXMETADATA start type="DotNetSignature" format="<meta name=""Microsoft.Help.F1"" content=""%%DotNetSignature%%""/>" --><meta name="Microsoft.Help.F1" content="Autodesk.Connectivity.WebServices.NumberingService.AddNumberingScheme"/><!--DXMETADATA end-->
+    <!--DXMETADATA start type="MshvKeywords" condition="helpversion:value=3" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="MshvMetaTags" condition="helpversion:value=3" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Help3CatalogLocale" condition="helpversion:value=3" format="<meta name=""Microsoft.Help.Locale"" content=""%%Help3CatalogLocale%%"" />"--><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Help3CatalogLocale" condition="helpversion:value=3" format="<meta name=""Microsoft.Help.TopicLocale"" content=""%%Help3CatalogLocale%%"" />"--><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="Stylesheets" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Scripts" --><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="DesignTime"--><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_PROPERTIES" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="CanonicalLink" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CustomHeadContent" --><!--DXMETADATA end-->
+</head>
+
+<body>
+    <div id="i-before-header-content" class="i-before-header-content">
+        
+    </div>
+    <div id="i-header-content" class="i-header-content">
+        <!--DXMETADATA start type="LogoImage" --><!--DXMETADATA end-->
+            <div class="i-project-title"><!--DXMETADATA start type="ProjectTitle" -->Vault SDK<!--DXMETADATA end--></div>
+        <div class="i-page-title"><div class="i-page-title-text"><!--DXMETADATA start type="ItemTitle" -->AddNumberingScheme Method (NumberingService)<!--DXMETADATA end--></div></div>
+    </div>
+    <div id="i-after-header-content" class="i-after-header-content">
+        <!--DXMETADATA start type="Literal" condition="childitems:itemtype=example,filter=""type=inline""" value="<a class=""i-page-link"" href=""#ExampleBookmark"">$$Example$$</a>&nbsp;" --><a class="i-page-link" href="#ExampleBookmark">Example</a>&nbsp;<!--DXMETADATA end --><!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all"><!--DXMETADATA start type="Phrase" name="COLLAPSE_ALL" -->Collapse All<!--DXMETADATA end--></label>
+                <label class="i-expand-all" style="display: none;"><!--DXMETADATA start type="Phrase" name="EXPAND_ALL" -->Expand All<!--DXMETADATA end--></label>
+            </span><!--DXMETADATA start type="Literal" condition="communityenabled" value="%%scrap:name=_COMMUNITY_DROPDOWN%%" --><!--DXMETADATA end --><!-- Spacing --> <span class="i-language-filter i-popup-link" data-popup-contentsource="#i-language-options" data-popup-title='<!--DXMETADATA start type="Phrase" name="Language_Filter" -->Language Filter<!--DXMETADATA end -->'>
+                <label class="i-language-filter-all">
+                    <!--DXMETADATA start type="Phrase" name="Language_Filter_All" -->Language Filter: All<!--DXMETADATA end -->
+                </label>
+                <label class="i-language-filter-multiple" style="display: none;">
+                    <!--DXMETADATA start type="Phrase" name="Language_Filter_Multiple" -->Language Filter: Multiple<!--DXMETADATA end -->
+                </label>
+                <label class="i-language-filter-vball" style="display: none;">
+                    <!--DXMETADATA start type="Phrase" name="Language_Filter" -->Language Filter<!--DXMETADATA end -->: <!--DXMETADATA start type="Phrase" name="Language_VB" -->Visual Basic<!--DXMETADATA end -->
+                </label>				
+                <!--DXMETADATA start type="FilteredItemList" scrap="LANGUAGE_LABEL_LIST" namespace="language" filter="type=all" source="Item" format="" -->
+<label class="i-VB-label" style="display: none;">Language Filter: Visual Basic (Declaration)</label>
+<label class="i-CS-label" style="display: none;">Language Filter: C#</label>
+<!--DXMETADATA end -->
+            </span>
+            <div class="i-popup-content" id="i-language-options">
+                <!--DXMETADATA start type="FilteredItemList" scrap="LANGUAGE_CHECKBOX_LIST" namespace="language" filter="type=all" source="Item" format="" -->
+<input data-languagename="VB" id="i-VB-language-checkbox" type="checkbox" class="i-toggle-language-checkbox" checked="true" data-toggleclass="i-filtered-content-VB"/>
+<label class="i-language-filter" for="i-VB-language-checkbox">
+Visual Basic (Declaration)
+</label>
+<br /><input data-languagename="CS" id="i-CS-language-checkbox" type="checkbox" class="i-toggle-language-checkbox" checked="true" data-toggleclass="i-filtered-content-CS"/>
+<label class="i-language-filter" for="i-CS-language-checkbox">
+C#
+</label>
+<!--DXMETADATA end -->
+            </div>
+        <!--DXMETADATA start type="IsWebOutputRootPageLinkEnabled" format="<a href='#' class='i-page-link i-view-in-frame-link' title='$$VIEW_WITH_NAVIGATION_TOOLS_TIP$$' style='display: none' data-root-page='%%WebOutputRootPage%%%%OutputFileExtension%%' target='_top'>$$VIEW_WITH_NAVIGATION_TOOLS_TEXT$$</a>" --><!--DXMETADATA end-->
+    </div>
+    <!--DXMETADATA start type="Breadcrumbs" scrap="_BREADCRUMBS" --><div class="i-breadcrumbs-container"><table><tr><td>
+<a href="topic580.html">Autodesk.Connectivity.WebServices Namespace</a>
+ > <a href="topic4460.html">NumberingService Class</a>
+ : AddNumberingScheme Method</td></tr></table></div><!--DXMETADATA end -->
+    
+    <!--DXMETADATA start type="FilteredItemList" scrap="GENERICARGUMENT_BUBBLES" namespace="generic argument" source="Item" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="FilteredItemList" scrap="PARAMETERS_BUBBLES" namespace="parameter" source="Item" -->
+<div id="entityClassIdPopupContent" class="i-popup-content">
+The entity class id that the Numbering Scheme will operate on.
+</div>
+<div id="schemeNamePopupContent" class="i-popup-content">
+The name of the Numbering Scheme.
+</div>
+<div id="providerNamePopupContent" class="i-popup-content">
+The name of the Numbering Provider that provides numbers for the Numbering Scheme.
+</div>
+<div id="fieldsPopupContent" class="i-popup-content">
+An array of fields that make up the scheme. Please note, do not pass in any NumSchmField objects. Instead, pass in objects derived from NumSchmField.
+</div>
+<div id="toUpperCasePopupContent" class="i-popup-content">
+If true, the characters in the Numbering Scheme should be displayed as upper case.
+</div>
+<div id="reuseNumbersPopupContent" class="i-popup-content">
+If true, Item Numbering Schemes will recycle numbers that were generated, but not in use. If false, once a number is created it can no longer be re-used.
+</div>
+<!--DXMETADATA end -->
+    <div id="i-body-content" class="i-body-content">
+        <!--DXMETADATA start type="Description" source="Item" format="<div class=""i-description-content"">%%description%%</div>" --><div class="i-description-content">Creates a new Numbering Scheme for Files, Items, or Change Orders.</div><!--DXMETADATA end -->
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##OVERLOADS" format="%%comment%%" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="OVERLOAD_LIST" namespace="method" source="Item" filter="" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=overloadlist,caption=$$OverloadList$$%%%%filtereditemlist%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="SyntaxSection" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=syntax,caption=$$Syntax$$%%%%SyntaxSection%%" --><div class="i-section-heading" id="i-syntax-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">Syntax</span></div><div id="i-syntax-section-content" class="i-section-content">
+            <div class="i-tab-container i-tab-container">
+            <ul>
+            
+            <li class="i-filtered-content-VBAll"><a href="#i-syntax-VBAll">Visual Basic</a></li>
+        
+
+            <li class="i-filtered-content-CS"><a href="#i-syntax-CS">C#</a></li>
+        
+
+            </ul>
+            
+            <div id="i-syntax-VB" class="i-filtered-content-VB">
+            <pre>'Declaration
+&nbsp;
+Public Function AddNumberingScheme( _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="entityClassIdPopupLink" data-popup-contentsource="#entityClassIdPopupContent" data-popup-showevent="click mouseenter">entityClassId</a></i> As System.String, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="schemeNamePopupLink" data-popup-contentsource="#schemeNamePopupContent" data-popup-showevent="click mouseenter">schemeName</a></i> As System.String, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="providerNamePopupLink" data-popup-contentsource="#providerNamePopupContent" data-popup-showevent="click mouseenter">providerName</a></i> As System.String, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="fieldsPopupLink" data-popup-contentsource="#fieldsPopupContent" data-popup-showevent="click mouseenter">fields</a></i>() As <a href="topic4547.html">NumSchmField</a>, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="toUpperCasePopupLink" data-popup-contentsource="#toUpperCasePopupContent" data-popup-showevent="click mouseenter">toUpperCase</a></i> As System.Boolean, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="reuseNumbersPopupLink" data-popup-contentsource="#reuseNumbersPopupContent" data-popup-showevent="click mouseenter">reuseNumbers</a></i> As System.Boolean _
+) As <a href="topic4529.html">NumSchm</a></pre>
+            </div>
+        
+
+            <div id="i-syntax-CS" class="i-filtered-content-CS">
+            <pre>public <a href="topic4529.html">NumSchm</a> AddNumberingScheme( 
+&nbsp;&nbsp;&nbsp;System.string <i><a class="i-popup-link" id="entityClassIdPopupLink" data-popup-contentsource="#entityClassIdPopupContent" data-popup-showevent="click mouseenter">entityClassId</a></i>,
+&nbsp;&nbsp;&nbsp;System.string <i><a class="i-popup-link" id="schemeNamePopupLink" data-popup-contentsource="#schemeNamePopupContent" data-popup-showevent="click mouseenter">schemeName</a></i>,
+&nbsp;&nbsp;&nbsp;System.string <i><a class="i-popup-link" id="providerNamePopupLink" data-popup-contentsource="#providerNamePopupContent" data-popup-showevent="click mouseenter">providerName</a></i>,
+&nbsp;&nbsp;&nbsp;<a href="topic4547.html">NumSchmField</a>[] <i><a class="i-popup-link" id="fieldsPopupLink" data-popup-contentsource="#fieldsPopupContent" data-popup-showevent="click mouseenter">fields</a></i>,
+&nbsp;&nbsp;&nbsp;System.bool <i><a class="i-popup-link" id="toUpperCasePopupLink" data-popup-contentsource="#toUpperCasePopupContent" data-popup-showevent="click mouseenter">toUpperCase</a></i>,
+&nbsp;&nbsp;&nbsp;System.bool <i><a class="i-popup-link" id="reuseNumbersPopupLink" data-popup-contentsource="#reuseNumbersPopupContent" data-popup-showevent="click mouseenter">reuseNumbers</a></i>
+)</pre>
+            </div>
+        
+
+            </div>
+        <!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="PARAMETERS_LIST" namespace="parameter" source="Item" filter="" NoCr="True" format="<h4 class=dxh4>$$ParameterList$$</h4>%%filtereditemlist%%" --><h4 class=dxh4>Parameters</h4><dl><dt><I>entityClassId</I></dt>
+<dd>The entity class id that the Numbering Scheme will operate on.</dd><dt><I>schemeName</I></dt>
+<dd>The name of the Numbering Scheme.</dd><dt><I>providerName</I></dt>
+<dd>The name of the Numbering Provider that provides numbers for the Numbering Scheme.</dd><dt><I>fields</I></dt>
+<dd>An array of fields that make up the scheme. Please note, do not pass in any NumSchmField objects. Instead, pass in objects derived from NumSchmField.</dd><dt><I>toUpperCase</I></dt>
+<dd>If true, the characters in the Numbering Scheme should be displayed as upper case.</dd><dt><I>reuseNumbers</I></dt>
+<dd>If true, Item Numbering Schemes will recycle numbers that were generated, but not in use. If false, once a number is created it can no longer be re-used.</dd></dl><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="GENERICARGUMENT_LIST" namespace="generic argument" source="Item" filter="" format="<h4 class=dxh4>$$GenericArguments$$</h4>%%filtereditemlist%%" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##RETURNS" format="<h4 class=dxh4>$$Return_Type$$</h4><div class=""i-returns-content"">%%comment%%</div></div>" blankformat="</div>" --><h4 class=dxh4>Return Value</h4><div class="i-returns-content">The Numbering Scheme object.</div></div><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="EXCEPTION_LIST" namespace="exception" source="Item" filter="" designtime="true" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=exceptions,caption=""$$Exceptions$$%%designlist:tagidentifier=##EXCEPTION,itemtype=Exception%%""%%%%filtereditemlist%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="Literal" condition="childitems:itemtype=contract,filter=""type=requires+ensures+ensuresonthrow+pure""" value="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=contracts,caption=$$Contracts$$%%%%filtereditemlist:scrap=CONTRACT_LIST,namespace=contract,source=item,filter=""type=requires+ensures+ensuresonthrow""%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="PERMISSION_LIST" namespace="permission" source="Item" filter="" designtime="true" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=permissions,caption=""$$Permissions$$%%designlist:tagidentifier=##PERMISSION,itemtype=Permission%%""%%%%filtereditemlist%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##REMARKS" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=remarks,caption=$$Remarks$$%%%%comment%%</div>" --><div class="i-section-heading" id="i-remarks-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">Remarks</span></div><div id="i-remarks-section-content" class="i-section-content">Please note, adding a new Numbering Scheme will&nbsp;not automatically activate it.</div><!--DXMETADATA end -->
+            <a name="exampleBookmark"></a>
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##EXAMPLEINTRO" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=example,caption=""$$Example$$%%designlist:tagidentifier=##EXAMPLECODE,itemtype=Example%%""%%%%comment%%" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="EXAMPLEGROUP_LIST" namespace="ExampleGroup" source="Item" filter="type=inline" condition="content:content=""%%GroupExamples%%"",operator=""="",value=""True""" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%taggedcomment:source=item,id=##EXAMPLEINTRO,blankformat=""%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=example,caption=$$Example$$%%"",format= %%%%filtereditemlist%%</div>" blankformat="%%taggedcomment:source=item,id=##EXAMPLEINTRO,format=</div>%%" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="INLINE_EXAMPLE" namespace="Example" source="Item" filter="type=inline" condition="content:content=""%%GroupExamples%%"",operator=""<>"",value=""True""" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%taggedcomment:source=item,id=##EXAMPLEINTRO,blankformat=""%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=example,caption=$$Example$$%%"",format= %%%%filtereditemlist%%</div>" blankformat="%%taggedcomment:source=item,id=##EXAMPLEINTRO,format=</div>%%" --><div class="i-section-heading" id="i-example-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">Example</span></div><div id="i-example-section-content" class="i-section-content"><div class="i-filtered-content-CS">
+    
+	<div class="i-tab-container">
+	    <ul>
+	        <li><a href="#i-tab-content-1b121d31-7eef-4e9c-8923-6355c2b70555">C#</a></li>
+	    </ul>
+	    <div id="i-tab-content-1b121d31-7eef-4e9c-8923-6355c2b70555" class="i-filtered-content-"><pre><span style="color: #0000FF; ">using</span> Autodesk.Connectivity.WebServices;
+<span style="color: #0000FF; ">using</span> Autodesk.Connectivity.WebServicesTools;
+<span style="color: #0000FF; ">using</span> Autodesk.DataManagement.Client.Framework.Vault.Currency.Entities;
+
+<span style="color: #0000FF; ">class</span> VaultSDKSample
+{
+    <span style="color: #0000FF; ">public</span> <span style="color: #0000FF; ">static</span> <span style="color: #0000FF; ">void</span> AddNumberingSchemeSample(WebServiceManager serviceManager)
+    {
+        <span style="color: #008000; ">// Get the entity class ID we're working with
+</span>        <span style="color: #0000FF; ">string</span> entityClassId = EntityClassIds.Items;
+
+        <span style="color: #008000; ">// Get the default Numbering Provider for our Numbering Scheme
+</span>        NumProv defaultProvider = serviceManager.NumberingService.GetNumberingProviders()[0];
+
+        <span style="color: #008000; ">// Add a numbering scheme that can be either &quot;Part-######&quot; or &quot;Assembly-######&quot;
+</span>        <span style="color: #0000FF; ">string</span> schemeName = <span style="color: #800000; ">&quot;TestScheme&quot;</span>;
+        <span style="color: #0000FF; ">bool</span> toUpperCase = <span style="color: #0000FF; ">false</span>;
+        <span style="color: #0000FF; ">bool</span> reuseNumbers = <span style="color: #0000FF; ">false</span>;
+
+        <span style="color: #008000; ">// create the predefined list field
+</span>        CodeWord partWord = <span style="color: #0000FF; ">new</span> CodeWord();
+        partWord.Code = <span style="color: #800000; ">&quot;Part&quot;</span>;
+        CodeWord assemblyWord = <span style="color: #0000FF; ">new</span> CodeWord();
+        assemblyWord.Code = <span style="color: #800000; ">&quot;Assembly&quot;</span>;
+        PredefListField listField = <span style="color: #0000FF; ">new</span> PredefListField();
+        listField.Name = <span style="color: #800000; ">&quot;Type&quot;</span>;
+        listField.CodeArray = <span style="color: #0000FF; ">new</span> CodeWord[] { partWord, assemblyWord };
+        listField.DfltVal = partWord.Code;
+
+        <span style="color: #008000; ">// create a delimiter field
+</span>        DelimField delimiterField = <span style="color: #0000FF; ">new</span> DelimField();
+        delimiterField.DelimVal = <span style="color: #800000; ">'-'</span>;
+
+        <span style="color: #008000; ">// create an autodenerated field
+</span>        AutogenField autogenField = <span style="color: #0000FF; ">new</span> AutogenField();
+        autogenField.Name = <span style="color: #800000; ">&quot;Number&quot;</span>;
+        autogenField.Len = 4;
+        autogenField.From = 1;
+        autogenField.To = 9999;
+        autogenField.StepSize = 1;
+        autogenField.ZeroPadding = <span style="color: #0000FF; ">true</span>;
+
+        NumSchmField[] fieldArray = <span style="color: #0000FF; ">new</span> NumSchmField[] { listField, delimiterField, autogenField };
+
+        serviceManager.NumberingService.AddNumberingScheme(entityClassId, schemeName, defaultProvider.SysName, fieldArray, toUpperCase, reuseNumbers);
+    }
+}</pre></div>
+	</div>
+</div>
+<div class="i-filtered-content-VB.NET">
+    
+	<div class="i-tab-container">
+	    <ul>
+	        <li><a href="#i-tab-content-e1c2720e-44b1-45ab-abed-5634ed99e5a4">VB.NET</a></li>
+	    </ul>
+	    <div id="i-tab-content-e1c2720e-44b1-45ab-abed-5634ed99e5a4" class="i-filtered-content-"><pre><span style="color: #0000FF; ">Imports</span> Autodesk.Connectivity.WebServices
+<span style="color: #0000FF; ">Imports</span> Autodesk.Connectivity.WebServicesTools
+<span style="color: #0000FF; ">Imports</span> Autodesk.DataManagement.Client.Framework.Vault.Currency.Entities
+
+<span style="color: #0000FF; ">Public</span> <span style="color: #0000FF; ">Class</span> VaultSDKSample
+    <span style="color: #0000FF; ">Public</span> <span style="color: #0000FF; ">Shared</span> <span style="color: #0000FF; ">Sub</span> AddNumberingSchemeSample(serviceManager <span style="color: #0000FF; ">As</span> WebServiceManager)
+        <span style="color: #008000; ">' Get the entity class ID we're working with
+</span>        <span style="color: #0000FF; ">Dim</span> entityClassId <span style="color: #0000FF; ">As</span> <span style="color: #0000FF; ">String</span> = EntityClassIds.Items
+
+        <span style="color: #008000; ">' Get the default Numbering Provider for our Numbering Scheme
+</span>        <span style="color: #0000FF; ">Dim</span> defaultProvider <span style="color: #0000FF; ">As</span> NumProv
+        defaultProvider = serviceManager.NumberingService.GetNumberingProviders()(0)
+
+        <span style="color: #008000; ">' Add a Numbering Scheme that can be either &quot;Part-######&quot; or &quot;Assembly-######&quot;
+</span>        <span style="color: #0000FF; ">Dim</span> schemeName <span style="color: #0000FF; ">As</span> <span style="color: #0000FF; ">String</span> = <span style="color: #800000; ">&quot;TestScheme&quot;</span>
+        <span style="color: #0000FF; ">Dim</span> toUpperCase <span style="color: #0000FF; ">As</span> <span style="color: #0000FF; ">Boolean</span> = <span style="color: #0000FF; ">False</span>
+        <span style="color: #0000FF; ">Dim</span> reuseNumbers <span style="color: #0000FF; ">As</span> <span style="color: #0000FF; ">Boolean</span> = <span style="color: #0000FF; ">False</span>
+
+        <span style="color: #008000; ">' create the predefined list field
+</span>        <span style="color: #0000FF; ">Dim</span> partWord <span style="color: #0000FF; ">As</span> <span style="color: #0000FF; ">New</span> CodeWord()
+        partWord.Code = <span style="color: #800000; ">&quot;Part&quot;</span>
+        <span style="color: #0000FF; ">Dim</span> assemblyWord <span style="color: #0000FF; ">As</span> <span style="color: #0000FF; ">New</span> CodeWord()
+        assemblyWord.Code = <span style="color: #800000; ">&quot;Assembly&quot;</span>
+        <span style="color: #0000FF; ">Dim</span> listField <span style="color: #0000FF; ">As</span> <span style="color: #0000FF; ">New</span> PredefListField()
+        listField.Name = <span style="color: #800000; ">&quot;Type&quot;</span>
+        listField.CodeArray = <span style="color: #0000FF; ">New</span> CodeWord() {partWord, assemblyWord}
+        listField.DfltVal = partWord.Code
+
+        <span style="color: #008000; ">' create a delimiter field
+</span>        <span style="color: #0000FF; ">Dim</span> delimiterField <span style="color: #0000FF; ">As</span> <span style="color: #0000FF; ">New</span> DelimField()
+        delimiterField.DelimVal = <span style="color: #800000; ">&quot;-&quot;</span>c
+
+        <span style="color: #008000; ">' create an autodenerated field
+</span>        <span style="color: #0000FF; ">Dim</span> autogenField <span style="color: #0000FF; ">As</span> <span style="color: #0000FF; ">New</span> AutogenField()
+        autogenField.Name = <span style="color: #800000; ">&quot;Number&quot;</span>
+        autogenField.Len = 4
+        autogenField.From = 1
+        autogenField.[<span style="color: #0000FF; ">To</span>] = 9999
+        autogenField.StepSize = 1
+        autogenField.ZeroPadding = <span style="color: #0000FF; ">True</span>
+
+        <span style="color: #0000FF; ">Dim</span> fieldArray <span style="color: #0000FF; ">As</span> NumSchmField()
+        fieldArray = <span style="color: #0000FF; ">New</span> NumSchmField() {listField, delimiterField, autogenField}
+
+        serviceManager.NumberingService.AddNumberingScheme(entityClassId, schemeName, defaultProvider.SysName, fieldArray, toUpperCase, reuseNumbers)
+    <span style="color: #0000FF; ">End Sub</span>
+<span style="color: #0000FF; ">End Class</span></pre></div>
+	</div>
+</div>
+</div><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="MENU_LINK" namespace="example" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=example,caption=$$Example$$%%%%filtereditemlist%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##REQUIREMENTS" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=requirements,caption=$$Requirements$$%%%%comment%%</div>" blankformat="%%variable:name=defaultmemberrequirements%%" --><div class="i-section-heading" id="i-requirements-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">Requirements</span></div><div id="i-requirements-section-content" class="i-section-content"><p><b>Target Platforms:</b> Windows 7, Windows Vista SP1 or later, Windows XP SP3, Windows Server 2008 (Server Core not supported), Windows Server 2008 R2 (Server Core supported with SP1 or later), Windows Server 2003 SP2</p></div><!--DXMETADATA end -->
+            <a name="seealsobookmark"></a>
+            <!--DXMETADATA start type="FilteredItemList" scrap="CATEGORIZED_LINKS" namespace="linkcategory" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=seealso,caption=""$$See_Also$$%%designlist:tagidentifier=##SEEALSO,itemtype=See Also%%""%%%%filtereditemlist%%</div>"--><div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-sub-heading">Reference</h4><p><a href="topic4460.html">NumberingService Class</a>
+<br/><a href="topic4461.html">NumberingService Members</a>
+</p>
+</div><!--DXMETADATA end-->
+        
+    </div>
+    <div id="i-footer-content" class="i-footer-content">
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_FOOTER" --><!--DXMETADATA end -->
+<!--DXMETADATA start type="Variable" name="CopyrightNotice" format="<p>&nbsp;</p><p>&nbsp;</p><hr style=""height: 1px"" /><p>%%variable%%</p>" --><!--DXMETADATA end -->
+<!--DXMETADATA start type="Variable" name="FeedbackLink" format="" --><a href="mailto:support@company.com?subject=Documentation Feedback: topic4466.html">Send Feedback</a><!--DXMETADATA end-->
+    </div>
+    
+
+    <!--DXMETADATA start type="IsNew" format="<script type=""text/javascript"">setIsNew = true;</script>" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="IsTemplateFileFeatureEnabled" name="Responsive" format="<script type=""text/javascript"">setIsResponsiveEnabled = true;</script>" --><!--DXMETADATA end-->
+    <script type="text/javascript">
+        $(function() {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

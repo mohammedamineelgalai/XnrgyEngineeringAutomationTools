@@ -1,0 +1,170 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns:innovasys xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+    <!--DXMETADATA start type="MetaCharset" --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"><!--DXMETADATA end-->
+    <meta content="history" name="save" />
+    <meta name="GENERATOR" content="Innovasys HelpStudio (http://www.innovasys.com)" />
+    <!--DXMETADATA start type="ItemTitle" format="<title>%%ItemTitle%%</title>" --><title>.vcet.config Specification (v3)</title><!--DXMETADATA end-->
+    <link rel="stylesheet" type="text/css" href="stylesheets/helpstudio.css" />
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/community.css"">" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Literal" condition="helpversion:value=2" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/help2.css"">" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Stylesheets" --><link rel="stylesheet" type="text/css" href="stylesheets/hs-boxes.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-simpletab.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-heading-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-tabstrip.css"></link><!--DXMETADATA end-->
+    <script src="script/helpstudio.js" type="text/javascript"></script>
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<script src=""script/community.js""></script>" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Scripts" --><script src="script/hs-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-enlargeimage.js" type="text/javascript"></script>
+    <script src="script/swfobject.js" type="text/javascript"></script>
+    <script src="script/hs-common.js" type="text/javascript"></script>
+    <script src="script/hs-heading-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-tabstrip.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Variable" name="BannerColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {background-color: %%Variable%%}</style>" blankformat="" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Variable" name="BannerTextColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {color: %%Variable:Name=BannerTextColor%%}</style>" blankformat="" --><!--DXMETADATA end -->
+	<!--DXMETADATA start type="Variable" name="TopicXMLIsland" condition="helpversion:value=2" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="DesignTime" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CanonicalLink" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CustomHeadContent" --><!--DXMETADATA end-->
+</head>
+<body id="hsbody">
+	<!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_PROPERTIES" --><!--DXMETADATA end -->
+    <div style="display: none">
+        <input type="hidden" id="userDataCache" class="userDataStyle" name="userDataCache" />
+        <input type="hidden" id="hiddenScrollOffset" name="hiddenScrollOffset" />
+    </div>
+    <img id="collapseImage" style="display:none; height:0; width:0;" src="images/collapse.gif">
+    <img id="expandImage" style="display:none; height:0; width:0;" src="images/expand.gif"/>
+    <img id="copyImage" style="display:none; height:0; width:0;" src="images/copycode.gif"/>
+    <img id="copyHoverImage" style="display:none; height:0; width:0;" src="images/copycodeHighlight.gif">
+    <img id="dropDownImage" style="display:none; height:0; width:0;" src="images/drpdown.gif"/>
+    <img id="dropDownHoverImage" style="display:none; height:0; width:0;" src="images/drpdown_orange.gif"/>
+    <div id="pagetop">
+        <!--DXMETADATA start type="DesignBanner" --><!--DXMETADATA end -->
+        <table width="100%" id="pagetoptable2" cellspacing="0" cellpadding="0">
+        	<tr>
+        		<td><!--DXMETADATA start type="Literal" condition="communityenabled" value="%%scrap:name=_COMMUNITY_RATING%%%%scrap:name=_COMMUNITY_DROPDOWN%%" --><!--DXMETADATA end --></td>
+        	</tr>
+        </table>
+        <table width="100%" id="pagetoptable1">
+            <tr id="pagetoptable1row1">
+                <td align="left">
+                    <span id="projecttitle">
+                        <!--DXMETADATA start type="ProjectTitle" -->Vault SDK<!--DXMETADATA end-->
+                    </span>
+                </td>
+                <td align="right" rowspan="2">
+                    <!--DXMETADATA start type="LogoImage" --><!--DXMETADATA end-->
+                </td>
+            </tr>
+            <tr id="pagetoptable1row2">
+                <td align="left">
+                    <span id="pagetitle">
+                        <!--DXMETADATA start type="ItemTitle" -->.vcet.config Specification (v3)<!--DXMETADATA end-->
+                    </span>
+                </td>
+            </tr>
+            <tr id="pagetoptable1row3">
+            	<td colspan="2">
+            		<!--DXMETADATA start type="Literal" condition="childitems:itemtype=linkcategory" value="<a href=""#seealsobookmark"">%%Phrase:Name=SeeAlso,BlankFormat=See Also%%</a>" --><!--DXMETADATA end -->
+            		<span id="feedbacklink"><!--DXMETADATA start type="Variable" name="FeedbackLink" format="" --><a href="http://forums.autodesk.com/t5/vault-customization/bd-p/301 " rel="noopener noreferrer" target="_blank">Send Feedback</a><!--DXMETADATA end --></span>
+            	</td>
+            </tr>
+        </table>
+        <!--DXMETADATA start type="Breadcrumbs" scrap="_BREADCRUMBS" --><table width="100%" id="pagetopbreadcrumbs" cellspacing="0" cellpadding="0"><tr><td>
+<a href="topic46.html">Knowledge Base</a>
+ > .vcet.config Specification (v3)</td></tr></table><!--DXMETADATA end -->
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_MENU" --><!--DXMETADATA end -->
+    </div>
+    <div class="hspopupbubble" id="hsglossaryitembox">
+        <p>Glossary Item Box</p>
+    </div>
+    <div id="pagebody">
+        <div id="mainbody">
+<!--DXMETADATA start type="TopicSection" name="BodyText"--><p>This page contains the version 3 specification&nbsp;.vcet.config files, which contain XML content.&nbsp; This document will focus only on the syntax.&nbsp; See the <a href="topic11.html">Getting Started</a> pages for information on specific extension types.&nbsp;&nbsp;&nbsp;</p>
+
+<p>Version 3&nbsp;was introduced in Vault 2014.&nbsp; Older versions are incompatible.</p>
+
+<p>&nbsp;</p>
+
+<p style="FONT-SIZE: large">XML Tags:</p>
+
+<p>&nbsp;</p>
+
+<p><strong>&lt;configuration&gt;<br /></strong> This is the top-level tag.&nbsp; There should be one and only one of these tags.<br />
+Required element:&nbsp; 1 &lt;connectivity.ExtensionSettings3&gt;</p>
+
+<p>&nbsp;</p>
+
+<p><strong>&lt;connectivity.ExtensionSettings3&gt;<br /></strong>This tag is a collection of extensions.&nbsp;&nbsp;It is directly below &lt;configuration&gt;.&nbsp; There should be one and only one of these tags.<br />
+Required&nbsp;elements: 1 to many &lt;extension&gt;</p>
+
+<p>&nbsp;</p>
+
+<p><strong>&lt;extension&gt;<br /></strong>This tag defines a component to be loaded at runtime.<br />
+Required attributes:<br />
+&nbsp; - <strong>interface</strong> - The "type name" of the interface implemented by the extension.<br />
+&nbsp; - <strong>type</strong> - The "type name" of the class that implements the extension interface.&nbsp; The assembly must be in the same folder as the .vcet.config file.<br />
+Optional attribute:<br />
+&nbsp;- <strong>runtime</strong> - The "runtime requirement" of the extension.&nbsp; The default value is "Any"<br />
+Optional&nbsp;elements: 0 to many &lt;setting&gt;, 0 to many &lt;resolveFolder&gt;</p>
+
+<p>&nbsp;</p>
+
+<p><strong>&lt;setting&gt;<br /></strong>This tag provides meta-data for the extension in the form of a key/value pair.<br />
+Required attributes:<br />
+&nbsp; - <strong>key</strong> - The name of the meta data.&nbsp; The value must be unique within an &lt;extension&gt;<br />
+&nbsp; - <strong>value</strong> - The value of the meta data.</p>
+
+<p>&nbsp;</p>
+
+<p><strong>&lt;resolveFolder&gt;<br /></strong>This tag provides locations to look for referenced assemblies.&nbsp; This is useful if an extension references other assemblies that are not in the same folder as the extension.<br />
+Required attribute:&nbsp;<br />
+&nbsp; - <strong>lookup</strong> - This is a "lookup type", which determines how folders are located.<br />
+Optional attribute:<br />
+&nbsp; - <strong>appendToPath</strong> - This is a Boolean value that determines of the resolve folder should be appended to the PATH environment variable.&nbsp; This is useful when loading Win32 and COM&nbsp;components.&nbsp; The default value is "false".<br />
+Lookup-specific attributes:&nbsp; These attributes may be required depending on the lookup type.<br />
+&nbsp; - <strong>path</strong> - The&nbsp;path relative to the extension assembly.&nbsp; Used only if the lookup&nbsp;value is "RelativeToExtension".&nbsp;<br />
+&nbsp; - <strong>regkey</strong> - The registry key name.&nbsp; Used only&nbsp;if the lookup value is "Registry".<br />
+&nbsp; - <strong>regname</strong> - The name of the registry key.&nbsp; Used only&nbsp;if the lookup value is "Registry".</p>
+
+<p><br />
+&nbsp;</p>
+
+<p style="FONT-SIZE: large">Value types:</p>
+
+<p><strong><br />
+Lookup Type<br /></strong>This value specifies the algorithm to use when locating paths on disk.&nbsp;<br />
+There are 3 possible values:<br />
+&nbsp; - <strong>ExplorerClient</strong> - The resolve path is the directory where the Vault client EXE lives.&nbsp; If multiple clients are installed, it will the the highest tier product.&nbsp; For example, the Vault Professional path will be used over the Vault Basic path.&nbsp; If multiple client versions are installed, only the one matching the Vault framework are used.&nbsp;&nbsp;For example the Vault 2014&nbsp;framework will only resolve paths for Vault 2014 clients.<br />
+&nbsp; - <strong>Registry</strong> - The&nbsp;resolve path is located by looking up a registry key.&nbsp;&nbsp;The registry value can be a folder path or a file path.&nbsp; In the case of a file path, the parent folder becomes the resolve path.&nbsp; The 'regkey' and 'regname' attributes are required for this lookup type.&nbsp;&nbsp;<br />
+&nbsp;- <strong>RelativeToExtension</strong> - The resolve path is&nbsp;defined relative to the assembly path.</p>
+
+<p>&nbsp;</p>
+
+<p><strong>Runtime Requirement<br /></strong>This value specifies the runtime environment required for the extension to run.&nbsp;<br />
+There are 3 possible values:<br />
+&nbsp; - <strong>x86</strong> - The extension can only be loaded if the running app is 32 bit.<br />
+&nbsp; - <strong>x64</strong> - The extension can only be loaded if the running app is 64 bit.<br />
+&nbsp; - <strong>Any</strong> - The extension can be loaded regardless of whether the running app is 32 or 64 bit.&nbsp; This is the default option.</p>
+
+<p>&nbsp;</p>
+
+<p><strong>Type Name<br /></strong>This is the identifier for a .NET type.&nbsp; It is based off of the .NET syntax.&nbsp; There are two possible formats.<br />
+Simple format:&nbsp; <em>FullClassName</em>, <em>AssemblyName<br /></em>Complex format:&nbsp; <em>FullClassName</em>, <em>AssemblyName</em>, Version=<em>VersionNumber</em>, Culture=<em>CultureName</em>, PublicKeyToken=<em>PublicKeyTokenValue</em>&nbsp;&nbsp;<br />
+If the complex format is used, then the version, culture and public key token must match the assembly in order for the extension to load.</p>
+
+<p>&nbsp;</p><!--DXMETADATA end-->
+            <a name="seealsobookmark"></a>
+            <!--DXMETADATA start type="FilteredItemList" scrap="CATEGORISED_LINKS" namespace="linkcategory" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=seealso,caption=""%%phrase:name=SeeAlso%%%%designlist:tagidentifier=seealso,itemtype=See Also%%""%%%%filtereditemlist%%</div>"--><!--DXMETADATA end-->
+        </div>
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_FOOTER" --><!--DXMETADATA end -->
+        <div id="pagefooter">
+            <!--DXMETADATA start type="Variable" name="CopyrightNotice" format="<p>&nbsp;</p><p>&nbsp;</p><hr style=""height: 1px"" /><p>%%variable%%</p>" --><!--DXMETADATA end -->
+        </div>
+        <!--DXMETADATA start type="FeedbackSection" --><!--DXMETADATA end -->
+    </div>
+    <!--DXMETADATA start type="Variable" name="NonScrollingPageFooter" format="<div id=nonscrollingpagefooter>%%variable%%</div>" --><div id=nonscrollingpagefooter>&copy;2025. All Rights Reserved.</div><!--DXMETADATA end -->
+</body>
+</html>

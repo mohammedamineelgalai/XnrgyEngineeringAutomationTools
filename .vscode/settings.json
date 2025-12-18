@@ -1,0 +1,11 @@
+{
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.enableEditorConfigSupport": true,
+  "csharp.semanticHighlighting.enabled": true,
+  "files.exclude": {
+    "**/obj/**": false,
+    "**/bin/**": false
+  },
+  "omnisharp.projectLoadTimeout": 120,
+  "omnisharp.useModernNet": true
+}

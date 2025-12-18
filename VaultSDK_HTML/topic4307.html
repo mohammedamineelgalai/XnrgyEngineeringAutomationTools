@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <!--DXMETADATA start type="MetaCharset" --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"><!--DXMETADATA end-->
+    <meta http-equiv="X-UA-Compatible" value="IE=9" />
+
+    <!--DXMETADATA start type="IsTemplateFileFeatureEnabled" name="Responsive" format="<meta name=""viewport"" content=""width=device-width, initial-scale=1.0"" />" --><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="Literal" condition="helpversion:value=3" value="<meta name=""Microsoft.Help.SelfBranded"" content=""true"" />" --><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="ItemTitle" format="<title>%%ItemTitle%%</title>" --><title>UpdateLifeCycleStateTransition Method (LifeCycleService)</title><!--DXMETADATA end-->
+    <!--DXMETADATA start type="ItemTitle" format="<meta name=""Title"" content=""%%ItemTitleNoQuotes%%""/>" --><meta name="Title" content=""/><!--DXMETADATA end-->
+    
+    
+    <!--DXMETADATA start type="PackageLink" packagename="jquery" filetype="script" firstlinkattributes="id=""mshs_support_script"""--><script src="template/packages/jquery/script/chm.mshc/jquery-1.7.2.min.js" type="text/javascript" id="mshs_support_script"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="jquery-ui" filetype="script"--><script src="template/packages/jquery-ui/script/chm.mshc/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="jquery-ui" filetype="css"--><link rel="stylesheet" type="text/css" href="template/packages/jquery-ui/css/chm.mshc/jquery-ui-1.8.18.custom.css"></link><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="TemplateSettingsJson" format="<script type=""text/javascript"">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:%%TemplateSettingsJson%%});</script>" --><script type="text/javascript">var Innovasys=(Innovasys||{});$.extend(true,Innovasys,{settings:{versions:{popupContainer:'#i-after-header-content'}}},{settings:{"currentLocale":"-","isFrameless":false,"versions":{"locale":{"currentId":"-"}}}});</script><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="PackageLink" packagename="plugins-dotnet" filetype="css"--><link rel="stylesheet" type="text/css" href="template/packages/plugins-dotnet/css/chm.mshc/jquery-plugins.css"></link><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="core-dotnet" filetype="css" firstlinkattributes=" data-mshv2-stylesheet=""/template/packages/core-dotnet/dx.net.mshv2.css"" data-mshv1-stylesheet=""/template/packages/core-dotnet/dx.net.mshv1.css"" data-responsive-mobile=""template/packages/core-dotnet/dx.net.mobile.css"" data-responsive-tablet=""template/packages/core-dotnet/dx.net.tablet.css"""--><link rel="stylesheet" type="text/css" href="template/packages/core-dotnet/css/dx.net.css"  data-mshv2-stylesheet="/template/packages/core-dotnet/dx.net.mshv2.css" data-mshv1-stylesheet="/template/packages/core-dotnet/dx.net.mshv1.css" data-responsive-mobile="template/packages/core-dotnet/dx.net.mobile.css" data-responsive-tablet="template/packages/core-dotnet/dx.net.tablet.css"></link><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="plugins-dotnet" filetype="script"--><script src="template/packages/plugins-dotnet/script/chm.mshc/jquery-plugins.min.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="PackageLink" packagename="core-dotnet" filetype="script"--><script src="template/packages/core-dotnet/script/dx.net.min.js" type="text/javascript"></script><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="TopicId" format="<meta name=""Microsoft.Help.Id"" content=""%%TopicId%%""/>" --><meta name="Microsoft.Help.Id" content="Autodesk.Connectivity.WebServices~Autodesk.Connectivity.WebServices.LifeCycleService~UpdateLifeCycleStateTransition"/><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Synopsis" StripHtmlTags="True" MaxLength="250" format="<meta name=""Description"" content=""%%Synopsis%%"" />"--><meta name="Description" content="Updates a Life Cycle Transition." /><!--DXMETADATA end-->
+    <!--DXMETADATA start type="TocParentId" format="<meta name=""Microsoft.Help.TocParent"" content=""%%TocParentId%%""/>" --><meta name="Microsoft.Help.TocParent" content="Autodesk.Connectivity.WebServices~Autodesk.Connectivity.WebServices.LifeCycleService_methods"/><!--DXMETADATA end-->
+    <meta name="Microsoft.Help.ContentType" content="Reference" /><!--DXMETADATA start type="DotNetSignature" format="<meta name=""Microsoft.Help.F1"" content=""%%DotNetSignature%%""/>" --><meta name="Microsoft.Help.F1" content="Autodesk.Connectivity.WebServices.LifeCycleService.UpdateLifeCycleStateTransition"/><!--DXMETADATA end-->
+    <!--DXMETADATA start type="MshvKeywords" condition="helpversion:value=3" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="MshvMetaTags" condition="helpversion:value=3" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Help3CatalogLocale" condition="helpversion:value=3" format="<meta name=""Microsoft.Help.Locale"" content=""%%Help3CatalogLocale%%"" />"--><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Help3CatalogLocale" condition="helpversion:value=3" format="<meta name=""Microsoft.Help.TopicLocale"" content=""%%Help3CatalogLocale%%"" />"--><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="Stylesheets" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Scripts" --><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="DesignTime"--><!--DXMETADATA end-->
+    
+    <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_PROPERTIES" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="CanonicalLink" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CustomHeadContent" --><!--DXMETADATA end-->
+</head>
+
+<body>
+    <div id="i-before-header-content" class="i-before-header-content">
+        
+    </div>
+    <div id="i-header-content" class="i-header-content">
+        <!--DXMETADATA start type="LogoImage" --><!--DXMETADATA end-->
+            <div class="i-project-title"><!--DXMETADATA start type="ProjectTitle" -->Vault SDK<!--DXMETADATA end--></div>
+        <div class="i-page-title"><div class="i-page-title-text"><!--DXMETADATA start type="ItemTitle" -->UpdateLifeCycleStateTransition Method (LifeCycleService)<!--DXMETADATA end--></div></div>
+    </div>
+    <div id="i-after-header-content" class="i-after-header-content">
+        <!--DXMETADATA start type="Literal" condition="childitems:itemtype=example,filter=""type=inline""" value="<a class=""i-page-link"" href=""#ExampleBookmark"">$$Example$$</a>&nbsp;" --><!--DXMETADATA end --><!-- Spacing --> <span class="i-toggle-all-sections i-function-link">
+                <label class="i-collapse-all"><!--DXMETADATA start type="Phrase" name="COLLAPSE_ALL" -->Collapse All<!--DXMETADATA end--></label>
+                <label class="i-expand-all" style="display: none;"><!--DXMETADATA start type="Phrase" name="EXPAND_ALL" -->Expand All<!--DXMETADATA end--></label>
+            </span><!--DXMETADATA start type="Literal" condition="communityenabled" value="%%scrap:name=_COMMUNITY_DROPDOWN%%" --><!--DXMETADATA end --><!-- Spacing --> <span class="i-language-filter i-popup-link" data-popup-contentsource="#i-language-options" data-popup-title='<!--DXMETADATA start type="Phrase" name="Language_Filter" -->Language Filter<!--DXMETADATA end -->'>
+                <label class="i-language-filter-all">
+                    <!--DXMETADATA start type="Phrase" name="Language_Filter_All" -->Language Filter: All<!--DXMETADATA end -->
+                </label>
+                <label class="i-language-filter-multiple" style="display: none;">
+                    <!--DXMETADATA start type="Phrase" name="Language_Filter_Multiple" -->Language Filter: Multiple<!--DXMETADATA end -->
+                </label>
+                <label class="i-language-filter-vball" style="display: none;">
+                    <!--DXMETADATA start type="Phrase" name="Language_Filter" -->Language Filter<!--DXMETADATA end -->: <!--DXMETADATA start type="Phrase" name="Language_VB" -->Visual Basic<!--DXMETADATA end -->
+                </label>				
+                <!--DXMETADATA start type="FilteredItemList" scrap="LANGUAGE_LABEL_LIST" namespace="language" filter="type=all" source="Item" format="" -->
+<label class="i-VB-label" style="display: none;">Language Filter: Visual Basic (Declaration)</label>
+<label class="i-CS-label" style="display: none;">Language Filter: C#</label>
+<!--DXMETADATA end -->
+            </span>
+            <div class="i-popup-content" id="i-language-options">
+                <!--DXMETADATA start type="FilteredItemList" scrap="LANGUAGE_CHECKBOX_LIST" namespace="language" filter="type=all" source="Item" format="" -->
+<input data-languagename="VB" id="i-VB-language-checkbox" type="checkbox" class="i-toggle-language-checkbox" checked="true" data-toggleclass="i-filtered-content-VB"/>
+<label class="i-language-filter" for="i-VB-language-checkbox">
+Visual Basic (Declaration)
+</label>
+<br /><input data-languagename="CS" id="i-CS-language-checkbox" type="checkbox" class="i-toggle-language-checkbox" checked="true" data-toggleclass="i-filtered-content-CS"/>
+<label class="i-language-filter" for="i-CS-language-checkbox">
+C#
+</label>
+<!--DXMETADATA end -->
+            </div>
+        <!--DXMETADATA start type="IsWebOutputRootPageLinkEnabled" format="<a href='#' class='i-page-link i-view-in-frame-link' title='$$VIEW_WITH_NAVIGATION_TOOLS_TIP$$' style='display: none' data-root-page='%%WebOutputRootPage%%%%OutputFileExtension%%' target='_top'>$$VIEW_WITH_NAVIGATION_TOOLS_TEXT$$</a>" --><!--DXMETADATA end-->
+    </div>
+    <!--DXMETADATA start type="Breadcrumbs" scrap="_BREADCRUMBS" --><div class="i-breadcrumbs-container"><table><tr><td>
+<a href="topic580.html">Autodesk.Connectivity.WebServices Namespace</a>
+ > <a href="topic4276.html">LifeCycleService Class</a>
+ : UpdateLifeCycleStateTransition Method</td></tr></table></div><!--DXMETADATA end -->
+    
+    <!--DXMETADATA start type="FilteredItemList" scrap="GENERICARGUMENT_BUBBLES" namespace="generic argument" source="Item" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="FilteredItemList" scrap="PARAMETERS_BUBBLES" namespace="parameter" source="Item" -->
+<div id="transitionIdPopupContent" class="i-popup-content">
+<p>The ID of the Life Cycle Transition.</p>
+</div>
+<div id="bumpRevisionPopupContent" class="i-popup-content">
+<p>Tells how the revision should be bumped when&nbsp;an entity moves through&nbsp;this transition.</p>
+</div>
+<div id="syncPropOptionPopupContent" class="i-popup-content">
+<p>This option tells if the 'state' property needs to be synchronized with the state change.</p>
+</div>
+<div id="enforceChildStatePopupContent" class="i-popup-content">
+sets an action&nbsp;on this transition to verify an item's direct children are in a consumable state
+</div>
+<div id="enforceContentStatePopupContent" class="i-popup-content">
+sets an action on this transition to verify that links to items are in a consumable state
+</div>
+<div id="enforceFileLinkUptodatePopupContent" class="i-popup-content">
+sets an action on this transition to verify that an item's file links are up-to-date
+</div>
+<div id="enforceFileLinkConsumablePopupContent" class="i-popup-content">
+sets an action on this transition to verify that an item's file links are in a consumable state
+</div>
+<div id="enforceChildNotObsoleteStatePopupContent" class="i-popup-content">
+specifies whether or not to verify there are no children in the obsolete state for this transition
+</div>
+<div id="transBasedSecPopupContent" class="i-popup-content">
+If true, then transaction based security is enabled.
+</div>
+<div id="allowedUserIdsPopupContent" class="i-popup-content">
+<p>The set of users or groups allowed to apply the transition.</p>
+</div>
+<div id="deniedUserIdsPopupContent" class="i-popup-content">
+<p>The set of users or groups denied the ability to run the transition.<br /></p>
+</div>
+<div id="conditionsPopupContent" class="i-popup-content">
+<p>The&nbsp;set of property conditions for this transition.&nbsp; A transition cannot occur if the conditions have not been met.</p>
+</div>
+<div id="peerReviewRuleSetsPopupContent" class="i-popup-content">
+
+</div>
+<div id="updateItemsPopupContent" class="i-popup-content">
+For future use. Pass false for now.
+</div>
+<div id="executePurgePopupContent" class="i-popup-content">
+
+</div>
+<!--DXMETADATA end -->
+    <div id="i-body-content" class="i-body-content">
+        <!--DXMETADATA start type="Description" source="Item" format="<div class=""i-description-content"">%%description%%</div>" --><div class="i-description-content"><p>Updates a Life Cycle Transition.</p></div><!--DXMETADATA end -->
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##OVERLOADS" format="%%comment%%" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="OVERLOAD_LIST" namespace="method" source="Item" filter="" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=overloadlist,caption=$$OverloadList$$%%%%filtereditemlist%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="SyntaxSection" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=syntax,caption=$$Syntax$$%%%%SyntaxSection%%" --><div class="i-section-heading" id="i-syntax-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">Syntax</span></div><div id="i-syntax-section-content" class="i-section-content">
+            <div class="i-tab-container i-tab-container">
+            <ul>
+            
+            <li class="i-filtered-content-VBAll"><a href="#i-syntax-VBAll">Visual Basic</a></li>
+        
+
+            <li class="i-filtered-content-CS"><a href="#i-syntax-CS">C#</a></li>
+        
+
+            </ul>
+            
+            <div id="i-syntax-VB" class="i-filtered-content-VB">
+            <pre>'Declaration
+&nbsp;
+Public Function UpdateLifeCycleStateTransition( _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="transitionIdPopupLink" data-popup-contentsource="#transitionIdPopupContent" data-popup-showevent="click mouseenter">transitionId</a></i> As System.Long, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="bumpRevisionPopupLink" data-popup-contentsource="#bumpRevisionPopupContent" data-popup-showevent="click mouseenter">bumpRevision</a></i> As <a href="topic623.html">BumpRevisionEnum</a>, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="syncPropOptionPopupLink" data-popup-contentsource="#syncPropOptionPopupContent" data-popup-showevent="click mouseenter">syncPropOption</a></i> As <a href="topic666.html">JobSyncPropEnum</a>, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="enforceChildStatePopupLink" data-popup-contentsource="#enforceChildStatePopupContent" data-popup-showevent="click mouseenter">enforceChildState</a></i> As <a href="topic638.html">EnforceChildStateEnum</a>, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="enforceContentStatePopupLink" data-popup-contentsource="#enforceContentStatePopupContent" data-popup-showevent="click mouseenter">enforceContentState</a></i> As <a href="topic639.html">EnforceContentStateEnum</a>, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="enforceFileLinkUptodatePopupLink" data-popup-contentsource="#enforceFileLinkUptodatePopupContent" data-popup-showevent="click mouseenter">enforceFileLinkUptodate</a></i> As <a href="topic649.html">FileLinkTypeEnum</a>, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="enforceFileLinkConsumablePopupLink" data-popup-contentsource="#enforceFileLinkConsumablePopupContent" data-popup-showevent="click mouseenter">enforceFileLinkConsumable</a></i> As <a href="topic649.html">FileLinkTypeEnum</a>, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="enforceChildNotObsoleteStatePopupLink" data-popup-contentsource="#enforceChildNotObsoleteStatePopupContent" data-popup-showevent="click mouseenter">enforceChildNotObsoleteState</a></i> As System.Boolean, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="transBasedSecPopupLink" data-popup-contentsource="#transBasedSecPopupContent" data-popup-showevent="click mouseenter">transBasedSec</a></i> As System.Boolean, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="allowedUserIdsPopupLink" data-popup-contentsource="#allowedUserIdsPopupContent" data-popup-showevent="click mouseenter">allowedUserIds</a></i>() As System.Long, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="deniedUserIdsPopupLink" data-popup-contentsource="#deniedUserIdsPopupContent" data-popup-showevent="click mouseenter">deniedUserIds</a></i>() As System.Long, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="conditionsPopupLink" data-popup-contentsource="#conditionsPopupContent" data-popup-showevent="click mouseenter">conditions</a></i>() As <a href="topic4854.html">PropDefCond</a>, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="peerReviewRuleSetsPopupLink" data-popup-contentsource="#peerReviewRuleSetsPopupContent" data-popup-showevent="click mouseenter">peerReviewRuleSets</a></i>() As <a href="topic5278.html">RuleSet</a>, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="updateItemsPopupLink" data-popup-contentsource="#updateItemsPopupContent" data-popup-showevent="click mouseenter">updateItems</a></i> As System.Boolean, _
+&nbsp;&nbsp;&nbsp;ByVal <i><a class="i-popup-link" id="executePurgePopupLink" data-popup-contentsource="#executePurgePopupContent" data-popup-showevent="click mouseenter">executePurge</a></i> As System.Boolean _
+) As <a href="topic4218.html">LfCycTrans</a></pre>
+            </div>
+        
+
+            <div id="i-syntax-CS" class="i-filtered-content-CS">
+            <pre>public <a href="topic4218.html">LfCycTrans</a> UpdateLifeCycleStateTransition( 
+&nbsp;&nbsp;&nbsp;System.long <i><a class="i-popup-link" id="transitionIdPopupLink" data-popup-contentsource="#transitionIdPopupContent" data-popup-showevent="click mouseenter">transitionId</a></i>,
+&nbsp;&nbsp;&nbsp;<a href="topic623.html">BumpRevisionEnum</a> <i><a class="i-popup-link" id="bumpRevisionPopupLink" data-popup-contentsource="#bumpRevisionPopupContent" data-popup-showevent="click mouseenter">bumpRevision</a></i>,
+&nbsp;&nbsp;&nbsp;<a href="topic666.html">JobSyncPropEnum</a> <i><a class="i-popup-link" id="syncPropOptionPopupLink" data-popup-contentsource="#syncPropOptionPopupContent" data-popup-showevent="click mouseenter">syncPropOption</a></i>,
+&nbsp;&nbsp;&nbsp;<a href="topic638.html">EnforceChildStateEnum</a> <i><a class="i-popup-link" id="enforceChildStatePopupLink" data-popup-contentsource="#enforceChildStatePopupContent" data-popup-showevent="click mouseenter">enforceChildState</a></i>,
+&nbsp;&nbsp;&nbsp;<a href="topic639.html">EnforceContentStateEnum</a> <i><a class="i-popup-link" id="enforceContentStatePopupLink" data-popup-contentsource="#enforceContentStatePopupContent" data-popup-showevent="click mouseenter">enforceContentState</a></i>,
+&nbsp;&nbsp;&nbsp;<a href="topic649.html">FileLinkTypeEnum</a> <i><a class="i-popup-link" id="enforceFileLinkUptodatePopupLink" data-popup-contentsource="#enforceFileLinkUptodatePopupContent" data-popup-showevent="click mouseenter">enforceFileLinkUptodate</a></i>,
+&nbsp;&nbsp;&nbsp;<a href="topic649.html">FileLinkTypeEnum</a> <i><a class="i-popup-link" id="enforceFileLinkConsumablePopupLink" data-popup-contentsource="#enforceFileLinkConsumablePopupContent" data-popup-showevent="click mouseenter">enforceFileLinkConsumable</a></i>,
+&nbsp;&nbsp;&nbsp;System.bool <i><a class="i-popup-link" id="enforceChildNotObsoleteStatePopupLink" data-popup-contentsource="#enforceChildNotObsoleteStatePopupContent" data-popup-showevent="click mouseenter">enforceChildNotObsoleteState</a></i>,
+&nbsp;&nbsp;&nbsp;System.bool <i><a class="i-popup-link" id="transBasedSecPopupLink" data-popup-contentsource="#transBasedSecPopupContent" data-popup-showevent="click mouseenter">transBasedSec</a></i>,
+&nbsp;&nbsp;&nbsp;System.long[] <i><a class="i-popup-link" id="allowedUserIdsPopupLink" data-popup-contentsource="#allowedUserIdsPopupContent" data-popup-showevent="click mouseenter">allowedUserIds</a></i>,
+&nbsp;&nbsp;&nbsp;System.long[] <i><a class="i-popup-link" id="deniedUserIdsPopupLink" data-popup-contentsource="#deniedUserIdsPopupContent" data-popup-showevent="click mouseenter">deniedUserIds</a></i>,
+&nbsp;&nbsp;&nbsp;<a href="topic4854.html">PropDefCond</a>[] <i><a class="i-popup-link" id="conditionsPopupLink" data-popup-contentsource="#conditionsPopupContent" data-popup-showevent="click mouseenter">conditions</a></i>,
+&nbsp;&nbsp;&nbsp;<a href="topic5278.html">RuleSet</a>[] <i><a class="i-popup-link" id="peerReviewRuleSetsPopupLink" data-popup-contentsource="#peerReviewRuleSetsPopupContent" data-popup-showevent="click mouseenter">peerReviewRuleSets</a></i>,
+&nbsp;&nbsp;&nbsp;System.bool <i><a class="i-popup-link" id="updateItemsPopupLink" data-popup-contentsource="#updateItemsPopupContent" data-popup-showevent="click mouseenter">updateItems</a></i>,
+&nbsp;&nbsp;&nbsp;System.bool <i><a class="i-popup-link" id="executePurgePopupLink" data-popup-contentsource="#executePurgePopupContent" data-popup-showevent="click mouseenter">executePurge</a></i>
+)</pre>
+            </div>
+        
+
+            </div>
+        <!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="PARAMETERS_LIST" namespace="parameter" source="Item" filter="" NoCr="True" format="<h4 class=dxh4>$$ParameterList$$</h4>%%filtereditemlist%%" --><h4 class=dxh4>Parameters</h4><dl><dt><I>transitionId</I></dt>
+<dd><p>The ID of the Life Cycle Transition.</p></dd><dt><I>bumpRevision</I></dt>
+<dd><p>Tells how the revision should be bumped when&nbsp;an entity moves through&nbsp;this transition.</p></dd><dt><I>syncPropOption</I></dt>
+<dd><p>This option tells if the 'state' property needs to be synchronized with the state change.</p></dd><dt><I>enforceChildState</I></dt>
+<dd>sets an action&nbsp;on this transition to verify an item's direct children are in a consumable state</dd><dt><I>enforceContentState</I></dt>
+<dd>sets an action on this transition to verify that links to items are in a consumable state</dd><dt><I>enforceFileLinkUptodate</I></dt>
+<dd>sets an action on this transition to verify that an item's file links are up-to-date</dd><dt><I>enforceFileLinkConsumable</I></dt>
+<dd>sets an action on this transition to verify that an item's file links are in a consumable state</dd><dt><I>enforceChildNotObsoleteState</I></dt>
+<dd>specifies whether or not to verify there are no children in the obsolete state for this transition</dd><dt><I>transBasedSec</I></dt>
+<dd>If true, then transaction based security is enabled.</dd><dt><I>allowedUserIds</I></dt>
+<dd><p>The set of users or groups allowed to apply the transition.</p></dd><dt><I>deniedUserIds</I></dt>
+<dd><p>The set of users or groups denied the ability to run the transition.<br /></p></dd><dt><I>conditions</I></dt>
+<dd><p>The&nbsp;set of property conditions for this transition.&nbsp; A transition cannot occur if the conditions have not been met.</p></dd><dt><I>peerReviewRuleSets</I></dt>
+<dd></dd><dt><I>updateItems</I></dt>
+<dd>For future use. Pass false for now.</dd><dt><I>executePurge</I></dt>
+<dd></dd></dl><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="GENERICARGUMENT_LIST" namespace="generic argument" source="Item" filter="" format="<h4 class=dxh4>$$GenericArguments$$</h4>%%filtereditemlist%%" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##RETURNS" format="<h4 class=dxh4>$$Return_Type$$</h4><div class=""i-returns-content"">%%comment%%</div></div>" blankformat="</div>" --><h4 class=dxh4>Return Value</h4><div class="i-returns-content"><p>The new Life Cycle Transition object.</p></div></div><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="EXCEPTION_LIST" namespace="exception" source="Item" filter="" designtime="true" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=exceptions,caption=""$$Exceptions$$%%designlist:tagidentifier=##EXCEPTION,itemtype=Exception%%""%%%%filtereditemlist%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="Literal" condition="childitems:itemtype=contract,filter=""type=requires+ensures+ensuresonthrow+pure""" value="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=contracts,caption=$$Contracts$$%%%%filtereditemlist:scrap=CONTRACT_LIST,namespace=contract,source=item,filter=""type=requires+ensures+ensuresonthrow""%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="PERMISSION_LIST" namespace="permission" source="Item" filter="" designtime="true" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=permissions,caption=""$$Permissions$$%%designlist:tagidentifier=##PERMISSION,itemtype=Permission%%""%%%%filtereditemlist%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##REMARKS" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=remarks,caption=$$Remarks$$%%%%comment%%</div>" --><!--DXMETADATA end -->
+            <a name="exampleBookmark"></a>
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##EXAMPLEINTRO" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=example,caption=""$$Example$$%%designlist:tagidentifier=##EXAMPLECODE,itemtype=Example%%""%%%%comment%%" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="EXAMPLEGROUP_LIST" namespace="ExampleGroup" source="Item" filter="type=inline" condition="content:content=""%%GroupExamples%%"",operator=""="",value=""True""" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%taggedcomment:source=item,id=##EXAMPLEINTRO,blankformat=""%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=example,caption=$$Example$$%%"",format= %%%%filtereditemlist%%</div>" blankformat="%%taggedcomment:source=item,id=##EXAMPLEINTRO,format=</div>%%" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="INLINE_EXAMPLE" namespace="Example" source="Item" filter="type=inline" condition="content:content=""%%GroupExamples%%"",operator=""<>"",value=""True""" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%taggedcomment:source=item,id=##EXAMPLEINTRO,blankformat=""%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=example,caption=$$Example$$%%"",format= %%%%filtereditemlist%%</div>" blankformat="%%taggedcomment:source=item,id=##EXAMPLEINTRO,format=</div>%%" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="FilteredItemList" scrap="MENU_LINK" namespace="example" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=example,caption=$$Example$$%%%%filtereditemlist%%</div>" --><!--DXMETADATA end -->
+            <!--DXMETADATA start type="TaggedComment" source="Item" id="##REQUIREMENTS" format="%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=requirements,caption=$$Requirements$$%%%%comment%%</div>" blankformat="%%variable:name=defaultmemberrequirements%%" --><div class="i-section-heading" id="i-requirements-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">Requirements</span></div><div id="i-requirements-section-content" class="i-section-content"><p><b>Target Platforms:</b> Windows 7, Windows Vista SP1 or later, Windows XP SP3, Windows Server 2008 (Server Core not supported), Windows Server 2008 R2 (Server Core supported with SP1 or later), Windows Server 2003 SP2</p></div><!--DXMETADATA end -->
+            <a name="seealsobookmark"></a>
+            <!--DXMETADATA start type="FilteredItemList" scrap="CATEGORIZED_LINKS" namespace="linkcategory" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=seealso,caption=""$$See_Also$$%%designlist:tagidentifier=##SEEALSO,itemtype=See Also%%""%%%%filtereditemlist%%</div>"--><div class="i-section-heading" id="i-seealso-section-heading"><span class="i-section-heading-icon"><!-- --></span><span class="i-section-heading-text">See Also</span></div><div id="i-seealso-section-content" class="i-section-content"><h4 class="i-sub-heading">Reference</h4><p><a href="topic4276.html">LifeCycleService Class</a>
+<br/><a href="topic4277.html">LifeCycleService Members</a>
+</p>
+</div><!--DXMETADATA end-->
+        
+    </div>
+    <div id="i-footer-content" class="i-footer-content">
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_FOOTER" --><!--DXMETADATA end -->
+<!--DXMETADATA start type="Variable" name="CopyrightNotice" format="<p>&nbsp;</p><p>&nbsp;</p><hr style=""height: 1px"" /><p>%%variable%%</p>" --><!--DXMETADATA end -->
+<!--DXMETADATA start type="Variable" name="FeedbackLink" format="" --><a href="mailto:support@company.com?subject=Documentation Feedback: topic4307.html">Send Feedback</a><!--DXMETADATA end-->
+    </div>
+    
+
+    <!--DXMETADATA start type="IsNew" format="<script type=""text/javascript"">setIsNew = true;</script>" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="IsTemplateFileFeatureEnabled" name="Responsive" format="<script type=""text/javascript"">setIsResponsiveEnabled = true;</script>" --><!--DXMETADATA end-->
+    <script type="text/javascript">
+        $(function() {
+            var documentInstance = new Innovasys.Content.Document(document.body);
+            documentInstance.isNew = !(typeof setIsNew === "undefined");
+            documentInstance.isResponsiveEnabled = !(typeof setIsResponsiveEnabled === "undefined");
+            documentInstance.load();
+        });
+    </script>
+</body>
+</html>

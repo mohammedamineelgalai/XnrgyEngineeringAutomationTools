@@ -1,0 +1,159 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns:innovasys xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+    <!--DXMETADATA start type="MetaCharset" --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"><!--DXMETADATA end-->
+    <meta content="history" name="save" />
+    <meta name="GENERATOR" content="Innovasys HelpStudio (http://www.innovasys.com)" />
+    <!--DXMETADATA start type="ItemTitle" format="<title>%%ItemTitle%%</title>" --><title>Extension Methods are Your Friends</title><!--DXMETADATA end-->
+    <link rel="stylesheet" type="text/css" href="stylesheets/helpstudio.css" />
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/community.css"">" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Literal" condition="helpversion:value=2" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/help2.css"">" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Stylesheets" --><link rel="stylesheet" type="text/css" href="stylesheets/hs-boxes.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-simpletab.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-heading-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-tabstrip.css"></link><!--DXMETADATA end-->
+    <script src="script/helpstudio.js" type="text/javascript"></script>
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<script src=""script/community.js""></script>" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Scripts" --><script src="script/hs-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-enlargeimage.js" type="text/javascript"></script>
+    <script src="script/swfobject.js" type="text/javascript"></script>
+    <script src="script/hs-common.js" type="text/javascript"></script>
+    <script src="script/hs-heading-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-tabstrip.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Variable" name="BannerColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {background-color: %%Variable%%}</style>" blankformat="" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Variable" name="BannerTextColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {color: %%Variable:Name=BannerTextColor%%}</style>" blankformat="" --><!--DXMETADATA end -->
+	<!--DXMETADATA start type="Variable" name="TopicXMLIsland" condition="helpversion:value=2" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="DesignTime" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CanonicalLink" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CustomHeadContent" --><!--DXMETADATA end-->
+</head>
+<body id="hsbody">
+	<!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_PROPERTIES" --><!--DXMETADATA end -->
+    <div style="display: none">
+        <input type="hidden" id="userDataCache" class="userDataStyle" name="userDataCache" />
+        <input type="hidden" id="hiddenScrollOffset" name="hiddenScrollOffset" />
+    </div>
+    <img id="collapseImage" style="display:none; height:0; width:0;" src="images/collapse.gif">
+    <img id="expandImage" style="display:none; height:0; width:0;" src="images/expand.gif"/>
+    <img id="copyImage" style="display:none; height:0; width:0;" src="images/copycode.gif"/>
+    <img id="copyHoverImage" style="display:none; height:0; width:0;" src="images/copycodeHighlight.gif">
+    <img id="dropDownImage" style="display:none; height:0; width:0;" src="images/drpdown.gif"/>
+    <img id="dropDownHoverImage" style="display:none; height:0; width:0;" src="images/drpdown_orange.gif"/>
+    <div id="pagetop">
+        <!--DXMETADATA start type="DesignBanner" --><!--DXMETADATA end -->
+        <table width="100%" id="pagetoptable2" cellspacing="0" cellpadding="0">
+        	<tr>
+        		<td><!--DXMETADATA start type="Literal" condition="communityenabled" value="%%scrap:name=_COMMUNITY_RATING%%%%scrap:name=_COMMUNITY_DROPDOWN%%" --><!--DXMETADATA end --></td>
+        	</tr>
+        </table>
+        <table width="100%" id="pagetoptable1">
+            <tr id="pagetoptable1row1">
+                <td align="left">
+                    <span id="projecttitle">
+                        <!--DXMETADATA start type="ProjectTitle" -->Vault SDK<!--DXMETADATA end-->
+                    </span>
+                </td>
+                <td align="right" rowspan="2">
+                    <!--DXMETADATA start type="LogoImage" --><!--DXMETADATA end-->
+                </td>
+            </tr>
+            <tr id="pagetoptable1row2">
+                <td align="left">
+                    <span id="pagetitle">
+                        <!--DXMETADATA start type="ItemTitle" -->Extension Methods are Your Friends<!--DXMETADATA end-->
+                    </span>
+                </td>
+            </tr>
+            <tr id="pagetoptable1row3">
+            	<td colspan="2">
+            		<!--DXMETADATA start type="Literal" condition="childitems:itemtype=linkcategory" value="<a href=""#seealsobookmark"">%%Phrase:Name=SeeAlso,BlankFormat=See Also%%</a>" --><!--DXMETADATA end -->
+            		<span id="feedbacklink"><!--DXMETADATA start type="Variable" name="FeedbackLink" format="" --><a href="http://forums.autodesk.com/t5/vault-customization/bd-p/301 " rel="noopener noreferrer" target="_blank">Send Feedback</a><!--DXMETADATA end --></span>
+            	</td>
+            </tr>
+        </table>
+        <!--DXMETADATA start type="Breadcrumbs" scrap="_BREADCRUMBS" --><table width="100%" id="pagetopbreadcrumbs" cellspacing="0" cellpadding="0"><tr><td>
+<a href="topic46.html">Knowledge Base</a>
+ > Extension Methods are Your Friends</td></tr></table><!--DXMETADATA end -->
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_MENU" --><!--DXMETADATA end -->
+    </div>
+    <div class="hspopupbubble" id="hsglossaryitembox">
+        <p>Glossary Item Box</p>
+    </div>
+    <div id="pagebody">
+        <div id="mainbody">
+<!--DXMETADATA start type="TopicSection" name="BodyText"--><p>by Doug Redmond, It's All Just Ones and Zeros<br />
+8/18/2009</p>
+
+<p>When working with the Vault API, it's common to be constantly creating arrays with one object in them.&nbsp; Thanks to the <strong>extension method</strong> feature of .NET,&nbsp;you can create a method on <span style="COLOR: rgb(0,0,255)">object</span> to easily do this for you.&nbsp;</p>
+
+<p>LINQ already gives you FirstOrDefault,&nbsp;which lets&nbsp;you convert an array to a single value.&nbsp; Here is a function that does the inverse.</p>
+
+<p></p>
+
+<table cellspacing="0" cellpadding="2" width="470" border="1">
+    <tbody>
+        <tr>
+            <td valign="top" width="470">
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal"><span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas; COLOR: blue">internal</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas"><span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">static</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">class</span></span> <span style="COLOR: rgb(43,145,175)"><span style="COLOR: rgb(43,145,175)">ExtensionMethods<br /></span></span></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas">{<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">internal</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">static</span></span> T[] ToSingleArray&lt;T&gt;(<span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">this</span></span> T obj)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas"><span>&nbsp;&nbsp;&nbsp;</span> {<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">return</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">new</span></span> T[] { obj };<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas"><span>&nbsp;&nbsp;&nbsp;</span> }<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas">}</span></span></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p></p>
+
+<p>Here is a comparison between the default way and the extension method way:</p>
+
+<p></p>
+
+<table cellspacing="0" cellpadding="2" width="470" border="1">
+    <tbody>
+        <tr>
+            <td valign="top" width="470">
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal"><span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas">// instead of this</font></font></font></span></span></p>
+
+                <p><span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><font size="2" face="Consolas"><font size="2" face="Consolas">webServiceManager.DocumentService.FindLatestFilesByPaths(</font></font><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">new</font></font></font> <font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas"><font color="blue" size="2" face="Consolas">string</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">[] {</font></font> <font color="#A31515" size="2" face="Consolas"><font color="#A31515" size="2" face="Consolas"><font color="#A31515" size="2" face="Consolas">"$/drawing.dwg"</font></font></font> <font size="2" face="Consolas"><font size="2" face="Consolas">});</font></font></span></p>
+
+                <p><span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas"><font color="green" size="2" face="Consolas">// I can use the extension method</font></font></font></span></p>
+
+                <p><span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><font size="2" face="Consolas"><font size="2" face="Consolas">webServiceManager.DocumentService.FindLatestFilesByPaths(</font></font><font color="#A31515" size="2" face="Consolas"><font color="#A31515" size="2" face="Consolas"><font color="#A31515" size="2" face="Consolas">"$/drawing.dwg"</font></font></font><font size="2" face="Consolas"><font size="2" face="Consolas">.ToSingleArray());</font></font>&nbsp;</span></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p></p>
+
+<p>Looking at the code, it doesn't look like one is better than the other.&nbsp; But when you are <em>typing</em> the code out, the extension method makes things much easier.&nbsp; You don't have to fiddle with []{} characters and intellesense will type most of the function name for you.</p>
+
+<p>This is just a basic example of a powerful feature.&nbsp; There are tons of uses and misuses for extension methods, so make sure to read up on it in MSDN.&nbsp;</p>
+<hr style="COLOR: rgb(255,90,0)" noshade="noshade" />
+
+<p>Here is another method you might find useful when Vault passes back an array and you want to see if there is any data in it.</p>
+
+<p></p>
+
+<table cellspacing="0" cellpadding="2" width="470" border="1">
+    <tbody>
+        <tr>
+            <td valign="top" width="470">
+                <p class="MsoNormal" style="MARGIN-BOTTOM: 0pt; LINE-HEIGHT: normal"><span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas; COLOR: rgb(0,0,255)"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas; COLOR: blue">internal</span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas"><span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">static</span></span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">bool</span></span> IsNullOrEmpty&lt;T&gt;(<span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">this</span></span> <span style="COLOR: rgb(43,145,175)"><span style="COLOR: rgb(43,145,175)">IEnumerable</span></span>&lt;T&gt; collection)<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas">{<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas"><span>&nbsp;&nbsp;&nbsp;</span> <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">return</span></span> collection == <span style="COLOR: rgb(0,0,255)"><span style="COLOR: blue">null</span></span> || collection.Count() == 0;<br /></span></span> <span style="FONT-SIZE: x-small; FONT-FAMILY: Consolas"><span style="FONT-SIZE: 9.5pt; FONT-FAMILY: consolas">}</span></span></p>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<p></p><!--DXMETADATA end-->
+            <a name="seealsobookmark"></a>
+            <!--DXMETADATA start type="FilteredItemList" scrap="CATEGORISED_LINKS" namespace="linkcategory" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=seealso,caption=""%%phrase:name=SeeAlso%%%%designlist:tagidentifier=seealso,itemtype=See Also%%""%%%%filtereditemlist%%</div>"--><!--DXMETADATA end-->
+        </div>
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_FOOTER" --><!--DXMETADATA end -->
+        <div id="pagefooter">
+            <!--DXMETADATA start type="Variable" name="CopyrightNotice" format="<p>&nbsp;</p><p>&nbsp;</p><hr style=""height: 1px"" /><p>%%variable%%</p>" --><!--DXMETADATA end -->
+        </div>
+        <!--DXMETADATA start type="FeedbackSection" --><!--DXMETADATA end -->
+    </div>
+    <!--DXMETADATA start type="Variable" name="NonScrollingPageFooter" format="<div id=nonscrollingpagefooter>%%variable%%</div>" --><div id=nonscrollingpagefooter>&copy;2025. All Rights Reserved.</div><!--DXMETADATA end -->
+</body>
+</html>

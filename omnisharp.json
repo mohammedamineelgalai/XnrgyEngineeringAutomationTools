@@ -1,0 +1,23 @@
+{
+  "RoslynExtensionsOptions": {
+    "enableAnalyzersSupport": true,
+    "enableImportCompletion": true
+  },
+  "FormattingOptions": {
+    "enableEditorConfigSupport": true,
+    "useTabs": false,
+    "tabSize": 4,
+    "indentationSize": 4
+  },
+  "msbuild": {
+    "enabled": true,
+    "loadProjectsOnDemand": false,
+    "useBundledOnly": false
+  },
+  "fileOptions": {
+    "systemExcludeSearchPatterns": [
+      "**/bin/**/*",
+      "**/obj/**/*"
+    ]
+  }
+}

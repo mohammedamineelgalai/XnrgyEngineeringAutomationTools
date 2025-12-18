@@ -1,0 +1,134 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html xmlns:innovasys xmlns:MSHelp="http://msdn.microsoft.com/mshelp">
+<head>
+    <!--DXMETADATA start type="MetaCharset" --><META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8"><!--DXMETADATA end-->
+    <meta content="history" name="save" />
+    <meta name="GENERATOR" content="Innovasys HelpStudio (http://www.innovasys.com)" />
+    <!--DXMETADATA start type="ItemTitle" format="<title>%%ItemTitle%%</title>" --><title>Storing Custom Data: Let Jobserver Handle It</title><!--DXMETADATA end-->
+    <link rel="stylesheet" type="text/css" href="stylesheets/helpstudio.css" />
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/community.css"">" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Literal" condition="helpversion:value=2" value="<link rel=""stylesheet"" type=""text/css"" href=""stylesheets/help2.css"">" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Stylesheets" --><link rel="stylesheet" type="text/css" href="stylesheets/hs-boxes.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-simpletab.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-heading-expandcollapse.css"></link>
+    <link rel="stylesheet" type="text/css" href="stylesheets/hs-tabstrip.css"></link><!--DXMETADATA end-->
+    <script src="script/helpstudio.js" type="text/javascript"></script>
+    <!--DXMETADATA start type="Literal" condition="communityenabled" value="<script src=""script/community.js""></script>" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Scripts" --><script src="script/hs-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-enlargeimage.js" type="text/javascript"></script>
+    <script src="script/swfobject.js" type="text/javascript"></script>
+    <script src="script/hs-common.js" type="text/javascript"></script>
+    <script src="script/hs-heading-expandcollapse.js" type="text/javascript"></script>
+    <script src="script/hs-tabstrip.js" type="text/javascript"></script><!--DXMETADATA end-->
+    <!--DXMETADATA start type="Variable" name="BannerColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {background-color: %%Variable%%}</style>" blankformat="" --><!--DXMETADATA end -->
+    <!--DXMETADATA start type="Variable" name="BannerTextColor" format="<style type=text/css>div#pagetop, div#pagetop table td, span#projecttitle, span#pagetitle {color: %%Variable:Name=BannerTextColor%%}</style>" blankformat="" --><!--DXMETADATA end -->
+	<!--DXMETADATA start type="Variable" name="TopicXMLIsland" condition="helpversion:value=2" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="DesignTime" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CanonicalLink" --><!--DXMETADATA end-->
+    <!--DXMETADATA start type="CustomHeadContent" --><!--DXMETADATA end-->
+</head>
+<body id="hsbody">
+	<!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_PROPERTIES" --><!--DXMETADATA end -->
+    <div style="display: none">
+        <input type="hidden" id="userDataCache" class="userDataStyle" name="userDataCache" />
+        <input type="hidden" id="hiddenScrollOffset" name="hiddenScrollOffset" />
+    </div>
+    <img id="collapseImage" style="display:none; height:0; width:0;" src="images/collapse.gif">
+    <img id="expandImage" style="display:none; height:0; width:0;" src="images/expand.gif"/>
+    <img id="copyImage" style="display:none; height:0; width:0;" src="images/copycode.gif"/>
+    <img id="copyHoverImage" style="display:none; height:0; width:0;" src="images/copycodeHighlight.gif">
+    <img id="dropDownImage" style="display:none; height:0; width:0;" src="images/drpdown.gif"/>
+    <img id="dropDownHoverImage" style="display:none; height:0; width:0;" src="images/drpdown_orange.gif"/>
+    <div id="pagetop">
+        <!--DXMETADATA start type="DesignBanner" --><!--DXMETADATA end -->
+        <table width="100%" id="pagetoptable2" cellspacing="0" cellpadding="0">
+        	<tr>
+        		<td><!--DXMETADATA start type="Literal" condition="communityenabled" value="%%scrap:name=_COMMUNITY_RATING%%%%scrap:name=_COMMUNITY_DROPDOWN%%" --><!--DXMETADATA end --></td>
+        	</tr>
+        </table>
+        <table width="100%" id="pagetoptable1">
+            <tr id="pagetoptable1row1">
+                <td align="left">
+                    <span id="projecttitle">
+                        <!--DXMETADATA start type="ProjectTitle" -->Vault SDK<!--DXMETADATA end-->
+                    </span>
+                </td>
+                <td align="right" rowspan="2">
+                    <!--DXMETADATA start type="LogoImage" --><!--DXMETADATA end-->
+                </td>
+            </tr>
+            <tr id="pagetoptable1row2">
+                <td align="left">
+                    <span id="pagetitle">
+                        <!--DXMETADATA start type="ItemTitle" -->Storing Custom Data: Let Jobserver Handle It<!--DXMETADATA end-->
+                    </span>
+                </td>
+            </tr>
+            <tr id="pagetoptable1row3">
+            	<td colspan="2">
+            		<!--DXMETADATA start type="Literal" condition="childitems:itemtype=linkcategory" value="<a href=""#seealsobookmark"">%%Phrase:Name=SeeAlso,BlankFormat=See Also%%</a>" --><!--DXMETADATA end -->
+            		<span id="feedbacklink"><!--DXMETADATA start type="Variable" name="FeedbackLink" format="" --><a href="http://forums.autodesk.com/t5/vault-customization/bd-p/301 " rel="noopener noreferrer" target="_blank">Send Feedback</a><!--DXMETADATA end --></span>
+            	</td>
+            </tr>
+        </table>
+        <!--DXMETADATA start type="Breadcrumbs" scrap="_BREADCRUMBS" --><table width="100%" id="pagetopbreadcrumbs" cellspacing="0" cellpadding="0"><tr><td>
+<a href="topic46.html">Knowledge Base</a>
+ > Storing Custom Data: Let Jobserver Handle It</td></tr></table><!--DXMETADATA end -->
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_MENU" --><!--DXMETADATA end -->
+    </div>
+    <div class="hspopupbubble" id="hsglossaryitembox">
+        <p>Glossary Item Box</p>
+    </div>
+    <div id="pagebody">
+        <div id="mainbody">
+<!--DXMETADATA start type="TopicSection" name="BodyText"--><div class="mainpage">
+    <p>by Doug Redmond, It's All Just Ones and Zeros<br />
+    05/18/2010</p><br />
+
+    <p>Welcome back to my <em>Storing Custom Data</em> series, where I go into the various ways you can store custom data needed by your Vault customization.&nbsp;<br /></p>
+
+    <p><strong>Job Server:</strong><br />
+    In this article, I'll be focusing on the Job Processor API, which allows you to hook to the Jobserver feature.&nbsp; If you are writing a custom job handler, you might want it to remember some settings.&nbsp; Although Vault Options can be used, I want to explore something that doesn't involve additional Vault API calls.</p>
+
+    <p>It's possible to have the job handler store all the data itself, with a local settings file for example.&nbsp; The theory is that the job handler "owns" the data.&nbsp; Any edits to the data, must go through the custom job handler.&nbsp; From the client's point of view, the data maintenance tasks are a black box.&nbsp; Any outside changes to this data would have do be done through a custom job.</p>
+
+    <p><strong>Example:</strong><br />
+    <a href="http://justonesandzeros.typepad.com/blog/2010/05/watch-folder.html" target="_blank">Watch Folder</a> has an example of this technique.&nbsp; Most of the work in that utility is done by a custom job handler.&nbsp; That handler also keeps track of which users are watching which folders.</p>
+
+    <p>When a user says that they want to watch a folder, it causes a job to be queued.&nbsp; The job informs the handler of the update to the watch settings.&nbsp; The handler reads this job and updates the settings accordingly.&nbsp; In this case, the settings are in an XML file local to the handler.</p>
+
+    <p>When a job comes in telling the handler to scan for new files and send out emails, it does a re-read&nbsp;of the settings file.</p>
+
+    <p>HandlerClass.cs in the WatchFolderJobHandler project has the sample code.&nbsp; WatchCollection.xml is the file that remembers the folders being watched for each user.&nbsp; "Autodesk.WatchFolder.SettingJob" is the job type that tells the hander to update the settings.&nbsp; "Autodesk.WatchFolder.NotificationJob" is the job type that tells the handler to scan for new files and send out the emails.</p>
+
+    <p><strong>Analysis:</strong><br />
+    This technique is probably more trouble than it's worth, but it's still worth looking into.&nbsp; It's up to you to decide if this technique is best for your requirements.</p>
+
+    <p>Let's list out all the issues:</p>
+
+    <ul>
+        <li>No easy way for a client to see the settings.&nbsp; Because the job handler owns the settings, the only way to see them is talk to the job handler.&nbsp; And the only way to talk to a job handler is to queue up a job.&nbsp; Once the handler gets the job, some sort of mechanism needs to be developed for the job handler to pass the data back to the client (for example, an email).&nbsp; Best case scenario is a few minute delay between the request and the results.</li>
+
+        <li>Multiple handlers may be on the network at a given time.&nbsp; This can result in a fragmented data set.&nbsp; One way to solve this would be to put the settings in a file on a network share.&nbsp; The handlers would need to handle things gracefully if they both try to write to the file at the same time.<br />
+        Another option is to require only one handler on the network at a time.&nbsp; But there is no framework in place to enforce this configuration.</li>
+
+        <li>Connected workgroups add problems too.&nbsp; Each workgroup has its own queue, which does not get replicated to the other workgroups.&nbsp; So again, it's possible to have fragmented data.&nbsp; This might be OK as long as users stick to a single workgroup.&nbsp; Another workaround is for the user to log-in to the workgroup with the job handler running to do the one or two things needed for that operation.&nbsp; Then they can log-out and go back to their local workgroup.</li>
+
+        <li>From a permissions standpoint, the user needs to be at least Document Editor (Level 1) to be able to add jobs to the queue.</li>
+    </ul>
+</div>
+
+<p></p><!--DXMETADATA end-->
+            <a name="seealsobookmark"></a>
+            <!--DXMETADATA start type="FilteredItemList" scrap="CATEGORISED_LINKS" namespace="linkcategory" source="Item" filter="" NoHeader="True" NoFooter="True" format="%%replaceinquotes:value=false%%%%scrap:name=_COLLAPSIBLE_HEADER,idprefix=seealso,caption=""%%phrase:name=SeeAlso%%%%designlist:tagidentifier=seealso,itemtype=See Also%%""%%%%filtereditemlist%%</div>"--><!--DXMETADATA end-->
+        </div>
+        <!--DXMETADATA start type="Scrap" condition="communityenabled" name="_COMMUNITY_FOOTER" --><!--DXMETADATA end -->
+        <div id="pagefooter">
+            <!--DXMETADATA start type="Variable" name="CopyrightNotice" format="<p>&nbsp;</p><p>&nbsp;</p><hr style=""height: 1px"" /><p>%%variable%%</p>" --><!--DXMETADATA end -->
+        </div>
+        <!--DXMETADATA start type="FeedbackSection" --><!--DXMETADATA end -->
+    </div>
+    <!--DXMETADATA start type="Variable" name="NonScrollingPageFooter" format="<div id=nonscrollingpagefooter>%%variable%%</div>" --><div id=nonscrollingpagefooter>&copy;2025. All Rights Reserved.</div><!--DXMETADATA end -->
+</body>
+</html>
