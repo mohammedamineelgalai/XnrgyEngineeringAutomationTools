@@ -125,6 +125,86 @@ namespace VaultAutomationTool.Services
         }
 
         /// <summary>
+        /// Définit toutes les iProperties personnalisées du module XNRGY.
+        /// </summary>
+        /// <param name="filePath">Chemin complet du fichier .ipt/.iam/.idw/.ipn</param>
+        /// <param name="project">Numéro de projet (ex: "25001")</param>
+        /// <param name="reference">Référence (ex: "REF1")</param>
+        /// <param name="module">Module (ex: "M1")</param>
+        /// <param name="initialeDessinateur">Initiales du dessinateur (ex: "MAE")</param>
+        /// <param name="initialeCoDessinateur">Initiales du co-dessinateur (optionnel)</param>
+        /// <param name="creationDate">Date de création</param>
+        /// <returns>True si succès</returns>
+        public bool SetAllModuleProperties(string filePath, string? project, string? reference, string? module,
+            string? initialeDessinateur, string? initialeCoDessinateur, DateTime? creationDate)
+        {
+            if (_inventorApp == null)
+            {
+                Logger.Log("   [ERROR] Inventor non initialisé", Logger.LogLevel.ERROR);
+                return false;
+            }
+
+            Document? doc = null;
+            try
+            {
+                Logger.Log($"   [INVENTOR-API] Ouverture: {System.IO.Path.GetFileName(filePath)}", Logger.LogLevel.DEBUG);
+                
+                // Ouvrir le document en mode invisible
+                doc = _inventorApp.Documents.Open(filePath, false);
+                
+                // Accéder aux PropertySets
+                PropertySets propSets = doc.PropertySets;
+                
+                // Trouver le PropertySet "Inventor User Defined Properties"
+                PropertySet customProps;
+                try
+                {
+                    customProps = propSets["Inventor User Defined Properties"];
+                }
+                catch
+                {
+                    customProps = propSets["Design Tracking Properties"];
+                }
+
+                // Définir les propriétés de base
+                SetOrCreateProperty(customProps, "Project", project);
+                SetOrCreateProperty(customProps, "Reference", reference);
+                SetOrCreateProperty(customProps, "Module", module);
+                
+                // Propriétés supplémentaires du module
+                SetOrCreateProperty(customProps, "Initiale_du_Dessinateur", initialeDessinateur);
+                SetOrCreateProperty(customProps, "Initiale_du_Co_Dessinateur", initialeCoDessinateur);
+                
+                if (creationDate.HasValue)
+                {
+                    SetOrCreateProperty(customProps, "Creation_Date", creationDate.Value.ToString("yyyy-MM-dd"));
+                }
+
+                // Construire le numéro de projet complet (format: 25001REF1M1)
+                var fullProjectNumber = $"{project}{reference}{module}";
+                SetOrCreateProperty(customProps, "Numero_de_Projet", fullProjectNumber);
+
+                // Sauvegarder le document
+                doc.Save();
+                Logger.Log($"   [OK] Toutes les iProperties définies et fichier sauvegardé", Logger.LogLevel.INFO);
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"   [ERROR] Erreur iProperties: {ex.Message}", Logger.LogLevel.ERROR);
+                return false;
+            }
+            finally
+            {
+                if (doc != null)
+                {
+                    try { doc.Close(true); } catch { }
+                }
+            }
+        }
+
+        /// <summary>
         /// Définit ou crée une propriété personnalisée.
         /// </summary>
         private void SetOrCreateProperty(PropertySet propSet, string propName, string? value)

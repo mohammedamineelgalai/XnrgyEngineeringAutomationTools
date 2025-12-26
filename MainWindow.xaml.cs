@@ -464,13 +464,37 @@ namespace XnrgyEngineeringAutomationTools
 
         private void OpenPackAndGo_Click(object sender, RoutedEventArgs e)
         {
-            AddLog("Pack and Go - Module en developpement", "WARN");
-            AddLog("Fonctionnalites prevues:", "INFO");
-            AddLog("  - GET fichiers depuis Vault (Bibliotheque)", "INFO");
-            AddLog("  - Insertion dans assemblages actifs", "INFO");
-            AddLog("  - Pack and Go vers dossier module", "INFO");
-            AddLog("  - Copy Design automatise", "INFO");
-            StatusText.Text = "Pack and Go - En developpement";
+            AddLog("Ouverture de l'outil Créer Module...", "START");
+            StatusText.Text = "Création de module...";
+            
+            try
+            {
+                var createModuleWindow = new CreateModuleWindow();
+                createModuleWindow.Owner = this;
+                
+                AddLog("Fenêtre Créer Module ouverte", "INFO");
+                AddLog("Options disponibles:", "INFO");
+                AddLog("  - Créer depuis Template ($/Engineering/Library)", "INFO");
+                AddLog("  - Créer depuis Projet Existant", "INFO");
+                
+                var result = createModuleWindow.ShowDialog();
+                
+                if (result == true)
+                {
+                    AddLog("Module créé avec succès!", "SUCCESS");
+                    StatusText.Text = "Module créé";
+                }
+                else
+                {
+                    AddLog("Création de module annulée", "INFO");
+                    StatusText.Text = "Création annulée";
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("Erreur ouverture Créer Module: " + ex.Message, "ERROR");
+                StatusText.Text = "Erreur";
+            }
         }
 
         private void OpenSmartTools_Click(object sender, RoutedEventArgs e)
