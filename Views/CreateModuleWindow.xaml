@@ -588,12 +588,12 @@
                                         ToolTip="Cliquez sur le calendrier pour changer la date"/>
                         </StackPanel>
 
-                        <!-- Job Title (optionnel) -->
+                        <!-- Job Title (requis) -->
                         <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,5">
-                            <TextBlock Text="Job Title" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <TextBlock Text="Job Title *" Style="{StaticResource ModernLabel}" FontSize="11"/>
                             <TextBox x:Name="TxtJobTitle" Style="{StaticResource ModernTextBox}" Padding="8,5"
                                      MaxLength="100" TextChanged="TxtJobTitle_TextChanged"
-                                     ToolTip="Titre du projet pour pages de couverture PDF (optionnel)"/>
+                                     ToolTip="Titre du projet pour pages de couverture PDF (requis)"/>
                         </StackPanel>
 
                         <!-- Info sur les liens paramètres - version complète -->

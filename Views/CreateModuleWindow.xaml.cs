@@ -369,14 +369,20 @@ namespace XnrgyEngineeringAutomationTools.Views
                     file.NewFileName = $"{_request.FullProjectNumber}.iam";
                 }
                 
-                // Renommer le fichier projet (.ipj) avec le numéro de projet formaté
+                // Calculer le chemin relatif une seule fois
+                var relativeDir = Path.GetDirectoryName(file.RelativePath) ?? "";
+                
+                // Renommer UNIQUEMENT le fichier projet principal (.ipj) - pattern XXXXX-XX-XX_2026.ipj
                 if (file.FileType == "IPJ" && !string.IsNullOrEmpty(_request.FullProjectNumber))
                 {
-                    file.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                    // Seulement si c'est à la racine ET correspond au pattern principal
+                    if (string.IsNullOrEmpty(relativeDir) && IsMainProjectFilePattern(file.OriginalFileName))
+                    {
+                        file.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                    }
                 }
                 
                 // Construire le chemin de destination en conservant la structure relative
-                var relativeDir = Path.GetDirectoryName(file.RelativePath) ?? "";
                 var fileName = !string.IsNullOrEmpty(file.NewFileName) ? file.NewFileName : file.OriginalFileName;
                 
                 if (string.IsNullOrEmpty(relativeDir))
@@ -633,7 +639,11 @@ namespace XnrgyEngineeringAutomationTools.Views
                     var relativePath = file.Substring(sourcePath.Length).TrimStart('\\');
                     var isInventorFile = inventorExtensions.Contains(Path.GetExtension(file).ToLower());
                     var isTopAssembly = fileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase);
-                    var isProjectFile = extension == "IPJ"; // Fichier projet Inventor
+                    var isProjectFile = extension == "IPJ";
+                    // Fichier projet principal: pattern XXXXX-XX-XX_2026.ipj (à la racine du module)
+                    var isMainProjectFile = isProjectFile && 
+                                           string.IsNullOrEmpty(Path.GetDirectoryName(relativePath)) &&
+                                           IsMainProjectFilePattern(fileName);
 
                     var item = new FileRenameItem
                     {
@@ -653,8 +663,9 @@ namespace XnrgyEngineeringAutomationTools.Views
                         item.NewFileName = $"{_request.FullProjectNumber}.iam";
                     }
                     
-                    // Renommage automatique du fichier projet (.ipj)
-                    if (isProjectFile && !string.IsNullOrEmpty(TxtProject?.Text))
+                    // Renommage automatique UNIQUEMENT du fichier projet principal (.ipj)
+                    // Pattern: XXXXX-XX-XX_2026.ipj (à la racine)
+                    if (isMainProjectFile && !string.IsNullOrEmpty(TxtProject?.Text))
                     {
                         item.NewFileName = $"{_request.FullProjectNumber}.ipj";
                     }
@@ -1119,12 +1130,41 @@ namespace XnrgyEngineeringAutomationTools.Views
             if (string.IsNullOrEmpty(initialeDessinateur) || initialeDessinateur == "N/A")
                 return (false, "Les initiales du dessinateur sont requises (ne peut pas être N/A)");
 
-            // Job Title est optionnel - pas de validation requise
+            // Job Title est requis
+            if (string.IsNullOrWhiteSpace(TxtJobTitle?.Text))
+                return (false, "Le titre du projet (Job Title) est requis");
 
             if (!_files.Any(f => f.IsSelected))
                 return (false, "Aucun fichier sélectionné");
 
             return (true, string.Empty);
+        }
+
+        /// <summary>
+        /// Vérifie si un fichier .ipj correspond au pattern du fichier projet principal
+        /// Pattern: XXXXX-XX-XX_2026.ipj ou similaire (contient _2026 ou _202X)
+        /// </summary>
+        private bool IsMainProjectFilePattern(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) return false;
+            
+            // Le fichier projet principal contient généralement "_2026" ou "_202" dans le nom
+            // Exemples: XXXXX-XX-XX_2026.ipj, Module_2026.ipj, etc.
+            var nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+            
+            // Pattern 1: Contient _202X (année)
+            if (nameWithoutExt.Contains("_202"))
+                return true;
+            
+            // Pattern 2: Format XXXXX-XX-XX (numéro de projet avec tirets)
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameWithoutExt, @"^\d{5}-\d{2}-\d{2}"))
+                return true;
+            
+            // Pattern 3: Le nom contient "Module" (fichier projet du module)
+            if (nameWithoutExt.IndexOf("Module", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+                
+            return false;
         }
 
         /// <summary>

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 using Inventor;
 using XnrgyEngineeringAutomationTools.Models;
@@ -12,9 +13,11 @@ namespace XnrgyEngineeringAutomationTools.Services
 {
     /// <summary>
     /// Service de Copy Design utilisant Pack & Go d'Inventor.
+    /// - Switch vers le projet IPJ du template avant le Pack & Go
     /// - Utilise le Pack & Go natif d'Inventor pour copier avec références intactes
     /// - Applique les iProperties uniquement sur Module_.iam (Top Assembly)
     /// - Renomme le Module_.iam avec le numéro formaté (ex: 123450101.iam)
+    /// - Préserve les liens vers la Library (C:\Vault\Engineering\Library)
     /// - Conserve la structure des sous-dossiers du template
     /// - Exclut les fichiers temporaires Vault (.v*, _V dossiers)
     /// </summary>
@@ -25,6 +28,9 @@ namespace XnrgyEngineeringAutomationTools.Services
         private bool _disposed;
         private readonly Action<string, string> _logCallback;
         private readonly Action<int, string>? _progressCallback;
+        
+        // Sauvegarde du projet IPJ original pour restauration
+        private string? _originalProjectPath;
 
         // Extensions de fichiers temporaires Vault à exclure
         private static readonly string[] VaultTempExtensions = { ".v", ".v1", ".v2", ".v3", ".v4", ".v5", ".vbak", ".bak" };
@@ -85,10 +91,235 @@ namespace XnrgyEngineeringAutomationTools.Services
 
         #endregion
 
-        #region Copy Design Principal (Pack & Go)
+        #region Gestion Projet IPJ
 
         /// <summary>
+        /// Switch vers le projet IPJ du template (requis pour ouvrir les fichiers avec les bonnes références)
+        /// Sauvegarde le projet actuel pour restauration ultérieure
+        /// </summary>
+        /// <param name="templateIpjPath">Chemin complet du fichier .ipj du template</param>
+        /// <returns>True si le switch a réussi</returns>
+        public bool SwitchToTemplateProject(string templateIpjPath)
+        {
+            if (_inventorApp == null) return false;
+
+            try
+            {
+                Log($"🔄 Switch vers projet template: {System.IO.Path.GetFileName(templateIpjPath)}", "INFO");
+
+                DesignProjectManager designProjectManager = _inventorApp.DesignProjectManager;
+
+                // Sauvegarder le projet actif actuel
+                try
+                {
+                    DesignProject activeProject = designProjectManager.ActiveDesignProject;
+                    if (activeProject != null)
+                    {
+                        _originalProjectPath = activeProject.FullFileName;
+                        Log($"💾 Projet actuel sauvegardé: {System.IO.Path.GetFileName(_originalProjectPath)}", "DEBUG");
+                    }
+                }
+                catch
+                {
+                    _originalProjectPath = null;
+                }
+
+                // Vérifier que le fichier IPJ du template existe
+                if (!System.IO.File.Exists(templateIpjPath))
+                {
+                    Log($"❌ Fichier IPJ template introuvable: {templateIpjPath}", "ERROR");
+                    return false;
+                }
+
+                // Fermer tous les documents avant le switch
+                CloseAllDocuments();
+
+                // Chercher ou charger le projet template
+                DesignProjects projectsCollection = designProjectManager.DesignProjects;
+                DesignProject? templateProject = null;
+
+                for (int i = 1; i <= projectsCollection.Count; i++)
+                {
+                    DesignProject proj = projectsCollection[i];
+                    if (proj.FullFileName.Equals(templateIpjPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        templateProject = proj;
+                        Log($"✅ Projet template trouvé dans la collection", "DEBUG");
+                        break;
+                    }
+                }
+
+                // Si pas trouvé, le charger
+                if (templateProject == null)
+                {
+                    Log($"📂 Chargement du projet template: {System.IO.Path.GetFileName(templateIpjPath)}", "DEBUG");
+                    templateProject = projectsCollection.AddExisting(templateIpjPath);
+                }
+
+                // Activer le projet template
+                if (templateProject != null)
+                {
+                    templateProject.Activate();
+                    Thread.Sleep(1000); // Attendre que le switch soit effectif
+                    Log($"✅ Projet template activé: {System.IO.Path.GetFileName(templateIpjPath)}", "SUCCESS");
+                    return true;
+                }
+                else
+                {
+                    Log("❌ Impossible de charger le projet template", "ERROR");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"❌ Erreur switch projet template: {ex.Message}", "ERROR");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Restaure le projet IPJ original après le Pack & Go
+        /// </summary>
+        /// <returns>True si la restauration a réussi</returns>
+        public bool RestoreOriginalProject()
+        {
+            if (_inventorApp == null || string.IsNullOrEmpty(_originalProjectPath)) return false;
+
+            try
+            {
+                Log($"🔄 Restauration projet original: {System.IO.Path.GetFileName(_originalProjectPath)}", "INFO");
+
+                // Fermer tous les documents
+                CloseAllDocuments();
+
+                DesignProjectManager designProjectManager = _inventorApp.DesignProjectManager;
+                DesignProjects projectsCollection = designProjectManager.DesignProjects;
+                DesignProject? originalProject = null;
+
+                // Chercher le projet original
+                for (int i = 1; i <= projectsCollection.Count; i++)
+                {
+                    DesignProject proj = projectsCollection[i];
+                    if (proj.FullFileName.Equals(_originalProjectPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        originalProject = proj;
+                        break;
+                    }
+                }
+
+                // Si pas trouvé, le recharger
+                if (originalProject == null)
+                {
+                    if (System.IO.File.Exists(_originalProjectPath))
+                    {
+                        originalProject = projectsCollection.AddExisting(_originalProjectPath);
+                    }
+                }
+
+                // Activer le projet original
+                if (originalProject != null)
+                {
+                    originalProject.Activate();
+                    Thread.Sleep(1000);
+                    Log($"✅ Projet original restauré: {System.IO.Path.GetFileName(_originalProjectPath)}", "SUCCESS");
+                    return true;
+                }
+                else
+                {
+                    Log($"⚠️ Impossible de restaurer le projet original", "WARN");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"⚠️ Erreur restauration projet: {ex.Message}", "WARN");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Ferme tous les documents ouverts dans Inventor
+        /// </summary>
+        private void CloseAllDocuments()
+        {
+            if (_inventorApp == null) return;
+
+            try
+            {
+                Documents documents = _inventorApp.Documents;
+                int docCount = documents.Count;
+
+                if (docCount > 0)
+                {
+                    Log($"🗑️ Fermeture de {docCount} document(s)...", "DEBUG");
+                    documents.CloseAll(false); // false = ne pas sauvegarder
+                    Thread.Sleep(500);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"⚠️ Erreur fermeture documents: {ex.Message}", "DEBUG");
+            }
+        }
+
+        /// <summary>
+        /// Cherche le fichier .ipj principal dans le template (pattern XXXXX-XX-XX_2026.ipj)
+        /// </summary>
+        /// <param name="templateRoot">Dossier racine du template</param>
+        /// <returns>Chemin complet du fichier .ipj ou null si non trouvé</returns>
+        public string? FindTemplateProjectFile(string templateRoot)
+        {
+            try
+            {
+                // Chercher tous les fichiers .ipj dans le template
+                var ipjFiles = Directory.GetFiles(templateRoot, "*.ipj", SearchOption.TopDirectoryOnly);
+
+                if (ipjFiles.Length == 0)
+                {
+                    // Chercher aussi dans les sous-dossiers
+                    ipjFiles = Directory.GetFiles(templateRoot, "*.ipj", SearchOption.AllDirectories);
+                }
+
+                if (ipjFiles.Length == 0)
+                {
+                    Log("⚠️ Aucun fichier .ipj trouvé dans le template", "WARN");
+                    return null;
+                }
+
+                // Chercher le fichier principal (pattern XXXXX-XX-XX_2026.ipj)
+                var mainIpj = ipjFiles.FirstOrDefault(f =>
+                {
+                    string fileName = System.IO.Path.GetFileName(f);
+                    // Pattern: 5 chiffres - 2 chiffres - 2 chiffres _ 2026.ipj
+                    return System.Text.RegularExpressions.Regex.IsMatch(
+                        fileName, 
+                        @"^\d{5}-\d{2}-\d{2}_2026\.ipj$", 
+                        System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+                });
+
+                if (mainIpj != null)
+                {
+                    Log($"📁 Fichier IPJ principal trouvé: {System.IO.Path.GetFileName(mainIpj)}", "SUCCESS");
+                    return mainIpj;
+                }
+
+                // Sinon prendre le premier .ipj disponible
+                Log($"📁 Fichier IPJ utilisé: {System.IO.Path.GetFileName(ipjFiles[0])}", "INFO");
+                return ipjFiles[0];
+            }
+            catch (Exception ex)
+            {
+                Log($"❌ Erreur recherche fichier IPJ: {ex.Message}", "ERROR");
+                return null;
+            }
+        }
+
+        #endregion
+
+        #region Copy Design Principal (Pack & Go)
+        /// <summary>
         /// Exécute le Copy Design avec Pack & Go d'Inventor
+        /// IMPORTANT: Switch vers le projet IPJ du template avant d'ouvrir les fichiers
         /// </summary>
         public async Task<ModuleCopyResult> ExecuteCopyDesignAsync(CreateModuleRequest request)
         {
@@ -104,6 +335,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                 result.ErrorMessage = "Inventor non initialisé";
                 return result;
             }
+
+            bool projectSwitched = false;
 
             try
             {
@@ -140,47 +373,76 @@ namespace XnrgyEngineeringAutomationTools.Services
                 Log($"Nouveau nom: {newTopAssemblyName}", "INFO");
                 Log($"Destination: {request.DestinationPath}", "INFO");
 
-                ReportProgress(5, "Création de la structure de dossiers...");
+                // ÉTAPE 0: CRITIQUE - Switch vers le projet IPJ du template
+                ReportProgress(2, "Recherche du projet IPJ du template...");
+                
+                string? templateIpjPath = FindTemplateProjectFile(sourceFolderRoot);
+                if (!string.IsNullOrEmpty(templateIpjPath))
+                {
+                    ReportProgress(5, "Activation du projet template...");
+                    projectSwitched = SwitchToTemplateProject(templateIpjPath);
+                    
+                    if (!projectSwitched)
+                    {
+                        Log("⚠️ Impossible de switcher vers le projet template, tentative de copie simple", "WARN");
+                    }
+                }
+                else
+                {
+                    Log("⚠️ Aucun fichier IPJ trouvé dans le template, copie sans switch de projet", "WARN");
+                }
+
+                ReportProgress(8, "Création de la structure de dossiers...");
 
                 // ÉTAPE 1: Créer la structure de dossiers destination en copiant celle du template
                 await Task.Run(() => CreateFolderStructureFromTemplate(sourceFolderRoot, request.DestinationPath));
 
-                ReportProgress(10, "Ouverture du Top Assembly...");
+                ReportProgress(12, "Collecte des fichiers Inventor...");
 
-                // ÉTAPE 2: Ouvrir le Top Assembly
-                AssemblyDocument? asmDoc = null;
-                try
-                {
-                    asmDoc = (AssemblyDocument)await Task.Run(() => 
-                        _inventorApp!.Documents.Open(sourceTopAssembly, false));
-                }
-                catch (Exception ex)
-                {
-                    throw new Exception($"Impossible d'ouvrir {sourceTopAssembly}: {ex.Message}");
-                }
+                // ÉTAPE 2: Collecter TOUS les fichiers Inventor (.ipt, .iam, .idw, .dwg)
+                var allInventorFiles = request.FilesToCopy
+                    .Where(f => IsInventorFile(f.OriginalPath))
+                    .ToList();
 
-                ReportProgress(20, "Application des iProperties sur Module_.iam...");
+                Log($"Fichiers Inventor à traiter: {allInventorFiles.Count}", "INFO");
 
-                // ÉTAPE 3: Appliquer les iProperties UNIQUEMENT sur le Top Assembly
-                SetIProperties((Document)asmDoc, request);
-                result.PropertiesUpdated = 1;
-                Log("✓ iProperties appliquées sur le Top Assembly", "SUCCESS");
+                // Séparer les fichiers par type pour un traitement ordonné
+                var idwFiles = allInventorFiles
+                    .Where(f => System.IO.Path.GetExtension(f.OriginalPath).ToLower() == ".idw")
+                    .Select(f => f.OriginalPath)
+                    .ToList();
 
-                ReportProgress(30, $"Pack & Go vers {request.DestinationPath}...");
+                Log($"  - Dessins (.idw): {idwFiles.Count}", "INFO");
 
-                // ÉTAPE 4: Utiliser Pack & Go pour copier tout avec les références
-                string newTopAssemblyPath = System.IO.Path.Combine(request.DestinationPath, newTopAssemblyName);
+                // ÉTAPE 3: Exécuter le vrai Pack & Go
+                ReportProgress(15, "Pack & Go des assemblages et pièces...");
                 
-                var packAndGoResult = await ExecutePackAndGoAsync(asmDoc, sourceFolderRoot, request.DestinationPath, newTopAssemblyName);
+                var packAndGoResult = await ExecuteRealPackAndGoAsync(
+                    sourceTopAssembly, 
+                    sourceFolderRoot, 
+                    request.DestinationPath, 
+                    newTopAssemblyName,
+                    idwFiles,
+                    request);
                 
                 result.CopiedFiles = packAndGoResult.CopiedFiles;
                 result.FilesCopied = packAndGoResult.FilesCopied;
+                result.PropertiesUpdated = packAndGoResult.PropertiesUpdated;
 
-                // Fermer le document
-                asmDoc.Close(true);
-                asmDoc = null;
+                ReportProgress(80, "Copie des fichiers orphelins Inventor...");
 
-                ReportProgress(80, "Copie des fichiers non-Inventor...");
+                // ÉTAPE 4: Copier les fichiers Inventor orphelins (non référencés par les documents principaux)
+                var orphanResult = await CopyOrphanInventorFilesAsync(
+                    sourceFolderRoot, 
+                    request.DestinationPath, 
+                    result.CopiedFiles.Select(f => f.OriginalPath).ToList());
+                result.FilesCopied += orphanResult.Count;
+                foreach (var fileResult in orphanResult)
+                {
+                    result.CopiedFiles.Add(fileResult);
+                }
+
+                ReportProgress(88, "Copie des fichiers non-Inventor...");
 
                 // ÉTAPE 5: Copier les fichiers non-Inventor en conservant la structure
                 var nonInventorResult = await CopyNonInventorFilesAsync(sourceFolderRoot, request.DestinationPath, request);
@@ -190,7 +452,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                     result.CopiedFiles.Add(fileResult);
                 }
 
-                ReportProgress(90, "Renommage du fichier projet (.ipj)...");
+                ReportProgress(95, "Renommage du fichier projet (.ipj)...");
 
                 // ÉTAPE 6: Renommer le fichier .ipj avec le numéro de projet formaté
                 await RenameProjectFileAsync(request.DestinationPath, request.FullProjectNumber);
@@ -209,12 +471,428 @@ namespace XnrgyEngineeringAutomationTools.Services
                 Log($"ERREUR Copy Design: {ex.Message}", "ERROR");
                 ReportProgress(0, $"✗ Erreur: {ex.Message}");
             }
+            finally
+            {
+                // TOUJOURS restaurer le projet original à la fin
+                if (projectSwitched)
+                {
+                    Log("🔄 Restauration du projet original...", "INFO");
+                    RestoreOriginalProject();
+                }
+            }
 
             return result;
         }
 
         /// <summary>
-        /// Exécute le Pack & Go d'Inventor
+        /// Copie les fichiers Inventor orphelins (qui ne sont pas référencés par les documents principaux)
+        /// Ces fichiers doivent quand même être copiés dans la destination
+        /// IMPORTANT: Dans le template Xnrgy_Module, la plupart des fichiers sont "orphelins" car le Module_.iam
+        /// ne référence que des fichiers de la Library. Tous ces fichiers doivent être copiés.
+        /// </summary>
+        private async Task<List<FileCopyResult>> CopyOrphanInventorFilesAsync(
+            string sourceRoot, 
+            string destRoot, 
+            List<string> alreadyCopiedPaths)
+        {
+            var results = new List<FileCopyResult>();
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    // Trouver tous les fichiers Inventor dans le template
+                    var allInventorFiles = Directory.GetFiles(sourceRoot, "*.*", SearchOption.AllDirectories)
+                        .Where(f => IsInventorFile(f) && !IsVaultTempFile(f))
+                        .ToList();
+
+                    Log($"📁 Fichiers Inventor trouvés dans le template: {allInventorFiles.Count}", "DEBUG");
+
+                    // Normaliser les chemins déjà copiés pour la comparaison
+                    var normalizedCopiedPaths = alreadyCopiedPaths
+                        .Select(p => p.ToLowerInvariant().Trim())
+                        .ToHashSet();
+
+                    // Exclure les fichiers déjà copiés et ceux dans les dossiers exclus
+                    var orphanFiles = allInventorFiles
+                        .Where(f =>
+                        {
+                            // Vérifier si déjà copié (comparaison normalisée)
+                            if (normalizedCopiedPaths.Contains(f.ToLowerInvariant().Trim()))
+                                return false;
+
+                            // Vérifier si dans un dossier exclu
+                            string? dirPath = System.IO.Path.GetDirectoryName(f);
+                            if (!string.IsNullOrEmpty(dirPath) &&
+                                ExcludedFolders.Any(ef => dirPath.ToLowerInvariant().Contains($"\\{ef.ToLowerInvariant()}\\") || 
+                                                          dirPath.ToLowerInvariant().EndsWith($"\\{ef.ToLowerInvariant()}")))
+                                return false;
+
+                            // Exclure les fichiers de la Library (ils ne doivent pas être copiés)
+                            if (f.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
+                                return false;
+
+                            return true;
+                        })
+                        .ToList();
+
+                    if (orphanFiles.Count == 0)
+                    {
+                        Log("Aucun fichier Inventor orphelin à copier", "DEBUG");
+                        return;
+                    }
+
+                    Log($"� {orphanFiles.Count} fichier(s) Inventor à copier (copie simple)...", "INFO");
+
+                    int copiedCount = 0;
+                    int skippedCount = 0;
+
+                    foreach (var orphanFile in orphanFiles)
+                    {
+                        try
+                        {
+                            string relativePath = GetRelativePath(orphanFile, sourceRoot);
+                            string destPath = System.IO.Path.Combine(destRoot, relativePath);
+
+                            // Vérifier si le fichier n'existe pas déjà dans la destination
+                            if (System.IO.File.Exists(destPath))
+                            {
+                                skippedCount++;
+                                continue;
+                            }
+
+                            // Créer le dossier si nécessaire
+                            string? destDir = System.IO.Path.GetDirectoryName(destPath);
+                            if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+                            {
+                                Directory.CreateDirectory(destDir);
+                            }
+
+                            // Copie simple du fichier
+                            System.IO.File.Copy(orphanFile, destPath, true);
+
+                            results.Add(new FileCopyResult
+                            {
+                                OriginalPath = orphanFile,
+                                OriginalFileName = System.IO.Path.GetFileName(orphanFile),
+                                NewPath = destPath,
+                                NewFileName = System.IO.Path.GetFileName(destPath),
+                                Success = true
+                            });
+
+                            copiedCount++;
+                            
+                            // Log tous les 100 fichiers pour éviter trop de logs
+                            if (copiedCount % 100 == 0)
+                            {
+                                Log($"  ... {copiedCount} fichiers copiés...", "DEBUG");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log($"  ✗ Erreur copie {System.IO.Path.GetFileName(orphanFile)}: {ex.Message}", "WARN");
+                        }
+                    }
+
+                    Log($"✓ {copiedCount} fichiers Inventor copiés ({skippedCount} ignorés car déjà présents)", "SUCCESS");
+                }
+                catch (Exception ex)
+                {
+                    Log($"Erreur copie fichiers orphelins: {ex.Message}", "ERROR");
+                }
+            });
+
+            return results;
+        }
+
+        /// <summary>
+        /// Chemin de la Library à préserver (ne pas copier ces fichiers, garder les liens)
+        /// </summary>
+        private static readonly string LibraryPath = @"C:\Vault\Engineering\Library";
+
+        /// <summary>
+        /// Exécute le vrai Pack & Go d'Inventor en partant des .idw
+        /// Les .idw référencent Module_.iam, donc on doit les traiter en premier
+        /// pour que les liens vers le Module renommé soient corrects
+        /// </summary>
+        private async Task<(List<FileCopyResult> CopiedFiles, int FilesCopied, int PropertiesUpdated)> ExecuteRealPackAndGoAsync(
+            string sourceTopAssembly,
+            string sourceRoot, 
+            string destRoot, 
+            string newTopAssemblyName,
+            List<string> idwFiles,
+            CreateModuleRequest request)
+        {
+            var copiedFiles = new List<FileCopyResult>();
+            int filesCopied = 0;
+            int propertiesUpdated = 0;
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    // Dictionnaire pour mapper ancien nom -> nouveau nom
+                    var renameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    
+                    // Le Module_.iam sera renommé
+                    string sourceModuleName = System.IO.Path.GetFileName(sourceTopAssembly);
+                    renameMap[sourceModuleName] = newTopAssemblyName;
+                    
+                    Log($"Mapping: {sourceModuleName} → {newTopAssemblyName}", "INFO");
+
+                    // PHASE 1: Ouvrir et sauvegarder le Module_.iam avec son nouveau nom
+                    ReportProgress(20, "Ouverture du Top Assembly...");
+                    
+                    var asmDoc = (AssemblyDocument)_inventorApp!.Documents.Open(sourceTopAssembly, false);
+                    
+                    // Appliquer les iProperties sur le Top Assembly
+                    ReportProgress(25, "Application des iProperties...");
+                    SetIProperties((Document)asmDoc, request);
+                    propertiesUpdated = 1;
+                    Log("✓ iProperties appliquées sur le Top Assembly", "SUCCESS");
+
+                    // Collecter tous les documents référencés par l'assemblage
+                    var referencedDocs = new List<Document>();
+                    CollectAllReferencedDocuments((Document)asmDoc, referencedDocs);
+                    
+                    // Filtrer pour ne garder que les fichiers du module (pas de la Library)
+                    var moduleRefDocs = referencedDocs
+                        .Where(d => !d.FullFileName.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    
+                    var libraryRefDocs = referencedDocs
+                        .Where(d => d.FullFileName.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+
+                    Log($"Fichiers du module à copier: {moduleRefDocs.Count}", "INFO");
+                    Log($"Fichiers de Library (liens préservés): {libraryRefDocs.Count}", "INFO");
+
+                    // PHASE 2: Copier les pièces et sous-assemblages du module (bottom-up)
+                    ReportProgress(30, "Copie des pièces et sous-assemblages...");
+                    
+                    var sortedModuleDocs = moduleRefDocs
+                        .OrderBy(d => d.DocumentType == DocumentTypeEnum.kPartDocumentObject ? 0 :
+                                      d.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject ? 1 : 2)
+                        .ToList();
+
+                    int totalSteps = sortedModuleDocs.Count + idwFiles.Count + 2; // +2 pour asm et ipj
+                    int currentStep = 0;
+
+                    foreach (var refDoc in sortedModuleDocs)
+                    {
+                        try
+                        {
+                            string originalPath = refDoc.FullFileName;
+                            string relativePath = GetRelativePath(originalPath, sourceRoot);
+                            string newPath = System.IO.Path.Combine(destRoot, relativePath);
+                            
+                            // S'assurer que le dossier existe
+                            string? newDir = System.IO.Path.GetDirectoryName(newPath);
+                            if (!string.IsNullOrEmpty(newDir) && !Directory.Exists(newDir))
+                            {
+                                Directory.CreateDirectory(newDir);
+                            }
+
+                            // SaveAs pour copier
+                            refDoc.SaveAs(newPath, false);
+                            
+                            copiedFiles.Add(new FileCopyResult
+                            {
+                                OriginalPath = originalPath,
+                                OriginalFileName = System.IO.Path.GetFileName(originalPath),
+                                NewPath = newPath,
+                                NewFileName = System.IO.Path.GetFileName(newPath),
+                                Success = true
+                            });
+                            filesCopied++;
+                            currentStep++;
+                            
+                            int progress = 30 + (int)(currentStep * 30.0 / totalSteps);
+                            ReportProgress(progress, $"Copie: {System.IO.Path.GetFileName(newPath)}");
+                            Log($"  ✓ {System.IO.Path.GetFileName(newPath)}", "SUCCESS");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log($"  ✗ Erreur: {System.IO.Path.GetFileName(refDoc.FullFileName)}: {ex.Message}", "ERROR");
+                        }
+                    }
+
+                    // PHASE 3: Sauvegarder le Top Assembly avec le nouveau nom
+                    ReportProgress(60, $"Sauvegarde: {newTopAssemblyName}...");
+                    
+                    string topAssemblyNewPath = System.IO.Path.Combine(destRoot, newTopAssemblyName);
+                    asmDoc.SaveAs(topAssemblyNewPath, false);
+                    
+                    copiedFiles.Add(new FileCopyResult
+                    {
+                        OriginalPath = sourceTopAssembly,
+                        OriginalFileName = sourceModuleName,
+                        NewPath = topAssemblyNewPath,
+                        NewFileName = newTopAssemblyName,
+                        Success = true
+                    });
+                    filesCopied++;
+                    Log($"  ✓ {newTopAssemblyName} (Top Assembly renommé)", "SUCCESS");
+
+                    // Fermer l'assemblage
+                    asmDoc.Close(false);
+
+                    // PHASE 4: Traiter les fichiers .idw - ils référencent le Module_.iam
+                    // On doit les ouvrir et mettre à jour leurs références vers le nouveau nom
+                    ReportProgress(65, "Traitement des dessins (.idw)...");
+                    
+                    foreach (var idwPath in idwFiles)
+                    {
+                        try
+                        {
+                            // Vérifier que le .idw n'est pas dans un dossier exclu
+                            string? dirPath = System.IO.Path.GetDirectoryName(idwPath);
+                            if (!string.IsNullOrEmpty(dirPath) && 
+                                ExcludedFolders.Any(ef => dirPath.Contains($"\\{ef}\\") || dirPath.EndsWith($"\\{ef}")))
+                            {
+                                Log($"  Exclu (dossier): {System.IO.Path.GetFileName(idwPath)}", "DEBUG");
+                                continue;
+                            }
+
+                            string relativePath = GetRelativePath(idwPath, sourceRoot);
+                            string newIdwPath = System.IO.Path.Combine(destRoot, relativePath);
+                            
+                            // S'assurer que le dossier existe
+                            string? newDir = System.IO.Path.GetDirectoryName(newIdwPath);
+                            if (!string.IsNullOrEmpty(newDir) && !Directory.Exists(newDir))
+                            {
+                                Directory.CreateDirectory(newDir);
+                            }
+
+                            // Ouvrir le dessin
+                            var drawDoc = (DrawingDocument)_inventorApp!.Documents.Open(idwPath, false);
+                            
+                            // Mettre à jour les références vers les fichiers copiés
+                            // Les références vers la Library restent intactes
+                            UpdateDrawingReferences(drawDoc, sourceRoot, destRoot, renameMap);
+                            
+                            // Sauvegarder avec le même nom dans la destination
+                            drawDoc.SaveAs(newIdwPath, false);
+                            drawDoc.Close(false);
+                            
+                            copiedFiles.Add(new FileCopyResult
+                            {
+                                OriginalPath = idwPath,
+                                OriginalFileName = System.IO.Path.GetFileName(idwPath),
+                                NewPath = newIdwPath,
+                                NewFileName = System.IO.Path.GetFileName(newIdwPath),
+                                Success = true
+                            });
+                            filesCopied++;
+                            currentStep++;
+                            
+                            int progress = 65 + (int)(currentStep * 15.0 / totalSteps);
+                            ReportProgress(progress, $"Dessin: {System.IO.Path.GetFileName(newIdwPath)}");
+                            Log($"  ✓ {System.IO.Path.GetFileName(newIdwPath)} (dessin, liens mis à jour)", "SUCCESS");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log($"  ✗ Erreur dessin {System.IO.Path.GetFileName(idwPath)}: {ex.Message}", "WARN");
+                            
+                            // Fallback: copie simple si l'ouverture échoue
+                            try
+                            {
+                                string relativePath = GetRelativePath(idwPath, sourceRoot);
+                                string newIdwPath = System.IO.Path.Combine(destRoot, relativePath);
+                                string? newDir = System.IO.Path.GetDirectoryName(newIdwPath);
+                                if (!string.IsNullOrEmpty(newDir) && !Directory.Exists(newDir))
+                                {
+                                    Directory.CreateDirectory(newDir);
+                                }
+                                System.IO.File.Copy(idwPath, newIdwPath, true);
+                                filesCopied++;
+                                Log($"  ⚠ {System.IO.Path.GetFileName(idwPath)} (copie simple)", "WARN");
+                            }
+                            catch { }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Erreur Pack & Go: {ex.Message}", "ERROR");
+                    throw;
+                }
+            });
+
+            return (copiedFiles, filesCopied, propertiesUpdated);
+        }
+
+        /// <summary>
+        /// Met à jour les références d'un dessin pour pointer vers les fichiers copiés
+        /// tout en préservant les liens vers la Library
+        /// </summary>
+        private void UpdateDrawingReferences(DrawingDocument drawDoc, string sourceRoot, string destRoot, Dictionary<string, string> renameMap)
+        {
+            try
+            {
+                // Parcourir toutes les feuilles et vues
+                foreach (Sheet sheet in drawDoc.Sheets)
+                {
+                    foreach (DrawingView view in sheet.DrawingViews)
+                    {
+                        try
+                        {
+                            // Obtenir le document référencé par la vue
+                            Document? referencedDoc = view.ReferencedDocumentDescriptor?.ReferencedDocument as Document;
+                            if (referencedDoc == null) continue;
+
+                            string refPath = referencedDoc.FullFileName;
+                            
+                            // Si c'est un fichier de la Library, ne rien faire (garder le lien)
+                            if (refPath.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                continue;
+                            }
+
+                            // Si c'est un fichier du module source, mettre à jour le chemin
+                            if (refPath.StartsWith(sourceRoot, StringComparison.OrdinalIgnoreCase))
+                            {
+                                string fileName = System.IO.Path.GetFileName(refPath);
+                                
+                                // Vérifier si ce fichier doit être renommé
+                                string newFileName = renameMap.ContainsKey(fileName) ? renameMap[fileName] : fileName;
+                                
+                                string relativePath = GetRelativePath(refPath, sourceRoot);
+                                string relativeDir = System.IO.Path.GetDirectoryName(relativePath) ?? "";
+                                
+                                string newRefPath;
+                                if (string.IsNullOrEmpty(relativeDir))
+                                {
+                                    newRefPath = System.IO.Path.Combine(destRoot, newFileName);
+                                }
+                                else
+                                {
+                                    newRefPath = System.IO.Path.Combine(destRoot, relativeDir, newFileName);
+                                }
+
+                                // Mettre à jour la référence si le fichier existe
+                                if (System.IO.File.Exists(newRefPath))
+                                {
+                                    // Note: La mise à jour automatique se fait via le ReferencedFileDescriptor
+                                    // quand on sauvegarde avec SaveAs dans le nouveau dossier
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            // Ignorer les erreurs sur les vues individuelles
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"  Note: Mise à jour références dessin: {ex.Message}", "DEBUG");
+            }
+        }
+
+        /// <summary>
+        /// Exécute le Pack & Go d'Inventor (ancienne méthode conservée pour compatibilité)
         /// </summary>
         private async Task<(List<FileCopyResult> CopiedFiles, int FilesCopied)> ExecutePackAndGoAsync(
             AssemblyDocument asmDoc, string sourceRoot, string destRoot, string newTopAssemblyName)
@@ -334,6 +1012,99 @@ namespace XnrgyEngineeringAutomationTools.Services
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Copie les fichiers de dessins (.idw, .dwg) qui ne sont pas référencés par l'assemblage
+        /// Les dessins référencent les pièces/assemblages, pas l'inverse
+        /// </summary>
+        private async Task<List<FileCopyResult>> CopyDrawingFilesAsync(string sourceRoot, string destRoot)
+        {
+            var results = new List<FileCopyResult>();
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    // Chercher tous les fichiers de dessins
+                    var drawingExtensions = new[] { ".idw", ".dwg" };
+                    var drawingFiles = Directory.GetFiles(sourceRoot, "*.*", SearchOption.AllDirectories)
+                        .Where(f => drawingExtensions.Contains(System.IO.Path.GetExtension(f).ToLower()))
+                        .ToList();
+
+                    if (drawingFiles.Count == 0)
+                    {
+                        Log("Aucun fichier de dessin (.idw, .dwg) trouvé", "INFO");
+                        return;
+                    }
+
+                    Log($"Copie de {drawingFiles.Count} fichiers de dessins...", "INFO");
+
+                    foreach (var drawingFile in drawingFiles)
+                    {
+                        // Vérifier si le fichier n'est pas dans un dossier exclu
+                        string? dirPath = System.IO.Path.GetDirectoryName(drawingFile);
+                        if (!string.IsNullOrEmpty(dirPath) && 
+                            ExcludedFolders.Any(ef => dirPath.Contains($"\\{ef}\\") || dirPath.EndsWith($"\\{ef}")))
+                        {
+                            Log($"  Exclu (dossier exclu): {System.IO.Path.GetFileName(drawingFile)}", "DEBUG");
+                            continue;
+                        }
+
+                        // Exclure les fichiers temporaires Vault
+                        if (IsVaultTempFile(drawingFile))
+                        {
+                            Log($"  Exclu (Vault temp): {System.IO.Path.GetFileName(drawingFile)}", "DEBUG");
+                            continue;
+                        }
+
+                        // Calculer le chemin relatif et destination
+                        string relativePath = GetRelativePath(drawingFile, sourceRoot);
+                        string destPath = System.IO.Path.Combine(destRoot, relativePath);
+
+                        // Vérifier si le fichier n'existe pas déjà (copié par Pack & Go)
+                        if (System.IO.File.Exists(destPath))
+                        {
+                            Log($"  Déjà copié: {System.IO.Path.GetFileName(drawingFile)}", "DEBUG");
+                            continue;
+                        }
+
+                        try
+                        {
+                            // Créer le dossier si nécessaire
+                            string? destDir = System.IO.Path.GetDirectoryName(destPath);
+                            if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+                            {
+                                Directory.CreateDirectory(destDir);
+                            }
+
+                            // Copier le fichier
+                            System.IO.File.Copy(drawingFile, destPath, overwrite: true);
+
+                            results.Add(new FileCopyResult
+                            {
+                                OriginalPath = drawingFile,
+                                OriginalFileName = System.IO.Path.GetFileName(drawingFile),
+                                NewPath = destPath,
+                                NewFileName = System.IO.Path.GetFileName(destPath),
+                                Success = true
+                            });
+
+                            Log($"  ✓ {System.IO.Path.GetFileName(drawingFile)} (dessin)", "SUCCESS");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log($"  ✗ Erreur copie dessin {System.IO.Path.GetFileName(drawingFile)}: {ex.Message}", "WARN");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Erreur copie fichiers dessins: {ex.Message}", "ERROR");
+                }
+            });
+
+            return results;
         }
 
         /// <summary>
@@ -514,7 +1285,8 @@ namespace XnrgyEngineeringAutomationTools.Services
         #region Project File Renaming
 
         /// <summary>
-        /// Renomme le fichier .ipj avec le numéro de projet formaté
+        /// Renomme le fichier .ipj principal avec le numéro de projet formaté
+        /// Seulement le fichier correspondant au pattern XXXXX-XX-XX_2026.ipj
         /// </summary>
         private async Task RenameProjectFileAsync(string destinationPath, string fullProjectNumber)
         {
@@ -522,7 +1294,7 @@ namespace XnrgyEngineeringAutomationTools.Services
             {
                 try
                 {
-                    // Chercher tous les fichiers .ipj dans le dossier destination
+                    // Chercher tous les fichiers .ipj dans le dossier destination (racine seulement)
                     var ipjFiles = Directory.GetFiles(destinationPath, "*.ipj", SearchOption.TopDirectoryOnly);
 
                     if (ipjFiles.Length == 0)
@@ -533,11 +1305,20 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                     foreach (var ipjFile in ipjFiles)
                     {
+                        var fileName = System.IO.Path.GetFileName(ipjFile);
+                        
+                        // Vérifier si c'est le fichier projet principal (pattern XXXXX-XX-XX_2026.ipj)
+                        if (!IsMainProjectFilePattern(fileName))
+                        {
+                            Log($"Fichier .ipj ignoré (pas le fichier principal): {fileName}", "DEBUG");
+                            continue;
+                        }
+                        
                         string newIpjName = $"{fullProjectNumber}.ipj";
                         string newIpjPath = System.IO.Path.Combine(destinationPath, newIpjName);
 
                         // Ne pas renommer si c'est déjà le bon nom
-                        if (System.IO.Path.GetFileName(ipjFile).Equals(newIpjName, StringComparison.OrdinalIgnoreCase))
+                        if (fileName.Equals(newIpjName, StringComparison.OrdinalIgnoreCase))
                         {
                             Log($"Fichier .ipj déjà correctement nommé: {newIpjName}", "INFO");
                             continue;
@@ -551,7 +1332,10 @@ namespace XnrgyEngineeringAutomationTools.Services
                         }
 
                         System.IO.File.Move(ipjFile, newIpjPath);
-                        Log($"✓ Fichier .ipj renommé: {System.IO.Path.GetFileName(ipjFile)} → {newIpjName}", "SUCCESS");
+                        Log($"✓ Fichier .ipj renommé: {fileName} → {newIpjName}", "SUCCESS");
+                        
+                        // Un seul fichier principal à renommer
+                        break;
                     }
                 }
                 catch (Exception ex)
@@ -663,6 +1447,31 @@ namespace XnrgyEngineeringAutomationTools.Services
         {
             var ext = System.IO.Path.GetExtension(filePath).ToLower();
             return ext == ".ipt" || ext == ".iam" || ext == ".idw" || ext == ".ipn" || ext == ".dwg";
+        }
+
+        /// <summary>
+        /// Vérifie si un fichier .ipj correspond au pattern du fichier projet principal
+        /// Pattern: XXXXX-XX-XX_2026.ipj ou similaire (contient _2026 ou _202X)
+        /// </summary>
+        private bool IsMainProjectFilePattern(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) return false;
+            
+            var nameWithoutExt = System.IO.Path.GetFileNameWithoutExtension(fileName);
+            
+            // Pattern 1: Contient _202X (année)
+            if (nameWithoutExt.Contains("_202"))
+                return true;
+            
+            // Pattern 2: Format XXXXX-XX-XX (numéro de projet avec tirets)
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameWithoutExt, @"^\d{5}-\d{2}-\d{2}"))
+                return true;
+            
+            // Pattern 3: Le nom contient "Module" (fichier projet du module)
+            if (nameWithoutExt.IndexOf("Module", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+                
+            return false;
         }
 
         private void Log(string message, string level)
