@@ -833,8 +833,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                                                           dirPath.ToLowerInvariant().EndsWith($"\\{ef.ToLowerInvariant()}")))
                                 return false;
 
-                            // Exclure les fichiers de la Library (ils ne doivent pas être copiés)
-                            if (f.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
+                            // Exclure UNIQUEMENT les IPT Typical Drawing (partagés entre projets)
+                            if (f.StartsWith(IPTTypicalDrawingPath, StringComparison.OrdinalIgnoreCase))
                                 return false;
 
                             return true;
@@ -911,9 +911,10 @@ namespace XnrgyEngineeringAutomationTools.Services
         }
 
         /// <summary>
-        /// Chemin de la Library à préserver (ne pas copier ces fichiers, garder les liens)
+        /// Chemin des IPT Typical Drawing partagés entre projets - NE PAS COPIER, garder les liens
+        /// C'est le SEUL chemin à exclure, pas tout C:\Vault\Engineering\Library
         /// </summary>
-        private static readonly string LibraryPath = @"C:\Vault\Engineering\Library";
+        private static readonly string IPTTypicalDrawingPath = @"C:\Vault\Engineering\Library\Cabinet\IPT_Typical_Drawing";
 
         /// <summary>
         /// Exécute le VRAI Copy Design NATIF d'Inventor avec FileSaveAs.ExecuteSaveCopyAs()
@@ -980,16 +981,16 @@ namespace XnrgyEngineeringAutomationTools.Services
                     // Collecter récursivement tous les documents référencés
                     CollectAllReferencedDocumentsDeep((Document)asmDoc, allReferencedDocs);
                     
-                    // IMPORTANT: Séparer les fichiers du module vs Library VRAIE
+                    // IMPORTANT: Séparer les fichiers du module vs IPT Typical Drawing
                     // Les fichiers du module SOURCE (template) doivent être copiés
-                    // Les fichiers de la Library EXTERNE (pas dans le template) gardent leurs liens
+                    // Les fichiers IPT Typical Drawing (partagés) gardent leurs liens
                     // 
                     // Exemple:
                     //   sourceRoot = C:\Vault\Engineering\Library\Xnrgy_Module
-                    //   LibraryPath = C:\Vault\Engineering\Library
+                    //   IPTTypicalDrawingPath = C:\Vault\Engineering\Library\Cabinet\IPT_Typical_Drawing
                     //   
                     //   C:\Vault\Engineering\Library\Xnrgy_Module\Roof-01.iam → COPIER (dans sourceRoot)
-                    //   C:\Vault\Engineering\Library\Common\Bolt.ipt → GARDER LIEN (pas dans sourceRoot)
+                    //   C:\Vault\Engineering\Library\Cabinet\IPT_Typical_Drawing\Bolt.ipt → GARDER LIEN
                     
                     var moduleFiles = allReferencedDocs
                         .Where(kvp => kvp.Key.StartsWith(sourceRoot, StringComparison.OrdinalIgnoreCase))
@@ -1270,8 +1271,8 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                             string refPath = referencedDoc.FullFileName;
                             
-                            // Si c'est un fichier de la Library, ne rien faire (garder le lien)
-                            if (refPath.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
+                            // Si c'est un fichier IPT Typical Drawing (partagé), ne rien faire (garder le lien)
+                            if (refPath.StartsWith(IPTTypicalDrawingPath, StringComparison.OrdinalIgnoreCase))
                             {
                                 continue;
                             }
