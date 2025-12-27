@@ -359,6 +359,18 @@ namespace XnrgyEngineeringAutomationTools.Services
                         Log($"⚠️ Erreur pendant Update: {updateEx.Message}", "WARN");
                     }
 
+                    // 4.5 Préparer la vue: cacher workfeatures, vue ISO, zoom all
+                    Log($"🎨 Préparation de la vue...", "INFO");
+                    try
+                    {
+                        PrepareViewForDesigner(topAssemblyDoc);
+                        Log($"✅ Vue préparée (ISO, Zoom All, Workfeatures cachés)", "SUCCESS");
+                    }
+                    catch (Exception viewEx)
+                    {
+                        Log($"⚠️ Note: Préparation vue: {viewEx.Message}", "DEBUG");
+                    }
+
                     // 5. Save All
                     Log($"💾 Save All...", "INFO");
                     try
@@ -1123,7 +1135,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                     // PHASE 5: Traiter les fichiers .idw (dessins)
                     // Les dessins ne sont PAS inclus dans AllReferencedDocuments
                     // car ils référencent l'assemblage, pas l'inverse
-                    // On les copie APRÈS les assemblages pour que les références soient correctes
+                    // On doit mettre à jour leurs références AVANT de les copier
                     // ══════════════════════════════════════════════════════════════════
                     ReportProgress(75, "Traitement des dessins (.idw)...");
                     
@@ -1133,6 +1145,25 @@ namespace XnrgyEngineeringAutomationTools.Services
                         try { asmDoc.Close(false); } catch { }
                         asmDoc = null;
                     }
+
+                    // Créer un dictionnaire des chemins source → destination pour les références
+                    var pathMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var cf in copiedFiles)
+                    {
+                        if (!string.IsNullOrEmpty(cf.OriginalPath) && !string.IsNullOrEmpty(cf.NewPath))
+                        {
+                            pathMapping[cf.OriginalPath] = cf.NewPath;
+                        }
+                    }
+                    // Ajouter le mapping du Top Assembly
+                    string originalTopPath = System.IO.Path.Combine(sourceRoot, "Module_.iam");
+                    string newTopPath = System.IO.Path.Combine(destRoot, newTopAssemblyName);
+                    pathMapping[originalTopPath] = newTopPath;
+                    
+                    // Créer un dictionnaire des renommages (nom fichier uniquement)
+                    // Principalement pour le Top Assembly Module_.iam → nouveau nom
+                    var idwRenameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    idwRenameMap["Module_.iam"] = newTopAssemblyName;
 
                     Log($"📐 Traitement de {idwFiles.Count} fichiers de dessins...", "INFO");
                     int idwIndex = 0;
@@ -1172,9 +1203,13 @@ namespace XnrgyEngineeringAutomationTools.Services
                             // Ouvrir le dessin
                             var drawDoc = (DrawingDocument)_inventorApp!.Documents.Open(idwPath, false);
                             
-                            // SaveAs copie le dessin avec ses références mises à jour
-                            // Les références pointent vers les fichiers copiés car ils sont 
-                            // dans le même dossier destination
+                            // ═══════════════════════════════════════════════════════════
+                            // IMPORTANT: Mettre à jour les références du dessin
+                            // AVANT de faire le SaveAs
+                            // ═══════════════════════════════════════════════════════════
+                            UpdateDrawingReferencesWithMapping(drawDoc, sourceRoot, destRoot, pathMapping, idwRenameMap);
+                            
+                            // SaveAs vers la nouvelle destination
                             ((Document)drawDoc).SaveAs(newIdwPath, false);
                             
                             copiedFiles.Add(new FileCopyResult
@@ -1247,6 +1282,86 @@ namespace XnrgyEngineeringAutomationTools.Services
             catch (Exception ex)
             {
                 Log($"  Note: Collecte références: {ex.Message}", "DEBUG");
+            }
+        }
+
+        /// <summary>
+        /// Met à jour les références d'un dessin pour pointer vers les fichiers copiés
+        /// Utilise ReferencedFileDescriptor.ReplaceReference() pour changer les liens
+        /// </summary>
+        private void UpdateDrawingReferencesWithMapping(
+            DrawingDocument drawDoc, 
+            string sourceRoot, 
+            string destRoot, 
+            Dictionary<string, string> pathMapping,
+            Dictionary<string, string> renameMap)
+        {
+            try
+            {
+                Document doc = (Document)drawDoc;
+                
+                // Utiliser ReferencedFileDescriptors pour mettre à jour toutes les références
+                foreach (ReferencedFileDescriptor refDesc in doc.ReferencedFileDescriptors)
+                {
+                    try
+                    {
+                        string refPath = refDesc.FullFileName;
+                        
+                        // Si c'est un fichier IPT Typical Drawing (partagé), garder le lien original
+                        if (refPath.StartsWith(IPTTypicalDrawingPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            continue;
+                        }
+
+                        // Vérifier si on a un mapping direct
+                        if (pathMapping.TryGetValue(refPath, out string? newPath))
+                        {
+                            if (System.IO.File.Exists(newPath))
+                            {
+                                // Utiliser PutLogicalFileNameUsingFull pour changer la référence
+                                refDesc.PutLogicalFileNameUsingFull(newPath);
+                                Log($"    ↪ {System.IO.Path.GetFileName(refPath)} → {System.IO.Path.GetFileName(newPath)}", "DEBUG");
+                            }
+                            continue;
+                        }
+
+                        // Si c'est un fichier du module source, calculer le nouveau chemin
+                        if (refPath.StartsWith(sourceRoot, StringComparison.OrdinalIgnoreCase))
+                        {
+                            string fileName = System.IO.Path.GetFileName(refPath);
+                            string newFileName = renameMap.ContainsKey(fileName) ? renameMap[fileName] : fileName;
+                            
+                            string relativePath = GetRelativePath(refPath, sourceRoot);
+                            string relativeDir = System.IO.Path.GetDirectoryName(relativePath) ?? "";
+                            
+                            string newRefPath;
+                            if (string.IsNullOrEmpty(relativeDir))
+                            {
+                                newRefPath = System.IO.Path.Combine(destRoot, newFileName);
+                            }
+                            else
+                            {
+                                // Remplacer le nom de fichier dans le chemin relatif
+                                newRefPath = System.IO.Path.Combine(destRoot, relativeDir, newFileName);
+                            }
+
+                            if (System.IO.File.Exists(newRefPath))
+                            {
+                                // Utiliser PutLogicalFileNameUsingFull pour changer la référence
+                                refDesc.PutLogicalFileNameUsingFull(newRefPath);
+                                Log($"    ↪ {System.IO.Path.GetFileName(refPath)} → {System.IO.Path.GetFileName(newRefPath)}", "DEBUG");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"    Note: Référence {System.IO.Path.GetFileName(refDesc.FullFileName)}: {ex.Message}", "DEBUG");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"  Note: Mise à jour références dessin: {ex.Message}", "DEBUG");
             }
         }
 
@@ -1705,6 +1820,130 @@ namespace XnrgyEngineeringAutomationTools.Services
                     propSet.Add(value, propName);
                 }
                 catch { }
+            }
+        }
+
+        /// <summary>
+        /// Prépare la vue pour le dessinateur:
+        /// - Met le Design View sur "Default" (pas "Primary")
+        /// - Désactive l'affichage de tous les Workfeatures (plans, axes, points, UCS)
+        /// - Fait un Zoom All pour voir tout le modèle
+        /// </summary>
+        private void PrepareViewForDesigner(Document doc)
+        {
+            try
+            {
+                // 1. Mettre le Design View sur "Default" (au lieu de "Primary")
+                try
+                {
+                    if (doc is AssemblyDocument asmDoc)
+                    {
+                        var designViewReps = asmDoc.ComponentDefinition.RepresentationsManager.DesignViewRepresentations;
+                        
+                        // Chercher et activer "Default"
+                        foreach (DesignViewRepresentation dvr in designViewReps)
+                        {
+                            if (dvr.Name.Equals("Default", StringComparison.OrdinalIgnoreCase) ||
+                                dvr.Name.Equals("Défaut", StringComparison.OrdinalIgnoreCase))
+                            {
+                                dvr.Activate();
+                                Log($"  ✓ Design View: {dvr.Name}", "DEBUG");
+                                break;
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"  Note: Design View: {ex.Message}", "DEBUG");
+                }
+
+                // 2. Désactiver l'affichage de tous les Workfeatures (All Work Features OFF)
+                try
+                {
+                    if (doc is AssemblyDocument asmDoc)
+                    {
+                        // Désactiver les plans d'origine
+                        foreach (WorkPlane wp in asmDoc.ComponentDefinition.WorkPlanes)
+                        {
+                            try { wp.Visible = false; } catch { }
+                        }
+                        // Désactiver les axes d'origine
+                        foreach (WorkAxis wa in asmDoc.ComponentDefinition.WorkAxes)
+                        {
+                            try { wa.Visible = false; } catch { }
+                        }
+                        // Désactiver les points d'origine
+                        foreach (WorkPoint wpt in asmDoc.ComponentDefinition.WorkPoints)
+                        {
+                            try { wpt.Visible = false; } catch { }
+                        }
+                        
+                        // Désactiver l'Origin Folder (contient XY, XZ, YZ planes, X, Y, Z axes, Center Point)
+                        try
+                        {
+                            asmDoc.ComponentDefinition.WorkPlanes["XY Plane"].Visible = false;
+                            asmDoc.ComponentDefinition.WorkPlanes["XZ Plane"].Visible = false;
+                            asmDoc.ComponentDefinition.WorkPlanes["YZ Plane"].Visible = false;
+                        }
+                        catch { }
+                        
+                        try
+                        {
+                            asmDoc.ComponentDefinition.WorkAxes["X Axis"].Visible = false;
+                            asmDoc.ComponentDefinition.WorkAxes["Y Axis"].Visible = false;
+                            asmDoc.ComponentDefinition.WorkAxes["Z Axis"].Visible = false;
+                        }
+                        catch { }
+                        
+                        try
+                        {
+                            asmDoc.ComponentDefinition.WorkPoints["Center Point"].Visible = false;
+                        }
+                        catch { }
+                    }
+                    Log("  ✓ Workfeatures cachés", "DEBUG");
+                }
+                catch (Exception ex)
+                {
+                    Log($"  Note: Masquage workfeatures: {ex.Message}", "DEBUG");
+                }
+
+                // 3. Vue Isométrique (ISO)
+                try
+                {
+                    View? activeView = _inventorApp?.ActiveView;
+                    if (activeView != null)
+                    {
+                        Camera camera = activeView.Camera;
+                        camera.ViewOrientationType = ViewOrientationTypeEnum.kIsoTopRightViewOrientation;
+                        camera.Apply();
+                        Log("  ✓ Vue ISO appliquée", "DEBUG");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"  Note: Vue ISO: {ex.Message}", "DEBUG");
+                }
+
+                // 4. Zoom All (Fit)
+                try
+                {
+                    View? activeView = _inventorApp?.ActiveView;
+                    if (activeView != null)
+                    {
+                        activeView.Fit();
+                        Log("  ✓ Zoom All (Fit)", "DEBUG");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"  Note: Zoom All: {ex.Message}", "DEBUG");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"  Erreur préparation vue: {ex.Message}", "DEBUG");
             }
         }
 
