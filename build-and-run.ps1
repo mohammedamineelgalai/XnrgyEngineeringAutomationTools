@@ -57,14 +57,34 @@ function Get-MSBuildPath {
 # Fonction pour tuer les instances
 function Stop-ExistingInstances {
     Write-Host "  [1/4] Arret des instances existantes..." -ForegroundColor Yellow
+    
+    $killed = $false
+    
+    # Tuer par nom de processus
     $processes = Get-Process -Name $ProjectName -ErrorAction SilentlyContinue
     if ($processes) {
-        $processes | Stop-Process -Force
-        Start-Sleep -Seconds 1
+        $processes | Stop-Process -Force -ErrorAction SilentlyContinue
         Write-Host "        ✓ $($processes.Count) instance(s) arretee(s)" -ForegroundColor Green
-    } else {
+        $killed = $true
+    }
+    
+    # Aussi tuer VaultAutomationTool si présent (ancien nom)
+    $oldProcesses = Get-Process -Name "VaultAutomationTool" -ErrorAction SilentlyContinue
+    if ($oldProcesses) {
+        $oldProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
+        Write-Host "        ✓ VaultAutomationTool arrete" -ForegroundColor Green
+        $killed = $true
+    }
+    
+    # Forcer avec taskkill (plus robuste) - ignorer erreurs
+    $null = cmd /c "taskkill /F /IM $ProjectName.exe 2>nul"
+    $null = cmd /c "taskkill /F /IM VaultAutomationTool.exe 2>nul"
+    
+    if (-not $killed) {
         Write-Host "        ✓ Aucune instance en cours" -ForegroundColor Gray
     }
+    
+    Start-Sleep -Seconds 1
 }
 
 Show-Header
