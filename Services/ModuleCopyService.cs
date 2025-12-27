@@ -490,6 +490,7 @@ namespace XnrgyEngineeringAutomationTools.Services
         public bool Success { get; set; }
         public string ErrorMessage { get; set; }
         public string DestinationPath { get; set; }
+        public string NewTopAssemblyPath { get; set; }
         public int FilesCopied { get; set; }
         public int PropertiesUpdated { get; set; }
         public DateTime StartTime { get; set; }

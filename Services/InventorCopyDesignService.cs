@@ -238,6 +238,290 @@ namespace XnrgyEngineeringAutomationTools.Services
         }
 
         /// <summary>
+        /// Switch vers le nouveau projet IPJ créé (après Copy Design)
+        /// Ne sauvegarde PAS le projet actuel car on veut rester sur le nouveau
+        /// </summary>
+        /// <param name="newIpjPath">Chemin complet du nouveau fichier .ipj</param>
+        /// <returns>True si le switch a réussi</returns>
+        public bool SwitchToNewProject(string newIpjPath)
+        {
+            if (_inventorApp == null) return false;
+
+            try
+            {
+                Log($"🔄 Switch vers nouveau projet: {System.IO.Path.GetFileName(newIpjPath)}", "INFO");
+
+                DesignProjectManager designProjectManager = _inventorApp.DesignProjectManager;
+
+                // Vérifier que le fichier IPJ existe
+                if (!System.IO.File.Exists(newIpjPath))
+                {
+                    Log($"❌ Fichier IPJ introuvable: {newIpjPath}", "ERROR");
+                    return false;
+                }
+
+                // Fermer tous les documents avant le switch
+                CloseAllDocuments();
+
+                // Charger le nouveau projet
+                DesignProjects projectsCollection = designProjectManager.DesignProjects;
+                DesignProject? newProject = null;
+
+                // Chercher si déjà dans la collection
+                for (int i = 1; i <= projectsCollection.Count; i++)
+                {
+                    DesignProject proj = projectsCollection[i];
+                    if (proj.FullFileName.Equals(newIpjPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        newProject = proj;
+                        Log($"✅ Nouveau projet trouvé dans la collection", "DEBUG");
+                        break;
+                    }
+                }
+
+                // Si pas trouvé, le charger
+                if (newProject == null)
+                {
+                    Log($"📂 Chargement du nouveau projet: {System.IO.Path.GetFileName(newIpjPath)}", "DEBUG");
+                    newProject = projectsCollection.AddExisting(newIpjPath);
+                }
+
+                // Activer le nouveau projet
+                if (newProject != null)
+                {
+                    newProject.Activate();
+                    Thread.Sleep(1000);
+                    Log($"✅ Nouveau projet activé: {System.IO.Path.GetFileName(newIpjPath)}", "SUCCESS");
+                    return true;
+                }
+                else
+                {
+                    Log("❌ Impossible de charger le nouveau projet", "ERROR");
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"❌ Erreur switch nouveau projet: {ex.Message}", "ERROR");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Finalise le nouveau module après Copy Design:
+        /// 1. Ouvre le Top Assembly
+        /// 2. Applique les iProperties et paramètres
+        /// 3. Update All (rebuild)
+        /// 4. Save All
+        /// 5. Laisse le document ouvert pour le dessinateur
+        /// </summary>
+        private async Task FinalizeNewModuleAsync(string topAssemblyPath, CreateModuleRequest request)
+        {
+            if (_inventorApp == null) return;
+
+            await Task.Run(() =>
+            {
+                try
+                {
+                    Log($"📂 Ouverture du nouveau module: {System.IO.Path.GetFileName(topAssemblyPath)}", "INFO");
+
+                    // 1. Ouvrir le Top Assembly
+                    Document topAssemblyDoc = _inventorApp.Documents.Open(topAssemblyPath, true);
+                    
+                    if (topAssemblyDoc == null)
+                    {
+                        Log($"❌ Impossible d'ouvrir: {topAssemblyPath}", "ERROR");
+                        return;
+                    }
+
+                    Log($"✅ Document ouvert: {System.IO.Path.GetFileName(topAssemblyPath)}", "SUCCESS");
+
+                    // 2. Appliquer les iProperties
+                    Log($"📝 Application des iProperties...", "INFO");
+                    ApplyIPropertiesToDocument(topAssemblyDoc, request);
+
+                    // 3. Appliquer les paramètres Inventor (si c'est un assemblage)
+                    if (topAssemblyDoc is AssemblyDocument assemblyDoc)
+                    {
+                        Log($"⚙️ Application des paramètres Inventor...", "INFO");
+                        ApplyInventorParameters(assemblyDoc, request);
+                    }
+
+                    // 4. Update All (rebuild de l'assemblage)
+                    Log($"🔄 Update All (rebuild)...", "INFO");
+                    try
+                    {
+                        topAssemblyDoc.Update2(true); // true = full update
+                        Log($"✅ Update terminé", "SUCCESS");
+                    }
+                    catch (Exception updateEx)
+                    {
+                        Log($"⚠️ Erreur pendant Update: {updateEx.Message}", "WARN");
+                    }
+
+                    // 5. Save All
+                    Log($"💾 Save All...", "INFO");
+                    try
+                    {
+                        // Sauvegarder le document principal
+                        topAssemblyDoc.Save2(true); // true = save referenced documents too
+
+                        // Sauvegarder tous les documents ouverts (au cas où)
+                        foreach (Document doc in _inventorApp.Documents)
+                        {
+                            try
+                            {
+                                if (doc.Dirty)
+                                {
+                                    doc.Save();
+                                }
+                            }
+                            catch { /* Ignorer les erreurs de sauvegarde individuelles */ }
+                        }
+                        Log($"✅ Sauvegarde terminée", "SUCCESS");
+                    }
+                    catch (Exception saveEx)
+                    {
+                        Log($"⚠️ Erreur pendant Save: {saveEx.Message}", "WARN");
+                    }
+
+                    // 6. Activer le document (le mettre au premier plan)
+                    try
+                    {
+                        topAssemblyDoc.Activate();
+                        _inventorApp.Visible = true; // S'assurer qu'Inventor est visible
+                        Log($"✅ Module prêt pour le dessinateur: {System.IO.Path.GetFileName(topAssemblyPath)}", "SUCCESS");
+                    }
+                    catch { }
+                }
+                catch (Exception ex)
+                {
+                    Log($"❌ Erreur finalisation module: {ex.Message}", "ERROR");
+                }
+            });
+        }
+
+        /// <summary>
+        /// Applique les iProperties sur un document
+        /// </summary>
+        private void ApplyIPropertiesToDocument(Document doc, CreateModuleRequest request)
+        {
+            try
+            {
+                PropertySets propertySets = doc.PropertySets;
+                
+                // Design Tracking Properties
+                PropertySet designProps = propertySets["Design Tracking Properties"];
+                SetProperty(designProps, "Part Number", request.FullProjectNumber);
+                SetProperty(designProps, "Project", request.Project);
+                
+                // Summary Information
+                PropertySet summaryProps = propertySets["Inventor Summary Information"];
+                SetProperty(summaryProps, "Title", request.FullProjectNumber);
+                SetProperty(summaryProps, "Author", request.InitialeDessinateur);
+                
+                // Custom Properties - Inventor User Defined Properties
+                PropertySet customProps = propertySets["Inventor User Defined Properties"];
+                SetProperty(customProps, "Project", request.Project, true);
+                SetProperty(customProps, "Reference", request.Reference, true);
+                SetProperty(customProps, "Module", request.Module, true);
+                SetProperty(customProps, "Numero", request.FullProjectNumber, true);
+                SetProperty(customProps, "Initiale_du_Dessinateur", request.InitialeDessinateur, true);
+                SetProperty(customProps, "Initiale_du_Co_Dessinateur", request.InitialeCoDessinateur, true);
+                SetProperty(customProps, "Date_de_Creation", request.CreationDateFormatted, true);
+                
+                if (!string.IsNullOrEmpty(request.JobTitle))
+                {
+                    SetProperty(customProps, "Job_Title", request.JobTitle, true);
+                }
+
+                Log($"✅ iProperties appliquées: Project={request.Project}, Ref={request.Reference}, Module={request.Module}", "SUCCESS");
+            }
+            catch (Exception ex)
+            {
+                Log($"⚠️ Erreur application iProperties: {ex.Message}", "WARN");
+            }
+        }
+
+        /// <summary>
+        /// Applique les paramètres Inventor sur un assemblage
+        /// </summary>
+        private void ApplyInventorParameters(AssemblyDocument assemblyDoc, CreateModuleRequest request)
+        {
+            try
+            {
+                Parameters parameters = assemblyDoc.ComponentDefinition.Parameters;
+                UserParameters userParams = parameters.UserParameters;
+
+                // Paramètres standards XNRGY
+                SetParameter(userParams, "Project_Form", request.Project);
+                SetParameter(userParams, "Reference_Form", request.Reference);
+                SetParameter(userParams, "Module_Form", request.Module);
+                SetParameter(userParams, "Numero_Form", request.FullProjectNumber);
+                SetParameter(userParams, "Initiale_du_Dessinateur_Form", request.InitialeDessinateur);
+                SetParameter(userParams, "Initiale_du_Co_Dessinateur_Form", request.InitialeCoDessinateur);
+                SetParameter(userParams, "Creation_Date_Form", request.CreationDateFormatted);
+                
+                if (!string.IsNullOrEmpty(request.JobTitle))
+                {
+                    SetParameter(userParams, "Job_Title_Form", request.JobTitle);
+                }
+
+                Log($"✅ Paramètres Inventor appliqués", "SUCCESS");
+            }
+            catch (Exception ex)
+            {
+                Log($"⚠️ Erreur application paramètres: {ex.Message}", "WARN");
+            }
+        }
+
+        /// <summary>
+        /// Définit une propriété, la crée si elle n'existe pas (si createIfMissing=true)
+        /// </summary>
+        private void SetProperty(PropertySet propSet, string name, object value, bool createIfMissing = false)
+        {
+            try
+            {
+                Property prop = propSet[name];
+                prop.Value = value;
+            }
+            catch
+            {
+                if (createIfMissing)
+                {
+                    try
+                    {
+                        propSet.Add(value, name);
+                    }
+                    catch { /* La propriété existe peut-être déjà avec un autre nom */ }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Définit un paramètre utilisateur, le crée s'il n'existe pas
+        /// </summary>
+        private void SetParameter(UserParameters userParams, string name, string value)
+        {
+            try
+            {
+                // Essayer de trouver le paramètre existant
+                for (int i = 1; i <= userParams.Count; i++)
+                {
+                    if (userParams[i].Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        userParams[i].Expression = $"\"{value}\"";
+                        return;
+                    }
+                }
+
+                // Si pas trouvé, créer un nouveau paramètre texte
+                userParams.AddByExpression(name, $"\"{value}\"", UnitsTypeEnum.kTextUnits);
+            }
+            catch { /* Ignorer les erreurs de paramètres */ }
+        }
+
+        /// <summary>
         /// Ferme tous les documents ouverts dans Inventor
         /// </summary>
         private void CloseAllDocuments()
@@ -452,17 +736,40 @@ namespace XnrgyEngineeringAutomationTools.Services
                     result.CopiedFiles.Add(fileResult);
                 }
 
-                ReportProgress(95, "Renommage du fichier projet (.ipj)...");
+                ReportProgress(92, "Renommage du fichier projet (.ipj)...");
 
                 // ÉTAPE 6: Renommer le fichier .ipj avec le numéro de projet formaté
-                await RenameProjectFileAsync(request.DestinationPath, request.FullProjectNumber);
+                string newIpjPath = await RenameProjectFileAsync(request.DestinationPath, request.FullProjectNumber);
+
+                // ÉTAPE 7: Switch vers le nouveau projet IPJ créé
+                ReportProgress(94, "Activation du nouveau projet...");
+                if (!string.IsNullOrEmpty(newIpjPath) && System.IO.File.Exists(newIpjPath))
+                {
+                    Log($"🔄 Switch vers le nouveau projet: {System.IO.Path.GetFileName(newIpjPath)}", "INFO");
+                    SwitchToNewProject(newIpjPath);
+                }
+
+                // ÉTAPE 8: Ouvrir le nouveau Top Assembly et appliquer les propriétés finales
+                ReportProgress(96, "Ouverture du nouveau module...");
+                string newTopAssemblyPath = System.IO.Path.Combine(request.DestinationPath, $"{request.FullProjectNumber}.iam");
+                
+                if (System.IO.File.Exists(newTopAssemblyPath))
+                {
+                    await FinalizeNewModuleAsync(newTopAssemblyPath, request);
+                }
+                else
+                {
+                    Log($"⚠️ Top Assembly non trouvé: {newTopAssemblyPath}", "WARN");
+                }
 
                 result.Success = result.FilesCopied > 0;
                 result.EndTime = DateTime.Now;
                 result.DestinationPath = request.DestinationPath;
+                result.NewTopAssemblyPath = newTopAssemblyPath;
 
                 ReportProgress(100, $"✓ Copy Design terminé: {result.FilesCopied} fichiers");
                 Log($"=== COPY DESIGN TERMINÉ: {result.FilesCopied} fichiers copiés ===", "SUCCESS");
+                Log($"📂 Module ouvert et prêt pour le dessinateur: {newTopAssemblyPath}", "SUCCESS");
             }
             catch (Exception ex)
             {
@@ -470,13 +777,11 @@ namespace XnrgyEngineeringAutomationTools.Services
                 result.EndTime = DateTime.Now;
                 Log($"ERREUR Copy Design: {ex.Message}", "ERROR");
                 ReportProgress(0, $"✗ Erreur: {ex.Message}");
-            }
-            finally
-            {
-                // TOUJOURS restaurer le projet original à la fin
-                if (projectSwitched)
+                
+                // En cas d'erreur seulement, restaurer le projet original
+                if (projectSwitched && !string.IsNullOrEmpty(_originalProjectPath))
                 {
-                    Log("🔄 Restauration du projet original...", "INFO");
+                    Log("🔄 Restauration du projet original suite à erreur...", "INFO");
                     RestoreOriginalProject();
                 }
             }
@@ -1409,9 +1714,12 @@ namespace XnrgyEngineeringAutomationTools.Services
         /// <summary>
         /// Renomme le fichier .ipj principal avec le numéro de projet formaté
         /// Seulement le fichier correspondant au pattern XXXXX-XX-XX_2026.ipj
+        /// Retourne le chemin du nouveau fichier .ipj
         /// </summary>
-        private async Task RenameProjectFileAsync(string destinationPath, string fullProjectNumber)
+        private async Task<string> RenameProjectFileAsync(string destinationPath, string fullProjectNumber)
         {
+            string resultPath = string.Empty;
+            
             await Task.Run(() =>
             {
                 try
@@ -1443,6 +1751,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                         if (fileName.Equals(newIpjName, StringComparison.OrdinalIgnoreCase))
                         {
                             Log($"Fichier .ipj déjà correctement nommé: {newIpjName}", "INFO");
+                            resultPath = ipjFile;
                             continue;
                         }
 
@@ -1455,6 +1764,7 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                         System.IO.File.Move(ipjFile, newIpjPath);
                         Log($"✓ Fichier .ipj renommé: {fileName} → {newIpjName}", "SUCCESS");
+                        resultPath = newIpjPath;
                         
                         // Un seul fichier principal à renommer
                         break;
@@ -1465,6 +1775,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                     Log($"Erreur renommage fichier .ipj: {ex.Message}", "WARN");
                 }
             });
+            
+            return resultPath;
         }
 
         #endregion
