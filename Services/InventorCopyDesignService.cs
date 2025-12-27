@@ -675,13 +675,23 @@ namespace XnrgyEngineeringAutomationTools.Services
                     // Collecter récursivement tous les documents référencés
                     CollectAllReferencedDocumentsDeep((Document)asmDoc, allReferencedDocs);
                     
-                    // Séparer les fichiers du module vs Library
+                    // IMPORTANT: Séparer les fichiers du module vs Library VRAIE
+                    // Les fichiers du module SOURCE (template) doivent être copiés
+                    // Les fichiers de la Library EXTERNE (pas dans le template) gardent leurs liens
+                    // 
+                    // Exemple:
+                    //   sourceRoot = C:\Vault\Engineering\Library\Xnrgy_Module
+                    //   LibraryPath = C:\Vault\Engineering\Library
+                    //   
+                    //   C:\Vault\Engineering\Library\Xnrgy_Module\Roof-01.iam → COPIER (dans sourceRoot)
+                    //   C:\Vault\Engineering\Library\Common\Bolt.ipt → GARDER LIEN (pas dans sourceRoot)
+                    
                     var moduleFiles = allReferencedDocs
-                        .Where(kvp => !kvp.Key.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
+                        .Where(kvp => kvp.Key.StartsWith(sourceRoot, StringComparison.OrdinalIgnoreCase))
                         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase);
                     
                     var libraryFiles = allReferencedDocs
-                        .Where(kvp => kvp.Key.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
+                        .Where(kvp => !kvp.Key.StartsWith(sourceRoot, StringComparison.OrdinalIgnoreCase))
                         .ToList();
 
                     Log($"📁 Total fichiers référencés: {allReferencedDocs.Count}", "INFO");
