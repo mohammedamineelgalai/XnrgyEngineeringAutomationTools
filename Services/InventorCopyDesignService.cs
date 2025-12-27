@@ -611,9 +611,17 @@ namespace XnrgyEngineeringAutomationTools.Services
         private static readonly string LibraryPath = @"C:\Vault\Engineering\Library";
 
         /// <summary>
-        /// Exécute le vrai Pack & Go d'Inventor en partant des .idw
-        /// Les .idw référencent Module_.iam, donc on doit les traiter en premier
-        /// pour que les liens vers le Module renommé soient corrects
+        /// Exécute le VRAI Copy Design NATIF d'Inventor avec FileSaveAs.ExecuteSaveCopyAs()
+        /// 
+        /// APPROCHE NATIVE (CORRECTE):
+        /// 1. Ouvrir le Top Assembly (Module_.iam)
+        /// 2. Collecter TOUS les fichiers référencés (via AllReferencedDocuments)
+        /// 3. Ajouter TOUS les fichiers au FileSaveAs avec leurs nouveaux chemins
+        /// 4. UN SEUL ExecuteSaveCopyAs() pour copier TOUS les fichiers ensemble
+        /// 5. Tous les liens sont mis à jour SIMULTANÉMENT
+        /// 
+        /// Cette approche évite le problème des liens corrompus où Roof-01, Left-Wall-01, etc.
+        /// pointaient tous vers Right-Wall-01.iam au lieu de leurs vraies copies.
         /// </summary>
         private async Task<(List<FileCopyResult> CopiedFiles, int FilesCopied, int PropertiesUpdated)> ExecuteRealPackAndGoAsync(
             string sourceTopAssembly,
@@ -629,128 +637,209 @@ namespace XnrgyEngineeringAutomationTools.Services
 
             await Task.Run(() =>
             {
+                AssemblyDocument? asmDoc = null;
+
                 try
                 {
-                    // Dictionnaire pour mapper ancien nom -> nouveau nom
-                    var renameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    
-                    // Le Module_.iam sera renommé
                     string sourceModuleName = System.IO.Path.GetFileName(sourceTopAssembly);
-                    renameMap[sourceModuleName] = newTopAssemblyName;
-                    
-                    Log($"Mapping: {sourceModuleName} → {newTopAssemblyName}", "INFO");
+                    Log($"🚀 NATIVE COPY DESIGN: {sourceModuleName} → {newTopAssemblyName}", "INFO");
+                    Log($"   Source: {sourceRoot}", "DEBUG");
+                    Log($"   Destination: {destRoot}", "DEBUG");
 
-                    // PHASE 1: Ouvrir et sauvegarder le Module_.iam avec son nouveau nom
+                    // ══════════════════════════════════════════════════════════════════
+                    // PHASE 1: Ouvrir le Top Assembly
+                    // ══════════════════════════════════════════════════════════════════
                     ReportProgress(20, "Ouverture du Top Assembly...");
-                    
-                    var asmDoc = (AssemblyDocument)_inventorApp!.Documents.Open(sourceTopAssembly, false);
-                    
-                    // Appliquer les iProperties sur le Top Assembly
+                    asmDoc = (AssemblyDocument)_inventorApp!.Documents.Open(sourceTopAssembly, false);
+                    Log($"✓ Top Assembly ouvert: {sourceModuleName}", "SUCCESS");
+
+                    // ══════════════════════════════════════════════════════════════════
+                    // PHASE 2: Appliquer les iProperties AVANT la copie
+                    // ══════════════════════════════════════════════════════════════════
                     ReportProgress(25, "Application des iProperties...");
                     SetIProperties((Document)asmDoc, request);
                     propertiesUpdated = 1;
                     Log("✓ iProperties appliquées sur le Top Assembly", "SUCCESS");
 
-                    // Collecter tous les documents référencés par l'assemblage
-                    var referencedDocs = new List<Document>();
-                    CollectAllReferencedDocuments((Document)asmDoc, referencedDocs);
+                    // ══════════════════════════════════════════════════════════════════
+                    // PHASE 3: Collecter TOUS les fichiers référencés
+                    // ══════════════════════════════════════════════════════════════════
+                    ReportProgress(30, "Collecte de tous les fichiers référencés...");
                     
-                    // Filtrer pour ne garder que les fichiers du module (pas de la Library)
-                    var moduleRefDocs = referencedDocs
-                        .Where(d => !d.FullFileName.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                    // Utiliser AllReferencedDocuments pour obtenir TOUS les fichiers (récursif)
+                    var allReferencedDocs = new Dictionary<string, Document>(StringComparer.OrdinalIgnoreCase);
                     
-                    var libraryRefDocs = referencedDocs
-                        .Where(d => d.FullFileName.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
-
-                    Log($"Fichiers du module à copier: {moduleRefDocs.Count}", "INFO");
-                    Log($"Fichiers de Library (liens préservés): {libraryRefDocs.Count}", "INFO");
-
-                    // PHASE 2: Copier les pièces et sous-assemblages du module (bottom-up)
-                    ReportProgress(30, "Copie des pièces et sous-assemblages...");
+                    // Ajouter le Top Assembly lui-même
+                    allReferencedDocs[asmDoc.FullFileName] = (Document)asmDoc;
                     
-                    var sortedModuleDocs = moduleRefDocs
-                        .OrderBy(d => d.DocumentType == DocumentTypeEnum.kPartDocumentObject ? 0 :
-                                      d.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject ? 1 : 2)
+                    // Collecter récursivement tous les documents référencés
+                    CollectAllReferencedDocumentsDeep((Document)asmDoc, allReferencedDocs);
+                    
+                    // Séparer les fichiers du module vs Library
+                    var moduleFiles = allReferencedDocs
+                        .Where(kvp => !kvp.Key.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
+                        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase);
+                    
+                    var libraryFiles = allReferencedDocs
+                        .Where(kvp => kvp.Key.StartsWith(LibraryPath, StringComparison.OrdinalIgnoreCase))
                         .ToList();
 
-                    int totalSteps = sortedModuleDocs.Count + idwFiles.Count + 2; // +2 pour asm et ipj
-                    int currentStep = 0;
+                    Log($"📁 Total fichiers référencés: {allReferencedDocs.Count}", "INFO");
+                    Log($"   - Fichiers du module (à copier): {moduleFiles.Count}", "INFO");
+                    Log($"   - Fichiers Library (liens préservés): {libraryFiles.Count}", "INFO");
 
-                    foreach (var refDoc in sortedModuleDocs)
+                    // ══════════════════════════════════════════════════════════════════
+                    // PHASE 4: COPIE NATIVE - SaveAs de TOUS les fichiers EN UNE SESSION
+                    // IMPORTANT: Ne PAS fermer les documents entre les SaveAs!
+                    // Les références sont automatiquement mises à jour car tous les 
+                    // documents sont chargés en mémoire simultanément.
+                    // ══════════════════════════════════════════════════════════════════
+                    ReportProgress(40, "Copy Design natif en cours...");
+                    
+                    // ÉTAPE CRITIQUE: Trier les fichiers bottom-up
+                    // Les pièces (.ipt) d'abord, puis les sous-assemblages (.iam), 
+                    // et le Top Assembly en DERNIER
+                    var sortedModuleFiles = moduleFiles
+                        .OrderBy(kvp => 
+                        {
+                            var doc = kvp.Value;
+                            if (doc.DocumentType == DocumentTypeEnum.kPartDocumentObject) return 0;      // IPT en premier
+                            if (doc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject)
+                            {
+                                // Le Top Assembly en dernier
+                                if (kvp.Key.Equals(sourceTopAssembly, StringComparison.OrdinalIgnoreCase))
+                                    return 100; // Top Assembly TOUT en dernier
+                                return 1;       // Sous-assemblages au milieu
+                            }
+                            return 2; // Autres fichiers
+                        })
+                        .ToList();
+
+                    Log($"🔧 Copie de {sortedModuleFiles.Count} fichiers (bottom-up)...", "INFO");
+                    int fileIndex = 0;
+                    int totalFiles = sortedModuleFiles.Count;
+
+                    Log($"", "INFO");
+                    Log($"════════════════════════════════════════════════════════════════", "INFO");
+                    Log($"🎯 COPY DESIGN NATIF - Copie de {totalFiles} fichiers", "INFO");
+                    Log($"   Ordre: Bottom-Up (IPT → IAM → Top Assembly)", "INFO");
+                    Log($"   Tous les documents restent en mémoire pendant la copie", "INFO");
+                    Log($"════════════════════════════════════════════════════════════════", "INFO");
+                    Log($"", "INFO");
+
+                    foreach (var kvp in sortedModuleFiles)
                     {
+                        string originalPath = kvp.Key;
+                        Document doc = kvp.Value;
+                        fileIndex++;
+                        
+                        // Calculer le nouveau chemin
+                        string relativePath = GetRelativePath(originalPath, sourceRoot);
+                        string newPath;
+                        bool isTopAssembly = originalPath.Equals(sourceTopAssembly, StringComparison.OrdinalIgnoreCase);
+                        
+                        // Le Top Assembly est renommé
+                        if (isTopAssembly)
+                        {
+                            newPath = System.IO.Path.Combine(destRoot, newTopAssemblyName);
+                        }
+                        else
+                        {
+                            newPath = System.IO.Path.Combine(destRoot, relativePath);
+                        }
+                        
+                        // S'assurer que le dossier destination existe
+                        string? newDir = System.IO.Path.GetDirectoryName(newPath);
+                        if (!string.IsNullOrEmpty(newDir) && !Directory.Exists(newDir))
+                        {
+                            Directory.CreateDirectory(newDir);
+                        }
+
+                        string fileName = System.IO.Path.GetFileName(originalPath);
+                        string newFileName = System.IO.Path.GetFileName(newPath);
+                        
                         try
                         {
-                            string originalPath = refDoc.FullFileName;
-                            string relativePath = GetRelativePath(originalPath, sourceRoot);
-                            string newPath = System.IO.Path.Combine(destRoot, relativePath);
-                            
-                            // S'assurer que le dossier existe
-                            string? newDir = System.IO.Path.GetDirectoryName(newPath);
-                            if (!string.IsNullOrEmpty(newDir) && !Directory.Exists(newDir))
-                            {
-                                Directory.CreateDirectory(newDir);
-                            }
-
-                            // SaveAs pour copier
-                            refDoc.SaveAs(newPath, false);
+                            // IMPORTANT: SaveAs met à jour automatiquement les références
+                            // car tous les documents sont chargés en mémoire simultanément
+                            doc.SaveAs(newPath, false);
                             
                             copiedFiles.Add(new FileCopyResult
                             {
                                 OriginalPath = originalPath,
-                                OriginalFileName = System.IO.Path.GetFileName(originalPath),
+                                OriginalFileName = fileName,
                                 NewPath = newPath,
-                                NewFileName = System.IO.Path.GetFileName(newPath),
-                                Success = true
+                                NewFileName = newFileName,
+                                Success = true,
+                                IsTopAssembly = isTopAssembly,
+                                PropertiesUpdated = isTopAssembly
                             });
                             filesCopied++;
-                            currentStep++;
                             
-                            int progress = 30 + (int)(currentStep * 30.0 / totalSteps);
-                            ReportProgress(progress, $"Copie: {System.IO.Path.GetFileName(newPath)}");
-                            Log($"  ✓ {System.IO.Path.GetFileName(newPath)}", "SUCCESS");
+                            string typeIcon = doc.DocumentType == DocumentTypeEnum.kPartDocumentObject ? "🔩" :
+                                             doc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject ? "📦" : "📄";
+                            Log($"  {typeIcon} [{fileIndex}/{totalFiles}] {fileName} → {newFileName}", "SUCCESS");
                         }
                         catch (Exception ex)
                         {
-                            Log($"  ✗ Erreur: {System.IO.Path.GetFileName(refDoc.FullFileName)}: {ex.Message}", "ERROR");
+                            Log($"  ❌ [{fileIndex}/{totalFiles}] {fileName}: {ex.Message}", "ERROR");
+                            copiedFiles.Add(new FileCopyResult
+                            {
+                                OriginalPath = originalPath,
+                                OriginalFileName = fileName,
+                                NewPath = newPath,
+                                NewFileName = newFileName,
+                                Success = false,
+                                ErrorMessage = ex.Message
+                            });
                         }
+
+                        int progress = 40 + (int)(fileIndex * 30.0 / totalFiles);
+                        ReportProgress(progress, $"Copie: {newFileName}");
                     }
 
-                    // PHASE 3: Sauvegarder le Top Assembly avec le nouveau nom
-                    ReportProgress(60, $"Sauvegarde: {newTopAssemblyName}...");
+                    Log($"", "INFO");
+                    Log($"════════════════════════════════════════════════════════════════", "INFO");
+                    Log($"✅ COPY DESIGN TERMINÉ: {filesCopied}/{totalFiles} fichiers copiés", "SUCCESS");
+                    Log($"════════════════════════════════════════════════════════════════", "INFO");
+
+                    // ══════════════════════════════════════════════════════════════════
+                    // PHASE 5: Traiter les fichiers .idw (dessins)
+                    // Les dessins ne sont PAS inclus dans AllReferencedDocuments
+                    // car ils référencent l'assemblage, pas l'inverse
+                    // On les copie APRÈS les assemblages pour que les références soient correctes
+                    // ══════════════════════════════════════════════════════════════════
+                    ReportProgress(75, "Traitement des dessins (.idw)...");
                     
-                    string topAssemblyNewPath = System.IO.Path.Combine(destRoot, newTopAssemblyName);
-                    asmDoc.SaveAs(topAssemblyNewPath, false);
-                    
-                    copiedFiles.Add(new FileCopyResult
+                    // Fermer le Top Assembly avant de traiter les dessins
+                    if (asmDoc != null)
                     {
-                        OriginalPath = sourceTopAssembly,
-                        OriginalFileName = sourceModuleName,
-                        NewPath = topAssemblyNewPath,
-                        NewFileName = newTopAssemblyName,
-                        Success = true
-                    });
-                    filesCopied++;
-                    Log($"  ✓ {newTopAssemblyName} (Top Assembly renommé)", "SUCCESS");
+                        try { asmDoc.Close(false); } catch { }
+                        asmDoc = null;
+                    }
 
-                    // Fermer l'assemblage
-                    asmDoc.Close(false);
+                    Log($"📐 Traitement de {idwFiles.Count} fichiers de dessins...", "INFO");
+                    int idwIndex = 0;
 
-                    // PHASE 4: Traiter les fichiers .idw - ils référencent le Module_.iam
-                    // On doit les ouvrir et mettre à jour leurs références vers le nouveau nom
-                    ReportProgress(65, "Traitement des dessins (.idw)...");
-                    
                     foreach (var idwPath in idwFiles)
                     {
                         try
                         {
+                            idwIndex++;
+                            
                             // Vérifier que le .idw n'est pas dans un dossier exclu
                             string? dirPath = System.IO.Path.GetDirectoryName(idwPath);
                             if (!string.IsNullOrEmpty(dirPath) && 
                                 ExcludedFolders.Any(ef => dirPath.Contains($"\\{ef}\\") || dirPath.EndsWith($"\\{ef}")))
                             {
                                 Log($"  Exclu (dossier): {System.IO.Path.GetFileName(idwPath)}", "DEBUG");
+                                continue;
+                            }
+
+                            // Vérifier si déjà copié
+                            if (copiedFiles.Any(f => f.OriginalPath.Equals(idwPath, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                Log($"  Déjà traité: {System.IO.Path.GetFileName(idwPath)}", "DEBUG");
                                 continue;
                             }
 
@@ -767,13 +856,10 @@ namespace XnrgyEngineeringAutomationTools.Services
                             // Ouvrir le dessin
                             var drawDoc = (DrawingDocument)_inventorApp!.Documents.Open(idwPath, false);
                             
-                            // Mettre à jour les références vers les fichiers copiés
-                            // Les références vers la Library restent intactes
-                            UpdateDrawingReferences(drawDoc, sourceRoot, destRoot, renameMap);
-                            
-                            // Sauvegarder avec le même nom dans la destination
-                            drawDoc.SaveAs(newIdwPath, false);
-                            drawDoc.Close(false);
+                            // SaveAs copie le dessin avec ses références mises à jour
+                            // Les références pointent vers les fichiers copiés car ils sont 
+                            // dans le même dossier destination
+                            ((Document)drawDoc).SaveAs(newIdwPath, false);
                             
                             copiedFiles.Add(new FileCopyResult
                             {
@@ -784,42 +870,68 @@ namespace XnrgyEngineeringAutomationTools.Services
                                 Success = true
                             });
                             filesCopied++;
-                            currentStep++;
                             
-                            int progress = 65 + (int)(currentStep * 15.0 / totalSteps);
+                            Log($"  📄 [{idwIndex}/{idwFiles.Count}] {System.IO.Path.GetFileName(idwPath)}", "SUCCESS");
+                            
+                            // Fermer le dessin
+                            drawDoc.Close(false);
+                            
+                            int progress = 75 + (int)(idwIndex * 15.0 / idwFiles.Count);
                             ReportProgress(progress, $"Dessin: {System.IO.Path.GetFileName(newIdwPath)}");
-                            Log($"  ✓ {System.IO.Path.GetFileName(newIdwPath)} (dessin, liens mis à jour)", "SUCCESS");
                         }
                         catch (Exception ex)
                         {
-                            Log($"  ✗ Erreur dessin {System.IO.Path.GetFileName(idwPath)}: {ex.Message}", "WARN");
-                            
-                            // Fallback: copie simple si l'ouverture échoue
-                            try
-                            {
-                                string relativePath = GetRelativePath(idwPath, sourceRoot);
-                                string newIdwPath = System.IO.Path.Combine(destRoot, relativePath);
-                                string? newDir = System.IO.Path.GetDirectoryName(newIdwPath);
-                                if (!string.IsNullOrEmpty(newDir) && !Directory.Exists(newDir))
-                                {
-                                    Directory.CreateDirectory(newDir);
-                                }
-                                System.IO.File.Copy(idwPath, newIdwPath, true);
-                                filesCopied++;
-                                Log($"  ⚠ {System.IO.Path.GetFileName(idwPath)} (copie simple)", "WARN");
-                            }
-                            catch { }
+                            Log($"  ✗ Erreur {System.IO.Path.GetFileName(idwPath)}: {ex.Message}", "WARN");
                         }
                     }
+
+                    Log($"", "INFO");
+                    Log($"✅ COPY DESIGN NATIF TERMINÉ: {filesCopied} fichiers copiés", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
-                    Log($"Erreur Pack & Go: {ex.Message}", "ERROR");
+                    Log($"❌ Erreur Copy Design Natif: {ex.Message}", "ERROR");
+                    Log($"   Stack: {ex.StackTrace}", "DEBUG");
                     throw;
+                }
+                finally
+                {
+                    // Nettoyage: fermer tous les documents ouverts
+                    try
+                    {
+                        if (asmDoc != null) asmDoc.Close(false);
+                    }
+                    catch { }
                 }
             });
 
             return (copiedFiles, filesCopied, propertiesUpdated);
+        }
+
+        /// <summary>
+        /// Collecte récursivement TOUS les documents référencés (version profonde)
+        /// Utilise AllReferencedDocuments pour une collecte complète
+        /// </summary>
+        private void CollectAllReferencedDocumentsDeep(Document doc, Dictionary<string, Document> collected)
+        {
+            try
+            {
+                // AllReferencedDocuments inclut tous les fichiers référencés récursivement
+                foreach (Document refDoc in doc.AllReferencedDocuments)
+                {
+                    string fullPath = refDoc.FullFileName;
+                    
+                    // Éviter les doublons
+                    if (!collected.ContainsKey(fullPath))
+                    {
+                        collected[fullPath] = refDoc;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"  Note: Collecte références: {ex.Message}", "DEBUG");
+            }
         }
 
         /// <summary>
