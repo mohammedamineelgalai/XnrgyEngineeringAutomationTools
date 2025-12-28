@@ -361,22 +361,43 @@ namespace XnrgyEngineeringAutomationTools.Views
         {
             if (_files == null || _files.Count == 0) return;
 
+            bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+
             foreach (var file in _files)
             {
-                // Renommer le Top Assembly (.iam) avec le numéro de projet formaté
-                if (file.IsTopAssembly && !string.IsNullOrEmpty(_request.FullProjectNumber))
-                {
-                    file.NewFileName = $"{_request.FullProjectNumber}.iam";
-                }
-                
                 // Calculer le chemin relatif une seule fois
                 var relativeDir = Path.GetDirectoryName(file.RelativePath) ?? "";
+                var isAtRoot = string.IsNullOrEmpty(relativeDir);
                 
-                // Renommer UNIQUEMENT le fichier projet principal (.ipj) - pattern XXXXX-XX-XX_2026.ipj
-                if (file.FileType == "IPJ" && !string.IsNullOrEmpty(_request.FullProjectNumber))
+                // Renommer le Top Assembly (.iam) avec le numéro de projet formaté
+                // Pour templates: fichier marqué IsTopAssembly (Module_.iam)
+                // Pour projets existants: premier .iam à la racine
+                if (!string.IsNullOrEmpty(_request.FullProjectNumber))
                 {
-                    // Seulement si c'est à la racine ET correspond au pattern principal
-                    if (string.IsNullOrEmpty(relativeDir) && IsMainProjectFilePattern(file.OriginalFileName))
+                    if (file.IsTopAssembly)
+                    {
+                        file.NewFileName = $"{_request.FullProjectNumber}.iam";
+                    }
+                    else if (isFromExistingProject && isAtRoot && file.FileType == "IAM")
+                    {
+                        // Pour projets existants: renommer le .iam à la racine (un seul)
+                        // Vérifier qu'on n'a pas déjà renommé un autre .iam
+                        var alreadyRenamed = _files.Any(f => f != file && f.FileType == "IAM" && 
+                            string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)) &&
+                            f.NewFileName == $"{_request.FullProjectNumber}.iam");
+                        if (!alreadyRenamed)
+                        {
+                            file.NewFileName = $"{_request.FullProjectNumber}.iam";
+                        }
+                    }
+                }
+                
+                // Renommer le fichier projet principal (.ipj)
+                // Pour templates: pattern XXXXX-XX-XX_2026.ipj
+                // Pour projets existants: tout .ipj à la racine
+                if (file.FileType == "IPJ" && !string.IsNullOrEmpty(_request.FullProjectNumber) && isAtRoot)
+                {
+                    if (isFromExistingProject || IsMainProjectFilePattern(file.OriginalFileName))
                     {
                         file.NewFileName = $"{_request.FullProjectNumber}.ipj";
                     }
@@ -385,7 +406,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                 // Construire le chemin de destination en conservant la structure relative
                 var fileName = !string.IsNullOrEmpty(file.NewFileName) ? file.NewFileName : file.OriginalFileName;
                 
-                if (string.IsNullOrEmpty(relativeDir))
+                if (isAtRoot)
                 {
                     file.DestinationPath = Path.Combine(destinationBase, fileName);
                 }
@@ -583,6 +604,9 @@ namespace XnrgyEngineeringAutomationTools.Views
                     return;
                 }
 
+                // Déterminer si on est en mode "Projet Existant"
+                bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+
                 // Scanner TOUS les fichiers du dossier (copie design complète)
                 // Exclure: fichiers temporaires, Vault, .bak, dossiers _V et OldVersions
                 var vaultTempExtensions = new[] { ".v", ".v1", ".v2", ".v3", ".v4", ".v5", ".vbak", ".bak" };
@@ -610,6 +634,9 @@ namespace XnrgyEngineeringAutomationTools.Views
                         // Exclure les dossiers _V et OldVersions
                         if (excludedFolders.Any(ef => dirPath.Contains($"\\{ef}\\") || dirPath.EndsWith($"\\{ef}")))
                             return false;
+                        
+                        // Pour les projets existants: NE PAS exclure l'IPJ, il sera copié et renommé
+                        // Pour les templates: tout inclure aussi
                         
                         return true;
                     })
@@ -657,17 +684,22 @@ namespace XnrgyEngineeringAutomationTools.Views
                         IsInventorFile = isInventorFile
                     };
 
-                    // Renommage automatique du Top Assembly (.iam)
-                    if (isTopAssembly && !string.IsNullOrEmpty(TxtProject?.Text))
+                    // Renommage automatique UNIQUEMENT pour les templates (pas les projets existants)
+                    // Les projets existants gardent leurs noms originaux
+                    if (!isFromExistingProject)
                     {
-                        item.NewFileName = $"{_request.FullProjectNumber}.iam";
-                    }
-                    
-                    // Renommage automatique UNIQUEMENT du fichier projet principal (.ipj)
-                    // Pattern: XXXXX-XX-XX_2026.ipj (à la racine)
-                    if (isMainProjectFile && !string.IsNullOrEmpty(TxtProject?.Text))
-                    {
-                        item.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                        // Renommage automatique du Top Assembly (.iam) - template Module_.iam
+                        if (isTopAssembly && !string.IsNullOrEmpty(TxtProject?.Text))
+                        {
+                            item.NewFileName = $"{_request.FullProjectNumber}.iam";
+                        }
+                        
+                        // Renommage automatique UNIQUEMENT du fichier projet principal (.ipj)
+                        // Pattern: XXXXX-XX-XX_2026.ipj (à la racine)
+                        if (isMainProjectFile && !string.IsNullOrEmpty(TxtProject?.Text))
+                        {
+                            item.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                        }
                     }
                     
                     // Calculer le chemin de destination
@@ -738,11 +770,29 @@ namespace XnrgyEngineeringAutomationTools.Views
                     file.NewFileName = newName;
                 }
 
-                // Toujours renommer le Top Assembly avec le numéro de projet
+                // Toujours renommer le Top Assembly et IPJ avec le numéro de projet
+                bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+                
+                // Top Assembly
                 var topAssembly = _files.FirstOrDefault(f => f.IsTopAssembly);
+                if (topAssembly == null && isFromExistingProject)
+                {
+                    // Pour projets existants: premier .iam à la racine
+                    topAssembly = _files.FirstOrDefault(f => f.FileType == "IAM" && 
+                        string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)));
+                }
                 if (topAssembly != null && !string.IsNullOrEmpty(TxtProject?.Text))
                 {
                     topAssembly.NewFileName = $"{_request.FullProjectNumber}.iam";
+                }
+                
+                // IPJ principal
+                var mainIpj = _files.FirstOrDefault(f => f.FileType == "IPJ" && 
+                    string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)) &&
+                    (isFromExistingProject || IsMainProjectFilePattern(f.OriginalFileName)));
+                if (mainIpj != null && !string.IsNullOrEmpty(TxtProject?.Text))
+                {
+                    mainIpj.NewFileName = $"{_request.FullProjectNumber}.ipj";
                 }
 
                 AddLog("Renommage appliqué aux fichiers sélectionnés", "SUCCESS");

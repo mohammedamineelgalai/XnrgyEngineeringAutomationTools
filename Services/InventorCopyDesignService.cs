@@ -639,24 +639,27 @@ namespace XnrgyEngineeringAutomationTools.Services
                 Log($"=== COPY DESIGN: {request.FullProjectNumber} ===", "START");
                 ReportProgress(0, "Préparation du Copy Design...");
 
-                // Trouver le fichier Module_.iam (Top Assembly)
+                // Trouver le fichier Top Assembly (.iam)
+                // Pour templates: chercher Module_.iam
+                // Pour projets existants: chercher n'importe quel .iam à la racine
                 var topAssemblyFile = request.FilesToCopy
                     .FirstOrDefault(f => f.IsTopAssembly || 
                                          f.OriginalFileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase));
 
                 if (topAssemblyFile == null)
                 {
-                    // Chercher n'importe quel .iam dans la racine du template
+                    // Chercher n'importe quel .iam dans la racine (pas dans les sous-dossiers Equipment/Floor/Wall)
                     topAssemblyFile = request.FilesToCopy
                         .FirstOrDefault(f => System.IO.Path.GetExtension(f.OriginalPath).ToLower() == ".iam" &&
                                              !f.OriginalPath.Contains("1-Equipment") &&
                                              !f.OriginalPath.Contains("2-Floor") &&
-                                             !f.OriginalPath.Contains("3-Wall"));
+                                             !f.OriginalPath.Contains("3-Wall") &&
+                                             string.IsNullOrEmpty(System.IO.Path.GetDirectoryName(f.RelativePath)));
                 }
 
                 if (topAssemblyFile == null)
                 {
-                    throw new Exception("Module_.iam (Top Assembly) non trouvé dans le template");
+                    throw new Exception("Aucun fichier Top Assembly (.iam) trouvé à la racine du projet source");
                 }
 
                 string sourceTopAssembly = topAssemblyFile.OriginalPath;
@@ -669,23 +672,26 @@ namespace XnrgyEngineeringAutomationTools.Services
                 Log($"Nouveau nom: {newTopAssemblyName}", "INFO");
                 Log($"Destination: {request.DestinationPath}", "INFO");
 
-                // ÉTAPE 0: CRITIQUE - Switch vers le projet IPJ du template
-                ReportProgress(2, "Recherche du projet IPJ du template...");
+                // ÉTAPE 0: CRITIQUE - Switch vers le projet IPJ
+                // Pour TOUS les cas, utiliser l'IPJ du dossier source (que ce soit template ou projet existant)
+                ReportProgress(2, "Recherche du projet IPJ...");
                 
-                string? templateIpjPath = FindTemplateProjectFile(sourceFolderRoot);
-                if (!string.IsNullOrEmpty(templateIpjPath))
+                string? sourceIpjPath = FindTemplateProjectFile(sourceFolderRoot);
+                
+                if (!string.IsNullOrEmpty(sourceIpjPath))
                 {
-                    ReportProgress(5, "Activation du projet template...");
-                    projectSwitched = SwitchToTemplateProject(templateIpjPath);
+                    Log($"📁 Fichier IPJ source trouvé: {System.IO.Path.GetFileName(sourceIpjPath)}", "INFO");
+                    ReportProgress(5, "Activation du projet source...");
+                    projectSwitched = SwitchToTemplateProject(sourceIpjPath);
                     
                     if (!projectSwitched)
                     {
-                        Log("⚠️ Impossible de switcher vers le projet template, tentative de copie simple", "WARN");
+                        Log("⚠️ Impossible de switcher vers le projet source, tentative de copie simple", "WARN");
                     }
                 }
                 else
                 {
-                    Log("⚠️ Aucun fichier IPJ trouvé dans le template, copie sans switch de projet", "WARN");
+                    Log("⚠️ Aucun fichier IPJ trouvé dans le dossier source, copie sans switch de projet", "WARN");
                 }
 
                 ReportProgress(8, "Création de la structure de dossiers...");
@@ -731,7 +737,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                 var orphanResult = await CopyOrphanInventorFilesAsync(
                     sourceFolderRoot, 
                     request.DestinationPath, 
-                    result.CopiedFiles.Select(f => f.OriginalPath).ToList());
+                    result.CopiedFiles.Select(f => f.OriginalPath).ToList(),
+                    request);
                 result.FilesCopied += orphanResult.Count;
                 foreach (var fileResult in orphanResult)
                 {
@@ -751,7 +758,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 ReportProgress(92, "Renommage du fichier projet (.ipj)...");
 
                 // ÉTAPE 6: Renommer le fichier .ipj avec le numéro de projet formaté
-                string newIpjPath = await RenameProjectFileAsync(request.DestinationPath, request.FullProjectNumber);
+                string newIpjPath = await RenameProjectFileAsync(request.DestinationPath, request.FullProjectNumber, null, request.Source);
 
                 // ÉTAPE 7: Switch vers le nouveau projet IPJ créé
                 ReportProgress(94, "Activation du nouveau projet...");
@@ -806,13 +813,20 @@ namespace XnrgyEngineeringAutomationTools.Services
         /// Ces fichiers doivent quand même être copiés dans la destination
         /// IMPORTANT: Dans le template Xnrgy_Module, la plupart des fichiers sont "orphelins" car le Module_.iam
         /// ne référence que des fichiers de la Library. Tous ces fichiers doivent être copiés.
+        /// Utilise les NewFileName définis dans le request pour appliquer préfixes/suffixes/renommages.
         /// </summary>
         private async Task<List<FileCopyResult>> CopyOrphanInventorFilesAsync(
             string sourceRoot, 
             string destRoot, 
-            List<string> alreadyCopiedPaths)
+            List<string> alreadyCopiedPaths,
+            CreateModuleRequest request)
         {
             var results = new List<FileCopyResult>();
+
+            // Créer un dictionnaire pour lookup rapide des renommages
+            var renameMap = request.FilesToCopy
+                .Where(f => !string.IsNullOrEmpty(f.NewFileName) && f.NewFileName != f.OriginalFileName)
+                .ToDictionary(f => f.OriginalPath.ToLowerInvariant(), f => f.NewFileName);
 
             await Task.Run(() =>
             {
@@ -859,17 +873,38 @@ namespace XnrgyEngineeringAutomationTools.Services
                         return;
                     }
 
-                    Log($"� {orphanFiles.Count} fichier(s) Inventor à copier (copie simple)...", "INFO");
+                    Log($"📦 {orphanFiles.Count} fichier(s) Inventor à copier (copie simple)...", "INFO");
 
                     int copiedCount = 0;
                     int skippedCount = 0;
+                    int renamedCount = 0;
 
                     foreach (var orphanFile in orphanFiles)
                     {
                         try
                         {
                             string relativePath = GetRelativePath(orphanFile, sourceRoot);
-                            string destPath = System.IO.Path.Combine(destRoot, relativePath);
+                            string originalFileName = System.IO.Path.GetFileName(orphanFile);
+                            
+                            // Vérifier si ce fichier a un nouveau nom défini (préfixe/suffixe/renommage)
+                            string newFileName = originalFileName;
+                            if (renameMap.TryGetValue(orphanFile.ToLowerInvariant(), out string? customName) && !string.IsNullOrEmpty(customName))
+                            {
+                                newFileName = customName;
+                                renamedCount++;
+                            }
+                            
+                            // Construire le chemin destination avec le nouveau nom
+                            string relativeDir = System.IO.Path.GetDirectoryName(relativePath) ?? "";
+                            string destPath;
+                            if (string.IsNullOrEmpty(relativeDir))
+                            {
+                                destPath = System.IO.Path.Combine(destRoot, newFileName);
+                            }
+                            else
+                            {
+                                destPath = System.IO.Path.Combine(destRoot, relativeDir, newFileName);
+                            }
 
                             // Vérifier si le fichier n'existe pas déjà dans la destination
                             if (System.IO.File.Exists(destPath))
@@ -891,9 +926,9 @@ namespace XnrgyEngineeringAutomationTools.Services
                             results.Add(new FileCopyResult
                             {
                                 OriginalPath = orphanFile,
-                                OriginalFileName = System.IO.Path.GetFileName(orphanFile),
+                                OriginalFileName = originalFileName,
                                 NewPath = destPath,
-                                NewFileName = System.IO.Path.GetFileName(destPath),
+                                NewFileName = newFileName,
                                 Success = true
                             });
 
@@ -911,7 +946,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                         }
                     }
 
-                    Log($"✓ {copiedCount} fichiers Inventor copiés ({skippedCount} ignorés car déjà présents)", "SUCCESS");
+                    Log($"✓ {copiedCount} fichiers Inventor copiés ({renamedCount} renommés, {skippedCount} ignorés car déjà présents)", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
@@ -1652,10 +1687,16 @@ namespace XnrgyEngineeringAutomationTools.Services
 
         /// <summary>
         /// Copie les fichiers non-Inventor en conservant la structure des dossiers
+        /// Utilise les NewFileName définis dans le request pour appliquer préfixes/suffixes/renommages.
         /// </summary>
         private async Task<List<FileCopyResult>> CopyNonInventorFilesAsync(string sourceRoot, string destRoot, CreateModuleRequest request)
         {
             var results = new List<FileCopyResult>();
+
+            // Créer un dictionnaire pour lookup rapide des renommages
+            var renameMap = request.FilesToCopy
+                .Where(f => !string.IsNullOrEmpty(f.NewFileName) && f.NewFileName != f.OriginalFileName)
+                .ToDictionary(f => f.OriginalPath.ToLowerInvariant(), f => f.NewFileName);
 
             await Task.Run(() =>
             {
@@ -1665,6 +1706,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                     var allFiles = Directory.GetFiles(sourceRoot, "*.*", SearchOption.AllDirectories);
                     
                     Log($"Analyse: {allFiles.Length} fichiers trouvés dans le template", "INFO");
+                    int renamedCount = 0;
 
                     foreach (var filePath in allFiles)
                     {
@@ -1690,9 +1732,29 @@ namespace XnrgyEngineeringAutomationTools.Services
                             continue;
                         }
 
-                        // Calculer le chemin relatif et destination
+                        // Calculer le chemin relatif
                         string relativePath = GetRelativePath(filePath, sourceRoot);
-                        string destPath = System.IO.Path.Combine(destRoot, relativePath);
+                        string originalFileName = System.IO.Path.GetFileName(filePath);
+                        
+                        // Vérifier si ce fichier a un nouveau nom défini (préfixe/suffixe/renommage)
+                        string newFileName = originalFileName;
+                        if (renameMap.TryGetValue(filePath.ToLowerInvariant(), out string? customName) && !string.IsNullOrEmpty(customName))
+                        {
+                            newFileName = customName;
+                            renamedCount++;
+                        }
+                        
+                        // Construire le chemin destination avec le nouveau nom
+                        string relativeDir = System.IO.Path.GetDirectoryName(relativePath) ?? "";
+                        string destPath;
+                        if (string.IsNullOrEmpty(relativeDir))
+                        {
+                            destPath = System.IO.Path.Combine(destRoot, newFileName);
+                        }
+                        else
+                        {
+                            destPath = System.IO.Path.Combine(destRoot, relativeDir, newFileName);
+                        }
 
                         try
                         {
@@ -1709,9 +1771,9 @@ namespace XnrgyEngineeringAutomationTools.Services
                             results.Add(new FileCopyResult
                             {
                                 OriginalPath = filePath,
-                                OriginalFileName = System.IO.Path.GetFileName(filePath),
+                                OriginalFileName = originalFileName,
                                 NewPath = destPath,
-                                NewFileName = System.IO.Path.GetFileName(destPath),
+                                NewFileName = newFileName,
                                 Success = true
                             });
 
@@ -1954,11 +2016,14 @@ namespace XnrgyEngineeringAutomationTools.Services
         /// <summary>
         /// Renomme le fichier .ipj principal avec le numéro de projet formaté
         /// Seulement le fichier correspondant au pattern XXXXX-XX-XX_2026.ipj
+        /// Si aucun .ipj n'est trouvé (cas projet existant), copie depuis le template
+        /// Pour les projets existants, accepte TOUT fichier .ipj à la racine (pas de pattern requis)
         /// Retourne le chemin du nouveau fichier .ipj
         /// </summary>
-        private async Task<string> RenameProjectFileAsync(string destinationPath, string fullProjectNumber)
+        private async Task<string> RenameProjectFileAsync(string destinationPath, string fullProjectNumber, string templatePath = null, CreateModuleSource source = CreateModuleSource.FromTemplate)
         {
             string resultPath = string.Empty;
+            bool isFromExistingProject = source == CreateModuleSource.FromExistingProject;
             
             await Task.Run(() =>
             {
@@ -1969,7 +2034,37 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                     if (ipjFiles.Length == 0)
                     {
-                        Log("Aucun fichier .ipj trouvé dans la destination", "DEBUG");
+                        // Aucun .ipj trouvé - Copier depuis le template (cas projet existant)
+                        Log("Aucun fichier .ipj dans la destination - Création depuis template...", "INFO");
+                        
+                        // Chercher le .ipj dans le template par défaut
+                        string defaultTemplatePath = @"C:\Vault\Engineering\Library\Xnrgy_Module";
+                        string sourceTemplatePath = !string.IsNullOrEmpty(templatePath) ? templatePath : defaultTemplatePath;
+                        
+                        if (Directory.Exists(sourceTemplatePath))
+                        {
+                            var templateIpjFiles = Directory.GetFiles(sourceTemplatePath, "*.ipj", SearchOption.TopDirectoryOnly);
+                            if (templateIpjFiles.Length > 0)
+                            {
+                                // Prendre le premier .ipj du template
+                                string templateIpj = templateIpjFiles[0];
+                                string newIpjName = $"{fullProjectNumber}.ipj";
+                                string newIpjPath = System.IO.Path.Combine(destinationPath, newIpjName);
+                                
+                                // Copier et renommer
+                                System.IO.File.Copy(templateIpj, newIpjPath, true);
+                                Log($"✓ Fichier .ipj créé depuis template: {newIpjName}", "SUCCESS");
+                                resultPath = newIpjPath;
+                            }
+                            else
+                            {
+                                Log("⚠️ Aucun .ipj trouvé dans le template", "WARN");
+                            }
+                        }
+                        else
+                        {
+                            Log($"⚠️ Dossier template non trouvé: {sourceTemplatePath}", "WARN");
+                        }
                         return;
                     }
 
@@ -1977,8 +2072,9 @@ namespace XnrgyEngineeringAutomationTools.Services
                     {
                         var fileName = System.IO.Path.GetFileName(ipjFile);
                         
-                        // Vérifier si c'est le fichier projet principal (pattern XXXXX-XX-XX_2026.ipj)
-                        if (!IsMainProjectFilePattern(fileName))
+                        // Pour les projets existants: accepter TOUT fichier .ipj à la racine
+                        // Pour les templates: vérifier si c'est le fichier projet principal (pattern XXXXX-XX-XX_2026.ipj)
+                        if (!isFromExistingProject && !IsMainProjectFilePattern(fileName))
                         {
                             Log($"Fichier .ipj ignoré (pas le fichier principal): {fileName}", "DEBUG");
                             continue;

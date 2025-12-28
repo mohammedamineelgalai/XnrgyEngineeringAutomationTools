@@ -20,6 +20,7 @@ public static class Logger
 	}
 
 	private static string _logFilePath;
+	private static readonly Encoding _utf8WithBom = new UTF8Encoding(true); // UTF-8 avec BOM pour supporter les emojis
 
 	private static readonly object _lockObj = new();
 
@@ -60,7 +61,7 @@ public static class Logger
 				string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
 				string text2 = level.ToString().PadRight(7);
 				string text3 = "[" + text + "] [" + text2 + "] " + message;
-				File.AppendAllText(_logFilePath, text3 + Environment.NewLine, Encoding.UTF8);
+				File.AppendAllText(_logFilePath, text3 + Environment.NewLine, _utf8WithBom);
 				if (1 == 0)
 				{
 				}

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -18,6 +19,10 @@ namespace XnrgyEngineeringAutomationTools
         private bool _isVaultConnected = false;
         private bool _isInventorConnected = false;
         private bool _isDarkTheme = true;
+
+        // === VERSIONS REQUISES ===
+        private const string REQUIRED_INVENTOR_VERSION = "2026";  // Inventor Professional 2026.2
+        private const string REQUIRED_VAULT_VERSION = "2026";     // Vault Professional 2026.2
 
         // === CHEMINS DES APPLICATIONS ===
         private readonly string _basePath = @"c:\Users\mohammedamine.elgala\source\repos";
@@ -332,9 +337,469 @@ namespace XnrgyEngineeringAutomationTools
             AddLog("XNRGY ENGINEERING AUTOMATION TOOLS v1.0", "START");
             AddLog("Developpe par Mohammed Amine Elgalai - XNRGY Climate Systems", "INFO");
             AddLog("===============================================================", "INFO");
-            AddLog("Initialisation des services...", "INFO");
+            
+            // Lancer la checklist de démarrage
+            Dispatcher.BeginInvoke(new Action(async () => await RunStartupChecklist()), 
+                System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        /// <summary>
+        /// Exécute la checklist de démarrage: vérifie/lance Inventor et ouvre connexion Vault
+        /// </summary>
+        private async Task RunStartupChecklist()
+        {
+            AddLog("", "INFO");
+            AddLog("📋 CHECKLIST DE DEMARRAGE", "START");
+            AddLog("───────────────────────────────────────────────", "INFO");
+
+            // === ÉTAPE 1: Vérification/Lancement d'Inventor ===
+            AddLog("", "INFO");
+            AddLog("🔍 [1/3] Verification d'Inventor Professional 2026...", "INFO");
+            
+            bool inventorOk = await CheckAndLaunchInventorAsync();
+            
+            // === ÉTAPE 2: Vérification/Lancement du Vault Client ===
+            AddLog("", "INFO");
+            AddLog("🔍 [2/3] Verification du Vault Client 2026...", "INFO");
+            
+            bool vaultClientOk = await CheckAndLaunchVaultClientAsync();
+            
+            // === RÉSUMÉ ===
+            AddLog("", "INFO");
+            AddLog("───────────────────────────────────────────────", "INFO");
+            AddLog("📊 RESUME DE LA CHECKLIST:", "INFO");
+            AddLog("   • Inventor 2026: " + (inventorOk ? "OK" : "EN COURS DE DEMARRAGE"), inventorOk ? "SUCCESS" : "WARN");
+            AddLog("   • Vault Client:  " + (vaultClientOk ? "OK" : "EN COURS DE DEMARRAGE"), vaultClientOk ? "SUCCESS" : "WARN");
+            AddLog("───────────────────────────────────────────────", "INFO");
+            
+            if (inventorOk && vaultClientOk)
+            {
+                AddLog("🎉 Environnement pret - Toutes les verifications reussies!", "SUCCESS");
+            }
+            else
+            {
+                AddLog("⏳ Applications en cours de demarrage...", "INFO");
+            }
+            
+            AddLog("", "INFO");
             UpdateConnectionStatus();
-            TryConnectInventorAuto();
+            
+            // === ÉTAPE 3: Ouvrir la fenêtre de connexion (mode auto-connect) ===
+            AddLog("🔍 [3/3] Connexion a Vault...", "INFO");
+            await Task.Delay(500); // Petit délai pour laisser le temps aux apps de démarrer
+            
+            // Toujours ouvrir la fenêtre de connexion avec auto-connect
+            // Si credentials sauvegardés → connexion auto → fenêtre se ferme
+            // Sinon → fenêtre reste pour intervention utilisateur
+            if (!_isVaultConnected)
+            {
+                AddLog("   📍 Ouverture de la fenetre de connexion...", "INFO");
+                OpenLoginWindowWithAutoConnect();
+            }
+            else
+            {
+                AddLog("   ✅ Deja connecte a Vault", "SUCCESS");
+            }
+        }
+        
+        /// <summary>
+        /// Ouvre la fenêtre de connexion avec tentative de connexion automatique
+        /// Comportement pro: affiche le spinner, se ferme auto si succès, reste ouverte sinon
+        /// </summary>
+        private void OpenLoginWindowWithAutoConnect()
+        {
+            var loginWindow = new LoginWindow(_vaultService, autoConnect: true)
+            {
+                Owner = this
+            };
+            
+            if (loginWindow.ShowDialog() == true)
+            {
+                _isVaultConnected = true;
+                UpdateConnectionStatus();
+                AddLog("✅ Connexion Vault etablie avec succes!", "SUCCESS");
+            }
+            else
+            {
+                AddLog("⚠️ Connexion Vault annulee ou echouee", "WARN");
+            }
+        }
+        
+        /// <summary>
+        /// Ouvre la fenêtre de connexion Vault (mode manuel)
+        /// </summary>
+        private void OpenLoginWindow()
+        {
+            var loginWindow = new LoginWindow(_vaultService)
+            {
+                Owner = this
+            };
+            
+            if (loginWindow.ShowDialog() == true)
+            {
+                _isVaultConnected = true;
+                UpdateConnectionStatus();
+                AddLog("✅ Connexion Vault etablie avec succes!", "SUCCESS");
+            }
+        }
+
+        /// <summary>
+        /// Vérifie si Inventor est lancé, sinon le lance
+        /// </summary>
+        private async Task<bool> CheckAndLaunchInventorAsync()
+        {
+            return await Task.Run(async () =>
+            {
+                try
+                {
+                    // Vérifier si le processus Inventor est en cours
+                    var inventorProcesses = Process.GetProcessesByName("Inventor");
+                    
+                    if (inventorProcesses.Length == 0)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            AddLog("   ⚠️ Inventor n'est pas en cours d'execution", "WARN");
+                            AddLog("   🚀 Lancement d'Inventor Professional 2026...", "INFO");
+                        });
+                        
+                        // Chercher et lancer Inventor
+                        string inventorPath = FindInventorExecutable();
+                        if (!string.IsNullOrEmpty(inventorPath))
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = inventorPath,
+                                UseShellExecute = true
+                            });
+                            
+                            Dispatcher.Invoke(() =>
+                                AddLog("   ⏳ Inventor demarre, veuillez patienter...", "INFO"));
+                            
+                            // Attendre qu'Inventor démarre (processus visible)
+                            bool processStarted = false;
+                            for (int i = 0; i < 30; i++)
+                            {
+                                await Task.Delay(1000);
+                                inventorProcesses = Process.GetProcessesByName("Inventor");
+                                if (inventorProcesses.Length > 0)
+                                {
+                                    processStarted = true;
+                                    Dispatcher.Invoke(() =>
+                                        AddLog("   ✅ Processus Inventor detecte!", "SUCCESS"));
+                                    break;
+                                }
+                            }
+                            
+                            if (!processStarted)
+                            {
+                                Dispatcher.Invoke(() =>
+                                    AddLog("   ❌ Inventor n'a pas demarre", "ERROR"));
+                                return false;
+                            }
+                            
+                            // Attendre que COM soit prêt (Inventor a besoin de temps pour s'initialiser)
+                            Dispatcher.Invoke(() =>
+                                AddLog("   ⏳ Attente initialisation COM (peut prendre 15-30 sec)...", "INFO"));
+                            
+                            // Tentatives de connexion COM avec attente progressive
+                            for (int attempt = 1; attempt <= 6; attempt++)
+                            {
+                                await Task.Delay(5000); // Attendre 5 secondes entre chaque tentative
+                                
+                                Dispatcher.Invoke(() =>
+                                    AddLog($"   🔄 Tentative de connexion COM {attempt}/6...", "INFO"));
+                                
+                                if (_inventorService.TryConnect())
+                                {
+                                    _isInventorConnected = true;
+                                    string version = _inventorService.GetInventorVersion();
+                                    
+                                    Dispatcher.Invoke(() =>
+                                    {
+                                        if (!string.IsNullOrEmpty(version))
+                                            AddLog("   📦 Version: " + version, "INFO");
+                                        AddLog("   ✅ Inventor Professional - Connexion COM etablie!", "SUCCESS");
+                                        UpdateConnectionStatus();
+                                    });
+                                    return true;
+                                }
+                            }
+                            
+                            // Si toujours pas connecté après 6 tentatives (30 sec)
+                            Dispatcher.Invoke(() =>
+                            {
+                                AddLog("   ⚠️ Inventor demarre mais COM pas encore pret", "WARN");
+                                AddLog("   → L'application reessayera automatiquement", "INFO");
+                            });
+                            return false;
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() =>
+                                AddLog("   ❌ Inventor 2026 non trouve sur ce poste", "ERROR"));
+                            return false;
+                        }
+                    }
+                    
+                    Dispatcher.Invoke(() => 
+                        AddLog("   📍 Processus Inventor deja en cours", "INFO"));
+                    
+                    // Inventor déjà lancé - connexion directe
+                    if (_inventorService.TryConnect())
+                    {
+                        _isInventorConnected = true;
+                        
+                        // Récupérer la version
+                        string version = _inventorService.GetInventorVersion();
+                        
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (!string.IsNullOrEmpty(version))
+                            {
+                                AddLog("   📦 Version: " + version, "INFO");
+                                AddLog("   ✅ Inventor Professional - Connexion etablie!", "SUCCESS");
+                            }
+                            else
+                            {
+                                AddLog("   ✅ Connexion a Inventor etablie", "SUCCESS");
+                            }
+                            // Mettre à jour l'indicateur de connexion
+                            UpdateConnectionStatus();
+                        });
+                        
+                        return true;
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            AddLog("   ⚠️ Inventor en cours mais connexion COM echouee", "WARN");
+                            AddLog("   → Verifiez qu'Inventor est completement charge", "INFO");
+                        });
+                        return false;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        AddLog("   ❌ Erreur verification Inventor: " + ex.Message, "ERROR");
+                    });
+                    return false;
+                }
+            });
+        }
+        
+        /// <summary>
+        /// Trouve l'exécutable Inventor sur le système
+        /// </summary>
+        private string FindInventorExecutable()
+        {
+            // Chemins standards pour Inventor 2026
+            string[] possiblePaths = new[]
+            {
+                @"C:\Program Files\Autodesk\Inventor 2026\Bin\Inventor.exe",
+                @"C:\Program Files\Autodesk\Inventor 2025\Bin\Inventor.exe",
+                @"C:\Program Files\Autodesk\Inventor 2024\Bin\Inventor.exe",
+                Environment.ExpandEnvironmentVariables(@"%ProgramFiles%\Autodesk\Inventor 2026\Bin\Inventor.exe"),
+            };
+            
+            foreach (var path in possiblePaths)
+            {
+                if (File.Exists(path))
+                    return path;
+            }
+            
+            // Chercher dans Program Files
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string autodeskPath = Path.Combine(programFiles, "Autodesk");
+            
+            if (Directory.Exists(autodeskPath))
+            {
+                foreach (var dir in Directory.GetDirectories(autodeskPath, "Inventor*"))
+                {
+                    string inventorExe = Path.Combine(dir, "Bin", "Inventor.exe");
+                    if (File.Exists(inventorExe))
+                        return inventorExe;
+                }
+            }
+            
+            return null;
+        }
+        
+        /// <summary>
+        /// Trouve l'exécutable Vault Client sur le système
+        /// </summary>
+        private string FindVaultClientExecutable()
+        {
+            // Chemins standards pour Vault Client 2026
+            string[] possiblePaths = new[]
+            {
+                @"C:\Program Files\Autodesk\Vault Professional 2026\Explorer\Connectivity.VaultPro.exe",
+                @"C:\Program Files\Autodesk\Vault Client 2026\Explorer\Connectivity.VaultPro.exe",
+                @"C:\Program Files\Autodesk\Vault Professional 2025\Explorer\Connectivity.VaultPro.exe",
+                @"C:\Program Files\Autodesk\Autodesk Vault Professional 2026\Explorer\Connectivity.VaultPro.exe",
+            };
+            
+            foreach (var path in possiblePaths)
+            {
+                if (File.Exists(path))
+                    return path;
+            }
+            
+            // Chercher dans Program Files
+            string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+            string autodeskPath = Path.Combine(programFiles, "Autodesk");
+            
+            if (Directory.Exists(autodeskPath))
+            {
+                foreach (var dir in Directory.GetDirectories(autodeskPath, "Vault*"))
+                {
+                    string explorerDir = Path.Combine(dir, "Explorer");
+                    if (Directory.Exists(explorerDir))
+                    {
+                        string vaultExe = Path.Combine(explorerDir, "Connectivity.VaultPro.exe");
+                        if (File.Exists(vaultExe))
+                            return vaultExe;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        /// <summary>
+        /// Vérifie si le Vault Client est lancé, sinon le lance
+        /// </summary>
+        private async Task<bool> CheckAndLaunchVaultClientAsync()
+        {
+            return await Task.Run(async () =>
+            {
+                try
+                {
+                    // Noms de processus pour Vault Client
+                    string[] vaultProcessNames = { "Connectivity.VaultPro", "Connectivity.Vault", "Explorer" };
+                    bool vaultClientFound = false;
+                    string foundProcessName = null;
+                    
+                    foreach (var processName in vaultProcessNames)
+                    {
+                        var processes = Process.GetProcessesByName(processName);
+                        if (processes.Length > 0)
+                        {
+                            foreach (var proc in processes)
+                            {
+                                try
+                                {
+                                    string path = proc.MainModule?.FileName;
+                                    if (path != null && path.ToLower().Contains("autodesk"))
+                                    {
+                                        vaultClientFound = true;
+                                        foundProcessName = processName;
+                                        break;
+                                    }
+                                }
+                                catch { }
+                            }
+                        }
+                        if (vaultClientFound) break;
+                    }
+                    
+                    // Alternative: chercher fenêtre avec "Vault" dans le titre
+                    if (!vaultClientFound)
+                    {
+                        var allProcesses = Process.GetProcesses();
+                        foreach (var proc in allProcesses)
+                        {
+                            try
+                            {
+                                if (proc.MainWindowTitle.Contains("Vault") && 
+                                    !proc.MainWindowTitle.Contains("VaultAutomation"))
+                                {
+                                    string path = proc.MainModule?.FileName;
+                                    if (path != null && path.ToLower().Contains("autodesk"))
+                                    {
+                                        vaultClientFound = true;
+                                        foundProcessName = proc.ProcessName;
+                                        break;
+                                    }
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    
+                    if (vaultClientFound)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            AddLog("   📍 Vault Client detecte (processus: " + foundProcessName + ")", "INFO");
+                            AddLog("   ✅ Vault Professional Client - Pret pour connexion", "SUCCESS");
+                        });
+                        return true;
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            AddLog("   ⚠️ Vault Client non detecte", "WARN");
+                            AddLog("   🚀 Lancement de Vault Client 2026...", "INFO");
+                        });
+                        
+                        // Chercher et lancer Vault Client
+                        string vaultPath = FindVaultClientExecutable();
+                        if (!string.IsNullOrEmpty(vaultPath))
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = vaultPath,
+                                UseShellExecute = true
+                            });
+                            
+                            Dispatcher.Invoke(() =>
+                                AddLog("   ⏳ Vault Client demarre, veuillez patienter...", "INFO"));
+                            
+                            // Attendre que Vault démarre (max 15 sec)
+                            for (int i = 0; i < 15; i++)
+                            {
+                                await Task.Delay(1000);
+                                foreach (var pName in vaultProcessNames)
+                                {
+                                    var procs = Process.GetProcessesByName(pName);
+                                    if (procs.Length > 0)
+                                    {
+                                        Dispatcher.Invoke(() =>
+                                            AddLog("   ✅ Vault Client demarre avec succes!", "SUCCESS"));
+                                        return true;
+                                    }
+                                }
+                            }
+                            
+                            Dispatcher.Invoke(() =>
+                                AddLog("   ⚠️ Vault Client en cours de demarrage...", "WARN"));
+                            return false;
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                AddLog("   ⚠️ Vault Client 2026 non trouve sur ce poste", "WARN");
+                                AddLog("   → La connexion SDK sera utilisee", "INFO");
+                            });
+                            return false;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        AddLog("   ❌ Erreur verification Vault Client: " + ex.Message, "ERROR");
+                    });
+                    return false;
+                }
+            });
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
