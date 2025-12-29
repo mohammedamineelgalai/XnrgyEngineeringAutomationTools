@@ -1000,22 +1000,55 @@ namespace XnrgyEngineeringAutomationTools.Services
                     Log($"   Destination: {destRoot}", "DEBUG");
 
                     // ══════════════════════════════════════════════════════════════════
+                    // PRÉPARATION: Créer un dictionnaire pour les renommages (préfixe/suffixe)
+                    // IMPORTANT: Utilisé pour tous les fichiers enfants, pas seulement les orphelins
+                    // Normaliser les chemins en minuscules pour éviter les problèmes de casse
+                    // ══════════════════════════════════════════════════════════════════
+                    var renameMapByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    var renameMapByName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    
+                    foreach (var f in request.FilesToCopy.Where(f => !string.IsNullOrEmpty(f.NewFileName) && f.NewFileName != f.OriginalFileName))
+                    {
+                        // Normaliser le chemin (remplacer / par \ et utiliser lowercase)
+                        string normalizedPath = f.OriginalPath.Replace("/", "\\").ToLowerInvariant();
+                        if (!renameMapByPath.ContainsKey(normalizedPath))
+                        {
+                            renameMapByPath[normalizedPath] = f.NewFileName;
+                        }
+                        
+                        // Aussi indexer par nom de fichier seul (fallback)
+                        string fileName = System.IO.Path.GetFileName(f.OriginalPath).ToLowerInvariant();
+                        if (!renameMapByName.ContainsKey(fileName))
+                        {
+                            renameMapByName[fileName] = f.NewFileName;
+                        }
+                    }
+                    
+                    if (renameMapByPath.Count > 0)
+                    {
+                        Log($"[i] {renameMapByPath.Count} fichiers avec renommage (prefix/suffix)", "INFO");
+                        foreach (var kvp in renameMapByPath.Take(5)) // Log les 5 premiers pour debug
+                        {
+                            Log($"    {System.IO.Path.GetFileName(kvp.Key)} -> {kvp.Value}", "DEBUG");
+                        }
+                        if (renameMapByPath.Count > 5)
+                        {
+                            Log($"    ... et {renameMapByPath.Count - 5} autres", "DEBUG");
+                        }
+                    }
+
+                    // ══════════════════════════════════════════════════════════════════
                     // PHASE 1: Ouvrir le Top Assembly
                     // ══════════════════════════════════════════════════════════════════
                     ReportProgress(20, "Ouverture du Top Assembly...");
                     asmDoc = (AssemblyDocument)_inventorApp!.Documents.Open(sourceTopAssembly, false);
-                    Log($"✓ Top Assembly ouvert: {sourceModuleName}", "SUCCESS");
+                    Log($"[+] Top Assembly ouvert: {sourceModuleName}", "SUCCESS");
+
+                    // NOTE: Les iProperties seront appliquées APRÈS le switch vers le nouveau IPJ
+                    // dans FinalizeNewModuleAsync() - c'est la bonne séquence
 
                     // ══════════════════════════════════════════════════════════════════
-                    // PHASE 2: Appliquer les iProperties AVANT la copie
-                    // ══════════════════════════════════════════════════════════════════
-                    ReportProgress(25, "Application des iProperties...");
-                    SetIProperties((Document)asmDoc, request);
-                    propertiesUpdated = 1;
-                    Log("✓ iProperties appliquées sur le Top Assembly", "SUCCESS");
-
-                    // ══════════════════════════════════════════════════════════════════
-                    // PHASE 3: Collecter TOUS les fichiers référencés
+                    // PHASE 2: Collecter TOUS les fichiers référencés
                     // ══════════════════════════════════════════════════════════════════
                     ReportProgress(30, "Collecte de tous les fichiers référencés...");
                     
@@ -1098,17 +1131,51 @@ namespace XnrgyEngineeringAutomationTools.Services
                         
                         // Calculer le nouveau chemin
                         string relativePath = GetRelativePath(originalPath, sourceRoot);
+                        string originalFileName = System.IO.Path.GetFileName(originalPath);
                         string newPath;
+                        string newFileName;
                         bool isTopAssembly = originalPath.Equals(sourceTopAssembly, StringComparison.OrdinalIgnoreCase);
                         
-                        // Le Top Assembly est renommé
+                        // Le Top Assembly est renommé avec le numéro de projet
                         if (isTopAssembly)
                         {
+                            newFileName = newTopAssemblyName;
                             newPath = System.IO.Path.Combine(destRoot, newTopAssemblyName);
                         }
                         else
                         {
-                            newPath = System.IO.Path.Combine(destRoot, relativePath);
+                            // IMPORTANT: Vérifier si ce fichier a un renommage (préfixe/suffixe)
+                            // Normaliser le chemin pour la recherche
+                            string normalizedOriginalPath = originalPath.Replace("/", "\\").ToLowerInvariant();
+                            string fileNameLower = originalFileName.ToLowerInvariant();
+                            
+                            // D'abord chercher par chemin complet, puis par nom de fichier
+                            if (renameMapByPath.TryGetValue(normalizedOriginalPath, out string? customName) && !string.IsNullOrEmpty(customName))
+                            {
+                                newFileName = customName;
+                                Log($"    [>] Renommage (chemin): {originalFileName} -> {newFileName}", "DEBUG");
+                            }
+                            else if (renameMapByName.TryGetValue(fileNameLower, out string? customNameByFileName) && !string.IsNullOrEmpty(customNameByFileName))
+                            {
+                                newFileName = customNameByFileName;
+                                Log($"    [>] Renommage (nom): {originalFileName} -> {newFileName}", "DEBUG");
+                            }
+                            else
+                            {
+                                // Pas de renommage, utiliser le nom original
+                                newFileName = originalFileName;
+                            }
+                            
+                            // Construire le chemin avec le nouveau nom dans le bon dossier relatif
+                            string? relativeDir = System.IO.Path.GetDirectoryName(relativePath);
+                            if (string.IsNullOrEmpty(relativeDir))
+                            {
+                                newPath = System.IO.Path.Combine(destRoot, newFileName);
+                            }
+                            else
+                            {
+                                newPath = System.IO.Path.Combine(destRoot, relativeDir, newFileName);
+                            }
                         }
                         
                         // S'assurer que le dossier destination existe
@@ -1117,9 +1184,6 @@ namespace XnrgyEngineeringAutomationTools.Services
                         {
                             Directory.CreateDirectory(newDir);
                         }
-
-                        string fileName = System.IO.Path.GetFileName(originalPath);
-                        string newFileName = System.IO.Path.GetFileName(newPath);
                         
                         try
                         {
@@ -1130,7 +1194,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                             copiedFiles.Add(new FileCopyResult
                             {
                                 OriginalPath = originalPath,
-                                OriginalFileName = fileName,
+                                OriginalFileName = originalFileName,
                                 NewPath = newPath,
                                 NewFileName = newFileName,
                                 Success = true,
@@ -1141,15 +1205,15 @@ namespace XnrgyEngineeringAutomationTools.Services
                             
                             string typeIcon = doc.DocumentType == DocumentTypeEnum.kPartDocumentObject ? "[#]" :
                                              doc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject ? "[+]" : "[i]";
-                            Log($"  {typeIcon} [{fileIndex}/{totalFiles}] {fileName} → {newFileName}", "SUCCESS");
+                            Log($"  {typeIcon} [{fileIndex}/{totalFiles}] {originalFileName} -> {newFileName}", "SUCCESS");
                         }
                         catch (Exception ex)
                         {
-                            Log($"  [-] [{fileIndex}/{totalFiles}] {fileName}: {ex.Message}", "ERROR");
+                            Log($"  [-] [{fileIndex}/{totalFiles}] {originalFileName}: {ex.Message}", "ERROR");
                             copiedFiles.Add(new FileCopyResult
                             {
                                 OriginalPath = originalPath,
-                                OriginalFileName = fileName,
+                                OriginalFileName = originalFileName,
                                 NewPath = newPath,
                                 NewFileName = newFileName,
                                 Success = false,
@@ -1163,8 +1227,54 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                     Log($"", "INFO");
                     Log($"════════════════════════════════════════════════════════════════", "INFO");
-                    Log($"[+] COPY DESIGN TERMINÉ: {filesCopied}/{totalFiles} fichiers copiés", "SUCCESS");
+                    Log($"[+] COPY DESIGN TERMINE: {filesCopied}/{totalFiles} fichiers copies", "SUCCESS");
                     Log($"════════════════════════════════════════════════════════════════", "INFO");
+
+                    // ══════════════════════════════════════════════════════════════════
+                    // PHASE 4.5: RENOMMAGE DES FICHIERS ENFANTS AVEC MISE À JOUR DES RÉFÉRENCES
+                    // Si des fichiers ont été renommés (préfixe/suffixe), on doit:
+                    // 1. Fermer tous les documents
+                    // 2. Renommer les fichiers physiques sur disque
+                    // 3. Mettre à jour les références dans les assemblages parents
+                    // ══════════════════════════════════════════════════════════════════
+                    var renamedFiles = copiedFiles.Where(f => f.NewFileName != f.OriginalFileName && f.Success).ToList();
+                    if (renamedFiles.Any())
+                    {
+                        ReportProgress(72, "Mise a jour des references...");
+                        Log($"[>] {renamedFiles.Count} fichiers renommes - mise a jour des references...", "INFO");
+                        
+                        // Le Top Assembly était déjà copié avec le bon nom, pas besoin de le renommer
+                        // Mais les fichiers enfants ont été copiés avec leurs noms originaux
+                        // Il faut mettre à jour les références dans les assemblages
+                        
+                        // Construire le mapping source -> nouveau chemin pour les références
+                        var refUpdateMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var cf in copiedFiles.Where(f => f.Success))
+                        {
+                            // Mapping du chemin original vers le nouveau chemin
+                            refUpdateMapping[cf.OriginalPath] = cf.NewPath;
+                        }
+                        
+                        // Mettre à jour les références dans tous les assemblages copiés
+                        var copiedAssemblies = copiedFiles
+                            .Where(f => f.Success && f.NewPath.ToLowerInvariant().EndsWith(".iam"))
+                            .OrderBy(f => f.IsTopAssembly ? 1 : 0) // Top Assembly en dernier
+                            .ToList();
+                        
+                        foreach (var asmFile in copiedAssemblies)
+                        {
+                            try
+                            {
+                                UpdateAssemblyReferences(asmFile.NewPath, refUpdateMapping);
+                            }
+                            catch (Exception ex)
+                            {
+                                Log($"  [!] Erreur MAJ references {System.IO.Path.GetFileName(asmFile.NewPath)}: {ex.Message}", "WARN");
+                            }
+                        }
+                        
+                        Log($"[+] References mises a jour dans {copiedAssemblies.Count} assemblages", "SUCCESS");
+                    }
 
                     // ══════════════════════════════════════════════════════════════════
                     // PHASE 5: Traiter les fichiers .idw (dessins)
@@ -1196,11 +1306,21 @@ namespace XnrgyEngineeringAutomationTools.Services
                     pathMapping[originalTopPath] = newTopPath;
                     
                     // Créer un dictionnaire des renommages (nom fichier uniquement)
-                    // Principalement pour le Top Assembly Module_.iam → nouveau nom
+                    // Pour le Top Assembly Module_.iam → nouveau nom ET tous les fichiers avec préfixe/suffixe
                     var idwRenameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                     idwRenameMap["Module_.iam"] = newTopAssemblyName;
+                    
+                    // Ajouter aussi les renommages pour les fichiers référencés (préfixe/suffixe)
+                    // Utiliser renameMapByName qui contient les noms de fichiers sans chemin
+                    foreach (var kvp in renameMapByName)
+                    {
+                        if (!idwRenameMap.ContainsKey(kvp.Key))
+                        {
+                            idwRenameMap[kvp.Key] = kvp.Value;
+                        }
+                    }
 
-                    Log($"📐 Traitement de {idwFiles.Count} fichiers de dessins...", "INFO");
+                    Log($"[i] Traitement de {idwFiles.Count} fichiers de dessins...", "INFO");
                     int idwIndex = 0;
 
                     foreach (var idwPath in idwFiles)
@@ -1221,12 +1341,43 @@ namespace XnrgyEngineeringAutomationTools.Services
                             // Vérifier si déjà copié
                             if (copiedFiles.Any(f => f.OriginalPath.Equals(idwPath, StringComparison.OrdinalIgnoreCase)))
                             {
-                                Log($"  Déjà traité: {System.IO.Path.GetFileName(idwPath)}", "DEBUG");
+                                Log($"  Deja traite: {System.IO.Path.GetFileName(idwPath)}", "DEBUG");
                                 continue;
                             }
 
                             string relativePath = GetRelativePath(idwPath, sourceRoot);
-                            string newIdwPath = System.IO.Path.Combine(destRoot, relativePath);
+                            string idwOriginalFileName = System.IO.Path.GetFileName(idwPath);
+                            string idwNewFileName;
+                            string newIdwPath;
+                            
+                            // Vérifier si ce fichier IDW a un renommage (préfixe/suffixe)
+                            // Chercher d'abord par chemin, puis par nom de fichier
+                            string normalizedIdwPath = idwPath.Replace("/", "\\").ToLowerInvariant();
+                            string idwFileNameLower = idwOriginalFileName.ToLowerInvariant();
+                            
+                            if (renameMapByPath.TryGetValue(normalizedIdwPath, out string? customIdwName) && !string.IsNullOrEmpty(customIdwName))
+                            {
+                                idwNewFileName = customIdwName;
+                            }
+                            else if (renameMapByName.TryGetValue(idwFileNameLower, out string? customIdwNameByName) && !string.IsNullOrEmpty(customIdwNameByName))
+                            {
+                                idwNewFileName = customIdwNameByName;
+                            }
+                            else
+                            {
+                                idwNewFileName = idwOriginalFileName;
+                            }
+                            
+                            // Construire le nouveau chemin
+                            string? relativeDir = System.IO.Path.GetDirectoryName(relativePath);
+                            if (string.IsNullOrEmpty(relativeDir))
+                            {
+                                newIdwPath = System.IO.Path.Combine(destRoot, idwNewFileName);
+                            }
+                            else
+                            {
+                                newIdwPath = System.IO.Path.Combine(destRoot, relativeDir, idwNewFileName);
+                            }
                             
                             // S'assurer que le dossier existe
                             string? newDir = System.IO.Path.GetDirectoryName(newIdwPath);
@@ -1250,29 +1401,29 @@ namespace XnrgyEngineeringAutomationTools.Services
                             copiedFiles.Add(new FileCopyResult
                             {
                                 OriginalPath = idwPath,
-                                OriginalFileName = System.IO.Path.GetFileName(idwPath),
+                                OriginalFileName = idwOriginalFileName,
                                 NewPath = newIdwPath,
-                                NewFileName = System.IO.Path.GetFileName(newIdwPath),
+                                NewFileName = idwNewFileName,
                                 Success = true
                             });
                             filesCopied++;
                             
-                            Log($"  [i] [{idwIndex}/{idwFiles.Count}] {System.IO.Path.GetFileName(idwPath)}", "SUCCESS");
+                            Log($"  [i] [{idwIndex}/{idwFiles.Count}] {idwOriginalFileName} -> {idwNewFileName}", "SUCCESS");
                             
                             // Fermer le dessin
                             drawDoc.Close(false);
                             
                             int progress = 75 + (int)(idwIndex * 15.0 / idwFiles.Count);
-                            ReportProgress(progress, $"Dessin: {System.IO.Path.GetFileName(newIdwPath)}");
+                            ReportProgress(progress, $"Dessin: {idwNewFileName}");
                         }
                         catch (Exception ex)
                         {
-                            Log($"  ✗ Erreur {System.IO.Path.GetFileName(idwPath)}: {ex.Message}", "WARN");
+                            Log($"  [-] Erreur {System.IO.Path.GetFileName(idwPath)}: {ex.Message}", "WARN");
                         }
                     }
 
                     Log($"", "INFO");
-                    Log($"[+] COPY DESIGN NATIF TERMINÉ: {filesCopied} fichiers copiés", "SUCCESS");
+                    Log($"[+] COPY DESIGN NATIF TERMINE: {filesCopied} fichiers copies", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
@@ -1465,7 +1616,62 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
             catch (Exception ex)
             {
-                Log($"  Note: Mise à jour références dessin: {ex.Message}", "DEBUG");
+                Log($"  Note: Mise a jour references dessin: {ex.Message}", "DEBUG");
+            }
+        }
+
+        /// <summary>
+        /// Met à jour les références d'un assemblage pour pointer vers les fichiers renommés
+        /// Utilisé quand des fichiers ont été copiés avec préfixe/suffixe
+        /// </summary>
+        private void UpdateAssemblyReferences(string assemblyPath, Dictionary<string, string> pathMapping)
+        {
+            if (_inventorApp == null) return;
+            
+            try
+            {
+                // Ouvrir l'assemblage
+                var doc = _inventorApp.Documents.Open(assemblyPath, false);
+                bool modified = false;
+                
+                // Parcourir tous les ReferencedFileDescriptors
+                foreach (ReferencedFileDescriptor refDesc in doc.ReferencedFileDescriptors)
+                {
+                    try
+                    {
+                        string refPath = refDesc.FullFileName;
+                        
+                        // Vérifier si cette référence a un nouveau chemin dans le mapping
+                        if (pathMapping.TryGetValue(refPath, out string? newPath) && !string.IsNullOrEmpty(newPath))
+                        {
+                            // Vérifier que le nouveau fichier existe
+                            if (System.IO.File.Exists(newPath) && !refPath.Equals(newPath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                refDesc.PutLogicalFileNameUsingFull(newPath);
+                                modified = true;
+                                Log($"    [>] {System.IO.Path.GetFileName(refPath)} -> {System.IO.Path.GetFileName(newPath)}", "DEBUG");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"    [!] Note reference {System.IO.Path.GetFileName(refDesc.FullFileName)}: {ex.Message}", "DEBUG");
+                    }
+                }
+                
+                // Sauvegarder si modifié
+                if (modified)
+                {
+                    doc.Save();
+                    Log($"  [+] References MAJ: {System.IO.Path.GetFileName(assemblyPath)}", "DEBUG");
+                }
+                
+                // Fermer le document
+                doc.Close(false);
+            }
+            catch (Exception ex)
+            {
+                Log($"  [!] Erreur MAJ assemblage {System.IO.Path.GetFileName(assemblyPath)}: {ex.Message}", "WARN");
             }
         }
 
@@ -1491,7 +1697,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                     var referencedDocs = new List<Document>();
                     CollectAllReferencedDocuments((Document)asmDoc, referencedDocs);
                     
-                    Log($"Pack & Go: {referencedDocs.Count + 1} fichiers Inventor à traiter", "INFO");
+                    Log($"Pack & Go: {referencedDocs.Count + 1} fichiers Inventor a traiter", "INFO");
                     ReportProgress(35, $"Pack & Go: {referencedDocs.Count + 1} fichiers Inventor...");
 
                     int totalFiles = referencedDocs.Count + 1;
@@ -2239,6 +2445,11 @@ namespace XnrgyEngineeringAutomationTools.Services
             
             // Pattern 3: Le nom contient "Module" (fichier projet du module)
             if (nameWithoutExt.IndexOf("Module", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            
+            // Pattern 4: Format XXXXXXXXX (9 chiffres) - fichier déjà renommé au format projet
+            // Ex: 123450101.ipj (Projet 12345, Ref 01, Module 01)
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameWithoutExt, @"^\d{9}$"))
                 return true;
                 
             return false;
