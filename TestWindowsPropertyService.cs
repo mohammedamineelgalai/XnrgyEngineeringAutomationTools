@@ -24,11 +24,11 @@ namespace VaultAutomationTool
 
             if (!File.Exists(testFilePath))
             {
-                Console.WriteLine($"❌ Fichier non trouvé: {testFilePath}");
+                Console.WriteLine($"[-] Fichier non trouve: {testFilePath}");
                 return;
             }
 
-            Console.WriteLine($"📁 Fichier test: {testFilePath}");
+            Console.WriteLine($"[i] Fichier test: {testFilePath}");
             Console.WriteLine($"   Extension: {Path.GetExtension(testFilePath)}");
             Console.WriteLine($"   Taille: {new FileInfo(testFilePath).Length:N0} bytes");
             Console.WriteLine();
@@ -38,14 +38,14 @@ namespace VaultAutomationTool
             string testReference = "REF-WINPROP";
             string testModule = "M999";
 
-            Console.WriteLine("📝 Valeurs à écrire:");
+            Console.WriteLine("[>] Valeurs a ecrire:");
             Console.WriteLine($"   Project   = {testProject}");
             Console.WriteLine($"   Reference = {testReference}");
             Console.WriteLine($"   Module    = {testModule}");
             Console.WriteLine();
 
             Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            Console.WriteLine("ÉCRITURE des propriétés...");
+            Console.WriteLine("ECRITURE des proprietes...");
             Console.WriteLine("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
             try
@@ -57,18 +57,18 @@ namespace VaultAutomationTool
                     Console.WriteLine();
                     if (result)
                     {
-                        Console.WriteLine("✅ Propriétés écrites avec SUCCÈS!");
+                        Console.WriteLine("[+] Proprietes ecrites avec SUCCES!");
                     }
                     else
                     {
-                        Console.WriteLine("❌ Échec de l'écriture des propriétés");
+                        Console.WriteLine("[-] Echec de l'ecriture des proprietes");
                         return;
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Exception lors de l'écriture: {ex.Message}");
+                Console.WriteLine($"[-] Exception lors de l'ecriture: {ex.Message}");
                 Console.WriteLine($"   Stack: {ex.StackTrace}");
                 return;
             }
@@ -95,31 +95,31 @@ namespace VaultAutomationTool
                     bool referenceOk = readReference == testReference;
                     bool moduleOk = readModule == testModule;
 
-                    Console.WriteLine("Vérification:");
-                    Console.WriteLine($"   Project   : {(projectOk ? "✅" : "❌")}");
-                    Console.WriteLine($"   Reference : {(referenceOk ? "✅" : "❌")}");
-                    Console.WriteLine($"   Module    : {(moduleOk ? "✅" : "❌")}");
+                    Console.WriteLine("Verification:");
+                    Console.WriteLine($"   Project   : {(projectOk ? "[+]" : "[-]")}");
+                    Console.WriteLine($"   Reference : {(referenceOk ? "[+]" : "[-]")}");
+                    Console.WriteLine($"   Module    : {(moduleOk ? "[+]" : "[-]")}");
                     Console.WriteLine();
 
                     if (projectOk && referenceOk && moduleOk)
                     {
-                        Console.WriteLine("✅✅✅ TEST RÉUSSI - Les propriétés Windows OLE fonctionnent! ✅✅✅");
+                        Console.WriteLine("[+][+][+] TEST REUSSI - Les proprietes Windows OLE fonctionnent! [+][+][+]");
                     }
                     else
                     {
-                        Console.WriteLine("⚠️ TEST PARTIEL - Certaines propriétés n'ont pas été lues correctement");
-                        Console.WriteLine("   Note: Le format Inventor 2026 peut utiliser un encodage propriétaire");
+                        Console.WriteLine("[!] TEST PARTIEL - Certaines proprietes n'ont pas ete lues correctement");
+                        Console.WriteLine("   Note: Le format Inventor 2026 peut utiliser un encodage proprietaire");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"❌ Exception lors de la lecture: {ex.Message}");
+                Console.WriteLine($"[-] Exception lors de la lecture: {ex.Message}");
             }
 
             Console.WriteLine();
             Console.WriteLine("═════════════════════════════════════════════════════════════════════");
-            Console.WriteLine("Test terminé - Vérifiez le fichier dans Inventor pour confirmer");
+            Console.WriteLine("Test termine - Verifiez le fichier dans Inventor pour confirmer");
             Console.WriteLine("═════════════════════════════════════════════════════════════════════");
         }
     }

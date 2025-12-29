@@ -40,7 +40,7 @@ namespace VaultAutomationTool.Services
                     Type? inventorType = Type.GetTypeFromProgID("Inventor.Application");
                     if (inventorType == null)
                     {
-                        Logger.Log("[INVENTOR] ❌ Inventor.Application non disponible", Logger.LogLevel.ERROR);
+                        Logger.Log("[INVENTOR] [-] Inventor.Application non disponible", Logger.LogLevel.ERROR);
                         return false;
                     }
 
@@ -50,7 +50,7 @@ namespace VaultAutomationTool.Services
                     try
                     {
                         _inventorApp = Marshal.GetActiveObject("Inventor.Application");
-                        Logger.Log("[INVENTOR] ✅ Connecté à Inventor existant", Logger.LogLevel.INFO);
+                        Logger.Log("[INVENTOR] [+] Connecté à Inventor existant", Logger.LogLevel.INFO);
                     }
                     catch
                     {
@@ -59,23 +59,23 @@ namespace VaultAutomationTool.Services
                         if (_inventorApp != null)
                         {
                             _inventorApp.Visible = false; // Mode invisible
-                            Logger.Log("[INVENTOR] ✅ Nouvelle instance créée (invisible)", Logger.LogLevel.INFO);
+                            Logger.Log("[INVENTOR] [+] Nouvelle instance créée (invisible)", Logger.LogLevel.INFO);
                         }
                     }
 
                     if (_inventorApp != null)
                     {
                         var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
-                        Logger.Log($"[INVENTOR] ✅ Prêt en {elapsed:F0}ms", Logger.LogLevel.INFO);
+                        Logger.Log($"[INVENTOR] [+] Prêt en {elapsed:F0}ms", Logger.LogLevel.INFO);
                         return true;
                     }
 
-                    Logger.Log("[INVENTOR] ❌ Impossible d'initialiser Inventor", Logger.LogLevel.ERROR);
+                    Logger.Log("[INVENTOR] [-] Impossible d'initialiser Inventor", Logger.LogLevel.ERROR);
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log($"[INVENTOR] ❌ Erreur initialisation: {ex.Message}", Logger.LogLevel.ERROR);
+                    Logger.Log($"[INVENTOR] [-] Erreur initialisation: {ex.Message}", Logger.LogLevel.ERROR);
                     return false;
                 }
             }
@@ -131,7 +131,7 @@ namespace VaultAutomationTool.Services
 
                 if (document == null)
                 {
-                    Logger.Log($"[INVENTOR] ❌ Impossible d'ouvrir le document", Logger.LogLevel.ERROR);
+                    Logger.Log($"[INVENTOR] [-] Impossible d'ouvrir le document", Logger.LogLevel.ERROR);
                     return false;
                 }
 
@@ -151,7 +151,7 @@ namespace VaultAutomationTool.Services
 
                 if (customProps == null)
                 {
-                    Logger.Log($"[INVENTOR] ❌ PropertySet 'Inventor User Defined Properties' non trouvé", Logger.LogLevel.ERROR);
+                    Logger.Log($"[INVENTOR] [-] PropertySet 'Inventor User Defined Properties' non trouvé", Logger.LogLevel.ERROR);
                     document.Close(true); // true = skip save
                     return false;
                 }
@@ -191,12 +191,12 @@ namespace VaultAutomationTool.Services
                 }
 
                 var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
-                Logger.Log($"[INVENTOR] ✅ {propsSet} iProperties écrites en {elapsed:F0}ms: {Path.GetFileName(filePath)}", Logger.LogLevel.INFO);
+                Logger.Log($"[INVENTOR] [+] {propsSet} iProperties écrites en {elapsed:F0}ms: {Path.GetFileName(filePath)}", Logger.LogLevel.INFO);
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log($"[INVENTOR] ❌ Erreur: {ex.Message}", Logger.LogLevel.ERROR);
+                Logger.Log($"[INVENTOR] [-] Erreur: {ex.Message}", Logger.LogLevel.ERROR);
 
                 try
                 {

@@ -381,12 +381,12 @@ namespace VaultAutomationTool.Services
                     backupPath = null;
 
                     var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
-                    Logger.Log($"[OLE] ✅ iProperties définies en {elapsed:F0}ms: {Path.GetFileName(filePath)}", Logger.LogLevel.INFO);
+                    Logger.Log($"[OLE] [+] iProperties définies en {elapsed:F0}ms: {Path.GetFileName(filePath)}", Logger.LogLevel.INFO);
                     return true;
                 }
                 else
                 {
-                    Logger.Log($"[OLE] ❌ Échec écriture propriétés: {Path.GetFileName(filePath)}", Logger.LogLevel.ERROR);
+                    Logger.Log($"[OLE] [-] Échec écriture propriétés: {Path.GetFileName(filePath)}", Logger.LogLevel.ERROR);
                     return false;
                 }
             }

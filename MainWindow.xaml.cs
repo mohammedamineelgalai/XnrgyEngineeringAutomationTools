@@ -349,62 +349,62 @@ namespace XnrgyEngineeringAutomationTools
         private async Task RunStartupChecklist()
         {
             AddLog("", "INFO");
-            AddLog("📋 CHECKLIST DE DEMARRAGE", "START");
+            AddLog("[i] CHECKLIST DE DEMARRAGE", "START");
             AddLog("───────────────────────────────────────────────", "INFO");
 
-            // === ÉTAPE 1: Vérification/Lancement d'Inventor ===
+            // === ETAPE 1: Verification/Lancement d'Inventor ===
             AddLog("", "INFO");
-            AddLog("🔍 [1/3] Verification d'Inventor Professional 2026...", "INFO");
+            AddLog("[>] [1/3] Verification d'Inventor Professional 2026...", "INFO");
             
             bool inventorOk = await CheckAndLaunchInventorAsync();
             
-            // === ÉTAPE 2: Vérification/Lancement du Vault Client ===
+            // === ETAPE 2: Verification/Lancement du Vault Client ===
             AddLog("", "INFO");
-            AddLog("🔍 [2/3] Verification du Vault Client 2026...", "INFO");
+            AddLog("[>] [2/3] Verification du Vault Client 2026...", "INFO");
             
             bool vaultClientOk = await CheckAndLaunchVaultClientAsync();
             
-            // === RÉSUMÉ ===
+            // === RESUME ===
             AddLog("", "INFO");
             AddLog("───────────────────────────────────────────────", "INFO");
-            AddLog("📊 RESUME DE LA CHECKLIST:", "INFO");
+            AddLog("[i] RESUME DE LA CHECKLIST:", "INFO");
             AddLog("   • Inventor 2026: " + (inventorOk ? "OK" : "EN COURS DE DEMARRAGE"), inventorOk ? "SUCCESS" : "WARN");
             AddLog("   • Vault Client:  " + (vaultClientOk ? "OK" : "EN COURS DE DEMARRAGE"), vaultClientOk ? "SUCCESS" : "WARN");
             AddLog("───────────────────────────────────────────────", "INFO");
             
             if (inventorOk && vaultClientOk)
             {
-                AddLog("🎉 Environnement pret - Toutes les verifications reussies!", "SUCCESS");
+                AddLog("[OK] Environnement pret - Toutes les verifications reussies!", "SUCCESS");
             }
             else
             {
-                AddLog("⏳ Applications en cours de demarrage...", "INFO");
+                AddLog("[~] Applications en cours de demarrage...", "INFO");
             }
             
             AddLog("", "INFO");
             UpdateConnectionStatus();
             
-            // === ÉTAPE 3: Ouvrir la fenêtre de connexion (mode auto-connect) ===
-            AddLog("🔍 [3/3] Connexion a Vault...", "INFO");
+            // === ETAPE 3: Ouvrir la fenetre de connexion (mode auto-connect) ===
+            AddLog("[>] [3/3] Connexion a Vault...", "INFO");
             await Task.Delay(500); // Petit délai pour laisser le temps aux apps de démarrer
             
-            // Toujours ouvrir la fenêtre de connexion avec auto-connect
-            // Si credentials sauvegardés → connexion auto → fenêtre se ferme
+            // Toujours ouvrir la fenetre de connexion avec auto-connect
+            // Si credentials sauvegardes → connexion auto → fenetre se ferme
             // Sinon → fenêtre reste pour intervention utilisateur
             if (!_isVaultConnected)
             {
-                AddLog("   📍 Ouverture de la fenetre de connexion...", "INFO");
+                AddLog("   [>] Ouverture de la fenetre de connexion...", "INFO");
                 OpenLoginWindowWithAutoConnect();
             }
             else
             {
-                AddLog("   ✅ Deja connecte a Vault", "SUCCESS");
+                AddLog("   [+] Deja connecte a Vault", "SUCCESS");
             }
         }
         
         /// <summary>
-        /// Ouvre la fenêtre de connexion avec tentative de connexion automatique
-        /// Comportement pro: affiche le spinner, se ferme auto si succès, reste ouverte sinon
+        /// Ouvre la fenetre de connexion avec tentative de connexion automatique
+        /// Comportement pro: affiche le spinner, se ferme auto si succes, reste ouverte sinon
         /// </summary>
         private void OpenLoginWindowWithAutoConnect()
         {
@@ -417,16 +417,16 @@ namespace XnrgyEngineeringAutomationTools
             {
                 _isVaultConnected = true;
                 UpdateConnectionStatus();
-                AddLog("✅ Connexion Vault etablie avec succes!", "SUCCESS");
+                AddLog("[+] Connexion Vault etablie avec succes!", "SUCCESS");
             }
             else
             {
-                AddLog("⚠️ Connexion Vault annulee ou echouee", "WARN");
+                AddLog("[!] Connexion Vault annulee ou echouee", "WARN");
             }
         }
         
         /// <summary>
-        /// Ouvre la fenêtre de connexion Vault (mode manuel)
+        /// Ouvre la fenetre de connexion Vault (mode manuel)
         /// </summary>
         private void OpenLoginWindow()
         {
@@ -439,12 +439,12 @@ namespace XnrgyEngineeringAutomationTools
             {
                 _isVaultConnected = true;
                 UpdateConnectionStatus();
-                AddLog("✅ Connexion Vault etablie avec succes!", "SUCCESS");
+                AddLog("[+] Connexion Vault etablie avec succes!", "SUCCESS");
             }
         }
 
         /// <summary>
-        /// Vérifie si Inventor est lancé, sinon le lance
+        /// Verifie si Inventor est lance, sinon le lance
         /// </summary>
         private async Task<bool> CheckAndLaunchInventorAsync()
         {
@@ -452,15 +452,15 @@ namespace XnrgyEngineeringAutomationTools
             {
                 try
                 {
-                    // Vérifier si le processus Inventor est en cours
+                    // Verifier si le processus Inventor est en cours
                     var inventorProcesses = Process.GetProcessesByName("Inventor");
                     
                     if (inventorProcesses.Length == 0)
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            AddLog("   ⚠️ Inventor n'est pas en cours d'execution", "WARN");
-                            AddLog("   🚀 Lancement d'Inventor Professional 2026...", "INFO");
+                            AddLog("   [!] Inventor n'est pas en cours d'execution", "WARN");
+                            AddLog("   [>] Lancement d'Inventor Professional 2026...", "INFO");
                         });
                         
                         // Chercher et lancer Inventor
@@ -474,9 +474,9 @@ namespace XnrgyEngineeringAutomationTools
                             });
                             
                             Dispatcher.Invoke(() =>
-                                AddLog("   ⏳ Inventor demarre, veuillez patienter...", "INFO"));
+                                AddLog("   [~] Inventor demarre, veuillez patienter...", "INFO"));
                             
-                            // Attendre qu'Inventor démarre (processus visible)
+                            // Attendre qu'Inventor demarre (processus visible)
                             bool processStarted = false;
                             for (int i = 0; i < 30; i++)
                             {
@@ -486,7 +486,7 @@ namespace XnrgyEngineeringAutomationTools
                                 {
                                     processStarted = true;
                                     Dispatcher.Invoke(() =>
-                                        AddLog("   ✅ Processus Inventor detecte!", "SUCCESS"));
+                                        AddLog("   [+] Processus Inventor detecte!", "SUCCESS"));
                                     break;
                                 }
                             }
@@ -494,13 +494,13 @@ namespace XnrgyEngineeringAutomationTools
                             if (!processStarted)
                             {
                                 Dispatcher.Invoke(() =>
-                                    AddLog("   ❌ Inventor n'a pas demarre", "ERROR"));
+                                    AddLog("   [-] Inventor n'a pas demarre", "ERROR"));
                                 return false;
                             }
                             
-                            // Attendre que COM soit prêt (Inventor a besoin de temps pour s'initialiser)
+                            // Attendre que COM soit pret (Inventor a besoin de temps pour s'initialiser)
                             Dispatcher.Invoke(() =>
-                                AddLog("   ⏳ Attente initialisation COM (peut prendre 15-30 sec)...", "INFO"));
+                                AddLog("   [~] Attente initialisation COM (peut prendre 15-30 sec)...", "INFO"));
                             
                             // Tentatives de connexion COM avec attente progressive
                             for (int attempt = 1; attempt <= 6; attempt++)
@@ -508,7 +508,7 @@ namespace XnrgyEngineeringAutomationTools
                                 await Task.Delay(5000); // Attendre 5 secondes entre chaque tentative
                                 
                                 Dispatcher.Invoke(() =>
-                                    AddLog($"   🔄 Tentative de connexion COM {attempt}/6...", "INFO"));
+                                    AddLog($"   [>] Tentative de connexion COM {attempt}/6...", "INFO"));
                                 
                                 if (_inventorService.TryConnect())
                                 {
@@ -518,53 +518,53 @@ namespace XnrgyEngineeringAutomationTools
                                     Dispatcher.Invoke(() =>
                                     {
                                         if (!string.IsNullOrEmpty(version))
-                                            AddLog("   📦 Version: " + version, "INFO");
-                                        AddLog("   ✅ Inventor Professional - Connexion COM etablie!", "SUCCESS");
+                                            AddLog("   [i] Version: " + version, "INFO");
+                                        AddLog("   [+] Inventor Professional - Connexion COM etablie!", "SUCCESS");
                                         UpdateConnectionStatus();
                                     });
                                     return true;
                                 }
                             }
                             
-                            // Si toujours pas connecté après 6 tentatives (30 sec)
+                            // Si toujours pas connecte apres 6 tentatives (30 sec)
                             Dispatcher.Invoke(() =>
                             {
-                                AddLog("   ⚠️ Inventor demarre mais COM pas encore pret", "WARN");
-                                AddLog("   → L'application reessayera automatiquement", "INFO");
+                                AddLog("   [!] Inventor demarre mais COM pas encore pret", "WARN");
+                                AddLog("   -> L'application reessayera automatiquement", "INFO");
                             });
                             return false;
                         }
                         else
                         {
                             Dispatcher.Invoke(() =>
-                                AddLog("   ❌ Inventor 2026 non trouve sur ce poste", "ERROR"));
+                                AddLog("   [-] Inventor 2026 non trouve sur ce poste", "ERROR"));
                             return false;
                         }
                     }
                     
                     Dispatcher.Invoke(() => 
-                        AddLog("   📍 Processus Inventor deja en cours", "INFO"));
+                        AddLog("   [>] Processus Inventor deja en cours", "INFO"));
                     
-                    // Inventor déjà lancé - connexion directe
+                    // Inventor deja lance - connexion directe
                     if (_inventorService.TryConnect())
                     {
                         _isInventorConnected = true;
                         
-                        // Récupérer la version
+                        // Recuperer la version
                         string version = _inventorService.GetInventorVersion();
                         
                         Dispatcher.Invoke(() =>
                         {
                             if (!string.IsNullOrEmpty(version))
                             {
-                                AddLog("   📦 Version: " + version, "INFO");
-                                AddLog("   ✅ Inventor Professional - Connexion etablie!", "SUCCESS");
+                                AddLog("   [i] Version: " + version, "INFO");
+                                AddLog("   [+] Inventor Professional - Connexion etablie!", "SUCCESS");
                             }
                             else
                             {
-                                AddLog("   ✅ Connexion a Inventor etablie", "SUCCESS");
+                                AddLog("   [+] Connexion a Inventor etablie", "SUCCESS");
                             }
-                            // Mettre à jour l'indicateur de connexion
+                            // Mettre a jour l'indicateur de connexion
                             UpdateConnectionStatus();
                         });
                         
@@ -574,8 +574,8 @@ namespace XnrgyEngineeringAutomationTools
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            AddLog("   ⚠️ Inventor en cours mais connexion COM echouee", "WARN");
-                            AddLog("   → Verifiez qu'Inventor est completement charge", "INFO");
+                            AddLog("   [!] Inventor en cours mais connexion COM echouee", "WARN");
+                            AddLog("   -> Verifiez qu'Inventor est completement charge", "INFO");
                         });
                         return false;
                     }
@@ -584,7 +584,7 @@ namespace XnrgyEngineeringAutomationTools
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        AddLog("   ❌ Erreur verification Inventor: " + ex.Message, "ERROR");
+                        AddLog("   [-] Erreur verification Inventor: " + ex.Message, "ERROR");
                     });
                     return false;
                 }
@@ -734,8 +734,8 @@ namespace XnrgyEngineeringAutomationTools
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            AddLog("   📍 Vault Client detecte (processus: " + foundProcessName + ")", "INFO");
-                            AddLog("   ✅ Vault Professional Client - Pret pour connexion", "SUCCESS");
+                            AddLog("   [>] Vault Client detecte (processus: " + foundProcessName + ")", "INFO");
+                            AddLog("   [+] Vault Professional Client - Pret pour connexion", "SUCCESS");
                         });
                         return true;
                     }
@@ -743,8 +743,8 @@ namespace XnrgyEngineeringAutomationTools
                     {
                         Dispatcher.Invoke(() =>
                         {
-                            AddLog("   ⚠️ Vault Client non detecte", "WARN");
-                            AddLog("   🚀 Lancement de Vault Client 2026...", "INFO");
+                            AddLog("   [!] Vault Client non detecte", "WARN");
+                            AddLog("   [>] Lancement de Vault Client 2026...", "INFO");
                         });
                         
                         // Chercher et lancer Vault Client
@@ -758,9 +758,9 @@ namespace XnrgyEngineeringAutomationTools
                             });
                             
                             Dispatcher.Invoke(() =>
-                                AddLog("   ⏳ Vault Client demarre, veuillez patienter...", "INFO"));
+                                AddLog("   [~] Vault Client demarre, veuillez patienter...", "INFO"));
                             
-                            // Attendre que Vault démarre (max 15 sec)
+                            // Attendre que Vault demarre (max 15 sec)
                             for (int i = 0; i < 15; i++)
                             {
                                 await Task.Delay(1000);
@@ -770,22 +770,22 @@ namespace XnrgyEngineeringAutomationTools
                                     if (procs.Length > 0)
                                     {
                                         Dispatcher.Invoke(() =>
-                                            AddLog("   ✅ Vault Client demarre avec succes!", "SUCCESS"));
+                                            AddLog("   [+] Vault Client demarre avec succes!", "SUCCESS"));
                                         return true;
                                     }
                                 }
                             }
                             
                             Dispatcher.Invoke(() =>
-                                AddLog("   ⚠️ Vault Client en cours de demarrage...", "WARN"));
+                                AddLog("   [!] Vault Client en cours de demarrage...", "WARN"));
                             return false;
                         }
                         else
                         {
                             Dispatcher.Invoke(() =>
                             {
-                                AddLog("   ⚠️ Vault Client 2026 non trouve sur ce poste", "WARN");
-                                AddLog("   → La connexion SDK sera utilisee", "INFO");
+                                AddLog("   [!] Vault Client 2026 non trouve sur ce poste", "WARN");
+                                AddLog("   -> La connexion SDK sera utilisee", "INFO");
                             });
                             return false;
                         }
@@ -795,7 +795,7 @@ namespace XnrgyEngineeringAutomationTools
                 {
                     Dispatcher.Invoke(() =>
                     {
-                        AddLog("   ❌ Erreur verification Vault Client: " + ex.Message, "ERROR");
+                        AddLog("   [-] Erreur verification Vault Client: " + ex.Message, "ERROR");
                     });
                     return false;
                 }

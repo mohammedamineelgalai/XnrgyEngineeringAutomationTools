@@ -47,26 +47,26 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
         // Liste complète pour les filtres
         private readonly List<FileItem> _allFiles = new();
 
-        // ✅ Extensions à EXCLURE (backup, temporaires, système)
+        // [+] Extensions a EXCLURE (backup, temporaires, systeme)
         private static readonly HashSet<string> ExcludedExtensions = new(StringComparer.OrdinalIgnoreCase)
         {
             ".v", ".bak", ".old",          // Backup Vault
             ".tmp", ".temp",               // Temporaires
             ".ipj",                        // Projet Inventor (ne pas uploader!)
-            ".lck", ".lock", ".log",       // Système/logs
+            ".lck", ".lock", ".log",       // Systeme/logs
             ".dwl", ".dwl2"                // AutoCAD locks
         };
         
-        // ✅ Préfixes de fichiers temporaires à exclure
+        // [+] Prefixes de fichiers temporaires a exclure
         private static readonly string[] ExcludedPrefixes = new[]
         {
             "~$",      // Office temporaire
             "._",      // macOS temporaire
-            "Backup_", // Backup générique
-            ".~"       // Temporaire générique
+            "Backup_", // Backup generique
+            ".~"       // Temporaire generique
         };
         
-        // ✅ Dossiers à exclure complètement
+        // [+] Dossiers a exclure completement
         private static readonly string[] ExcludedFolders = new[]
         {
             "OldVersions", "oldversions", 
@@ -182,7 +182,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 // Log pour debug
                 if (value != null)
                 {
-                    Services.Logger.Log($"[ViewModel] 🔄 SelectedStateInventor changé: ID={value.Id}, Name='{value.Name}'", Services.Logger.LogLevel.INFO);
+                    Services.Logger.Log($"[ViewModel] [>] SelectedStateInventor change: ID={value.Id}, Name='{value.Name}'", Services.Logger.LogLevel.INFO);
                 }
             }
         }
@@ -198,13 +198,13 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 // Log pour debug
                 if (value != null)
                 {
-                    Services.Logger.Log($"[ViewModel] 🔄 SelectedStateNonInventor changé: ID={value.Id}, Name='{value.Name}'", Services.Logger.LogLevel.INFO);
+                    Services.Logger.Log($"[ViewModel] [>] SelectedStateNonInventor change: ID={value.Id}, Name='{value.Name}'", Services.Logger.LogLevel.INFO);
                 }
             }
         }
         
         // Status
-        private string _statusMessage = "Prêt";
+        private string _statusMessage = "Pret";
         public string StatusMessage
         {
             get => _statusMessage;
@@ -272,13 +272,13 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                         SelectedCategoryNonInventor = AvailableCategories.First();
                     }
                     
-                    // Mettre à jour les états disponibles après sélection de la catégorie
+                    // Mettre a jour les etats disponibles apres selection de la categorie
                     UpdateAvailableStates();
                 });
             }
             catch (Exception ex)
             {
-                StatusMessage = $"⚠️ Erreur lors du chargement des catégories: {ex.Message}";
+                StatusMessage = $"[!] Erreur lors du chargement des categories: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
         }
@@ -297,13 +297,13 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                         AvailableLifecycleDefinitions.Add(def);
                     }
                     
-                    // Mettre à jour les états disponibles après chargement
+                    // Mettre a jour les etats disponibles apres chargement
                     UpdateAvailableStates();
                 });
             }
             catch (Exception ex)
             {
-                StatusMessage = $"⚠️ Erreur lors du chargement des Lifecycle Definitions: {ex.Message}";
+                StatusMessage = $"[!] Erreur lors du chargement des Lifecycle Definitions: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
         }
@@ -425,18 +425,18 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
             }
             catch (Exception ex)
             {
-                StatusMessage = $"⚠️ Erreur lors de la mise à jour des états: {ex.Message}";
+                StatusMessage = $"[!] Erreur lors de la mise a jour des etats: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
         }
 
         /// <summary>
-        /// Retourne la liste des States autorisés pour une catégorie donnée.
-        /// Ces listes correspondent exactement à ce qui est visible dans Vault Client.
+        /// Retourne la liste des States autorises pour une categorie donnee.
+        /// Ces listes correspondent exactement a ce qui est visible dans Vault Client.
         /// </summary>
         private List<string>? GetAllowedStatesForCategory(string categoryLower)
         {
-            // Mapping des States autorisés par catégorie (correspondant à Vault Client)
+            // Mapping des States autorises par categorie (correspondant a Vault Client)
             var categoryAllowedStates = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase)
             {
                 // Engineering: For Review, Work in Progress, Released, Obsolete (PAS Quick-Change)
@@ -458,7 +458,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 return allowedStates;
             }
 
-            // Par défaut, pas de filtre (tous les States sont autorisés)
+            // Par defaut, pas de filtre (tous les States sont autorises)
             return null;
         }
 
@@ -468,17 +468,17 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
             {
                 AvailableCategories.Clear();
                 
-                // Ajouter une option "Aucune" (par défaut)
-                AvailableCategories.Add(new CategoryItem { Id = -1, Name = "Aucune (par défaut)" });
+                // Ajouter une option "Aucune" (par defaut)
+                AvailableCategories.Add(new CategoryItem { Id = -1, Name = "Aucune (par defaut)" });
                 
-                // Charger les catégories depuis Vault
+                // Charger les categories depuis Vault
                 var categories = _vaultService.GetAvailableCategories();
                 foreach (var category in categories)
                 {
                     AvailableCategories.Add(new CategoryItem { Id = category.Id, Name = category.Name });
                 }
                 
-                // Sélectionner "Base" par défaut si disponible, sinon "Aucune"
+                // Selectionner "Base" par defaut si disponible, sinon "Aucune"
                 var baseCategory = AvailableCategories.FirstOrDefault(c => c.Name.Equals("Base", StringComparison.OrdinalIgnoreCase));
                 if (baseCategory != null)
                 {
@@ -493,7 +493,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
             }
             catch (Exception ex)
             {
-                StatusMessage = $"⚠️ Erreur chargement catégories: {ex.Message}";
+                StatusMessage = $"[!] Erreur chargement categories: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
         }
@@ -517,14 +517,14 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
         {
             try
             {
-                StatusMessage = "🔍 Scan des modules disponibles...";
+                StatusMessage = "[>] Scan des modules disponibles...";
                 OnPropertyChanged(nameof(StatusMessage));
 
                 const string basePath = @"C:\Vault\Engineering\Projects";
 
                 if (!Directory.Exists(basePath))
                 {
-                    StatusMessage = $"❌ Dossier Vault introuvable: {basePath}";
+                    StatusMessage = $"[-] Dossier Vault introuvable: {basePath}";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
@@ -534,18 +534,18 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
 
                 if (modules.Count == 0)
                 {
-                    StatusMessage = $"ℹ️ Aucun module trouvé dans {basePath}. Vérifiez la structure.";
+                    StatusMessage = $"[i] Aucun module trouve dans {basePath}. Verifiez la structure.";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
 
-                StatusMessage = $"✅ {modules.Count} modules trouvés";
+                StatusMessage = $"[+] {modules.Count} modules trouves";
                 OnPropertyChanged(nameof(StatusMessage));
 
-                // Créer la fenêtre de sélection
+                // Creer la fenetre de selection
                 var window = new ModuleSelectionWindow(modules);
                 
-                // Définir la fenêtre parente pour centrer sur MainWindow
+                // Definir la fenetre parente pour centrer sur MainWindow
                 window.Owner = Application.Current.MainWindow;
                 
                 if (window.ShowDialog() == true)
@@ -560,19 +560,19 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                             Reference = selected.Reference,
                             Module = selected.Module
                         };
-                        StatusMessage = $"✅ Module sélectionné: {selected.DisplayName}";
+                        StatusMessage = $"[+] Module selectionne: {selected.DisplayName}";
                         OnPropertyChanged(nameof(ProjectPath));
                         OnPropertyChanged(nameof(ProjectProperties));
                         OnPropertyChanged(nameof(StatusMessage));
                         
-                        // Scanner automatiquement le module sélectionné
+                        // Scanner automatiquement le module selectionne
                         ScanProject();
                     }
                 }
             }
             catch (Exception ex)
             {
-                StatusMessage = $"❌ Erreur scan modules: {ex.Message}";
+                StatusMessage = $"[-] Erreur scan modules: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
         }
@@ -645,27 +645,27 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
             }
             catch (Exception ex)
             {
-                StatusMessage = $"❌ Erreur lors du scan: {ex.Message}";
+                StatusMessage = $"[-] Erreur lors du scan: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
 
             return modules;
         }
 
-        // Scan les fichiers du module sélectionné (ProjectPath) et remplit les collections
+        // Scan les fichiers du module selectionne (ProjectPath) et remplit les collections
         private void ScanProject()
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(ProjectPath) || !Directory.Exists(ProjectPath))
                 {
-                    StatusMessage = $"❌ Dossier module introuvable: {ProjectPath}";
+                    StatusMessage = $"[-] Dossier module introuvable: {ProjectPath}";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
 
                 // ═══════════════════════════════════════════════════════════════════════════════
-                // EXTRACTION AUTOMATIQUE DES PROPRIÉTÉS DEPUIS LE CHEMIN
+                // EXTRACTION AUTOMATIQUE DES PROPRIETES DEPUIS LE CHEMIN
                 // Pattern: C:\Vault\Engineering\Projects\[PROJECT]\[REF]\[MODULE]
                 // Exemple: C:\Vault\Engineering\Projects\12345\REF01\M01
                 // ═══════════════════════════════════════════════════════════════════════════════
@@ -679,7 +679,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                     {
                         ProjectProperties = extractedProps;
                         OnPropertyChanged(nameof(ProjectProperties));
-                        Services.Logger.Log($"✅ Propriétés extraites du chemin: Project={extractedProps.ProjectNumber}, Ref={extractedProps.Reference}, Module={extractedProps.Module}", Services.Logger.LogLevel.INFO);
+                        Services.Logger.Log($"[+] Proprietes extraites du chemin: Project={extractedProps.ProjectNumber}, Ref={extractedProps.Reference}, Module={extractedProps.Module}", Services.Logger.LogLevel.INFO);
                     }
                 }
 
@@ -694,31 +694,31 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 int inventorCount = 0;
                 int nonInventorCount = 0;
 
-                // Trier par nom de fichier alphabétiquement
+                // Trier par nom de fichier alphabetiquement
                 foreach (var f in allFiles.OrderBy(p => Path.GetFileName(p), StringComparer.OrdinalIgnoreCase))
                 {
                     try
                     {
                         var fi = new FileInfo(f);
                         
-                        // ✅ EXCLURE fichiers backup/temporaires/système
+                        // [+] EXCLURE fichiers backup/temporaires/systeme
                         bool shouldExclude = false;
                         
-                        // Vérifier extension
+                        // Verifier extension
                         if (ExcludedExtensions.Contains(fi.Extension))
                         {
                             excludedCount++;
                             shouldExclude = true;
                         }
                         
-                        // Vérifier préfixe
+                        // Verifier prefixe
                         if (!shouldExclude && ExcludedPrefixes.Any(prefix => fi.Name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)))
                         {
                             excludedCount++;
                             shouldExclude = true;
                         }
                         
-                        // Vérifier dossier parent (OldVersions, Backup, etc.)
+                        // Verifier dossier parent (OldVersions, Backup, etc.)
                         if (!shouldExclude)
                         {
                             var dirName = fi.Directory?.Name ?? "";
@@ -743,7 +743,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                             FileExtension = fi.Extension,
                             FileSizeFormatted = FormatSize(fi.Length),
                             IsInventorFile = inventorExt.Contains(fi.Extension),
-                            IsSelected = true, // ✅ AUTO-COCHÉ pour TOUS les fichiers (Inventor ET Non-Inventor)
+                            IsSelected = true, // [+] AUTO-COCHE pour TOUS les fichiers (Inventor ET Non-Inventor)
                             Status = "En attente"
                         };
 
@@ -774,7 +774,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 };
                 OnPropertyChanged(nameof(ProjectInfo));
                 
-                var statusMsg = $"✅ Scanné: {ProjectInfo.TotalFiles} fichiers ({inventorCount} inventor, {nonInventorCount} non-inventor)";
+                var statusMsg = $"[+] Scanne: {ProjectInfo.TotalFiles} fichiers ({inventorCount} inventor, {nonInventorCount} non-inventor)";
                 if (excludedCount > 0)
                 {
                     statusMsg += $" | {excludedCount} exclus (backup/temp)";
@@ -784,13 +784,13 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
             }
             catch (Exception ex)
             {
-                StatusMessage = $"❌ Erreur scan projet: {ex.Message}";
+                StatusMessage = $"[-] Erreur scan projet: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
         }
 
         /// <summary>
-        /// Extrait les propriétés Project/Reference/Module depuis un chemin de dossier
+        /// Extrait les proprietes Project/Reference/Module depuis un chemin de dossier
         /// Pattern: ...\Projects\[PROJECT]\[REF]\[MODULE]
         /// Exemple: C:\Vault\Engineering\Projects\12345\REF01\M01
         /// Résultat: Project=12345, Reference=01, Module=01 (SANS préfixes REF/M)
@@ -857,7 +857,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                         Regex.IsMatch(refFolder, @"^REF(\d+)$", RegexOptions.IgnoreCase) &&
                         Regex.IsMatch(moduleFolder, @"^M(\d+)$", RegexOptions.IgnoreCase))
                     {
-                        // Extraire les numéros SANS les préfixes REF et M
+                        // Extraire les numeros SANS les prefixes REF et M
                         var refMatch = Regex.Match(refFolder, @"^REF(\d+)$", RegexOptions.IgnoreCase);
                         var moduleMatch = Regex.Match(moduleFolder, @"^M(\d+)$", RegexOptions.IgnoreCase);
                         
@@ -870,12 +870,12 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                     }
                 }
                 
-                Services.Logger.Log($"⚠️ Impossible d'extraire les propriétés du chemin: {path}", Services.Logger.LogLevel.DEBUG);
+                Services.Logger.Log($"[!] Impossible d'extraire les proprietes du chemin: {path}", Services.Logger.LogLevel.DEBUG);
                 return null;
             }
             catch (Exception ex)
             {
-                Services.Logger.Log($"⚠️ Erreur extraction propriétés: {ex.Message}", Services.Logger.LogLevel.DEBUG);
+                Services.Logger.Log($"[!] Erreur extraction proprietes: {ex.Message}", Services.Logger.LogLevel.DEBUG);
                 return null;
             }
         }
@@ -997,17 +997,17 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
             return fileNameLower.Contains(filterLower) || pathLower.Contains(filterLower);
         }
         
-        // ✅ Connexion/Déconnexion RÉELLE à Vault via VaultSDK
+        // [+] Connexion/Deconnexion REELLE a Vault via VaultSDK
         private void ToggleConnection()
         {
             try
             {
                 if (IsConnected)
                 {
-                    // Déconnexion
+                    // Deconnexion
                     _vaultService.Disconnect();
                     IsConnected = false;
-                    StatusMessage = "🔌 Déconnecté de Vault";
+                    StatusMessage = "[>] Deconnecte de Vault";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
@@ -1015,39 +1015,39 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 // Validation des champs
                 if (string.IsNullOrWhiteSpace(Configuration.VaultConfig.ServerName))
                 {
-                    StatusMessage = "⚠️ Veuillez saisir le nom du serveur Vault";
+                    StatusMessage = "[!] Veuillez saisir le nom du serveur Vault";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(Configuration.VaultConfig.VaultName))
                 {
-                    StatusMessage = "⚠️ Veuillez saisir le nom du Vault";
+                    StatusMessage = "[!] Veuillez saisir le nom du Vault";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
 
                 if (string.IsNullOrWhiteSpace(Configuration.VaultConfig.Username))
                 {
-                    StatusMessage = "⚠️ Veuillez saisir le nom d'utilisateur";
+                    StatusMessage = "[!] Veuillez saisir le nom d'utilisateur";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
 
-                // ✅ Mot de passe obligatoire SAUF pour Administrator
+                // [+] Mot de passe obligatoire SAUF pour Administrator
                 bool isAdministrator = Configuration.VaultConfig.Username.Equals("Administrator", StringComparison.OrdinalIgnoreCase);
                 if (string.IsNullOrWhiteSpace(VaultPassword) && !isAdministrator)
                 {
-                    StatusMessage = "⚠️ Veuillez saisir le mot de passe";
+                    StatusMessage = "[!] Veuillez saisir le mot de passe";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
 
-                StatusMessage = "🔌 Connexion à Vault en cours...";
+                StatusMessage = "[>] Connexion a Vault en cours...";
                 OnPropertyChanged(nameof(StatusMessage));
 
-                // Connexion réelle via VaultSDK
-                // ✅ Toujours utiliser une chaîne (jamais null)
+                // Connexion reelle via VaultSDK
+                // [+] Toujours utiliser une chaine (jamais null)
                 // Pour Administrator, si le champ est vide, envoyer "" explicitement
                 string passwordToUse = VaultPassword ?? "";
                 
@@ -1061,23 +1061,23 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 if (success)
                 {
                     IsConnected = true;
-                    StatusMessage = $"✅ Connecté: {Configuration.VaultConfig.Username}@{Configuration.VaultConfig.ServerName}/{Configuration.VaultConfig.VaultName}";
+                    StatusMessage = $"[+] Connecte: {Configuration.VaultConfig.Username}@{Configuration.VaultConfig.ServerName}/{Configuration.VaultConfig.VaultName}";
                     
-                    // Charger les catégories disponibles
+                    // Charger les categories disponibles
                     LoadCategories();
                     
                     // Charger les Lifecycle Definitions disponibles
                     LoadLifecycleDefinitions();
                     
-                    // NOTE: Les révisions sont gérées automatiquement par Vault via les transitions d'état
+                    // NOTE: Les revisions sont gerees automatiquement par Vault via les transitions d'etat
                     
-                    // Sauvegarder la configuration (avec mot de passe si SaveCredentials est coché)
+                    // Sauvegarder la configuration (avec mot de passe si SaveCredentials est coche)
                     SaveConfiguration();
                 }
                 else
                 {
                     IsConnected = false;
-                    StatusMessage = "❌ Échec de connexion à Vault. Vérifiez le serveur, vault, identifiants et consultez les logs.";
+                    StatusMessage = "[-] Echec de connexion a Vault. Verifiez le serveur, vault, identifiants et consultez les logs.";
                 }
 
                 OnPropertyChanged(nameof(StatusMessage));
@@ -1085,7 +1085,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
             catch (Exception ex)
             {
                 IsConnected = false;
-                StatusMessage = $"❌ Erreur connexion: {ex.Message}";
+                StatusMessage = $"[-] Erreur connexion: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
         }
@@ -1116,44 +1116,44 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                         ProjectPath = selectedPath;
                         OnPropertyChanged(nameof(ProjectPath));
                         
-                        // Scanner automatiquement le dossier sélectionné
+                        // Scanner automatiquement le dossier selectionne
                         ScanProject();
                     }
                 }
             }
             catch (Exception ex)
             {
-                StatusMessage = $"❌ Erreur lors de la sélection du dossier: {ex.Message}";
+                StatusMessage = $"[-] Erreur lors de la selection du dossier: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
         }
         
         /// <summary>
-        /// Récupère le chemin du document actif dans Inventor
-        /// Utilise P/Invoke direct vers oleaut32.dll (solution recommandée pour .NET Framework 4.8)
+        /// Recupere le chemin du document actif dans Inventor
+        /// Utilise P/Invoke direct vers oleaut32.dll (solution recommandee pour .NET Framework 4.8)
         /// </summary>
         private void GetPathFromInventor()
         {
-            Services.Logger.Log("🔧 [GetPathFromInventor] MÉTHODE APPELÉE", Services.Logger.LogLevel.INFO);
+            Services.Logger.Log("[>] [GetPathFromInventor] METHODE APPELEE", Services.Logger.LogLevel.INFO);
             
             try
             {
-                Services.Logger.Log("🔧 [GetPathFromInventor] Début de la détection Inventor...", Services.Logger.LogLevel.INFO);
-                StatusMessage = "🔍 Recherche d'Inventor en cours...";
+                Services.Logger.Log("[>] [GetPathFromInventor] Debut de la detection Inventor...", Services.Logger.LogLevel.INFO);
+                StatusMessage = "[>] Recherche d'Inventor en cours...";
                 OnPropertyChanged(nameof(StatusMessage));
                 
-                // Vérifier si Inventor est lancé
+                // Verifier si Inventor est lance
                 var processes = System.Diagnostics.Process.GetProcessesByName("Inventor");
                 if (processes.Length == 0)
                 {
-                    Services.Logger.Log("❌ [GetPathFromInventor] Aucun processus Inventor trouvé", Services.Logger.LogLevel.WARNING);
-                    StatusMessage = "❌ Inventor n'est pas lancé. Veuillez ouvrir Inventor.";
+                    Services.Logger.Log("[-] [GetPathFromInventor] Aucun processus Inventor trouve", Services.Logger.LogLevel.WARNING);
+                    StatusMessage = "[-] Inventor n'est pas lance. Veuillez ouvrir Inventor.";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
-                Services.Logger.Log($"✅ [GetPathFromInventor] {processes.Length} processus Inventor trouvé(s)", Services.Logger.LogLevel.DEBUG);
+                Services.Logger.Log($"[+] [GetPathFromInventor] {processes.Length} processus Inventor trouve(s)", Services.Logger.LogLevel.DEBUG);
                 
-                // Chercher un processus avec une fenêtre visible
+                // Chercher un processus avec une fenetre visible
                 bool hasVisibleWindow = false;
                 foreach (var proc in processes)
                 {
@@ -1162,7 +1162,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                         if (proc.MainWindowHandle != IntPtr.Zero && !string.IsNullOrEmpty(proc.MainWindowTitle))
                         {
                             hasVisibleWindow = true;
-                            Services.Logger.Log($"✅ [GetPathFromInventor] Fenêtre trouvée: '{proc.MainWindowTitle}' (PID: {proc.Id})", Services.Logger.LogLevel.DEBUG);
+                            Services.Logger.Log($"[+] [GetPathFromInventor] Fenetre trouvee: '{proc.MainWindowTitle}' (PID: {proc.Id})", Services.Logger.LogLevel.DEBUG);
                             break;
                         }
                     }
@@ -1171,42 +1171,42 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 
                 if (!hasVisibleWindow)
                 {
-                    Services.Logger.Log("⚠️ [GetPathFromInventor] Aucune fenêtre Inventor visible, tentative COM quand même...", Services.Logger.LogLevel.DEBUG);
+                    Services.Logger.Log("[!] [GetPathFromInventor] Aucune fenetre Inventor visible, tentative COM quand meme...", Services.Logger.LogLevel.DEBUG);
                 }
                 
-                // Utiliser P/Invoke pour récupérer l'objet COM
+                // Utiliser P/Invoke pour recuperer l'objet COM
                 Inventor.Application? inventorApp = null;
                 
                 try
                 {
-                    Services.Logger.Log("🔧 [GetPathFromInventor] CLSIDFromProgID('Inventor.Application')...", Services.Logger.LogLevel.DEBUG);
+                    Services.Logger.Log("[>] [GetPathFromInventor] CLSIDFromProgID('Inventor.Application')...", Services.Logger.LogLevel.DEBUG);
                     int hr = CLSIDFromProgID("Inventor.Application", out Guid clsid);
                     if (hr != 0)
                     {
-                        Services.Logger.Log($"❌ [GetPathFromInventor] CLSIDFromProgID échoué: 0x{hr:X8}", Services.Logger.LogLevel.ERROR);
-                        StatusMessage = "❌ Inventor non installé correctement";
+                        Services.Logger.Log($"[-] [GetPathFromInventor] CLSIDFromProgID echoyee: 0x{hr:X8}", Services.Logger.LogLevel.ERROR);
+                        StatusMessage = "[-] Inventor non installe correctement";
                         OnPropertyChanged(nameof(StatusMessage));
                         return;
                     }
-                    Services.Logger.Log($"✅ [GetPathFromInventor] CLSID: {clsid}", Services.Logger.LogLevel.DEBUG);
+                    Services.Logger.Log($"[+] [GetPathFromInventor] CLSID: {clsid}", Services.Logger.LogLevel.DEBUG);
                     
-                    Services.Logger.Log("🔧 [GetPathFromInventor] GetActiveObject via oleaut32.dll...", Services.Logger.LogLevel.DEBUG);
+                    Services.Logger.Log("[>] [GetPathFromInventor] GetActiveObject via oleaut32.dll...", Services.Logger.LogLevel.DEBUG);
                     hr = OleGetActiveObject(ref clsid, IntPtr.Zero, out object? inventorObj);
                     
-                    Services.Logger.Log($"🔧 [GetPathFromInventor] GetActiveObject retourné: hr=0x{hr:X8}, obj={(inventorObj != null ? "OK" : "null")}", Services.Logger.LogLevel.DEBUG);
+                    Services.Logger.Log($"[>] [GetPathFromInventor] GetActiveObject retourne: hr=0x{hr:X8}, obj={(inventorObj != null ? "OK" : "null")}", Services.Logger.LogLevel.DEBUG);
                     
                     if (hr != 0)
                     {
-                        Services.Logger.Log($"❌ [GetPathFromInventor] GetActiveObject échoué: 0x{hr:X8}", Services.Logger.LogLevel.WARNING);
+                        Services.Logger.Log($"[-] [GetPathFromInventor] GetActiveObject echoyee: 0x{hr:X8}", Services.Logger.LogLevel.WARNING);
                         
                         if (hr == unchecked((int)0x800401E3)) // MK_E_UNAVAILABLE
                         {
-                            // Inventor n'est pas enregistré dans le ROT - peut arriver si Inventor a été lancé en mode admin ou autre
-                            StatusMessage = "❌ Inventor non accessible. Essayez de redémarrer Inventor normalement (sans mode admin).";
+                            // Inventor n'est pas enregistre dans le ROT - peut arriver si Inventor a ete lance en mode admin ou autre
+                            StatusMessage = "[-] Inventor non accessible. Essayez de redemarrer Inventor normalement (sans mode admin).";
                         }
                         else
                         {
-                            StatusMessage = $"❌ Erreur COM: 0x{hr:X8}";
+                            StatusMessage = $"[-] Erreur COM: 0x{hr:X8}";
                         }
                         OnPropertyChanged(nameof(StatusMessage));
                         return;
@@ -1214,74 +1214,74 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                     
                     if (inventorObj == null)
                     {
-                        Services.Logger.Log("❌ [GetPathFromInventor] inventorObj est null", Services.Logger.LogLevel.WARNING);
-                        StatusMessage = "❌ Impossible de se connecter à Inventor";
+                        Services.Logger.Log("[-] [GetPathFromInventor] inventorObj est null", Services.Logger.LogLevel.WARNING);
+                        StatusMessage = "[-] Impossible de se connecter a Inventor";
                         OnPropertyChanged(nameof(StatusMessage));
                         return;
                     }
                     
                     inventorApp = (Inventor.Application)inventorObj;
-                    Services.Logger.Log($"✅ [GetPathFromInventor] Connecté à Inventor {inventorApp.SoftwareVersion?.DisplayVersion ?? "?"}", Services.Logger.LogLevel.INFO);
+                    Services.Logger.Log($"[+] [GetPathFromInventor] Connecte a Inventor {inventorApp.SoftwareVersion?.DisplayVersion ?? "?"}", Services.Logger.LogLevel.INFO);
                 }
                 catch (InvalidCastException castEx)
                 {
-                    Services.Logger.Log($"❌ [GetPathFromInventor] Cast échoué: {castEx.Message}", Services.Logger.LogLevel.ERROR);
-                    StatusMessage = "❌ Erreur de type COM Inventor";
+                    Services.Logger.Log($"[-] [GetPathFromInventor] Cast echoyee: {castEx.Message}", Services.Logger.LogLevel.ERROR);
+                    StatusMessage = "[-] Erreur de type COM Inventor";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
                 catch (Exception comEx)
                 {
-                    Services.Logger.Log($"❌ [GetPathFromInventor] Exception COM: {comEx.Message}", Services.Logger.LogLevel.ERROR);
-                    StatusMessage = $"❌ Erreur connexion Inventor: {comEx.Message}";
+                    Services.Logger.Log($"[-] [GetPathFromInventor] Exception COM: {comEx.Message}", Services.Logger.LogLevel.ERROR);
+                    StatusMessage = $"[-] Erreur connexion Inventor: {comEx.Message}";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
                 
                 if (inventorApp == null)
                 {
-                    StatusMessage = "❌ Impossible de se connecter à Inventor";
+                    StatusMessage = "[-] Impossible de se connecter a Inventor";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
                 
-                // Récupérer le document actif
-                Services.Logger.Log("🔧 [GetPathFromInventor] Récupération du document actif...", Services.Logger.LogLevel.DEBUG);
+                // Recuperer le document actif
+                Services.Logger.Log("[>] [GetPathFromInventor] Recuperation du document actif...", Services.Logger.LogLevel.DEBUG);
                 Inventor.Document? activeDoc = inventorApp.ActiveDocument;
                 
                 if (activeDoc == null)
                 {
-                    Services.Logger.Log("❌ [GetPathFromInventor] Aucun document actif dans Inventor", Services.Logger.LogLevel.WARNING);
-                    StatusMessage = "❌ Aucun document ouvert dans Inventor";
+                    Services.Logger.Log("[-] [GetPathFromInventor] Aucun document actif dans Inventor", Services.Logger.LogLevel.WARNING);
+                    StatusMessage = "[-] Aucun document ouvert dans Inventor";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
                 
-                Services.Logger.Log($"✅ [GetPathFromInventor] Document actif: {activeDoc.DisplayName}", Services.Logger.LogLevel.DEBUG);
+                Services.Logger.Log($"[+] [GetPathFromInventor] Document actif: {activeDoc.DisplayName}", Services.Logger.LogLevel.DEBUG);
                 
-                // Récupérer le FullFileName du document
+                // Recuperer le FullFileName du document
                 string fullFileName = activeDoc.FullFileName;
-                Services.Logger.Log($"🔧 [GetPathFromInventor] FullFileName: {fullFileName ?? "(null)"}", Services.Logger.LogLevel.DEBUG);
+                Services.Logger.Log($"[>] [GetPathFromInventor] FullFileName: {fullFileName ?? "(null)"}", Services.Logger.LogLevel.DEBUG);
                 
                 if (string.IsNullOrEmpty(fullFileName))
                 {
-                    Services.Logger.Log("❌ [GetPathFromInventor] Document non enregistré (pas de chemin)", Services.Logger.LogLevel.WARNING);
-                    StatusMessage = "❌ Le document Inventor n'a pas de chemin (document non enregistré)";
+                    Services.Logger.Log("[-] [GetPathFromInventor] Document non enregistre (pas de chemin)", Services.Logger.LogLevel.WARNING);
+                    StatusMessage = "[-] Le document Inventor n'a pas de chemin (document non enregistre)";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
                 
                 // Extraire le dossier du fichier
                 string? folderPath = System.IO.Path.GetDirectoryName(fullFileName);
-                Services.Logger.Log($"🔧 [GetPathFromInventor] Dossier extrait: {folderPath}", Services.Logger.LogLevel.DEBUG);
+                Services.Logger.Log($"[>] [GetPathFromInventor] Dossier extrait: {folderPath}", Services.Logger.LogLevel.DEBUG);
                 
                 if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
                 {
                     ProjectPath = folderPath;
                     OnPropertyChanged(nameof(ProjectPath));
                     
-                    Services.Logger.Log($"✅ [GetPathFromInventor] Chemin défini: {folderPath}", Services.Logger.LogLevel.INFO);
-                    StatusMessage = $"✅ Chemin récupéré depuis Inventor: {System.IO.Path.GetFileName(fullFileName)}";
+                    Services.Logger.Log($"[+] [GetPathFromInventor] Chemin defini: {folderPath}", Services.Logger.LogLevel.INFO);
+                    StatusMessage = $"[+] Chemin recupere depuis Inventor: {System.IO.Path.GetFileName(fullFileName)}";
                     OnPropertyChanged(nameof(StatusMessage));
                     
                     // Scanner automatiquement le dossier
@@ -1289,15 +1289,15 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 }
                 else
                 {
-                    Services.Logger.Log($"❌ [GetPathFromInventor] Dossier non trouvé: {folderPath}", Services.Logger.LogLevel.WARNING);
-                    StatusMessage = $"❌ Dossier non trouvé: {folderPath}";
+                    Services.Logger.Log($"[-] [GetPathFromInventor] Dossier non trouve: {folderPath}", Services.Logger.LogLevel.WARNING);
+                    StatusMessage = $"[-] Dossier non trouve: {folderPath}";
                     OnPropertyChanged(nameof(StatusMessage));
                 }
             }
             catch (Exception ex)
             {
-                Services.Logger.Log($"❌ [GetPathFromInventor] Exception: {ex.Message}", Services.Logger.LogLevel.ERROR);
-                StatusMessage = $"❌ Erreur lors de la détection Inventor: {ex.Message}";
+                Services.Logger.Log($"[-] [GetPathFromInventor] Exception: {ex.Message}", Services.Logger.LogLevel.ERROR);
+                StatusMessage = $"[-] Erreur lors de la detection Inventor: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
                 Services.Logger.LogException("GetPathFromInventor", ex, Services.Logger.LogLevel.WARNING);
             }
@@ -1334,42 +1334,42 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
         {
             try
             {
-                // Vérifier la connexion
+                // Verifier la connexion
                 if (!IsConnected)
                 {
-                    StatusMessage = "❌ Non connecté à Vault. Veuillez vous connecter avant d'uploader des fichiers.";
+                    StatusMessage = "[-] Non connecte a Vault. Veuillez vous connecter avant d'uploader des fichiers.";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
 
-                // Récupérer UNIQUEMENT les fichiers sélectionnés (IsSelected = true)
+                // Recuperer UNIQUEMENT les fichiers selectionnes (IsSelected = true)
                 var selectedFiles = InventorFiles.Where(f => f.IsSelected)
                     .Concat(NonInventorFiles.Where(f => f.IsSelected))
                     .ToList();
 
                 if (selectedFiles.Count == 0)
                 {
-                    StatusMessage = "⚠️ Aucun fichier sélectionné. Veuillez sélectionner au moins un fichier à uploader.";
+                    StatusMessage = "[!] Aucun fichier selectionne. Veuillez selectionner au moins un fichier a uploader.";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
 
-                // Vérifier les propriétés du projet
+                // Verifier les proprietes du projet
                 if (ProjectProperties == null || 
                     string.IsNullOrWhiteSpace(ProjectProperties.ProjectNumber) ||
                     string.IsNullOrWhiteSpace(ProjectProperties.Reference) ||
                     string.IsNullOrWhiteSpace(ProjectProperties.Module))
                 {
-                    StatusMessage = "❌ Propriétés manquantes (Project/Reference/Module). Vérifiez la structure du dossier.";
+                    StatusMessage = "[-] Proprietes manquantes (Project/Reference/Module). Verifiez la structure du dossier.";
                     OnPropertyChanged(nameof(StatusMessage));
                     return;
                 }
 
                 // Confirmation moved to info bar: proceed immediately but notify user via status bar (no modal)
-                StatusMessage = $"📤 Upload démarré: {selectedFiles.Count} fichier(s).";
+                StatusMessage = $"[>] Upload demarre: {selectedFiles.Count} fichier(s).";
                 OnPropertyChanged(nameof(StatusMessage));
 
-                // ✅ ACTIVER LA BARRE DE PROGRESSION IMMÉDIATEMENT
+                // [+] ACTIVER LA BARRE DE PROGRESSION IMMÉDIATEMENT
                 IsCheckingIn = true;
                 OnPropertyChanged(nameof(IsCheckingIn));
                 OnPropertyChanged(nameof(IsProcessing));
@@ -1385,10 +1385,10 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 OnPropertyChanged(nameof(ProgressMaximum));
                 OnPropertyChanged(nameof(ProgressValue));
 
-                StatusMessage = $"📤 Upload en cours de {totalFiles} fichier(s)...";
+                StatusMessage = $"[>] Upload en cours de {totalFiles} fichier(s)...";
                 OnPropertyChanged(nameof(StatusMessage));
 
-                // ✅ ATTENDRE UN PEU POUR QUE L'UI SE METTE À JOUR
+                // [+] ATTENDRE UN PEU POUR QUE L'UI SE METTE À JOUR
                 await Task.Delay(100);
 
                 // Upload asynchrone avec Task.Run pour ne pas bloquer l'UI
@@ -1404,7 +1404,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
 
                         currentIndex++;
                         
-                        // ✅ Dispatcher pour mettre à jour l'UI depuis le thread de fond
+                        // [+] Dispatcher pour mettre à jour l'UI depuis le thread de fond
                         Application.Current.Dispatcher.Invoke(() =>
                         {
                             ProgressText = $"{currentIndex}/{totalFiles}";
@@ -1412,10 +1412,10 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                             OnPropertyChanged(nameof(ProgressText));
                             OnPropertyChanged(nameof(ProgressValue));
 
-                            fileItem.Status = "⏳ Upload...";
+                            fileItem.Status = "[~] Upload...";
                             OnPropertyChanged();
 
-                            StatusMessage = $"📤 Upload: {fileItem.FileName} ({currentIndex}/{totalFiles})";
+                            StatusMessage = $"[>] Upload: {fileItem.FileName} ({currentIndex}/{totalFiles})";
                             OnPropertyChanged(nameof(StatusMessage));
                         });
 
@@ -1440,18 +1440,18 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                                 lifecycleDefinitionId = _vaultService.GetLifecycleDefinitionIdByCategory(categoryName);
                                 
                                 // Obtenir l'état sélectionné - LOGGING DIAGNOSTIC
-                                Services.Logger.Log($"   📋 [DEBUG] SelectedStateInventor est {(SelectedStateInventor != null ? $"ID={SelectedStateInventor.Id}, Name='{SelectedStateInventor.Name}'" : "NULL")}", Services.Logger.LogLevel.DEBUG);
+                                Services.Logger.Log($"   [i] [DEBUG] SelectedStateInventor est {(SelectedStateInventor != null ? $"ID={SelectedStateInventor.Id}, Name='{SelectedStateInventor.Name}'" : "NULL")}", Services.Logger.LogLevel.DEBUG);
                                 
                                 if (SelectedStateInventor != null)
                                 {
                                     lifecycleStateId = SelectedStateInventor.Id;
-                                    Services.Logger.Log($"   📋 [DEBUG] Utilisation de l'état sélectionné: ID={lifecycleStateId}", Services.Logger.LogLevel.DEBUG);
+                                    Services.Logger.Log($"   [i] [DEBUG] Utilisation de l'état sélectionné: ID={lifecycleStateId}", Services.Logger.LogLevel.DEBUG);
                                 }
                                 else if (lifecycleDefinitionId.HasValue)
                                 {
                                     // Si aucun état sélectionné, utiliser "Work in Progress" par défaut
                                     lifecycleStateId = _vaultService.GetWorkInProgressStateId(lifecycleDefinitionId.Value);
-                                    Services.Logger.Log($"   📋 [DEBUG] Fallback vers Work in Progress: ID={lifecycleStateId}", Services.Logger.LogLevel.DEBUG);
+                                    Services.Logger.Log($"   [i] [DEBUG] Fallback vers Work in Progress: ID={lifecycleStateId}", Services.Logger.LogLevel.DEBUG);
                                 }
                                 
                                 // NOTE: Revision gérée automatiquement par Vault via transitions d'état
@@ -1497,15 +1497,15 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                             {
                                 if (success)
                                 {
-                                    fileItem.Status = "✅ Uploadé";
+                                    fileItem.Status = "[+] Uploade";
                                     successCount++;
-                                    StatusMessage = $"✅ {fileItem.FileName} uploadé avec succès ({currentIndex}/{totalFiles})";
+                                    StatusMessage = $"[+] {fileItem.FileName} uploade avec succes ({currentIndex}/{totalFiles})";
                                 }
                                 else
                                 {
-                                    fileItem.Status = "❌ Échec";
+                                    fileItem.Status = "[-] Echec";
                                     failedCount++;
-                                    StatusMessage = $"❌ Échec upload {fileItem.FileName} ({currentIndex}/{totalFiles})";
+                                    StatusMessage = $"[-] Echec upload {fileItem.FileName} ({currentIndex}/{totalFiles})";
                                 }
                                 
                                 OnPropertyChanged();
@@ -1516,9 +1516,9 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                         {
                             Application.Current.Dispatcher.Invoke(() =>
                             {
-                                fileItem.Status = $"❌ Erreur: {ex.Message}";
+                                fileItem.Status = $"[-] Erreur: {ex.Message}";
                                 failedCount++;
-                                StatusMessage = $"❌ Erreur {fileItem.FileName}: {ex.Message}";
+                                StatusMessage = $"[-] Erreur {fileItem.FileName}: {ex.Message}";
                                 OnPropertyChanged();
                                 OnPropertyChanged(nameof(StatusMessage));
                             });
@@ -1527,13 +1527,13 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 });
 
                 // ═══════════════════════════════════════════════════════════════════════════════
-                // ✅ PHASE 2: APPLIQUER LES PROPRIÉTÉS EN BATCH (pour fichiers non-Inventor)
+                // [+] PHASE 2: APPLIQUER LES PROPRIETES EN BATCH (pour fichiers non-Inventor)
                 // ═══════════════════════════════════════════════════════════════════════════════
                 if (_vaultService.PendingPropertyCount > 0)
                 {
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        StatusMessage = $"📝 Application des propriétés ({_vaultService.PendingPropertyCount} fichiers)...";
+                        StatusMessage = $"[>] Application des proprietes ({_vaultService.PendingPropertyCount} fichiers)...";
                         OnPropertyChanged(nameof(StatusMessage));
                     });
                     
@@ -1541,7 +1541,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                     
                     if (propFailed > 0)
                     {
-                        Services.Logger.Log($"⚠️ {propFailed} fichier(s) n'ont pas pu recevoir les propriétés (Job Processor occupé)", Services.Logger.LogLevel.WARNING);
+                        Services.Logger.Log($"[!] {propFailed} fichier(s) n'ont pas pu recevoir les proprietes (Job Processor occupe)", Services.Logger.LogLevel.WARNING);
                     }
                 }
 
@@ -1552,7 +1552,7 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 OnPropertyChanged(nameof(IsProcessing));
                 OnPropertyChanged(nameof(ProgressValue));
 
-                StatusMessage = $"✅ Upload terminé: {successCount} réussi(s), {failedCount} échec(s) sur {totalFiles} fichier(s)";
+                StatusMessage = $"[+] Upload termine: {successCount} reussi(s), {failedCount} echec(s) sur {totalFiles} fichier(s)";
                 OnPropertyChanged(nameof(StatusMessage));
             }
             catch (Exception ex)
@@ -1563,13 +1563,13 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
                 OnPropertyChanged(nameof(IsProcessing));
                 OnPropertyChanged(nameof(ProgressValue));
 
-                StatusMessage = $"❌ Erreur upload: {ex.Message}";
+                StatusMessage = $"[-] Erreur upload: {ex.Message}";
                 OnPropertyChanged(nameof(StatusMessage));
             }
         }
 
         /// <summary>
-        /// Détermine le chemin Vault basé sur le chemin local du fichier
+        /// Determine le chemin Vault base sur le chemin local du fichier
         /// </summary>
         private string DetermineVaultPath(string localFilePath)
         {
@@ -1735,13 +1735,13 @@ namespace XnrgyEngineeringAutomationTools.ViewModels
         /// <summary>
  /// Annule le traitement en cours
         /// </summary>
-   private void CancelProcessing()
+        private void CancelProcessing()
         {
-   // Cancel the processing
-     IsCheckingIn = false;
-         IsAddingToVault = false;
-         OnPropertyChanged(nameof(IsProcessing));
- StatusMessage = "❌ Traitement annulé par l'utilisateur";
+            // Cancel the processing
+            IsCheckingIn = false;
+            IsAddingToVault = false;
+            OnPropertyChanged(nameof(IsProcessing));
+            StatusMessage = "[-] Traitement annule par l'utilisateur";
             OnPropertyChanged(nameof(StatusMessage));
         }
 

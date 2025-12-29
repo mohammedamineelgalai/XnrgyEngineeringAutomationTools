@@ -479,7 +479,7 @@ namespace XnrgyEngineeringAutomationTools.Views
             
             if (!Directory.Exists(_projectsBasePath))
             {
-                TxtStatus.Text = "⚠️ Dossier Projects non trouvé";
+                TxtStatus.Text = "[!] Dossier Projects non trouve";
                 return;
             }
 
@@ -511,11 +511,11 @@ namespace XnrgyEngineeringAutomationTools.Views
                     }
                 }
                 
-                TxtStatus.Text = $"✓ {CmbProjects.Items.Count} modules trouvés";
+                TxtStatus.Text = $"[+] {CmbProjects.Items.Count} modules trouves";
             }
             catch (Exception ex)
             {
-                TxtStatus.Text = $"⚠️ Erreur chargement projets: {ex.Message}";
+                TxtStatus.Text = $"[!] Erreur chargement projets: {ex.Message}";
             }
         }
 
@@ -600,11 +600,11 @@ namespace XnrgyEngineeringAutomationTools.Views
 
                 if (string.IsNullOrEmpty(sourcePath) || !Directory.Exists(sourcePath))
                 {
-                    if (TxtStatus != null) TxtStatus.Text = "⚠️ Chemin source invalide";
+                    if (TxtStatus != null) TxtStatus.Text = "[!] Chemin source invalide";
                     return;
                 }
 
-                // Déterminer si on est en mode "Projet Existant"
+                // Determiner si on est en mode "Projet Existant"
                 bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
 
                 // Scanner TOUS les fichiers du dossier (copie design complète)

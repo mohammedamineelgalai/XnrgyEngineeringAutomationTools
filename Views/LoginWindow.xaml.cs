@@ -54,7 +54,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                     SetControlsEnabled(false);
                     ShowConnectionProgress("Connexion automatique en cours...");
                     
-                    Logger.Log($"🔌 Connexion automatique à {credentials.Server}/{credentials.VaultName}...", Logger.LogLevel.INFO);
+                    Logger.Log($"[>] Connexion automatique a {credentials.Server}/{credentials.VaultName}...", Logger.LogLevel.INFO);
                     
                     // Connexion asynchrone
                     bool success = await Task.Run(() => 
@@ -62,8 +62,8 @@ namespace XnrgyEngineeringAutomationTools.Views
                     
                     if (success)
                     {
-                        ShowConnectionProgress("✅ Connexion réussie!");
-                        Logger.Log($"✅ Connexion automatique réussie ({credentials.Username})", Logger.LogLevel.INFO);
+                        ShowConnectionProgress("[+] Connexion reussie!");
+                        Logger.Log($"[+] Connexion automatique reussie ({credentials.Username})", Logger.LogLevel.INFO);
                         
                         await Task.Delay(800); // Délai pour voir le succès
                         
@@ -73,18 +73,18 @@ namespace XnrgyEngineeringAutomationTools.Views
                     }
                     else
                     {
-                        Logger.Log($"⚠️ Connexion automatique échouée - Intervention requise", Logger.LogLevel.WARNING);
+                        Logger.Log($"[!] Connexion automatique echouee - Intervention requise", Logger.LogLevel.WARNING);
                         ShowError("Connexion automatique échouée. Veuillez vérifier vos identifiants.");
                     }
                 }
                 else
                 {
-                    Logger.Log("📝 Pas de credentials sauvegardés - Intervention utilisateur requise", Logger.LogLevel.INFO);
+                    Logger.Log("[i] Pas de credentials sauvegardes - Intervention utilisateur requise", Logger.LogLevel.INFO);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Log($"⚠️ Erreur connexion auto: {ex.Message}", Logger.LogLevel.WARNING);
+                Logger.Log($"[!] Erreur connexion auto: {ex.Message}", Logger.LogLevel.WARNING);
                 ShowError($"Erreur: {ex.Message}");
             }
             finally
@@ -110,7 +110,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                     UserTextBox.Text = credentials.Username;
                     PasswordBox.Password = credentials.Password;
                     SaveCredentialsCheckBox.IsChecked = true;
-                    Logger.Log($"✅ Credentials chargés pour {credentials.Username}", Logger.LogLevel.INFO);
+                    Logger.Log($"[+] Credentials charges pour {credentials.Username}", Logger.LogLevel.INFO);
                 }
                 else
                 {
@@ -122,7 +122,7 @@ namespace XnrgyEngineeringAutomationTools.Views
             }
             catch (Exception ex)
             {
-                Logger.Log($"⚠️ Erreur chargement credentials: {ex.Message}", Logger.LogLevel.DEBUG);
+                Logger.Log($"[!] Erreur chargement credentials: {ex.Message}", Logger.LogLevel.DEBUG);
             }
         }
 
@@ -149,17 +149,17 @@ namespace XnrgyEngineeringAutomationTools.Views
                 SetControlsEnabled(false);
                 ShowConnectionProgress("Connexion à Vault en cours...");
                 
-                Logger.Log($"🔌 Tentative de connexion à {server}/{vault}...", Logger.LogLevel.INFO);
+                Logger.Log($"[>] Tentative de connexion a {server}/{vault}...", Logger.LogLevel.INFO);
                 
                 // Connexion asynchrone pour ne pas bloquer l'UI
                 bool success = await Task.Run(() => _vaultService.Connect(server, vault, user, password));
                 
                 if (success)
                 {
-                    ShowConnectionProgress("Connexion réussie!");
+                    ShowConnectionProgress("Connexion reussie!");
                     await Task.Delay(500); // Petit délai pour voir le succès
                     
-                    Logger.Log($"✅ Connexion réussie à {server}/{vault}", Logger.LogLevel.INFO);
+                    Logger.Log($"[+] Connexion reussie a {server}/{vault}", Logger.LogLevel.INFO);
                     
                     // Sauvegarder les credentials
                     SaveCredentials(server, vault, user, password);
@@ -169,14 +169,14 @@ namespace XnrgyEngineeringAutomationTools.Views
                 }
                 else
                 {
-                    ShowError("Échec de la connexion. Vérifiez vos identifiants.");
-                    Logger.Log($"❌ Échec de connexion à {server}/{vault}", Logger.LogLevel.ERROR);
+                    ShowError("Echec de la connexion. Verifiez vos identifiants.");
+                    Logger.Log($"[-] Echec de connexion a {server}/{vault}", Logger.LogLevel.ERROR);
                 }
             }
             catch (Exception ex)
             {
                 ShowError($"Erreur: {ex.Message}");
-                Logger.Log($"❌ Erreur connexion: {ex.Message}", Logger.LogLevel.ERROR);
+                Logger.Log($"[-] Erreur connexion: {ex.Message}", Logger.LogLevel.ERROR);
             }
             finally
             {
@@ -205,7 +205,7 @@ namespace XnrgyEngineeringAutomationTools.Views
             SaveCredentialsCheckBox.IsChecked = false;
             CredentialsManager.Clear();
             ErrorBorder.Visibility = Visibility.Collapsed;
-            Logger.Log("🗑️ Champs et credentials effacés", Logger.LogLevel.INFO);
+            Logger.Log("[i] Champs et credentials effacés", Logger.LogLevel.INFO);
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
@@ -224,7 +224,7 @@ namespace XnrgyEngineeringAutomationTools.Views
             ConnectButton.IsEnabled = enabled;
             CancelButton.IsEnabled = enabled;
             ClearButton.IsEnabled = enabled;
-            ConnectButton.Content = enabled ? "🔌 Connecter" : "Connexion...";
+            ConnectButton.Content = enabled ? "[>] Connecter" : "Connexion...";
         }
 
         private void ShowConnectionProgress(string message)

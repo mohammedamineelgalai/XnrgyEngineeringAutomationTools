@@ -30,7 +30,7 @@ namespace XnrgyEngineeringAutomationTools.Services
         {
             try
             {
-                Logger.Log("🔌 Tentative de connexion à Inventor...", Logger.LogLevel.DEBUG);
+                Logger.Log("[>] Tentative de connexion à Inventor...", Logger.LogLevel.DEBUG);
 
                 // Méthode 1: GetActiveObject via P/Invoke
                 Guid clsid;
@@ -43,17 +43,17 @@ namespace XnrgyEngineeringAutomationTools.Services
                     _inventorApp = inventorObj;
                     _isConnected = true;
                     
-                    Logger.Log($"✅ Connecté à Inventor via COM", Logger.LogLevel.INFO);
+                    Logger.Log($"[+] Connecté à Inventor via COM", Logger.LogLevel.INFO);
                     return true;
                 }
             }
             catch (COMException comEx)
             {
-                Logger.Log($"⚠️ Inventor non disponible (COM): {comEx.Message}", Logger.LogLevel.DEBUG);
+                Logger.Log($"[!] Inventor non disponible (COM): {comEx.Message}", Logger.LogLevel.DEBUG);
             }
             catch (Exception ex)
             {
-                Logger.Log($"⚠️ Erreur connexion Inventor: {ex.Message}", Logger.LogLevel.DEBUG);
+                Logger.Log($"[!] Erreur connexion Inventor: {ex.Message}", Logger.LogLevel.DEBUG);
             }
 
             _isConnected = false;
@@ -78,7 +78,7 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
             catch (Exception ex)
             {
-                Logger.Log($"⚠️ Erreur récupération document actif: {ex.Message}", Logger.LogLevel.DEBUG);
+                Logger.Log($"[!] Erreur récupération document actif: {ex.Message}", Logger.LogLevel.DEBUG);
             }
             return null;
         }
@@ -101,7 +101,7 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
             catch (Exception ex)
             {
-                Logger.Log($"⚠️ Erreur récupération chemin document: {ex.Message}", Logger.LogLevel.DEBUG);
+                Logger.Log($"[!] Erreur récupération chemin document: {ex.Message}", Logger.LogLevel.DEBUG);
             }
             return null;
         }
@@ -120,7 +120,7 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
             catch (Exception ex)
             {
-                Logger.Log($"⚠️ Erreur récupération version: {ex.Message}", Logger.LogLevel.DEBUG);
+                Logger.Log($"[!] Erreur récupération version: {ex.Message}", Logger.LogLevel.DEBUG);
             }
             return null;
         }
@@ -167,7 +167,7 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
             catch (Exception ex)
             {
-                Logger.Log($"⚠️ Erreur récupération type document: {ex.Message}", Logger.LogLevel.DEBUG);
+                Logger.Log($"[!] Erreur récupération type document: {ex.Message}", Logger.LogLevel.DEBUG);
             }
             return null;
         }
@@ -187,7 +187,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 _inventorApp = null;
             }
             _isConnected = false;
-            Logger.Log("🔌 Déconnexion d'Inventor", Logger.LogLevel.DEBUG);
+            Logger.Log("[>] Déconnexion d'Inventor", Logger.LogLevel.DEBUG);
         }
     }
 }

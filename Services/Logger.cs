@@ -44,7 +44,7 @@ public static class Logger
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine("❌ Erreur initialisation logger: " + ex.Message);
+			Console.WriteLine("[-] Erreur initialisation logger: " + ex.Message);
 		}
 	}
 
@@ -87,13 +87,13 @@ public static class Logger
 		}
 		catch (Exception ex)
 		{
-			Console.WriteLine("❌ Erreur écriture log: " + ex.Message);
+			Console.WriteLine("[-] Erreur écriture log: " + ex.Message);
 		}
 	}
 
 	public static void LogException(string context, Exception ex, LogLevel level = LogLevel.ERROR)
 	{
-		Log("❌ EXCEPTION dans " + context + ":", level);
+		Log("[-] EXCEPTION dans " + context + ":", level);
 		Log("   Message: " + ex.Message, level);
 		Log("   Type: " + ex.GetType().Name, level);
 		if (ex.InnerException != null)

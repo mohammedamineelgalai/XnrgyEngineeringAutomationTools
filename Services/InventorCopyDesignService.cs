@@ -105,7 +105,7 @@ namespace XnrgyEngineeringAutomationTools.Services
 
             try
             {
-                Log($"🔄 Switch vers projet template: {System.IO.Path.GetFileName(templateIpjPath)}", "INFO");
+                Log($"[>] Switch vers projet template: {System.IO.Path.GetFileName(templateIpjPath)}", "INFO");
 
                 DesignProjectManager designProjectManager = _inventorApp.DesignProjectManager;
 
@@ -116,7 +116,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                     if (activeProject != null)
                     {
                         _originalProjectPath = activeProject.FullFileName;
-                        Log($"💾 Projet actuel sauvegardé: {System.IO.Path.GetFileName(_originalProjectPath)}", "DEBUG");
+                        Log($"[i] Projet actuel sauvegardé: {System.IO.Path.GetFileName(_originalProjectPath)}", "DEBUG");
                     }
                 }
                 catch
@@ -127,7 +127,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 // Vérifier que le fichier IPJ du template existe
                 if (!System.IO.File.Exists(templateIpjPath))
                 {
-                    Log($"❌ Fichier IPJ template introuvable: {templateIpjPath}", "ERROR");
+                    Log($"[-] Fichier IPJ template introuvable: {templateIpjPath}", "ERROR");
                     return false;
                 }
 
@@ -144,7 +144,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                     if (proj.FullFileName.Equals(templateIpjPath, StringComparison.OrdinalIgnoreCase))
                     {
                         templateProject = proj;
-                        Log($"✅ Projet template trouvé dans la collection", "DEBUG");
+                        Log($"[+] Projet template trouvé dans la collection", "DEBUG");
                         break;
                     }
                 }
@@ -152,7 +152,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 // Si pas trouvé, le charger
                 if (templateProject == null)
                 {
-                    Log($"📂 Chargement du projet template: {System.IO.Path.GetFileName(templateIpjPath)}", "DEBUG");
+                    Log($"[i] Chargement du projet template: {System.IO.Path.GetFileName(templateIpjPath)}", "DEBUG");
                     templateProject = projectsCollection.AddExisting(templateIpjPath);
                 }
 
@@ -161,18 +161,18 @@ namespace XnrgyEngineeringAutomationTools.Services
                 {
                     templateProject.Activate();
                     Thread.Sleep(1000); // Attendre que le switch soit effectif
-                    Log($"✅ Projet template activé: {System.IO.Path.GetFileName(templateIpjPath)}", "SUCCESS");
+                    Log($"[+] Projet template activé: {System.IO.Path.GetFileName(templateIpjPath)}", "SUCCESS");
                     return true;
                 }
                 else
                 {
-                    Log("❌ Impossible de charger le projet template", "ERROR");
+                    Log("[-] Impossible de charger le projet template", "ERROR");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Log($"❌ Erreur switch projet template: {ex.Message}", "ERROR");
+                Log($"[-] Erreur switch projet template: {ex.Message}", "ERROR");
                 return false;
             }
         }
@@ -187,7 +187,7 @@ namespace XnrgyEngineeringAutomationTools.Services
 
             try
             {
-                Log($"🔄 Restauration projet original: {System.IO.Path.GetFileName(_originalProjectPath)}", "INFO");
+                Log($"[>] Restauration projet original: {System.IO.Path.GetFileName(_originalProjectPath)}", "INFO");
 
                 // Fermer tous les documents
                 CloseAllDocuments();
@@ -221,18 +221,18 @@ namespace XnrgyEngineeringAutomationTools.Services
                 {
                     originalProject.Activate();
                     Thread.Sleep(1000);
-                    Log($"✅ Projet original restauré: {System.IO.Path.GetFileName(_originalProjectPath)}", "SUCCESS");
+                    Log($"[+] Projet original restauré: {System.IO.Path.GetFileName(_originalProjectPath)}", "SUCCESS");
                     return true;
                 }
                 else
                 {
-                    Log($"⚠️ Impossible de restaurer le projet original", "WARN");
+                    Log($"[!] Impossible de restaurer le projet original", "WARN");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Log($"⚠️ Erreur restauration projet: {ex.Message}", "WARN");
+                Log($"[!] Erreur restauration projet: {ex.Message}", "WARN");
                 return false;
             }
         }
@@ -249,14 +249,14 @@ namespace XnrgyEngineeringAutomationTools.Services
 
             try
             {
-                Log($"🔄 Switch vers nouveau projet: {System.IO.Path.GetFileName(newIpjPath)}", "INFO");
+                Log($"[>] Switch vers nouveau projet: {System.IO.Path.GetFileName(newIpjPath)}", "INFO");
 
                 DesignProjectManager designProjectManager = _inventorApp.DesignProjectManager;
 
                 // Vérifier que le fichier IPJ existe
                 if (!System.IO.File.Exists(newIpjPath))
                 {
-                    Log($"❌ Fichier IPJ introuvable: {newIpjPath}", "ERROR");
+                    Log($"[-] Fichier IPJ introuvable: {newIpjPath}", "ERROR");
                     return false;
                 }
 
@@ -274,7 +274,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                     if (proj.FullFileName.Equals(newIpjPath, StringComparison.OrdinalIgnoreCase))
                     {
                         newProject = proj;
-                        Log($"✅ Nouveau projet trouvé dans la collection", "DEBUG");
+                        Log($"[+] Nouveau projet trouvé dans la collection", "DEBUG");
                         break;
                     }
                 }
@@ -282,7 +282,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 // Si pas trouvé, le charger
                 if (newProject == null)
                 {
-                    Log($"📂 Chargement du nouveau projet: {System.IO.Path.GetFileName(newIpjPath)}", "DEBUG");
+                    Log($"[i] Chargement du nouveau projet: {System.IO.Path.GetFileName(newIpjPath)}", "DEBUG");
                     newProject = projectsCollection.AddExisting(newIpjPath);
                 }
 
@@ -291,18 +291,18 @@ namespace XnrgyEngineeringAutomationTools.Services
                 {
                     newProject.Activate();
                     Thread.Sleep(1000);
-                    Log($"✅ Nouveau projet activé: {System.IO.Path.GetFileName(newIpjPath)}", "SUCCESS");
+                    Log($"[+] Nouveau projet activé: {System.IO.Path.GetFileName(newIpjPath)}", "SUCCESS");
                     return true;
                 }
                 else
                 {
-                    Log("❌ Impossible de charger le nouveau projet", "ERROR");
+                    Log("[-] Impossible de charger le nouveau projet", "ERROR");
                     return false;
                 }
             }
             catch (Exception ex)
             {
-                Log($"❌ Erreur switch nouveau projet: {ex.Message}", "ERROR");
+                Log($"[-] Erreur switch nouveau projet: {ex.Message}", "ERROR");
                 return false;
             }
         }
@@ -323,56 +323,56 @@ namespace XnrgyEngineeringAutomationTools.Services
             {
                 try
                 {
-                    Log($"📂 Ouverture du nouveau module: {System.IO.Path.GetFileName(topAssemblyPath)}", "INFO");
+                    Log($"[i] Ouverture du nouveau module: {System.IO.Path.GetFileName(topAssemblyPath)}", "INFO");
 
                     // 1. Ouvrir le Top Assembly
                     Document topAssemblyDoc = _inventorApp.Documents.Open(topAssemblyPath, true);
                     
                     if (topAssemblyDoc == null)
                     {
-                        Log($"❌ Impossible d'ouvrir: {topAssemblyPath}", "ERROR");
+                        Log($"[-] Impossible d'ouvrir: {topAssemblyPath}", "ERROR");
                         return;
                     }
 
-                    Log($"✅ Document ouvert: {System.IO.Path.GetFileName(topAssemblyPath)}", "SUCCESS");
+                    Log($"[+] Document ouvert: {System.IO.Path.GetFileName(topAssemblyPath)}", "SUCCESS");
 
                     // 2. Appliquer les iProperties
-                    Log($"📝 Application des iProperties...", "INFO");
+                    Log($"[>] Application des iProperties...", "INFO");
                     ApplyIPropertiesToDocument(topAssemblyDoc, request);
 
                     // 3. Appliquer les paramètres Inventor (si c'est un assemblage)
                     if (topAssemblyDoc is AssemblyDocument assemblyDoc)
                     {
-                        Log($"⚙️ Application des paramètres Inventor...", "INFO");
+                        Log($"[>] Application des paramètres Inventor...", "INFO");
                         ApplyInventorParameters(assemblyDoc, request);
                     }
 
                     // 4. Update All (rebuild de l'assemblage)
-                    Log($"🔄 Update All (rebuild)...", "INFO");
+                    Log($"[>] Update All (rebuild)...", "INFO");
                     try
                     {
                         topAssemblyDoc.Update2(true); // true = full update
-                        Log($"✅ Update terminé", "SUCCESS");
+                        Log($"[+] Update terminé", "SUCCESS");
                     }
                     catch (Exception updateEx)
                     {
-                        Log($"⚠️ Erreur pendant Update: {updateEx.Message}", "WARN");
+                        Log($"[!] Erreur pendant Update: {updateEx.Message}", "WARN");
                     }
 
                     // 4.5 Préparer la vue: cacher workfeatures, vue ISO, zoom all
-                    Log($"🎨 Préparation de la vue...", "INFO");
+                    Log($"[>] Préparation de la vue...", "INFO");
                     try
                     {
                         PrepareViewForDesigner(topAssemblyDoc);
-                        Log($"✅ Vue préparée (ISO, Zoom All, Workfeatures cachés)", "SUCCESS");
+                        Log($"[+] Vue préparée (ISO, Zoom All, Workfeatures cachés)", "SUCCESS");
                     }
                     catch (Exception viewEx)
                     {
-                        Log($"⚠️ Note: Préparation vue: {viewEx.Message}", "DEBUG");
+                        Log($"[!] Note: Préparation vue: {viewEx.Message}", "DEBUG");
                     }
 
                     // 5. Save All
-                    Log($"💾 Save All...", "INFO");
+                    Log($"[i] Save All...", "INFO");
                     try
                     {
                         // Sauvegarder le document principal
@@ -390,11 +390,11 @@ namespace XnrgyEngineeringAutomationTools.Services
                             }
                             catch { /* Ignorer les erreurs de sauvegarde individuelles */ }
                         }
-                        Log($"✅ Sauvegarde terminée", "SUCCESS");
+                        Log($"[+] Sauvegarde terminée", "SUCCESS");
                     }
                     catch (Exception saveEx)
                     {
-                        Log($"⚠️ Erreur pendant Save: {saveEx.Message}", "WARN");
+                        Log($"[!] Erreur pendant Save: {saveEx.Message}", "WARN");
                     }
 
                     // 6. Activer le document (le mettre au premier plan)
@@ -402,13 +402,13 @@ namespace XnrgyEngineeringAutomationTools.Services
                     {
                         topAssemblyDoc.Activate();
                         _inventorApp.Visible = true; // S'assurer qu'Inventor est visible
-                        Log($"✅ Module prêt pour le dessinateur: {System.IO.Path.GetFileName(topAssemblyPath)}", "SUCCESS");
+                        Log($"[+] Module prêt pour le dessinateur: {System.IO.Path.GetFileName(topAssemblyPath)}", "SUCCESS");
                     }
                     catch { }
                 }
                 catch (Exception ex)
                 {
-                    Log($"❌ Erreur finalisation module: {ex.Message}", "ERROR");
+                    Log($"[-] Erreur finalisation module: {ex.Message}", "ERROR");
                 }
             });
         }
@@ -447,11 +447,11 @@ namespace XnrgyEngineeringAutomationTools.Services
                     SetProperty(customProps, "Job_Title", request.JobTitle, true);
                 }
 
-                Log($"✅ iProperties appliquées: Project={request.Project}, Ref={request.Reference}, Module={request.Module}", "SUCCESS");
+                Log($"[+] iProperties appliquées: Project={request.Project}, Ref={request.Reference}, Module={request.Module}", "SUCCESS");
             }
             catch (Exception ex)
             {
-                Log($"⚠️ Erreur application iProperties: {ex.Message}", "WARN");
+                Log($"[!] Erreur application iProperties: {ex.Message}", "WARN");
             }
         }
 
@@ -479,11 +479,11 @@ namespace XnrgyEngineeringAutomationTools.Services
                     SetParameter(userParams, "Job_Title_Form", request.JobTitle);
                 }
 
-                Log($"✅ Paramètres Inventor appliqués", "SUCCESS");
+                Log($"[+] Paramètres Inventor appliqués", "SUCCESS");
             }
             catch (Exception ex)
             {
-                Log($"⚠️ Erreur application paramètres: {ex.Message}", "WARN");
+                Log($"[!] Erreur application paramètres: {ex.Message}", "WARN");
             }
         }
 
@@ -547,14 +547,14 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                 if (docCount > 0)
                 {
-                    Log($"🗑️ Fermeture de {docCount} document(s)...", "DEBUG");
+                    Log($"[i] Fermeture de {docCount} document(s)...", "DEBUG");
                     documents.CloseAll(false); // false = ne pas sauvegarder
                     Thread.Sleep(500);
                 }
             }
             catch (Exception ex)
             {
-                Log($"⚠️ Erreur fermeture documents: {ex.Message}", "DEBUG");
+                Log($"[!] Erreur fermeture documents: {ex.Message}", "DEBUG");
             }
         }
 
@@ -578,7 +578,7 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                 if (ipjFiles.Length == 0)
                 {
-                    Log("⚠️ Aucun fichier .ipj trouvé dans le template", "WARN");
+                    Log("[!] Aucun fichier .ipj trouvé dans le template", "WARN");
                     return null;
                 }
 
@@ -595,17 +595,17 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                 if (mainIpj != null)
                 {
-                    Log($"📁 Fichier IPJ principal trouvé: {System.IO.Path.GetFileName(mainIpj)}", "SUCCESS");
+                    Log($"[i] Fichier IPJ principal trouvé: {System.IO.Path.GetFileName(mainIpj)}", "SUCCESS");
                     return mainIpj;
                 }
 
                 // Sinon prendre le premier .ipj disponible
-                Log($"📁 Fichier IPJ utilisé: {System.IO.Path.GetFileName(ipjFiles[0])}", "INFO");
+                Log($"[i] Fichier IPJ utilisé: {System.IO.Path.GetFileName(ipjFiles[0])}", "INFO");
                 return ipjFiles[0];
             }
             catch (Exception ex)
             {
-                Log($"❌ Erreur recherche fichier IPJ: {ex.Message}", "ERROR");
+                Log($"[-] Erreur recherche fichier IPJ: {ex.Message}", "ERROR");
                 return null;
             }
         }
@@ -680,18 +680,18 @@ namespace XnrgyEngineeringAutomationTools.Services
                 
                 if (!string.IsNullOrEmpty(sourceIpjPath))
                 {
-                    Log($"📁 Fichier IPJ source trouvé: {System.IO.Path.GetFileName(sourceIpjPath)}", "INFO");
+                    Log($"[i] Fichier IPJ source trouvé: {System.IO.Path.GetFileName(sourceIpjPath)}", "INFO");
                     ReportProgress(5, "Activation du projet source...");
                     projectSwitched = SwitchToTemplateProject(sourceIpjPath);
                     
                     if (!projectSwitched)
                     {
-                        Log("⚠️ Impossible de switcher vers le projet source, tentative de copie simple", "WARN");
+                        Log("[!] Impossible de switcher vers le projet source, tentative de copie simple", "WARN");
                     }
                 }
                 else
                 {
-                    Log("⚠️ Aucun fichier IPJ trouvé dans le dossier source, copie sans switch de projet", "WARN");
+                    Log("[!] Aucun fichier IPJ trouvé dans le dossier source, copie sans switch de projet", "WARN");
                 }
 
                 ReportProgress(8, "Création de la structure de dossiers...");
@@ -764,7 +764,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 ReportProgress(94, "Activation du nouveau projet...");
                 if (!string.IsNullOrEmpty(newIpjPath) && System.IO.File.Exists(newIpjPath))
                 {
-                    Log($"🔄 Switch vers le nouveau projet: {System.IO.Path.GetFileName(newIpjPath)}", "INFO");
+                    Log($"[>] Switch vers le nouveau projet: {System.IO.Path.GetFileName(newIpjPath)}", "INFO");
                     SwitchToNewProject(newIpjPath);
                 }
 
@@ -778,7 +778,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 }
                 else
                 {
-                    Log($"⚠️ Top Assembly non trouvé: {newTopAssemblyPath}", "WARN");
+                    Log($"[!] Top Assembly non trouvé: {newTopAssemblyPath}", "WARN");
                 }
 
                 result.Success = result.FilesCopied > 0;
@@ -786,21 +786,21 @@ namespace XnrgyEngineeringAutomationTools.Services
                 result.DestinationPath = request.DestinationPath;
                 result.NewTopAssemblyPath = newTopAssemblyPath;
 
-                ReportProgress(100, $"✓ Copy Design terminé: {result.FilesCopied} fichiers");
+                ReportProgress(100, $"[+] Copy Design terminé: {result.FilesCopied} fichiers");
                 Log($"=== COPY DESIGN TERMINÉ: {result.FilesCopied} fichiers copiés ===", "SUCCESS");
-                Log($"📂 Module ouvert et prêt pour le dessinateur: {newTopAssemblyPath}", "SUCCESS");
+                Log($"[i] Module ouvert et prêt pour le dessinateur: {newTopAssemblyPath}", "SUCCESS");
             }
             catch (Exception ex)
             {
                 result.ErrorMessage = ex.Message;
                 result.EndTime = DateTime.Now;
                 Log($"ERREUR Copy Design: {ex.Message}", "ERROR");
-                ReportProgress(0, $"✗ Erreur: {ex.Message}");
+                ReportProgress(0, $"[+] Erreur: {ex.Message}");
                 
                 // En cas d'erreur seulement, restaurer le projet original
                 if (projectSwitched && !string.IsNullOrEmpty(_originalProjectPath))
                 {
-                    Log("🔄 Restauration du projet original suite à erreur...", "INFO");
+                    Log("[>] Restauration du projet original suite à erreur...", "INFO");
                     RestoreOriginalProject();
                 }
             }
@@ -837,7 +837,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                         .Where(f => IsInventorFile(f) && !IsVaultTempFile(f))
                         .ToList();
 
-                    Log($"📁 Fichiers Inventor trouvés dans le template: {allInventorFiles.Count}", "DEBUG");
+                    Log($"[i] Fichiers Inventor trouvés dans le template: {allInventorFiles.Count}", "DEBUG");
 
                     // Normaliser les chemins déjà copiés pour la comparaison
                     var normalizedCopiedPaths = alreadyCopiedPaths
@@ -873,7 +873,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                         return;
                     }
 
-                    Log($"📦 {orphanFiles.Count} fichier(s) Inventor à copier (copie simple)...", "INFO");
+                    Log($"[>] Copie de {orphanFiles.Count} fichier(s) Inventor à copier (copie simple)...", "INFO");
 
                     int copiedCount = 0;
                     int skippedCount = 0;
@@ -995,7 +995,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 try
                 {
                     string sourceModuleName = System.IO.Path.GetFileName(sourceTopAssembly);
-                    Log($"🚀 NATIVE COPY DESIGN: {sourceModuleName} → {newTopAssemblyName}", "INFO");
+                    Log($"[>] NATIVE COPY DESIGN: {sourceModuleName} -> {newTopAssemblyName}", "INFO");
                     Log($"   Source: {sourceRoot}", "DEBUG");
                     Log($"   Destination: {destRoot}", "DEBUG");
 
@@ -1047,7 +1047,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                         .Where(kvp => !kvp.Key.StartsWith(sourceRoot, StringComparison.OrdinalIgnoreCase))
                         .ToList();
 
-                    Log($"📁 Total fichiers référencés: {allReferencedDocs.Count}", "INFO");
+                    Log($"[i] Total fichiers référencés: {allReferencedDocs.Count}", "INFO");
                     Log($"   - Fichiers du module (à copier): {moduleFiles.Count}", "INFO");
                     Log($"   - Fichiers Library (liens préservés): {libraryFiles.Count}", "INFO");
 
@@ -1078,15 +1078,15 @@ namespace XnrgyEngineeringAutomationTools.Services
                         })
                         .ToList();
 
-                    Log($"🔧 Copie de {sortedModuleFiles.Count} fichiers (bottom-up)...", "INFO");
+                    Log($"[>] Copie de {sortedModuleFiles.Count} fichiers (bottom-up)...", "INFO");
                     int fileIndex = 0;
                     int totalFiles = sortedModuleFiles.Count;
 
                     Log($"", "INFO");
                     Log($"════════════════════════════════════════════════════════════════", "INFO");
-                    Log($"🎯 COPY DESIGN NATIF - Copie de {totalFiles} fichiers", "INFO");
-                    Log($"   Ordre: Bottom-Up (IPT → IAM → Top Assembly)", "INFO");
-                    Log($"   Tous les documents restent en mémoire pendant la copie", "INFO");
+                    Log($"[i] COPY DESIGN NATIF - Copie de {totalFiles} fichiers", "INFO");
+                    Log($"   Ordre: Bottom-Up (IPT -> IAM -> Top Assembly)", "INFO");
+                    Log($"   Tous les documents restent en memoire pendant la copie", "INFO");
                     Log($"════════════════════════════════════════════════════════════════", "INFO");
                     Log($"", "INFO");
 
@@ -1139,13 +1139,13 @@ namespace XnrgyEngineeringAutomationTools.Services
                             });
                             filesCopied++;
                             
-                            string typeIcon = doc.DocumentType == DocumentTypeEnum.kPartDocumentObject ? "🔩" :
-                                             doc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject ? "📦" : "📄";
+                            string typeIcon = doc.DocumentType == DocumentTypeEnum.kPartDocumentObject ? "[#]" :
+                                             doc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject ? "[+]" : "[i]";
                             Log($"  {typeIcon} [{fileIndex}/{totalFiles}] {fileName} → {newFileName}", "SUCCESS");
                         }
                         catch (Exception ex)
                         {
-                            Log($"  ❌ [{fileIndex}/{totalFiles}] {fileName}: {ex.Message}", "ERROR");
+                            Log($"  [-] [{fileIndex}/{totalFiles}] {fileName}: {ex.Message}", "ERROR");
                             copiedFiles.Add(new FileCopyResult
                             {
                                 OriginalPath = originalPath,
@@ -1163,7 +1163,7 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                     Log($"", "INFO");
                     Log($"════════════════════════════════════════════════════════════════", "INFO");
-                    Log($"✅ COPY DESIGN TERMINÉ: {filesCopied}/{totalFiles} fichiers copiés", "SUCCESS");
+                    Log($"[+] COPY DESIGN TERMINÉ: {filesCopied}/{totalFiles} fichiers copiés", "SUCCESS");
                     Log($"════════════════════════════════════════════════════════════════", "INFO");
 
                     // ══════════════════════════════════════════════════════════════════
@@ -1257,7 +1257,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                             });
                             filesCopied++;
                             
-                            Log($"  📄 [{idwIndex}/{idwFiles.Count}] {System.IO.Path.GetFileName(idwPath)}", "SUCCESS");
+                            Log($"  [i] [{idwIndex}/{idwFiles.Count}] {System.IO.Path.GetFileName(idwPath)}", "SUCCESS");
                             
                             // Fermer le dessin
                             drawDoc.Close(false);
@@ -1272,11 +1272,11 @@ namespace XnrgyEngineeringAutomationTools.Services
                     }
 
                     Log($"", "INFO");
-                    Log($"✅ COPY DESIGN NATIF TERMINÉ: {filesCopied} fichiers copiés", "SUCCESS");
+                    Log($"[+] COPY DESIGN NATIF TERMINÉ: {filesCopied} fichiers copiés", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
-                    Log($"❌ Erreur Copy Design Natif: {ex.Message}", "ERROR");
+                    Log($"[-] Erreur Copy Design Natif: {ex.Message}", "ERROR");
                     Log($"   Stack: {ex.StackTrace}", "DEBUG");
                     throw;
                 }
@@ -2053,17 +2053,17 @@ namespace XnrgyEngineeringAutomationTools.Services
                                 
                                 // Copier et renommer
                                 System.IO.File.Copy(templateIpj, newIpjPath, true);
-                                Log($"✓ Fichier .ipj créé depuis template: {newIpjName}", "SUCCESS");
+                                Log($"[+] Fichier .ipj créé depuis template: {newIpjName}", "SUCCESS");
                                 resultPath = newIpjPath;
                             }
                             else
                             {
-                                Log("⚠️ Aucun .ipj trouvé dans le template", "WARN");
+                                Log("[!] Aucun .ipj trouvé dans le template", "WARN");
                             }
                         }
                         else
                         {
-                            Log($"⚠️ Dossier template non trouvé: {sourceTemplatePath}", "WARN");
+                            Log($"[!] Dossier template non trouvé: {sourceTemplatePath}", "WARN");
                         }
                         return;
                     }

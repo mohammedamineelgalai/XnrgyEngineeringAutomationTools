@@ -45,7 +45,7 @@ namespace XnrgyEngineeringAutomationTools.Services
             {
                 if (!File.Exists(CredentialsFile))
                 {
-                    Logger.Log("📁 Aucun fichier credentials trouvé, utilisation valeurs par défaut", Logger.LogLevel.DEBUG);
+                    Logger.Log("[i] Aucun fichier credentials trouvé, utilisation valeurs par défaut", Logger.LogLevel.DEBUG);
                     return new VaultCredentials();
                 }
 
@@ -57,13 +57,13 @@ namespace XnrgyEngineeringAutomationTools.Services
                 var credentials = JsonSerializer.Deserialize<VaultCredentials>(json);
                 if (credentials != null)
                 {
-                    Logger.Log($"✅ Credentials chargés (Serveur: {credentials.Server}, Vault: {credentials.VaultName})", Logger.LogLevel.DEBUG);
+                    Logger.Log($"[+] Credentials chargés (Serveur: {credentials.Server}, Vault: {credentials.VaultName})", Logger.LogLevel.DEBUG);
                     return credentials;
                 }
             }
             catch (Exception ex)
             {
-                Logger.Log($"⚠️ Erreur chargement credentials: {ex.Message}", Logger.LogLevel.DEBUG);
+                Logger.Log($"[!] Erreur chargement credentials: {ex.Message}", Logger.LogLevel.DEBUG);
             }
 
             return new VaultCredentials();
@@ -80,7 +80,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 if (!Directory.Exists(AppDataFolder))
                 {
                     Directory.CreateDirectory(AppDataFolder);
-                    Logger.Log($"📁 Dossier créé: {AppDataFolder}", Logger.LogLevel.DEBUG);
+                    Logger.Log($"[i] Dossier créé: {AppDataFolder}", Logger.LogLevel.DEBUG);
                 }
 
                 credentials.LastSaved = DateTime.Now;
@@ -92,12 +92,12 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                 File.WriteAllBytes(CredentialsFile, encryptedData);
                 
-                Logger.Log($"✅ Credentials sauvegardés dans {CredentialsFile}", Logger.LogLevel.INFO);
+                Logger.Log($"[+] Credentials sauvegardés dans {CredentialsFile}", Logger.LogLevel.INFO);
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log($"❌ Erreur sauvegarde credentials: {ex.Message}", Logger.LogLevel.ERROR);
+                Logger.Log($"[-] Erreur sauvegarde credentials: {ex.Message}", Logger.LogLevel.ERROR);
                 return false;
             }
         }
@@ -112,13 +112,13 @@ namespace XnrgyEngineeringAutomationTools.Services
                 if (File.Exists(CredentialsFile))
                 {
                     File.Delete(CredentialsFile);
-                    Logger.Log("🗑️ Credentials effacés", Logger.LogLevel.INFO);
+                    Logger.Log("[i] Credentials effacés", Logger.LogLevel.INFO);
                 }
                 return true;
             }
             catch (Exception ex)
             {
-                Logger.Log($"❌ Erreur effacement credentials: {ex.Message}", Logger.LogLevel.ERROR);
+                Logger.Log($"[-] Erreur effacement credentials: {ex.Message}", Logger.LogLevel.ERROR);
                 return false;
             }
         }

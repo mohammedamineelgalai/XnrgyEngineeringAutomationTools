@@ -262,7 +262,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 if (!inventorService.Initialize())
                 {
                     Log("Impossible d'initialiser Inventor - références non mises à jour", "WARN");
-                    Log("⚠️ Ouvrez les fichiers IAM dans Inventor pour résoudre les références manquantes", "WARN");
+                    Log("[!] Ouvrez les fichiers IAM dans Inventor pour résoudre les références manquantes", "WARN");
                     return;
                 }
 
@@ -280,11 +280,11 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                             if (success)
                             {
-                                Log($"✓ Références mises à jour: {assemblyFile.NewFileName}", "SUCCESS");
+                                Log($"[+] Références mises à jour: {assemblyFile.NewFileName}", "SUCCESS");
                             }
                             else
                             {
-                                Log($"⚠️ Vérifiez les références: {assemblyFile.NewFileName}", "WARN");
+                                Log($"[!] Vérifiez les références: {assemblyFile.NewFileName}", "WARN");
                             }
                         });
                     }

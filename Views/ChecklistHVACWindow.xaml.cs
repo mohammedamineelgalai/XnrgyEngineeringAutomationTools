@@ -124,11 +124,11 @@ namespace XnrgyEngineeringAutomationTools.Views
         {
             if (e.IsSuccess)
             {
-                StatusText.Text = "✅ Prêt - Checklist chargée";
+                StatusText.Text = "[+] Pret - Checklist chargee";
             }
             else
             {
-                StatusText.Text = "❌ Erreur de navigation";
+                StatusText.Text = "[-] Erreur de navigation";
                 Logger.Log("WebView2 navigation error: " + e.WebErrorStatus, Logger.LogLevel.ERROR);
             }
         }
