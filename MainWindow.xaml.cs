@@ -19,6 +19,7 @@ namespace XnrgyEngineeringAutomationTools
         private bool _isVaultConnected = false;
         private bool _isInventorConnected = false;
         private bool _isDarkTheme = true;
+        private System.Windows.Threading.DispatcherTimer? _inventorReconnectTimer;
 
         // === VERSIONS REQUISES ===
         private const string REQUIRED_INVENTOR_VERSION = "2026";  // Inventor Professional 2026.2
@@ -48,6 +49,12 @@ namespace XnrgyEngineeringAutomationTools
             Logger.Initialize();
             _vaultService = new VaultSdkService();
             _inventorService = new InventorService();
+            
+            // Timer pour réessayer la connexion Inventor si elle échoue au démarrage
+            // Utile quand l'app est lancée par script avant que COM soit prêt
+            _inventorReconnectTimer = new System.Windows.Threading.DispatcherTimer();
+            _inventorReconnectTimer.Interval = TimeSpan.FromSeconds(3);
+            _inventorReconnectTimer.Tick += InventorReconnectTimer_Tick;
         }
         
         /// <summary>
@@ -383,6 +390,13 @@ namespace XnrgyEngineeringAutomationTools
             
             AddLog("", "INFO");
             UpdateConnectionStatus();
+            
+            // Si Inventor pas encore connecté, démarrer le timer de reconnexion automatique
+            if (!_isInventorConnected || !_inventorService.IsConnected)
+            {
+                AddLog("[~] Timer de reconnexion Inventor active (toutes les 3 sec)...", "INFO");
+                _inventorReconnectTimer?.Start();
+            }
             
             // === ETAPE 3: Ouvrir la fenetre de connexion (mode auto-connect) ===
             AddLog("[>] [3/3] Connexion a Vault...", "INFO");
@@ -857,11 +871,45 @@ namespace XnrgyEngineeringAutomationTools
                 InventorIndicator.Fill = _greenBrush;
                 string docName = _inventorService.GetActiveDocumentName();
                 InventorStatusText.Text = !string.IsNullOrEmpty(docName) ? docName : "Connecte";
+                
+                // Arrêter le timer de reconnexion si on est connecté
+                _inventorReconnectTimer?.Stop();
             }
             else
             {
                 InventorIndicator.Fill = _redBrush;
                 InventorStatusText.Text = "Deconnecte";
+            }
+        }
+
+        /// <summary>
+        /// Timer de reconnexion automatique à Inventor
+        /// Se déclenche toutes les 3 secondes si Inventor n'est pas connecté
+        /// </summary>
+        private void InventorReconnectTimer_Tick(object? sender, EventArgs e)
+        {
+            // Vérifier si Inventor est en cours d'exécution
+            var inventorProcesses = Process.GetProcessesByName("Inventor");
+            if (inventorProcesses.Length == 0)
+            {
+                // Inventor pas lancé, ne pas spammer les logs
+                return;
+            }
+
+            // Tentative de reconnexion
+            if (_inventorService.ForceReconnect())
+            {
+                _isInventorConnected = true;
+                string version = _inventorService.GetInventorVersion() ?? "";
+                
+                AddLog("[+] Reconnexion a Inventor reussie!", "SUCCESS");
+                if (!string.IsNullOrEmpty(version))
+                {
+                    AddLog("   [i] Version: " + version, "INFO");
+                }
+                
+                _inventorReconnectTimer?.Stop();
+                UpdateConnectionStatus();
             }
         }
 

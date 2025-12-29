@@ -23,6 +23,10 @@ $ErrorActionPreference = "Stop"
 $ProjectName = "XnrgyEngineeringAutomationTools"
 $Configuration = if ($Debug) { "Debug" } else { "Release" }
 
+# Se positionner dans le répertoire du script (important pour chemins relatifs)
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+Push-Location $ScriptDir
+
 # Fonction pour afficher le header
 function Show-Header {
     Clear-Host
@@ -54,37 +58,74 @@ function Get-MSBuildPath {
     throw "MSBuild introuvable! Installer Visual Studio 2022."
 }
 
-# Fonction pour tuer les instances
+# Fonction pour tuer les instances - FORCE MODE
 function Stop-ExistingInstances {
     Write-Host "  [1/4] Arret des instances existantes..." -ForegroundColor Yellow
     
     $killed = $false
+    $maxRetries = 5
+    $retryDelay = 1
     
-    # Tuer par nom de processus
-    $processes = Get-Process -Name $ProjectName -ErrorAction SilentlyContinue
-    if ($processes) {
-        $processes | Stop-Process -Force -ErrorAction SilentlyContinue
-        Write-Host "        ✓ $($processes.Count) instance(s) arretee(s)" -ForegroundColor Green
-        $killed = $true
+    for ($retry = 1; $retry -le $maxRetries; $retry++) {
+        # Tuer par nom de processus
+        $processes = Get-Process -Name $ProjectName -ErrorAction SilentlyContinue
+        if ($processes) {
+            foreach ($proc in $processes) {
+                try {
+                    $proc.Kill()
+                    $proc.WaitForExit(3000)
+                } catch { }
+            }
+            Write-Host "        [+] $($processes.Count) instance(s) arretee(s)" -ForegroundColor Green
+            $killed = $true
+        }
+        
+        # Aussi tuer VaultAutomationTool si présent (ancien nom)
+        $oldProcesses = Get-Process -Name "VaultAutomationTool" -ErrorAction SilentlyContinue
+        if ($oldProcesses) {
+            foreach ($proc in $oldProcesses) {
+                try {
+                    $proc.Kill()
+                    $proc.WaitForExit(3000)
+                } catch { }
+            }
+            Write-Host "        [+] VaultAutomationTool arrete" -ForegroundColor Green
+            $killed = $true
+        }
+        
+        # Forcer avec taskkill /F /T (plus robuste - force + arbre de processus)
+        $null = cmd /c "taskkill /F /T /IM $ProjectName.exe 2>nul"
+        $null = cmd /c "taskkill /F /T /IM VaultAutomationTool.exe 2>nul"
+        
+        # Vérifier si vraiment arrêté
+        Start-Sleep -Milliseconds 500
+        $stillRunning = Get-Process -Name $ProjectName -ErrorAction SilentlyContinue
+        $stillRunningOld = Get-Process -Name "VaultAutomationTool" -ErrorAction SilentlyContinue
+        
+        if (-not $stillRunning -and -not $stillRunningOld) {
+            break
+        }
+        
+        if ($retry -lt $maxRetries) {
+            Write-Host "        [!] Processus encore actif, nouvelle tentative ($retry/$maxRetries)..." -ForegroundColor Yellow
+            Start-Sleep -Seconds $retryDelay
+        }
     }
     
-    # Aussi tuer VaultAutomationTool si présent (ancien nom)
-    $oldProcesses = Get-Process -Name "VaultAutomationTool" -ErrorAction SilentlyContinue
-    if ($oldProcesses) {
-        $oldProcesses | Stop-Process -Force -ErrorAction SilentlyContinue
-        Write-Host "        ✓ VaultAutomationTool arrete" -ForegroundColor Green
-        $killed = $true
+    # Vérification finale
+    $finalCheck = Get-Process -Name $ProjectName -ErrorAction SilentlyContinue
+    if ($finalCheck) {
+        Write-Host "        [-] ERREUR: Impossible de fermer l'application apres $maxRetries tentatives" -ForegroundColor Red
+        Write-Host "        [-] Fermez l'application manuellement et relancez le script" -ForegroundColor Red
+        exit 1
     }
-    
-    # Forcer avec taskkill (plus robuste) - ignorer erreurs
-    $null = cmd /c "taskkill /F /IM $ProjectName.exe 2>nul"
-    $null = cmd /c "taskkill /F /IM VaultAutomationTool.exe 2>nul"
     
     if (-not $killed) {
-        Write-Host "        ✓ Aucune instance en cours" -ForegroundColor Gray
+        Write-Host "        [+] Aucune instance en cours" -ForegroundColor Gray
     }
     
-    Start-Sleep -Seconds 1
+    # Attendre un peu pour libérer les fichiers
+    Start-Sleep -Seconds 2
 }
 
 Show-Header
@@ -137,6 +178,7 @@ if (-not $buildSuccess) {
     Write-Host "        ✗ ERREUR DE COMPILATION" -ForegroundColor Red
     Write-Host ""
     Write-Host $buildOutput -ForegroundColor Red
+    Pop-Location
     exit 1
 }
 
@@ -152,6 +194,7 @@ if ($warnings -gt 0) {
 $exePath = "bin\$Configuration\$ProjectName.exe"
 if (-not (Test-Path $exePath)) {
     Write-Host "        ✗ ERREUR: Executable introuvable: $exePath" -ForegroundColor Red
+    Pop-Location
     exit 1
 }
 
@@ -170,6 +213,9 @@ if ($BuildOnly) {
     Start-Sleep -Seconds 2
     Write-Host "        ✓ Application lancee!" -ForegroundColor Green
 }
+
+# Restaurer le répertoire original
+Pop-Location
 
 # Fin
 Write-Host ""

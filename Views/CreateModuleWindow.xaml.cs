@@ -684,8 +684,8 @@ namespace XnrgyEngineeringAutomationTools.Views
                         IsInventorFile = isInventorFile
                     };
 
-                    // Renommage automatique UNIQUEMENT pour les templates (pas les projets existants)
-                    // Les projets existants gardent leurs noms originaux
+                    // Pour templates: renommer Module_.iam et fichier IPJ principal (pattern XXXXX-XX-XX_2026.ipj)
+                    // Pour projets existants: renommer le premier .iam à la racine et le premier .ipj à la racine
                     if (!isFromExistingProject)
                     {
                         // Renommage automatique du Top Assembly (.iam) - template Module_.iam
@@ -699,6 +699,39 @@ namespace XnrgyEngineeringAutomationTools.Views
                         if (isMainProjectFile && !string.IsNullOrEmpty(TxtProject?.Text))
                         {
                             item.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                        }
+                    }
+                    else
+                    {
+                        // PROJET EXISTANT: Renommer le fichier Top Assembly (.iam à la racine) avec le numéro de projet
+                        // Note: Pour les projets existants, isTopAssembly est false car le fichier ne s'appelle pas "Module_.iam"
+                        // On détecte le premier .iam à la racine comme Top Assembly
+                        bool isRootIam = extension == "IAM" && string.IsNullOrEmpty(Path.GetDirectoryName(relativePath));
+                        bool isRootIpj = isProjectFile && string.IsNullOrEmpty(Path.GetDirectoryName(relativePath));
+                        
+                        if (isRootIam && !string.IsNullOrEmpty(TxtProject?.Text))
+                        {
+                            // Vérifier si c'est le premier .iam trouvé à la racine (Top Assembly)
+                            bool alreadyHasTopAssembly = _files.Any(f => f.IsTopAssembly || 
+                                (f.FileType == "IAM" && string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath))));
+                            
+                            if (!alreadyHasTopAssembly)
+                            {
+                                item.IsTopAssembly = true;
+                                item.NewFileName = $"{_request.FullProjectNumber}.iam";
+                            }
+                        }
+                        
+                        if (isRootIpj && !string.IsNullOrEmpty(TxtProject?.Text))
+                        {
+                            // Vérifier si c'est le premier .ipj trouvé à la racine (fichier projet)
+                            bool alreadyHasProjectFile = _files.Any(f => f.FileType == "IPJ" && 
+                                string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)));
+                            
+                            if (!alreadyHasProjectFile)
+                            {
+                                item.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                            }
                         }
                     }
                     
