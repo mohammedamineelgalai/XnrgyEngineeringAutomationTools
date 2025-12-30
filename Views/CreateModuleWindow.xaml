@@ -716,6 +716,14 @@
                             </StackPanel>
                         </Grid>
 
+                        <!-- Checkbox pour inclure fichiers non-Inventor -->
+                        <CheckBox x:Name="ChkIncludeNonInventor" 
+                                  Content="Inclure fichiers non-Inventor" 
+                                  Foreground="#CCCCCC" FontSize="12" Margin="0,10,0,5"
+                                  IsChecked="False"
+                                  Checked="ChkIncludeNonInventor_Changed"
+                                  Unchecked="ChkIncludeNonInventor_Changed"/>
+
                         <!-- Boutons d'action - bien visibles -->
                         <StackPanel Orientation="Horizontal" Margin="0,12,0,5">
                             <Button x:Name="BtnApplyRename" Content="✓ Appliquer" 

@@ -775,12 +775,25 @@ namespace XnrgyEngineeringAutomationTools.Views
                 var replace = TxtReplace?.Text ?? "";
                 var prefix = TxtPrefix?.Text ?? "";
                 var suffix = TxtSuffix?.Text ?? "";
+                
+                // Si la checkbox n'est pas cochée, ne renommer que les fichiers Inventor
+                bool includeNonInventor = ChkIncludeNonInventor?.IsChecked == true;
 
                 foreach (var file in _files.Where(f => f.IsSelected))
                 {
-                    var newName = file.OriginalFileName;
+                    // Skip fichiers non-Inventor si checkbox non cochée
+                    if (!includeNonInventor && !file.IsInventorFile)
+                    {
+                        continue;
+                    }
+                    
+                    // STRATÉGIE DE RENOMMAGE:
+                    // 1. Rechercher/Remplacer → S'applique sur NewFileName (cumulatif)
+                    // 2. Préfixe/Suffixe → S'applique sur OriginalFileName (pas de doublons)
+                    
+                    var newName = file.NewFileName; // Partir du résultat actuel
 
-                    // Appliquer rechercher/remplacer (case-insensitive)
+                    // Appliquer rechercher/remplacer sur NewFileName (cumulatif)
                     if (!string.IsNullOrEmpty(search))
                     {
                         // .NET Framework compatible replace
@@ -792,12 +805,26 @@ namespace XnrgyEngineeringAutomationTools.Views
                         }
                     }
 
-                    // Appliquer préfixe/suffixe
+                    // Appliquer préfixe/suffixe sur OriginalFileName pour éviter doublons
+                    // Ex: Si prefix="NEW_" déjà appliqué, on ne veut pas "NEW_NEW_fichier.ipt"
                     if (!string.IsNullOrEmpty(prefix) || !string.IsNullOrEmpty(suffix))
                     {
-                        var nameWithoutExt = Path.GetFileNameWithoutExtension(newName);
-                        var ext = Path.GetExtension(newName);
-                        newName = $"{prefix}{nameWithoutExt}{suffix}{ext}";
+                        // Reconstruire depuis OriginalFileName avec préfixe/suffixe actuels
+                        var baseName = Path.GetFileNameWithoutExtension(file.OriginalFileName);
+                        var ext = Path.GetExtension(file.OriginalFileName);
+                        var withPrefixSuffix = $"{prefix}{baseName}{suffix}{ext}";
+                        
+                        // Appliquer aussi le rechercher/remplacer si présent
+                        if (!string.IsNullOrEmpty(search))
+                        {
+                            var index = withPrefixSuffix.IndexOf(search, StringComparison.OrdinalIgnoreCase);
+                            while (index >= 0)
+                            {
+                                withPrefixSuffix = withPrefixSuffix.Substring(0, index) + replace + withPrefixSuffix.Substring(index + search.Length);
+                                index = withPrefixSuffix.IndexOf(search, index + replace.Length, StringComparison.OrdinalIgnoreCase);
+                            }
+                        }
+                        newName = withPrefixSuffix;
                     }
 
                     file.NewFileName = newName;
@@ -914,6 +941,12 @@ namespace XnrgyEngineeringAutomationTools.Views
         private void CmbFilterSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             ApplyFilters();
+        }
+
+        private void ChkIncludeNonInventor_Changed(object sender, RoutedEventArgs e)
+        {
+            // La checkbox contrôle le renommage, pas le filtrage
+            // Rien à faire ici - le renommage vérifie la checkbox au moment de l'application
         }
 
         private void ApplyFilters()
