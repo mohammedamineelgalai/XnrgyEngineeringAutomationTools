@@ -457,7 +457,12 @@
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock x:Name="TxtDestinationPreview" Text="Destination: Non définie" 
                                Foreground="#B8D4E8" FontSize="12" VerticalAlignment="Center" Margin="0,0,20,0"/>
-                    <Button x:Name="BtnClose" Content="✕ Fermer" Style="{StaticResource SecondaryButton}" 
+                    <!-- Bouton Réglages Admin - Visible uniquement si admin Vault -->
+                    <Button x:Name="BtnSettings" Content="[#] Réglages" Style="{StaticResource SecondaryButton}" 
+                            Background="#404060" Foreground="#FFFFFF" Margin="0,0,10,0"
+                            Click="BtnSettings_Click" ToolTip="Réglages - Administrateurs Vault uniquement"
+                            Visibility="Collapsed"/>
+                    <Button x:Name="BtnClose" Content="[-] Fermer" Style="{StaticResource SecondaryButton}" 
                             Background="#E81123" Foreground="White" Click="BtnClose_Click"/>
                 </StackPanel>
             </Grid>
@@ -549,7 +554,7 @@
                 <!-- Colonne droite: Propriétés Custom -->
                 <GroupBox Grid.Column="2" Style="{StaticResource ModernGroupBox}" Margin="10,0,0,0" Padding="10">
                     <GroupBox.Header>
-                        <TextBlock Text="👤 Propriétés iProperties / Paramètres" FontSize="14" FontWeight="Bold" Foreground="#107C10"/>
+                        <TextBlock Text="👤 Paramètres / iProperties" FontSize="14" FontWeight="Bold" Foreground="#107C10"/>
                     </GroupBox.Header>
                     <Grid>
                         <Grid.RowDefinitions>

@@ -432,6 +432,9 @@ namespace XnrgyEngineeringAutomationTools
                 _isVaultConnected = true;
                 UpdateConnectionStatus();
                 AddLog("[+] Connexion Vault etablie avec succes!", "SUCCESS");
+                
+                // Synchronisation automatique des parametres depuis Vault au demarrage
+                SyncSettingsFromVaultAsync();
             }
             else
             {
@@ -454,6 +457,42 @@ namespace XnrgyEngineeringAutomationTools
                 _isVaultConnected = true;
                 UpdateConnectionStatus();
                 AddLog("[+] Connexion Vault etablie avec succes!", "SUCCESS");
+                
+                // Synchronisation automatique des parametres depuis Vault au demarrage
+                SyncSettingsFromVaultAsync();
+            }
+        }
+
+        /// <summary>
+        /// Synchronise les parametres de l'application depuis Vault en arriere-plan
+        /// Appele automatiquement apres connexion Vault reussie
+        /// </summary>
+        private async void SyncSettingsFromVaultAsync()
+        {
+            try
+            {
+                await Task.Run(() =>
+                {
+                    var settingsService = new VaultSettingsService(_vaultService);
+                    bool synced = settingsService.SyncFromVault();
+                    
+                    Dispatcher.Invoke(() =>
+                    {
+                        if (synced)
+                        {
+                            AddLog("[+] Parametres synchronises depuis Vault", "SUCCESS");
+                        }
+                        else
+                        {
+                            AddLog("[i] Parametres locaux utilises (fichier Vault non trouve)", "INFO");
+                        }
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                Dispatcher.Invoke(() =>
+                    AddLog($"[!] Erreur sync parametres: {ex.Message}", "WARN"));
             }
         }
 
@@ -982,7 +1021,8 @@ namespace XnrgyEngineeringAutomationTools
             
             try
             {
-                var createModuleWindow = new CreateModuleWindow();
+                // Passer le service Vault pour vérification des permissions admin
+                var createModuleWindow = new CreateModuleWindow(_isVaultConnected ? _vaultService : null);
                 createModuleWindow.Owner = this;
                 
                 AddLog("Fenêtre Créer Module ouverte", "INFO");

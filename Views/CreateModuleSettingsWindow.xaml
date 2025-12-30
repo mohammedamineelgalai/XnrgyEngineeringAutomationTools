@@ -1,0 +1,319 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Views.CreateModuleSettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Réglages - Créer Module (Admin)" 
+        Height="700" Width="800"
+        WindowStartupLocation="CenterOwner"
+        Background="#1E1E2E"
+        ResizeMode="CanResizeWithGrip">
+
+    <Window.Resources>
+        <!-- Styles réutilisés -->
+        <Style x:Key="SettingsLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#CCCCCC"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+        
+        <Style x:Key="SettingsTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#2D2D3D"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#404060"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="CaretBrush" Value="White"/>
+        </Style>
+        
+        <Style x:Key="SettingsGroupBox" TargetType="GroupBox">
+            <Setter Property="BorderBrush" Value="#404060"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Foreground" Value="#FF8C00"/>
+        </Style>
+        
+        <Style x:Key="ActionButton" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#1084D8"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#404060"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#505080"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#252536" Padding="15">
+            <StackPanel>
+                <TextBlock Text="⚙️ Réglages du Module 'Créer Module'" 
+                           FontSize="18" FontWeight="Bold" Foreground="#FF8C00"/>
+                <TextBlock Text="Configuration des paramètres standards - Modifications réservées aux administrateurs Vault" 
+                           FontSize="11" Foreground="#888888" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Content - ScrollViewer -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="15">
+            <StackPanel>
+                
+                <!-- Initiales Dessinateurs -->
+                <GroupBox Style="{StaticResource SettingsGroupBox}">
+                    <GroupBox.Header>
+                        <TextBlock Text="👥 Initiales des Dessinateurs" FontWeight="Bold"/>
+                    </GroupBox.Header>
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource SettingsLabel}" 
+                                   Text="Liste des initiales (une par ligne, ou séparées par des virgules):"/>
+                        <TextBox x:Name="TxtDesignerInitials" Style="{StaticResource SettingsTextBox}"
+                                 Height="100" AcceptsReturn="True" TextWrapping="Wrap"
+                                 VerticalScrollBarVisibility="Auto"
+                                 ToolTip="Entrez les initiales des dessinateurs, une par ligne ou séparées par des virgules"/>
+                        <TextBlock Text="Exemple: N/A, AC, AM, AP, AR, BL, CC..." 
+                                   Foreground="#666666" FontSize="10" Margin="0,4,0,0"/>
+                    </StackPanel>
+                </GroupBox>
+
+                <!-- Chemins -->
+                <GroupBox Style="{StaticResource SettingsGroupBox}">
+                    <GroupBox.Header>
+                        <TextBlock Text="📁 Chemins et Dossiers" FontWeight="Bold"/>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Template Local Path -->
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Template (Local):" 
+                                   Style="{StaticResource SettingsLabel}" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtTemplateLocalPath" Grid.Row="0" Grid.Column="1" 
+                                 Style="{StaticResource SettingsTextBox}" Margin="0,0,5,8"/>
+                        <Button x:Name="BtnBrowseTemplate" Grid.Row="0" Grid.Column="2" Content="..." 
+                                Width="30" Click="BtnBrowseTemplate_Click" Margin="0,0,0,8"/>
+
+                        <!-- Template Vault Path -->
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Template (Vault):" 
+                                   Style="{StaticResource SettingsLabel}" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtTemplateVaultPath" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                                 Style="{StaticResource SettingsTextBox}" Margin="0,0,0,8"/>
+
+                        <!-- Projects Local Base Path -->
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Projets (Local):" 
+                                   Style="{StaticResource SettingsLabel}" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtProjectsLocalPath" Grid.Row="2" Grid.Column="1" 
+                                 Style="{StaticResource SettingsTextBox}" Margin="0,0,5,8"/>
+                        <Button x:Name="BtnBrowseProjects" Grid.Row="2" Grid.Column="2" Content="..." 
+                                Width="30" Click="BtnBrowseProjects_Click" Margin="0,0,0,8"/>
+
+                        <!-- Projects Vault Base Path -->
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Projets (Vault):" 
+                                   Style="{StaticResource SettingsLabel}" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtProjectsVaultPath" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
+                                 Style="{StaticResource SettingsTextBox}"/>
+                    </Grid>
+                </GroupBox>
+
+                <!-- Fichiers Template -->
+                <GroupBox Style="{StaticResource SettingsGroupBox}">
+                    <GroupBox.Header>
+                        <TextBlock Text="📄 Fichiers Template" FontWeight="Bold"/>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="180"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Fichier IPJ Template:" 
+                                   Style="{StaticResource SettingsLabel}" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtTemplateIpjName" Grid.Row="0" Grid.Column="1" 
+                                 Style="{StaticResource SettingsTextBox}" Margin="0,0,0,8"/>
+
+                        <TextBlock Grid.Row="1" Grid.Column="0" Text="Top Assembly Template:" 
+                                   Style="{StaticResource SettingsLabel}" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtTemplateTopAssembly" Grid.Row="1" Grid.Column="1" 
+                                 Style="{StaticResource SettingsTextBox}" Margin="0,0,0,8"/>
+
+                        <TextBlock Grid.Row="2" Grid.Column="0" Text="Préfixe Référence:" 
+                                   Style="{StaticResource SettingsLabel}" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtReferenceFolderPrefix" Grid.Row="2" Grid.Column="1" 
+                                 Style="{StaticResource SettingsTextBox}" Margin="0,0,0,8" MaxLength="10"/>
+
+                        <TextBlock Grid.Row="3" Grid.Column="0" Text="Préfixe Module:" 
+                                   Style="{StaticResource SettingsLabel}" VerticalAlignment="Center"/>
+                        <TextBox x:Name="TxtModuleFolderPrefix" Grid.Row="3" Grid.Column="1" 
+                                 Style="{StaticResource SettingsTextBox}" MaxLength="10"/>
+                    </Grid>
+                </GroupBox>
+
+                <!-- Extensions -->
+                <GroupBox Style="{StaticResource SettingsGroupBox}">
+                    <GroupBox.Header>
+                        <TextBlock Text="📋 Extensions de Fichiers" FontWeight="Bold"/>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Extensions Inventor:"/>
+                            <TextBox x:Name="TxtInventorExtensions" Style="{StaticResource SettingsTextBox}"
+                                     Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Extensions Exclues:"/>
+                            <TextBox x:Name="TxtExcludedExtensions" Style="{StaticResource SettingsTextBox}"
+                                     Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+                <!-- Dossiers Exclus et Library -->
+                <GroupBox Style="{StaticResource SettingsGroupBox}">
+                    <GroupBox.Header>
+                        <TextBlock Text="🚫 Exclusions et Library" FontWeight="Bold"/>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Dossiers Exclus:"/>
+                            <TextBox x:Name="TxtExcludedFolders" Style="{StaticResource SettingsTextBox}"
+                                     Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Patterns Library (liens préservés):"/>
+                            <TextBox x:Name="TxtLibraryPatterns" Style="{StaticResource SettingsTextBox}"
+                                     Height="60" AcceptsReturn="True" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+                <!-- iProperties -->
+                <GroupBox Style="{StaticResource SettingsGroupBox}">
+                    <GroupBox.Header>
+                        <TextBlock Text="🏷️ Noms des iProperties" FontWeight="Bold"/>
+                    </GroupBox.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,8">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Initiale Dessinateur:"/>
+                            <TextBox x:Name="TxtIPropDesigner" Style="{StaticResource SettingsTextBox}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,0,8">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Initiale Co-Dessinateur:"/>
+                            <TextBox x:Name="TxtIPropCoDesigner" Style="{StaticResource SettingsTextBox}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,8">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Date Création:"/>
+                            <TextBox x:Name="TxtIPropCreationDate" Style="{StaticResource SettingsTextBox}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,0,0,8">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Job Title:"/>
+                            <TextBox x:Name="TxtIPropJobTitle" Style="{StaticResource SettingsTextBox}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,10,8">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Projet:"/>
+                            <TextBox x:Name="TxtIPropProject" Style="{StaticResource SettingsTextBox}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="2" Grid.Column="1" Margin="0,0,0,8">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Référence:"/>
+                            <TextBox x:Name="TxtIPropReference" Style="{StaticResource SettingsTextBox}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,10,0">
+                            <TextBlock Style="{StaticResource SettingsLabel}" Text="Module:"/>
+                            <TextBox x:Name="TxtIPropModule" Style="{StaticResource SettingsTextBox}"/>
+                        </StackPanel>
+                    </Grid>
+                </GroupBox>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Footer - Boutons -->
+        <Border Grid.Row="2" Background="#252536" Padding="15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button x:Name="BtnResetDefaults" Grid.Column="0" Content="↺ Réinitialiser" 
+                        Style="{StaticResource SecondaryButton}" Click="BtnResetDefaults_Click"/>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button x:Name="BtnCancel" Content="Annuler" 
+                            Style="{StaticResource SecondaryButton}" Margin="0,0,10,0"
+                            Click="BtnCancel_Click"/>
+                    <Button x:Name="BtnSave" Content="✓ Sauvegarder" 
+                            Style="{StaticResource ActionButton}" Click="BtnSave_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

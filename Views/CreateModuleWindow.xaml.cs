@@ -23,20 +23,37 @@ namespace XnrgyEngineeringAutomationTools.Views
         private readonly string _defaultTemplatePath = @"C:\Vault\Engineering\Library\Xnrgy_Module";
         private readonly string _projectsBasePath = @"C:\Vault\Engineering\Projects";
         private readonly string _defaultDestinationBase = @"C:\Vault\Engineering\Projects";
+        
+        // Service Vault pour vérification admin (optionnel)
+        private readonly VaultSdkService? _vaultService;
+        private bool _isVaultAdmin = false;
 
-        // Liste des initiales dessinateurs XNRGY
+        // Liste des initiales dessinateurs XNRGY (mise à jour 2025-12-30)
         private readonly List<string> _designerInitials = new List<string>
         {
-            "N/A", "AC", "AM", "AR", "CC", "DC", "DL", "DM", "FL", "IM",
-            "KB", "KJ", "MAE", "MC", "NJ", "TG", "TV", "SB", "VK", "YS"
+            "N/A", "AC", "AM", "AP", "AR", "BL", "CC", "CP", "DC", "DL", "DM", "FL", 
+            "IM", "KB", "KJ", "MAE", "MC", "NJ", "RO", "SB", "TG", "TV", "VK", "YS", "ZM",
+            "Autre..."
         };
 
-        public CreateModuleWindow()
+        /// <summary>
+        /// Constructeur par défaut (sans vérification admin)
+        /// </summary>
+        public CreateModuleWindow() : this(null)
+        {
+        }
+
+        /// <summary>
+        /// Constructeur avec service Vault pour vérification admin
+        /// </summary>
+        /// <param name="vaultService">Service Vault connecté (optionnel)</param>
+        public CreateModuleWindow(VaultSdkService? vaultService)
         {
             // IMPORTANT: Initialiser _request et _files AVANT InitializeComponent()
             // car les événements TextChanged du XAML sont déclenchés pendant l'initialisation
             _request = new CreateModuleRequest();
             _files = new ObservableCollection<FileRenameItem>();
+            _vaultService = vaultService;
             
             InitializeComponent();
             
@@ -219,6 +236,9 @@ namespace XnrgyEngineeringAutomationTools.Views
                 // Message de bienvenue dans le journal
                 AddLog("Fenêtre Créer Module initialisée", "START");
                 
+                // Vérifier si l'utilisateur est administrateur Vault
+                CheckVaultAdminPermissions();
+                
                 // Initialiser les ComboBox Référence et Module (01-50)
                 InitializeReferenceModuleComboBoxes();
                 AddLog("ComboBox Référence/Module chargées (01-50)", "INFO");
@@ -238,7 +258,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                     TxtSourcePath.Text = _defaultTemplatePath;
                     LoadFilesFromPath(_defaultTemplatePath);
                     AddLog($"Template chargé: {_defaultTemplatePath}", "SUCCESS");
-                    TxtStatus.Text = "✓ Template Xnrgy_Module chargé automatiquement";
+                    TxtStatus.Text = "[+] Template Xnrgy_Module chargé automatiquement";
                 }
                 else
                 {
@@ -252,6 +272,43 @@ namespace XnrgyEngineeringAutomationTools.Views
             catch (Exception ex)
             {
                 AddLog($"Erreur d'initialisation: {ex.Message}", "ERROR");
+            }
+        }
+
+        /// <summary>
+        /// Vérifie si l'utilisateur connecté à Vault est administrateur
+        /// et affiche/masque le bouton Réglages en conséquence
+        /// </summary>
+        private void CheckVaultAdminPermissions()
+        {
+            try
+            {
+                if (_vaultService != null && _vaultService.IsConnected)
+                {
+                    _isVaultAdmin = _vaultService.IsCurrentUserAdmin();
+                    
+                    if (_isVaultAdmin)
+                    {
+                        BtnSettings.Visibility = Visibility.Visible;
+                        AddLog($"[+] Mode Admin activé ({_vaultService.UserName}) - Réglages accessibles", "SUCCESS");
+                    }
+                    else
+                    {
+                        BtnSettings.Visibility = Visibility.Collapsed;
+                        AddLog($"[i] Utilisateur standard ({_vaultService.UserName}) - Réglages masqués", "INFO");
+                    }
+                }
+                else
+                {
+                    // Pas de connexion Vault - masquer le bouton par défaut
+                    BtnSettings.Visibility = Visibility.Collapsed;
+                    AddLog("[i] Non connecté à Vault - Réglages non disponibles", "INFO");
+                }
+            }
+            catch (Exception ex)
+            {
+                BtnSettings.Visibility = Visibility.Collapsed;
+                AddLog($"[!] Erreur vérification admin: {ex.Message}", "WARN");
             }
         }
 
@@ -300,12 +357,134 @@ namespace XnrgyEngineeringAutomationTools.Views
 
         private void CmbInitialeDessinateur_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // Gérer l'option "Autre..." pour saisie personnalisée
+            if (CmbInitialeDessinateur.SelectedItem?.ToString() == "Autre...")
+            {
+                string customValue = ShowCustomInitialDialog("Dessinateur");
+                if (!string.IsNullOrWhiteSpace(customValue))
+                {
+                    // Ajouter la valeur custom avant "Autre..." si elle n'existe pas déjà
+                    if (!CmbInitialeDessinateur.Items.Contains(customValue))
+                    {
+                        int autreIndex = CmbInitialeDessinateur.Items.IndexOf("Autre...");
+                        CmbInitialeDessinateur.Items.Insert(autreIndex, customValue);
+                    }
+                    CmbInitialeDessinateur.SelectedItem = customValue;
+                }
+                else
+                {
+                    // Annulé - revenir à N/A
+                    CmbInitialeDessinateur.SelectedIndex = 0;
+                }
+            }
             ValidateForm();
         }
 
         private void CmbInitialeCoDessinateur_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // Gérer l'option "Autre..." pour saisie personnalisée
+            if (CmbInitialeCoDessinateur.SelectedItem?.ToString() == "Autre...")
+            {
+                string customValue = ShowCustomInitialDialog("Co-Dessinateur");
+                if (!string.IsNullOrWhiteSpace(customValue))
+                {
+                    // Ajouter la valeur custom avant "Autre..." si elle n'existe pas déjà
+                    if (!CmbInitialeCoDessinateur.Items.Contains(customValue))
+                    {
+                        int autreIndex = CmbInitialeCoDessinateur.Items.IndexOf("Autre...");
+                        CmbInitialeCoDessinateur.Items.Insert(autreIndex, customValue);
+                    }
+                    CmbInitialeCoDessinateur.SelectedItem = customValue;
+                }
+                else
+                {
+                    // Annulé - revenir à N/A
+                    CmbInitialeCoDessinateur.SelectedIndex = 0;
+                }
+            }
             // Pas de validation requise car optionnel
+        }
+
+        /// <summary>
+        /// Affiche une boîte de dialogue pour saisir des initiales personnalisées
+        /// </summary>
+        private string ShowCustomInitialDialog(string type)
+        {
+            // Créer une fenêtre de dialogue simple
+            var dialog = new Window
+            {
+                Title = $"Initiales {type} personnalisées",
+                Width = 350,
+                Height = 180,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize,
+                Background = new SolidColorBrush(Color.FromRgb(30, 30, 45)),
+                WindowStyle = WindowStyle.ToolWindow
+            };
+
+            var stack = new StackPanel { Margin = new Thickness(20) };
+            
+            var label = new TextBlock
+            {
+                Text = $"Entrez les initiales du {type} (2-4 caractères):",
+                Foreground = Brushes.White,
+                FontSize = 13,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            
+            var textBox = new TextBox
+            {
+                MaxLength = 4,
+                FontSize = 14,
+                Padding = new Thickness(8, 6, 8, 6),
+                Background = new SolidColorBrush(Color.FromRgb(45, 45, 65)),
+                Foreground = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(80, 80, 120)),
+                CaretBrush = Brushes.White
+            };
+            textBox.Focus();
+            
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 15, 0, 0)
+            };
+            
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 80,
+                Padding = new Thickness(0, 6, 0, 6),
+                Margin = new Thickness(0, 0, 10, 0),
+                IsDefault = true
+            };
+            okButton.Click += (s, e) => { dialog.DialogResult = true; dialog.Close(); };
+            
+            var cancelButton = new Button
+            {
+                Content = "Annuler",
+                Width = 80,
+                Padding = new Thickness(0, 6, 0, 6),
+                IsCancel = true
+            };
+            cancelButton.Click += (s, e) => { dialog.DialogResult = false; dialog.Close(); };
+            
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+            
+            stack.Children.Add(label);
+            stack.Children.Add(textBox);
+            stack.Children.Add(buttonPanel);
+            
+            dialog.Content = stack;
+            
+            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                return textBox.Text.Trim().ToUpper();
+            }
+            return null;
         }
 
         #region Event Handlers - Project Info
@@ -1193,6 +1372,85 @@ namespace XnrgyEngineeringAutomationTools.Views
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             BtnCancel_Click(sender, e);
+        }
+
+        /// <summary>
+        /// Ouvre la fenêtre de réglages - Accessible uniquement aux administrateurs Vault
+        /// </summary>
+        private void BtnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                AddLog("Ouverture des reglages administrateur...", "START");
+                
+                // Passer le VaultService pour la synchronisation Vault
+                var settingsWindow = new CreateModuleSettingsWindow(_vaultService)
+                {
+                    Owner = this
+                };
+                
+                var result = settingsWindow.ShowDialog();
+                
+                if (result == true)
+                {
+                    // Recharger les parametres apres sauvegarde
+                    AddLog("[+] Parametres mis a jour et synchronises vers Vault", "SUCCESS");
+                    ReloadSettingsFromService();
+                }
+                else
+                {
+                    AddLog("Reglages annules", "INFO");
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog($"Erreur ouverture réglages: {ex.Message}", "ERROR");
+            }
+        }
+
+        /// <summary>
+        /// Recharge les paramètres depuis le service après modification
+        /// </summary>
+        private void ReloadSettingsFromService()
+        {
+            try
+            {
+                SettingsService.Reload();
+                var settings = SettingsService.Current?.CreateModule;
+                
+                if (settings != null)
+                {
+                    // Recharger les initiales dessinateurs
+                    CmbInitialeDessinateur.Items.Clear();
+                    CmbInitialeCoDessinateur.Items.Clear();
+                    
+                    foreach (var initial in settings.DesignerInitials)
+                    {
+                        CmbInitialeDessinateur.Items.Add(initial);
+                        CmbInitialeCoDessinateur.Items.Add(initial);
+                    }
+                    
+                    // Ajouter "Autre..." si pas présent
+                    if (!settings.DesignerInitials.Contains("Autre..."))
+                    {
+                        CmbInitialeDessinateur.Items.Add("Autre...");
+                        CmbInitialeCoDessinateur.Items.Add("Autre...");
+                    }
+                    
+                    // Resélectionner N/A par défaut si disponible
+                    if (CmbInitialeDessinateur.Items.Contains("N/A"))
+                    {
+                        CmbInitialeDessinateur.SelectedItem = "N/A";
+                        CmbInitialeCoDessinateur.SelectedItem = "N/A";
+                    }
+                    
+                    AddLog($"[+] {settings.DesignerInitials.Count} initiales rechargées", "SUCCESS");
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog($"[!] Erreur rechargement paramètres: {ex.Message}", "WARN");
+            }
         }
 
         #endregion

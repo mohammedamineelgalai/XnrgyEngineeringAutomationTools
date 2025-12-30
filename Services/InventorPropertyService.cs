@@ -171,7 +171,7 @@ namespace VaultAutomationTool.Services
                 SetOrCreateProperty(customProps, "Reference", reference);
                 SetOrCreateProperty(customProps, "Module", module);
                 
-                // Propriétés supplémentaires du module
+                // Propriétés supplémentaires du module (noms iProperties standards XNRGY)
                 SetOrCreateProperty(customProps, "Initiale_du_Dessinateur", initialeDessinateur);
                 SetOrCreateProperty(customProps, "Initiale_du_Co_Dessinateur", initialeCoDessinateur);
                 

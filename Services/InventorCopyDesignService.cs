@@ -437,10 +437,10 @@ namespace XnrgyEngineeringAutomationTools.Services
                 SetProperty(customProps, "Project", request.Project, true);
                 SetProperty(customProps, "Reference", request.Reference, true);
                 SetProperty(customProps, "Module", request.Module, true);
-                SetProperty(customProps, "Numero", request.FullProjectNumber, true);
+                SetProperty(customProps, "Numero_de_Projet", request.FullProjectNumber, true);
                 SetProperty(customProps, "Initiale_du_Dessinateur", request.InitialeDessinateur, true);
                 SetProperty(customProps, "Initiale_du_Co_Dessinateur", request.InitialeCoDessinateur, true);
-                SetProperty(customProps, "Date_de_Creation", request.CreationDateFormatted, true);
+                SetProperty(customProps, "Creation_Date", request.CreationDateFormatted, true);
                 
                 if (!string.IsNullOrEmpty(request.JobTitle))
                 {

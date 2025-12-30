@@ -322,6 +322,111 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
         }
 
+        /// <summary>
+        /// Verifie si l'utilisateur actuellement connecte est un administrateur Vault.
+        /// Verifie via l'API Vault:
+        /// 1. Si l'utilisateur a le Role "Administrator" assigne directement
+        /// 2. Si l'utilisateur appartient au groupe "Admin_Designer" (groupe admin XNRGY)
+        /// </summary>
+        /// <returns>True si l'utilisateur est administrateur Vault, false sinon</returns>
+        public bool IsCurrentUserAdmin()
+        {
+            try
+            {
+                if (!IsConnected || _connection == null)
+                    return false;
+
+                var adminService = _connection.WebServiceManager.AdminService;
+                if (adminService?.Session?.User == null)
+                {
+                    Logger.Log("[!] Session AdminService non disponible", Logger.LogLevel.DEBUG);
+                    return false;
+                }
+
+                // Obtenir l'ID de l'utilisateur connecte
+                long userId = adminService.Session.User.Id;
+                // Utiliser le login name (mohammedamine.elgalai) pas le display name
+                string userLoginName = adminService.Session.User.Name ?? UserName ?? "Unknown";
+                
+                Logger.Log($"[?] Verification admin pour: '{userLoginName}' (ID: {userId})", Logger.LogLevel.DEBUG);
+
+                // Methode 1: Verifier si l'utilisateur est un utilisateur systeme (ex: Administrator built-in)
+                if (adminService.Session.User.IsSys)
+                {
+                    Logger.Log($"[+] Utilisateur '{userLoginName}' est un utilisateur systeme (admin)", Logger.LogLevel.DEBUG);
+                    return true;
+                }
+
+                // Methode 2: Obtenir UserInfo avec les Roles ET Groupes de l'utilisateur via l'API Vault
+                try
+                {
+                    var userInfo = adminService.GetUserInfoByUserId(userId);
+                    
+                    // --- VERIFICATION DES ROLES ---
+                    if (userInfo?.Roles != null && userInfo.Roles.Length > 0)
+                    {
+                        Logger.Log($"[i] Roles de '{userLoginName}':", Logger.LogLevel.DEBUG);
+                        foreach (var role in userInfo.Roles)
+                        {
+                            Logger.Log($"    - '{role.Name}' (Id: {role.Id})", Logger.LogLevel.DEBUG);
+                        }
+
+                        // Verifier si l'utilisateur a le role "Administrator" assigne directement
+                        bool hasAdminRole = userInfo.Roles.Any(r => 
+                            r.Name.Equals("Administrator", StringComparison.OrdinalIgnoreCase));
+
+                        if (hasAdminRole)
+                        {
+                            Logger.Log($"[+] Utilisateur '{userLoginName}' a le role Administrator", Logger.LogLevel.INFO);
+                            return true;
+                        }
+                    }
+
+                    // --- VERIFICATION DES GROUPES ---
+                    if (userInfo?.Groups != null && userInfo.Groups.Length > 0)
+                    {
+                        Logger.Log($"[i] Groupes de '{userLoginName}':", Logger.LogLevel.DEBUG);
+                        foreach (var group in userInfo.Groups)
+                        {
+                            Logger.Log($"    - '{group.Name}' (IsSys: {group.IsSys})", Logger.LogLevel.DEBUG);
+                        }
+
+                        // Groupes admin reconnus:
+                        // 1. "Administrators" - groupe systeme Vault
+                        // 2. "Admin_Designer" - groupe personnalise XNRGY pour les admins/designers seniors
+                        var adminGroupNames = new[] { "Administrators", "Admin_Designer" };
+
+                        bool isInAdminGroup = userInfo.Groups.Any(g => 
+                            adminGroupNames.Any(adminName => g.Name.Equals(adminName, StringComparison.OrdinalIgnoreCase)));
+
+                        if (isInAdminGroup)
+                        {
+                            var matchedGroup = userInfo.Groups.First(g => 
+                                adminGroupNames.Any(adminName => g.Name.Equals(adminName, StringComparison.OrdinalIgnoreCase)));
+                            Logger.Log($"[+] Utilisateur '{userLoginName}' est membre du groupe admin '{matchedGroup.Name}'", Logger.LogLevel.INFO);
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        Logger.Log($"[i] Utilisateur '{userLoginName}' n'appartient a aucun groupe", Logger.LogLevel.DEBUG);
+                    }
+                }
+                catch (Exception apiEx)
+                {
+                    Logger.Log($"[!] Erreur API GetUserInfoByUserId: {apiEx.Message}", Logger.LogLevel.DEBUG);
+                }
+
+                Logger.Log($"[i] Utilisateur '{userLoginName}' n'est pas administrateur Vault", Logger.LogLevel.DEBUG);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur verification admin: {ex.Message}", Logger.LogLevel.DEBUG);
+                return false;
+            }
+        }
+
         private void LoadPropertyDefinitions()
         {
             try
@@ -3219,5 +3324,486 @@ namespace XnrgyEngineeringAutomationTools.Services
                 }
             });
         }
+
+        #region Configuration File Management (VaultSettingsService Support)
+
+        /// <summary>
+        /// Recherche un fichier dans Vault par son chemin complet (ex: $/Engineering/Config/file.config)
+        /// </summary>
+        /// <param name="vaultFilePath">Chemin Vault complet du fichier</param>
+        /// <returns>Objet File ou null si non trouve</returns>
+        public ACW.File? FindFileByPath(string vaultFilePath)
+        {
+            if (!IsConnected || _connection == null || string.IsNullOrEmpty(vaultFilePath))
+                return null;
+
+            try
+            {
+                // Separer le chemin du dossier et le nom du fichier
+                int lastSlash = vaultFilePath.LastIndexOf('/');
+                if (lastSlash < 0) return null;
+
+                string folderPath = vaultFilePath.Substring(0, lastSlash);
+                string fileName = vaultFilePath.Substring(lastSlash + 1);
+
+                Logger.Log($"[?] Recherche fichier: {fileName} dans {folderPath}", Logger.LogLevel.DEBUG);
+
+                // Trouver le dossier
+                var folder = _connection.WebServiceManager.DocumentService.GetFolderByPath(folderPath);
+                if (folder == null)
+                {
+                    Logger.Log($"[i] Dossier non trouve: {folderPath}", Logger.LogLevel.DEBUG);
+                    return null;
+                }
+
+                // Chercher le fichier dans le dossier
+                var files = _connection.WebServiceManager.DocumentService.GetLatestFilesByFolderId(folder.Id, false);
+                var file = files?.FirstOrDefault(f => f.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+
+                if (file != null)
+                {
+                    Logger.Log($"[+] Fichier trouve: {file.Name} (ID: {file.Id})", Logger.LogLevel.DEBUG);
+                }
+                else
+                {
+                    Logger.Log($"[i] Fichier non trouve: {fileName}", Logger.LogLevel.DEBUG);
+                }
+
+                return file;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur FindFileByPath: {ex.Message}", Logger.LogLevel.DEBUG);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Telecharge un fichier depuis Vault vers un emplacement local
+        /// </summary>
+        /// <param name="file">Fichier Vault a telecharger</param>
+        /// <param name="localPath">Chemin local de destination</param>
+        /// <param name="checkout">True pour CheckOut, False pour simple Get</param>
+        /// <returns>True si succes</returns>
+        public bool AcquireFile(ACW.File file, string localPath, bool checkout = false)
+        {
+            if (!IsConnected || _connection == null || file == null)
+                return false;
+
+            try
+            {
+                var fileIteration = new VDF.Vault.Currency.Entities.FileIteration(_connection, file);
+                
+                var settings = new VDF.Vault.Settings.AcquireFilesSettings(_connection, false);
+                var option = checkout 
+                    ? VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Checkout 
+                    : VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download;
+                    
+                settings.AddFileToAcquire(fileIteration, option);
+                
+                // Definir le dossier de destination
+                string? destFolder = Path.GetDirectoryName(localPath);
+                if (!string.IsNullOrEmpty(destFolder) && !Directory.Exists(destFolder))
+                {
+                    Directory.CreateDirectory(destFolder);
+                }
+                settings.LocalPath = new VDF.Currency.FolderPathAbsolute(destFolder ?? "");
+
+                var result = _connection.FileManager.AcquireFiles(settings);
+                
+                if (result.FileResults != null && result.FileResults.Any(r => r.LocalPath != null))
+                {
+                    // Copier vers le chemin exact demande si different
+                    var downloadedPath = result.FileResults.First().LocalPath?.FullPath;
+                    if (!string.IsNullOrEmpty(downloadedPath) && downloadedPath != localPath && System.IO.File.Exists(downloadedPath))
+                    {
+                        System.IO.File.Copy(downloadedPath, localPath, true);
+                    }
+                    
+                    Logger.Log($"[+] Fichier telecharge: {localPath}", Logger.LogLevel.DEBUG);
+                    return true;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur AcquireFile: {ex.Message}", Logger.LogLevel.ERROR);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Met a jour un fichier existant dans Vault (CheckOut, Update, CheckIn)
+        /// Utilise le FileManager pour une gestion correcte du workflow Vault
+        /// </summary>
+        public bool UpdateFileInVault(ACW.File file, string localFilePath, string comment)
+        {
+            if (!IsConnected || _connection == null || file == null || !System.IO.File.Exists(localFilePath))
+                return false;
+
+            ACW.File? checkedOutFile = null;
+            try
+            {
+                Logger.Log($"[>] Mise a jour fichier Vault: {file.Name}", Logger.LogLevel.DEBUG);
+
+                // 1. CheckOut via DocumentService
+                checkedOutFile = _connection.WebServiceManager.DocumentService.CheckoutFile(
+                    file.Id,
+                    ACW.CheckoutFileOptions.Master,
+                    Environment.MachineName,
+                    localFilePath,
+                    comment,
+                    out var downloadTicket);
+
+                if (checkedOutFile == null)
+                {
+                    Logger.Log("[-] CheckOut a retourne null", Logger.LogLevel.ERROR);
+                    return false;
+                }
+
+                Logger.Log($"   [+] CheckOut reussi (FileId: {checkedOutFile.Id})", Logger.LogLevel.DEBUG);
+
+                // 2. CheckIn avec le fichier local mis a jour
+                var fileIteration = new VDF.Vault.Currency.Entities.FileIteration(_connection, checkedOutFile);
+                
+                _connection.FileManager.CheckinFile(
+                    fileIteration,
+                    comment,
+                    false,  // keepCheckedOut
+                    new FileInfo(localFilePath).LastWriteTimeUtc,
+                    null,   // associations
+                    null,   // bom
+                    false,  // copyBom
+                    null,   // filePathAbsolute - utilise le fichier local existant
+                    ACW.FileClassification.None,
+                    false,  // hidden
+                    null    // dependencyOptions
+                );
+
+                Logger.Log($"[+] Fichier mis a jour dans Vault: {file.Name}", Logger.LogLevel.INFO);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur UpdateFileInVault: {ex.Message}", Logger.LogLevel.ERROR);
+                
+                // Tenter UndoCheckOut en cas d'erreur
+                try
+                {
+                    if (checkedOutFile != null)
+                    {
+                        _connection?.WebServiceManager.DocumentService.UndoCheckoutFile(checkedOutFile.MasterId, out _);
+                        Logger.Log("[i] UndoCheckOut effectue", Logger.LogLevel.DEBUG);
+                    }
+                }
+                catch { /* Ignorer */ }
+                
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Ajoute un nouveau fichier dans Vault via FileManager.AddFile
+        /// </summary>
+        public bool AddFileToVault(string localFilePath, string vaultFolderPath, string comment)
+        {
+            if (!IsConnected || _connection == null || !System.IO.File.Exists(localFilePath))
+                return false;
+
+            try
+            {
+                string fileName = Path.GetFileName(localFilePath);
+                Logger.Log($"[>] Ajout fichier dans Vault: {vaultFolderPath}/{fileName}", Logger.LogLevel.DEBUG);
+
+                // Utiliser EnsureVaultPathExists qui gere correctement la creation recursive des dossiers
+                var folder = EnsureVaultPathExists(vaultFolderPath);
+                if (folder == null)
+                {
+                    Logger.Log($"[-] Impossible de creer/trouver le dossier: {vaultFolderPath}", Logger.LogLevel.ERROR);
+                    return false;
+                }
+
+                // Lire le fichier
+                var fileInfo = new FileInfo(localFilePath);
+
+                // Upload vers Vault via FileManager
+                using (var stream = new FileStream(localFilePath, FileMode.Open, FileAccess.Read))
+                {
+                    var uploadResult = _connection.FileManager.AddFile(
+                        folder,
+                        fileName,
+                        comment,
+                        fileInfo.LastWriteTimeUtc,
+                        null,  // associations
+                        null,  // bom
+                        ACW.FileClassification.None,
+                        false, // hidden
+                        stream);
+
+                    if (uploadResult != null)
+                    {
+                        Logger.Log($"[+] Fichier ajoute dans Vault: {vaultFolderPath}/{fileName}", Logger.LogLevel.INFO);
+                        return true;
+                    }
+                }
+
+                Logger.Log("[-] AddFile n'a pas retourne de resultat", Logger.LogLevel.ERROR);
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur AddFileToVault: {ex.Message}", Logger.LogLevel.ERROR);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Cree un dossier Vault de maniere recursive
+        /// </summary>
+        private ACW.Folder? CreateVaultFolderRecursive(string vaultFolderPath)
+        {
+            try
+            {
+                Logger.Log($"[>] CreateVaultFolderRecursive: {vaultFolderPath}", Logger.LogLevel.DEBUG);
+                
+                // Verifier si le dossier existe deja
+                try
+                {
+                    var existing = _connection?.WebServiceManager.DocumentService.GetFolderByPath(vaultFolderPath);
+                    if (existing != null)
+                    {
+                        Logger.Log($"[i] Dossier existe deja: {vaultFolderPath}", Logger.LogLevel.DEBUG);
+                        return existing;
+                    }
+                }
+                catch
+                {
+                    // Dossier n'existe pas - continuer pour le creer
+                    Logger.Log($"[i] Dossier inexistant, creation necessaire: {vaultFolderPath}", Logger.LogLevel.DEBUG);
+                }
+
+                // Trouver le parent
+                int lastSlash = vaultFolderPath.LastIndexOf('/');
+                if (lastSlash <= 0)
+                {
+                    // C'est la racine $
+                    try
+                    {
+                        return _connection?.WebServiceManager.DocumentService.GetFolderByPath("$");
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                string parentPath = vaultFolderPath.Substring(0, lastSlash);
+                string folderName = vaultFolderPath.Substring(lastSlash + 1);
+                
+                Logger.Log($"[i] Parent: {parentPath}, Nouveau dossier: {folderName}", Logger.LogLevel.DEBUG);
+
+                // Recursion pour creer le parent si necessaire
+                ACW.Folder? parentFolder = null;
+                try
+                {
+                    parentFolder = _connection?.WebServiceManager.DocumentService.GetFolderByPath(parentPath);
+                    Logger.Log($"[i] Parent trouve: {parentPath}", Logger.LogLevel.DEBUG);
+                }
+                catch
+                {
+                    // Parent n'existe pas - creer recursivement
+                    Logger.Log($"[>] Creation recursive du parent: {parentPath}", Logger.LogLevel.DEBUG);
+                    parentFolder = CreateVaultFolderRecursive(parentPath);
+                }
+                
+                if (parentFolder == null)
+                {
+                    Logger.Log($"[-] Parent introuvable: {parentPath}", Logger.LogLevel.ERROR);
+                    return null;
+                }
+
+                // Creer le dossier
+                Logger.Log($"[>] Creation du dossier '{folderName}' dans {parentPath}...", Logger.LogLevel.DEBUG);
+                var newFolder = _connection?.WebServiceManager.DocumentService.AddFolder(
+                    folderName, 
+                    parentFolder.Id, 
+                    false); // isLibrary
+
+                if (newFolder != null)
+                {
+                    Logger.Log($"[+] Dossier Vault cree: {vaultFolderPath}", Logger.LogLevel.INFO);
+                }
+                return newFolder;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur creation dossier Vault '{vaultFolderPath}': {ex.Message}", Logger.LogLevel.ERROR);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// CheckOut un fichier Vault pour mise a jour (rend le fichier local writable)
+        /// </summary>
+        public ACW.File? CheckOutFileForUpdate(ACW.File file, string localFilePath)
+        {
+            if (!IsConnected || _connection == null || file == null)
+                return null;
+
+            try
+            {
+                Logger.Log($"[>] CheckOut fichier: {file.Name}", Logger.LogLevel.DEBUG);
+
+                var checkedOutFile = _connection.WebServiceManager.DocumentService.CheckoutFile(
+                    file.Id,
+                    ACW.CheckoutFileOptions.Master,
+                    Environment.MachineName,
+                    localFilePath,
+                    "CheckOut pour mise a jour",
+                    out var downloadTicket);
+
+                if (checkedOutFile != null)
+                {
+                    Logger.Log($"[+] CheckOut reussi: {file.Name} (FileId: {checkedOutFile.Id})", Logger.LogLevel.DEBUG);
+                    
+                    // S'assurer que le fichier local n'est pas read-only apres checkout
+                    if (System.IO.File.Exists(localFilePath))
+                    {
+                        var fileInfo = new FileInfo(localFilePath);
+                        if (fileInfo.IsReadOnly)
+                        {
+                            fileInfo.IsReadOnly = false;
+                            Logger.Log("[i] Flag read-only enleve apres CheckOut", Logger.LogLevel.DEBUG);
+                        }
+                    }
+                }
+
+                return checkedOutFile;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur CheckOut: {ex.Message}", Logger.LogLevel.ERROR);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// CheckIn un fichier apres modification locale - uploade le contenu modifie vers Vault
+        /// </summary>
+        public bool CheckInFile(ACW.File checkedOutFile, string localFilePath, string comment)
+        {
+            if (!IsConnected || _connection == null || checkedOutFile == null || !System.IO.File.Exists(localFilePath))
+                return false;
+
+            try
+            {
+                Logger.Log($"[>] CheckIn fichier: {checkedOutFile.Name}", Logger.LogLevel.DEBUG);
+                Logger.Log($"   [i] Fichier local: {localFilePath}", Logger.LogLevel.DEBUG);
+
+                var fileInfo = new FileInfo(localFilePath);
+                Logger.Log($"   [i] Taille fichier: {fileInfo.Length} bytes", Logger.LogLevel.DEBUG);
+
+                // Utiliser FileManager.CheckinFile avec le chemin du fichier local
+                var fileIteration = new VDF.Vault.Currency.Entities.FileIteration(_connection, checkedOutFile);
+                
+                // CheckIn avec upload du fichier local modifie
+                // Le parametre filePathAbsolute doit contenir le chemin du fichier a uploader
+                _connection.FileManager.CheckinFile(
+                    fileIteration,
+                    comment,
+                    false,  // keepCheckedOut
+                    fileInfo.LastWriteTimeUtc,
+                    null,   // associations
+                    null,   // bom
+                    false,  // copyBom
+                    localFilePath,  // filePathAbsolute - chemin du fichier local a uploader
+                    ACW.FileClassification.None,
+                    false,  // hidden
+                    null    // dependencyOptions
+                );
+
+                Logger.Log($"[+] CheckIn reussi: {checkedOutFile.Name}", Logger.LogLevel.INFO);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur CheckIn: {ex.Message}", Logger.LogLevel.ERROR);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Annule un CheckOut en cours
+        /// </summary>
+        public bool UndoCheckOut(ACW.File checkedOutFile)
+        {
+            if (!IsConnected || _connection == null || checkedOutFile == null)
+                return false;
+
+            try
+            {
+                Logger.Log($"[>] UndoCheckOut fichier: {checkedOutFile.Name}", Logger.LogLevel.DEBUG);
+                
+                _connection.WebServiceManager.DocumentService.UndoCheckoutFile(checkedOutFile.MasterId, out _);
+                
+                Logger.Log($"[+] UndoCheckOut reussi: {checkedOutFile.Name}", Logger.LogLevel.DEBUG);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur UndoCheckOut: {ex.Message}", Logger.LogLevel.ERROR);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Supprime un fichier de Vault (pour fichiers de configuration seulement)
+        /// </summary>
+        public bool DeleteFileFromVault(ACW.File file)
+        {
+            if (!IsConnected || _connection == null || file == null)
+                return false;
+
+            try
+            {
+                Logger.Log($"[>] Suppression fichier Vault: {file.Name}", Logger.LogLevel.DEBUG);
+                
+                // Si le fichier est checke out, annuler le checkout d'abord
+                if (file.CheckedOut)
+                {
+                    try
+                    {
+                        Logger.Log("[i] Fichier checke out - UndoCheckout...", Logger.LogLevel.DEBUG);
+                        _connection.WebServiceManager.DocumentService.UndoCheckoutFile(file.MasterId, out _);
+                    }
+                    catch (Exception undoEx)
+                    {
+                        Logger.Log($"[!] UndoCheckout failed: {undoEx.Message}", Logger.LogLevel.WARNING);
+                    }
+                }
+                
+                // Obtenir le folder ID du fichier
+                var folder = _connection.WebServiceManager.DocumentService.GetFolderById(file.FolderId);
+                if (folder == null)
+                {
+                    Logger.Log("[-] Dossier parent introuvable", Logger.LogLevel.ERROR);
+                    return false;
+                }
+                
+                // Supprimer le fichier du dossier
+                _connection.WebServiceManager.DocumentService.DeleteFileFromFolder(file.MasterId, folder.Id);
+                
+                Logger.Log($"[+] Fichier supprime de Vault: {file.Name}", Logger.LogLevel.INFO);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur suppression fichier Vault: {ex.Message}", Logger.LogLevel.ERROR);
+                return false;
+            }
+        }
+
+        #endregion
     }
 }
