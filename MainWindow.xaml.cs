@@ -208,14 +208,19 @@ namespace XnrgyEngineeringAutomationTools
                 MainWindowRoot.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46));
                 ConnectionBorder.Background = new SolidColorBrush(Color.FromRgb(0, 120, 212)); // Bleu
                 LogBorder.Background = new SolidColorBrush(Color.FromRgb(18, 18, 28));
-                LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46));
+                LogBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine #1E3A5F
+                LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
                 StatusBorder.Background = new SolidColorBrush(Color.FromRgb(37, 37, 54));
                 
                 // GroupBox
                 GroupBox1.Background = darkBgBrush;
                 GroupBox2.Background = darkBgBrush;
-                GroupBox1.BorderBrush = btnDarkBorder;
-                GroupBox2.BorderBrush = btnDarkBorder;
+                GroupBox1.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
+                GroupBox2.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
+                
+                // Titres GroupBox - BLANC sur fond sombre
+                GroupBox1Header.Foreground = whiteBrush;
+                GroupBox2Header.Foreground = whiteBrush;
                 
                 // Textes header et status
                 TitleText.Foreground = whiteBrush;
@@ -240,6 +245,7 @@ namespace XnrgyEngineeringAutomationTools
                 BtnBuildModule.Background = btnDarkBg;
                 BtnDXFVerifier.Background = btnDarkBg;
                 BtnChecklistHVAC.Background = btnDarkBg;
+                BtnUploadTemplate.Background = btnDarkBg;
                 
                 // Boutons - titres et descriptions (BLANC - pas de gris)
                 BtnVaultUploadTitle.Foreground = whiteBrush;
@@ -254,6 +260,8 @@ namespace XnrgyEngineeringAutomationTools
                 BtnDXFVerifierDesc.Foreground = lightDescText;
                 BtnChecklistHVACTitle.Foreground = whiteBrush;
                 BtnChecklistHVACDesc.Foreground = lightDescText;
+                BtnUploadTemplateTitle.Foreground = whiteBrush;
+                BtnUploadTemplateDesc.Foreground = lightDescText;
                 
                 // Bouton Theme - fond sombre pour thème sombre
                 ThemeToggleButton.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46));
@@ -272,14 +280,19 @@ namespace XnrgyEngineeringAutomationTools
                 MainWindowRoot.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250)); // Bleu-gris très clair
                 ConnectionBorder.Background = new SolidColorBrush(Color.FromRgb(0, 120, 212)); // Bleu reste
                 LogBorder.Background = new SolidColorBrush(Color.FromRgb(252, 253, 255)); // Blanc bleuté
-                LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(235, 240, 248)); // Bleu très pâle
+                LogBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine #1E3A5F
+                LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
                 StatusBorder.Background = new SolidColorBrush(Color.FromRgb(235, 240, 248)); // Bleu très pâle
                 
                 // GroupBox - fond blanc avec teinte bleutée
                 GroupBox1.Background = new SolidColorBrush(Color.FromRgb(252, 253, 255));
                 GroupBox2.Background = new SolidColorBrush(Color.FromRgb(252, 253, 255));
-                GroupBox1.BorderBrush = new SolidColorBrush(Color.FromRgb(200, 215, 235)); // Bordure bleue douce
-                GroupBox2.BorderBrush = new SolidColorBrush(Color.FromRgb(200, 215, 235));
+                GroupBox1.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
+                GroupBox2.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
+                
+                // Titres GroupBox - NOIR sur fond clair
+                GroupBox1Header.Foreground = darkTextBrush;
+                GroupBox2Header.Foreground = darkTextBrush;
                 
                 // Textes - noir foncé
                 TitleText.Foreground = whiteBrush; // Reste blanc sur fond bleu
@@ -294,8 +307,8 @@ namespace XnrgyEngineeringAutomationTools
                 InventorLabel.Foreground = darkTextBrush;
                 InventorStatusText.Foreground = darkTextBrush;
                 
-                // Journal header
-                LogHeaderText.Foreground = darkTextBrush;
+                // Journal header - reste BLANC sur barre bleu marine (meme en theme clair)
+                LogHeaderText.Foreground = whiteBrush;
                 
                 // Boutons - fond bleu très pâle élégant
                 var btnLightBgElegant = new SolidColorBrush(Color.FromRgb(240, 245, 252));
@@ -305,6 +318,7 @@ namespace XnrgyEngineeringAutomationTools
                 BtnBuildModule.Background = btnLightBgElegant;
                 BtnDXFVerifier.Background = btnLightBgElegant;
                 BtnChecklistHVAC.Background = btnLightBgElegant;
+                BtnUploadTemplate.Background = btnLightBgElegant;
                 
                 // Boutons - titres et descriptions (NOIR FONCE - pas de gris)
                 BtnVaultUploadTitle.Foreground = darkTextBrush;
@@ -319,6 +333,8 @@ namespace XnrgyEngineeringAutomationTools
                 BtnDXFVerifierDesc.Foreground = darkDescText;
                 BtnChecklistHVACTitle.Foreground = darkTextBrush;
                 BtnChecklistHVACDesc.Foreground = darkDescText;
+                BtnUploadTemplateTitle.Foreground = darkTextBrush;
+                BtnUploadTemplateDesc.Foreground = darkDescText;
                 
                 // Bouton Theme - fond bleu pâle élégant pour thème clair
                 ThemeToggleButton.Background = new SolidColorBrush(Color.FromRgb(235, 240, 250));

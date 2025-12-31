@@ -270,6 +270,9 @@ namespace XnrgyEngineeringAutomationTools.Views
 
                 // Mise a jour statistiques
                 UpdateStatistics();
+                
+                // Peupler le filtre d'extension dynamiquement
+                PopulateExtensionFilter();
 
                 Log($"[+] Scan termine: {AllFiles.Count} fichiers trouves", LogLevel.SUCCESS);
                 UpdateProgress($"{AllFiles.Count} fichiers prets a uploader", 0);
@@ -872,6 +875,35 @@ namespace XnrgyEngineeringAutomationTools.Views
             ApplyFilters();
         }
 
+        /// <summary>
+        /// Peuple le filtre d'extension dynamiquement avec les extensions presentes dans les fichiers charges
+        /// </summary>
+        private void PopulateExtensionFilter()
+        {
+            if (_allFilesList == null || _allFilesList.Count == 0 || CmbExtension == null)
+                return;
+
+            // Extraire les extensions uniques et les trier
+            var uniqueExtensions = _allFilesList
+                .Select(f => f.FileExtension?.ToLowerInvariant() ?? "")
+                .Where(ext => !string.IsNullOrWhiteSpace(ext))
+                .Distinct()
+                .OrderBy(ext => ext)
+                .ToList();
+
+            // Garder "Tous" et ajouter les extensions dynamiques
+            CmbExtension.Items.Clear();
+            CmbExtension.Items.Add(new ComboBoxItem { Content = "Tous", IsSelected = true });
+
+            foreach (var ext in uniqueExtensions)
+            {
+                CmbExtension.Items.Add(new ComboBoxItem { Content = ext });
+            }
+
+            CmbExtension.SelectedIndex = 0;
+            Log($"[i] Filtre extension: {uniqueExtensions.Count} extensions detectees", LogLevel.INFO);
+        }
+
         private void ApplyFilters()
         {
             if (_allFilesList == null || _allFilesList.Count == 0)
@@ -892,9 +924,23 @@ namespace XnrgyEngineeringAutomationTools.Views
                 bool matchExtension = extensionFilter == "Tous" || 
                                       file.FileExtension.Equals(extensionFilter, StringComparison.OrdinalIgnoreCase);
 
-                bool matchState = stateFilter == "Tous" ||
-                                  (stateFilter == "Selectionnes" && file.IsSelected) ||
-                                  (stateFilter == "Non selectionnes" && !file.IsSelected);
+                // Filtre etat (comme VaultUploadModuleWindow)
+                bool matchState = true;
+                switch (stateFilter)
+                {
+                    case "En attente":
+                        matchState = file.Status == "En attente";
+                        break;
+                    case "Uploade":
+                        matchState = file.Status?.Contains("Uploade") == true || file.Status?.Contains("[+]") == true;
+                        break;
+                    case "Ignore":
+                        matchState = file.Status?.Contains("Ignore") == true || file.Status?.Contains("Existe") == true;
+                        break;
+                    case "Erreur":
+                        matchState = file.Status?.Contains("Erreur") == true || file.Status?.Contains("[-]") == true;
+                        break;
+                }
 
                 if (matchSearch && matchExtension && matchState)
                 {

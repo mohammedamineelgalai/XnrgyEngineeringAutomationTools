@@ -35,7 +35,7 @@
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
                                 CornerRadius="6" 
-                                BorderBrush="#404050" 
+                                BorderBrush="#1E3A5F" 
                                 BorderThickness="2"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -66,7 +66,7 @@
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
                                 CornerRadius="6" 
-                                BorderBrush="#404050"
+                                BorderBrush="#1E3A5F"
                                 BorderThickness="2"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -101,14 +101,14 @@
 
                 <!-- Status Vault et Inventor -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Border x:Name="VaultStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" Margin="0,0,15,0" BorderBrush="#404050" BorderThickness="2">
+                    <Border x:Name="VaultStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" Margin="0,0,15,0" BorderBrush="#1E3A5F" BorderThickness="2">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Ellipse x:Name="VaultIndicator" Width="12" Height="12" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="VaultLabel" Text="Vault: " Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
                             <TextBlock x:Name="VaultStatusText" Text="Deconnecte" Foreground="White" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
-                    <Border x:Name="InventorStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" BorderBrush="#404050" BorderThickness="2">
+                    <Border x:Name="InventorStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" BorderBrush="#1E3A5F" BorderThickness="2">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Ellipse x:Name="InventorIndicator" Width="12" Height="12" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="InventorLabel" Text="Inventor: " Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
@@ -146,58 +146,58 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="15,5">
             <StackPanel>
                 <!-- GroupBox: Vault & Inventor -->
-                <GroupBox x:Name="GroupBox1" Margin="0,0,0,15" Padding="15" Background="#252536" BorderBrush="#404060" BorderThickness="1">
+                <GroupBox x:Name="GroupBox1" Margin="0,0,0,12" Padding="12" Background="#252536" BorderBrush="#1E3A5F" BorderThickness="2">
                     <GroupBox.Header>
-                        <TextBlock x:Name="GroupBox1Header" Text="&#x1F527; Vault &amp; Inventor Tools" FontSize="18" FontWeight="Bold" Foreground="#0078D4"/>
+                        <TextBlock x:Name="GroupBox1Header" Text="&#x1F527; Vault &amp; Inventor Tools" FontSize="16" FontWeight="Bold" Foreground="White"/>
                     </GroupBox.Header>
                     <WrapPanel>
                         <!-- Créer Module & Équipement (anciennement Pack & Go) -->
-                        <Button x:Name="BtnPackAndGo" Style="{StaticResource ModuleButton}" Click="OpenPackAndGo_Click" Width="270" Height="225" Margin="12">
+                        <Button x:Name="BtnPackAndGo" Style="{StaticResource ModuleButton}" Click="OpenPackAndGo_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
-                                <Border Background="#FF8C00" CornerRadius="15" Width="105" Height="105" Margin="0,0,0,18">
-                                    <TextBlock Text="&#x1F4E6;" FontSize="54" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Background="#FF8C00" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
+                                    <TextBlock Text="&#x1F4E6;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnPackAndGoTitle" Text="Créer Module" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnPackAndGoTitle" Text="Créer Module" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="BtnPackAndGoDesc" Text="Pack &amp; Go / Copy Design" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <!-- Build Module -->
-                        <Button x:Name="BtnBuildModule" Style="{StaticResource ModuleButton}" Click="OpenBuildModule_Click" Width="270" Height="225" Margin="12">
+                        <Button x:Name="BtnBuildModule" Style="{StaticResource ModuleButton}" Click="OpenBuildModule_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
-                                <Border Background="#E81123" CornerRadius="15" Width="105" Height="105" Margin="0,0,0,18">
-                                    <TextBlock Text="&#x1F3D7;" FontSize="54" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Background="#00695C" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
+                                    <TextBlock Text="&#x1F3D7;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnBuildModuleTitle" Text="Build Module" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="BtnBuildModuleDesc" Text="Construction" FontSize="13" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnBuildModuleTitle" Text="Build Module" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnBuildModuleDesc" Text="Construction" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <!-- Smart Tools -->
-                        <Button x:Name="BtnSmartTools" Style="{StaticResource ModuleButton}" Click="OpenSmartTools_Click" Width="270" Height="225" Margin="12">
+                        <Button x:Name="BtnSmartTools" Style="{StaticResource ModuleButton}" Click="OpenSmartTools_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
-                                <Border Background="#FFD700" CornerRadius="15" Width="105" Height="105" Margin="0,0,0,18">
-                                    <TextBlock Text="&#x26A1;" FontSize="54" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Background="#00BCD4" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
+                                    <TextBlock Text="&#x26A1;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnSmartToolsTitle" Text="Smart Tools" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="BtnSmartToolsDesc" Text="Outils Inventor" FontSize="13" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnSmartToolsTitle" Text="Smart Tools" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnSmartToolsDesc" Text="Outils Inventor" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <!-- Upload Module -->
-                        <Button x:Name="BtnVaultUpload" Style="{StaticResource ModuleButton}" Click="OpenVaultUpload_Click" Width="270" Height="225" Margin="12">
+                        <Button x:Name="BtnVaultUpload" Style="{StaticResource ModuleButton}" Click="OpenVaultUpload_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
-                                <Border Background="#0078D4" CornerRadius="15" Width="105" Height="105" Margin="0,0,0,18">
-                                    <TextBlock Text="&#x1F4E4;" FontSize="54" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Background="#AEEA00" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
+                                    <TextBlock Text="&#x1F4E4;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnVaultUploadTitle" Text="Upload Module" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="BtnVaultUploadDesc" Text="Upload vers Vault" FontSize="13" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnVaultUploadTitle" Text="Upload Module" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnVaultUploadDesc" Text="Upload vers Vault" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <!-- Upload Template (Admin Only) -->
-                        <Button x:Name="BtnUploadTemplate" Style="{StaticResource ModuleButton}" Click="OpenUploadTemplate_Click" Width="270" Height="225" Margin="12">
+                        <Button x:Name="BtnUploadTemplate" Style="{StaticResource ModuleButton}" Click="OpenUploadTemplate_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
-                                <Border Background="#9B59B6" CornerRadius="15" Width="105" Height="105" Margin="0,0,0,18">
-                                    <TextBlock Text="&#x1F4C1;" FontSize="54" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Background="#9B59B6" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
+                                    <TextBlock Text="&#x1F4E4;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnUploadTemplateTitle" Text="Upload Template" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnUploadTemplateTitle" Text="Upload Template" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="BtnUploadTemplateDesc" Text="Admin - Templates Vault" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Button>
@@ -205,29 +205,29 @@
                 </GroupBox>
                 
                 <!-- GroupBox: Verification & Quality -->
-                <GroupBox x:Name="GroupBox2" Margin="0,0,0,15" Padding="15" Background="#252536" BorderBrush="#404060" BorderThickness="1">
+                <GroupBox x:Name="GroupBox2" Margin="0,0,0,12" Padding="12" Background="#252536" BorderBrush="#1E3A5F" BorderThickness="2">
                     <GroupBox.Header>
-                        <TextBlock x:Name="GroupBox2Header" Text="&#x2705; Verification &amp; Quality" FontSize="18" FontWeight="Bold" Foreground="#107C10"/>
+                        <TextBlock x:Name="GroupBox2Header" Text="&#x2705; Verification &amp; Quality" FontSize="16" FontWeight="Bold" Foreground="White"/>
                     </GroupBox.Header>
                     <WrapPanel>
                         <!-- Checklist HVAC -->
-                        <Button x:Name="BtnChecklistHVAC" Style="{StaticResource ModuleButton}" Click="OpenChecklistHVAC_Click" Width="270" Height="225" Margin="12">
+                        <Button x:Name="BtnChecklistHVAC" Style="{StaticResource ModuleButton}" Click="OpenChecklistHVAC_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
-                                <Border Background="#107C10" CornerRadius="15" Width="105" Height="105" Margin="0,0,0,18">
-                                    <TextBlock Text="&#x1F4DD;" FontSize="54" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Background="#107C10" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
+                                    <TextBlock Text="&#x1F4DD;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnChecklistHVACTitle" Text="Checklist HVAC" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="BtnChecklistHVACDesc" Text="Qualite AHU" FontSize="13" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnChecklistHVACTitle" Text="Checklist HVAC" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnChecklistHVACDesc" Text="Verification Qualite AHU" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <!-- DXF/CSV vs PDF Verifier -->
-                        <Button x:Name="BtnDXFVerifier" Style="{StaticResource ModuleButton}" Click="OpenDXFVerifier_Click" Width="270" Height="225" Margin="12">
+                        <Button x:Name="BtnDXFVerifier" Style="{StaticResource ModuleButton}" Click="OpenDXFVerifier_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
-                                <Border Background="#9B59B6" CornerRadius="15" Width="105" Height="105" Margin="0,0,0,18">
-                                    <TextBlock Text="&#x1F4D0;" FontSize="54" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#5C6BC0" BorderThickness="2">
+                                    <Image Source="Assets/Icons/DXFVerifier.png" Width="70" Height="70" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnDXFVerifierTitle" Text="DXF/CSV vs PDF" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="BtnDXFVerifierDesc" Text="Verifier" FontSize="13" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnDXFVerifierTitle" Text="DXF/CSV vs PDF" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnDXFVerifierDesc" Text="Verification Fichiers" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </WrapPanel>
@@ -236,16 +236,19 @@
         </ScrollViewer>
 
         <!-- Log Panel -->
-        <Border x:Name="LogBorder" Grid.Row="2" Background="#12121C" CornerRadius="8" Margin="20,10,20,0">
+        <Border x:Name="LogBorder" Grid.Row="2" Background="#12121C" CornerRadius="8" Margin="20,10,20,0" BorderBrush="#1E3A5F" BorderThickness="2">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
-                <Border x:Name="LogHeaderBorder" Grid.Row="0" Background="#1E1E2E" CornerRadius="8,8,0,0" Padding="15,8">
+                <Border x:Name="LogHeaderBorder" Grid.Row="0" Background="#1E3A5F" CornerRadius="6,6,0,0" Padding="15,8">
                     <Grid>
-                        <TextBlock x:Name="LogHeaderText" Text="Journal des Operations" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="&#x1F4CB;" FontSize="16" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock x:Name="LogHeaderText" Text="Journal des Operations" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
                         <Button Content="Effacer" 
                                 HorizontalAlignment="Right" 
                                 Style="{StaticResource ActionButton}" 

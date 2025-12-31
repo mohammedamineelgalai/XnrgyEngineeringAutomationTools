@@ -47,7 +47,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Border Grid.Row="0" Background="{DynamicResource XnrgyBlue}" CornerRadius="6,6,0,0" Padding="12,8"
+                            <Border Grid.Row="0" Background="#1E3A5F" CornerRadius="6,6,0,0" Padding="12,8"
                                     BorderBrush="White" BorderThickness="1,1,1,0">
                                 <ContentPresenter ContentSource="Header" TextElement.Foreground="White" TextElement.FontWeight="Bold" TextElement.FontSize="14"/>
                             </Border>
@@ -321,12 +321,12 @@
             <RowDefinition Height="Auto"/>    <!-- Selection module -->
             <RowDefinition Height="*"/>       <!-- Listes fichiers (prend tout l'espace) -->
             <RowDefinition Height="Auto"/>    <!-- Commentaire -->
-            <RowDefinition Height="120"/>     <!-- Journal (3-4 lignes) -->
-            <RowDefinition Height="Auto"/>    <!-- Footer: Barre progression + Boutons -->
+            <RowDefinition Height="Auto"/>    <!-- Barre progression + Boutons -->
+            <RowDefinition Height="150"/>     <!-- Journal (en bas) -->
         </Grid.RowDefinitions>
 
         <!-- ========== SECTION 0: HEADER (Style Créer Module) ========== -->
-        <Border Grid.Row="0" Background="#0078D4" Padding="15,12" Margin="0,0,0,8">
+        <Border Grid.Row="0" Background="#1E3A5F" Padding="15,12" Margin="0,0,0,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -336,29 +336,41 @@
                 
                 <!-- Logo + Titre + Description -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="📤" FontSize="32" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                    <Border Background="#AEEA00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
+                        <TextBlock Text="&#x1F4E4;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Upload Module - Vault Check-In v1.1" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="📤 Upload Module - Vault Check-In v1.1" FontSize="20" FontWeight="Bold" Foreground="White"/>
                         <TextBlock FontSize="12" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                            <Run Text="🔧 Upload des fichiers Inventor et documents vers Autodesk Vault avec les propriétés XNRGY automatiques"/>
+                            <Run Text="[i] Upload des fichiers Inventor et documents vers Autodesk Vault avec les proprietes XNRGY automatiques"/>
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
 
                 <!-- Centre: Statistiques (agrandies) -->
-                <Border Grid.Column="1" Background="#005A9E" CornerRadius="6" Padding="15,8" Margin="20,0" HorizontalAlignment="Center">
-                    <StackPanel Orientation="Horizontal">
-                        <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
-                            <TextBlock x:Name="TxtStatsInventor" Text="0" Foreground="#4FC3F7" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            <TextBlock Text="📐 Inventor" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                        <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
-                            <TextBlock x:Name="TxtStatsNonInventor" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            <TextBlock Text="📄 Autres" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
-                        </StackPanel>
-                        <StackPanel HorizontalAlignment="Center">
-                            <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#81C784" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                            <TextBlock Text="✅ Sélection" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                <Border Grid.Column="1" Background="#2D2D44" CornerRadius="6" Padding="15,4" Margin="20,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        BorderBrush="#404060" BorderThickness="1">
+                    <StackPanel VerticalAlignment="Center">
+                        <!-- Titre -->
+                        <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <!-- Valeurs -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtStatsTotal" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📊 Total" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtStatsInventor" Text="0" Foreground="#FFD700" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📐 Inventor" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtStatsNonInventor" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📄 Autres" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="✅ Selection" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -366,22 +378,24 @@
                 <!-- Droite: Connexion Vault + Propriétés -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
                     <!-- Status Connexion -->
-                    <Border Background="#005A9E" CornerRadius="4" Padding="10,6" Margin="0,0,0,6">
+                    <Border Background="#2D2D44" CornerRadius="4" Padding="10,6" Margin="0,0,0,6"
+                            BorderBrush="#404060" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtVaultStatus" Text="Vault: Non connecté" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
-                            <TextBlock x:Name="TxtVaultUser" Text="" Foreground="#B8D4E8" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtVaultStatus" Text="🔒 Vault: Non connecté" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock x:Name="TxtVaultUser" Text="" Foreground="#FFD700" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Border>
                     <!-- Propriétés détectées -->
-                    <Border x:Name="PropertiesPanel" Background="#1A3A5C" CornerRadius="4" Padding="10,6" Visibility="Collapsed">
+                    <Border x:Name="PropertiesPanel" Background="#2D2D44" CornerRadius="4" Padding="10,6" Visibility="Collapsed"
+                            BorderBrush="#404060" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="📋 Projet: " Foreground="White" FontSize="11"/>
-                            <TextBlock x:Name="TxtProjectNumber" Text="" Foreground="#4FC3F7" FontWeight="Bold" FontSize="12"/>
+                            <TextBlock x:Name="TxtProjectNumber" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="12"/>
                             <TextBlock Text=" | REF: " Foreground="White" FontSize="11" Margin="8,0,0,0"/>
-                            <TextBlock x:Name="TxtReference" Text="" Foreground="#4FC3F7" FontWeight="Bold" FontSize="12"/>
+                            <TextBlock x:Name="TxtReference" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="12"/>
                             <TextBlock Text=" | M: " Foreground="White" FontSize="11" Margin="8,0,0,0"/>
-                            <TextBlock x:Name="TxtModule" Text="" Foreground="#4FC3F7" FontWeight="Bold" FontSize="12"/>
+                            <TextBlock x:Name="TxtModule" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="12"/>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -441,24 +455,15 @@
                     <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Width="180" Height="30" 
                              TextChanged="TxtSearch_TextChanged" ToolTip="Rechercher par nom"/>
                     
-                    <!-- Filtre Extension -->
+                    <!-- Filtre Extension (chargé dynamiquement) -->
                     <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
                     <ComboBox x:Name="CmbExtension" Width="90" Height="30" VerticalContentAlignment="Center"
                               SelectionChanged="CmbExtension_SelectionChanged">
                         <ComboBoxItem Content="Tous" IsSelected="True"/>
-                        <ComboBoxItem Content=".ipt"/>
-                        <ComboBoxItem Content=".iam"/>
-                        <ComboBoxItem Content=".idw"/>
-                        <ComboBoxItem Content=".ipn"/>
-                        <ComboBoxItem Content=".dwg"/>
-                        <ComboBoxItem Content=".pdf"/>
-                        <ComboBoxItem Content=".xlsx"/>
-                        <ComboBoxItem Content=".docx"/>
-                        <ComboBoxItem Content=".png"/>
                     </ComboBox>
                     
-                    <!-- Filtre Etat -->
-                    <TextBlock Text="📊 Etat:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                    <!-- Filtre Statut -->
+                    <TextBlock Text="📊 Statut:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
                     <ComboBox x:Name="CmbState" Width="100" Height="30" VerticalContentAlignment="Center"
                               SelectionChanged="CmbState_SelectionChanged">
                         <ComboBoxItem Content="Tous" IsSelected="True"/>
@@ -512,30 +517,8 @@
                      Text="Premier check-in effectue par XNRGY Engineering Automation Tools"/>
         </GroupBox>
 
-        <!-- ========== SECTION 4: JOURNAL (120px height) ========== -->
-        <GroupBox Grid.Row="4" Style="{StaticResource ModernGroupBox}">
-            <GroupBox.Header>
-                <Grid>
-                    <TextBlock Text="📋 Journal des Opérations" Foreground="White" FontWeight="Bold"/>
-                    <Button Content="🗑️ Effacer" HorizontalAlignment="Right" 
-                            Background="Transparent" Foreground="White" FontWeight="Bold"
-                            BorderBrush="#FFFFFF" BorderThickness="1"
-                            Padding="8,2" Click="ClearLog_Click" Cursor="Hand"/>
-                </Grid>
-            </GroupBox.Header>
-            <RichTextBox x:Name="LogBox" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
-                         Background="{DynamicResource InputBackground}" Foreground="{DynamicResource TextPrimary}"
-                         BorderThickness="0" FontFamily="Consolas" FontSize="11">
-                <FlowDocument>
-                    <Paragraph>
-                        <Run Text="[i] Module Upload initialise - Pret" Foreground="#4FC3F7"/>
-                    </Paragraph>
-                </FlowDocument>
-            </RichTextBox>
-        </GroupBox>
-
-        <!-- ========== SECTION 5: FOOTER (Barre progression + Boutons) ========== -->
-        <Border Grid.Row="5" Background="#1A1A28" CornerRadius="6" Padding="15,12" Margin="0,8,0,0">
+        <!-- ========== SECTION 4: BARRE PROGRESSION + BOUTONS ========== -->
+        <Border Grid.Row="4" Background="#1A1A28" CornerRadius="6" Padding="15,12" Margin="0,0,0,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -555,21 +538,54 @@
                 <!-- Boutons action -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button x:Name="BtnCheckIn" Content="▶️ UPLOAD" 
-                            Style="{StaticResource SuccessButton}" Height="32" Width="100"
+                            Style="{StaticResource SuccessButton}" Height="32" Width="110"
                             Click="CheckIn_Click" Margin="0,0,8,0"/>
                     
                     <Button x:Name="BtnPause" Content="⏸️ PAUSE" 
-                            Style="{StaticResource WarningButton}" Height="32" Width="90"
+                            Style="{StaticResource WarningButton}" Height="32" Width="100"
                             Click="Pause_Click" Margin="0,0,8,0" IsEnabled="False"/>
                     
                     <Button x:Name="BtnStop" Content="⏹️ STOP" 
-                            Style="{StaticResource WarningButton}" Height="32" Width="80"
+                            Style="{StaticResource WarningButton}" Height="32" Width="90"
                             Click="Stop_Click" Margin="0,0,8,0" IsEnabled="False"/>
                     
                     <Button x:Name="BtnCancel" Content="❌ FERMER" 
-                            Style="{StaticResource DangerButton}" Height="32" Width="90"
+                            Style="{StaticResource DangerButton}" Height="32" Width="100"
                             Click="Cancel_Click"/>
                 </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ========== SECTION 5: JOURNAL (en bas) ========== -->
+        <Border Grid.Row="5" Background="{DynamicResource PanelBackground}" BorderBrush="White" 
+                BorderThickness="1" CornerRadius="6">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Header Journal -->
+                <Border Grid.Row="0" Background="#1E3A5F" CornerRadius="6,6,0,0" Padding="12,8">
+                    <Grid>
+                        <TextBlock Text="📋 Journal des Operations" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                        <Button Content="🗑️ Effacer" HorizontalAlignment="Right" 
+                                Background="Transparent" Foreground="White" FontWeight="Bold"
+                                BorderBrush="#FFFFFF" BorderThickness="1"
+                                Padding="8,2" Click="ClearLog_Click" Cursor="Hand"/>
+                    </Grid>
+                </Border>
+                
+                <!-- Contenu Journal -->
+                <RichTextBox x:Name="LogBox" Grid.Row="1" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                             Background="{DynamicResource InputBackground}" Foreground="{DynamicResource TextPrimary}"
+                             BorderThickness="0" FontFamily="Consolas" FontSize="11" Padding="10,5">
+                    <FlowDocument>
+                        <Paragraph>
+                            <Run Text="[i] Module Upload initialise - Pret" Foreground="#4FC3F7"/>
+                        </Paragraph>
+                    </FlowDocument>
+                </RichTextBox>
             </Grid>
         </Border>
     </Grid>

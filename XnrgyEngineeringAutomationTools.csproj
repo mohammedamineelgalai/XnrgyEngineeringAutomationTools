@@ -285,6 +285,7 @@
   <ItemGroup>
     <Resource Include="Resources\VaultAutomationTool.ico" />
     <Resource Include="Resources\VaultAutomationTool.png" />
+    <Resource Include="Assets\Icons\DXFVerifier.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.json">

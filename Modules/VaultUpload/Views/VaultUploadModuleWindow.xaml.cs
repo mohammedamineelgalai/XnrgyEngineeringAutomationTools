@@ -164,6 +164,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                     }
 
                     Log($"[+] {categories.Count()} categories chargees", LogLevel.INFO);
+                    
+                    // Charger les Lifecycle States pour la categorie selectionnee
+                    LoadLifecycleStatesForCategory(CmbCategory, CmbLifecycleState);
                 });
             }
             catch (Exception ex)
@@ -553,6 +556,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
 
                 UpdateStatistics();
                 
+                // Peupler le filtre d'extension dynamiquement
+                PopulateExtensionFilter();
+                
                 int inventorCount = _allFilesMaster.Count(f => f.IsInventorFile);
                 int otherCount = _allFilesMaster.Count - inventorCount;
                 var statusMsg = $"[+] Scanne: {_allFilesMaster.Count} fichiers ({inventorCount} inventor, {otherCount} autres)";
@@ -622,6 +628,35 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
         private void CmbExtensionNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyAllFilters();
         private void CmbStateInventor_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyAllFilters();
         private void CmbStateNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyAllFilters();
+
+        /// <summary>
+        /// Peuple le filtre d'extension dynamiquement avec les extensions presentes dans les fichiers charges
+        /// </summary>
+        private void PopulateExtensionFilter()
+        {
+            if (_allFilesMaster == null || _allFilesMaster.Count == 0 || CmbExtension == null)
+                return;
+
+            // Extraire les extensions uniques et les trier
+            var uniqueExtensions = _allFilesMaster
+                .Select(f => f.FileExtension?.ToLowerInvariant() ?? "")
+                .Where(ext => !string.IsNullOrWhiteSpace(ext))
+                .Distinct()
+                .OrderBy(ext => ext)
+                .ToList();
+
+            // Garder "Tous" et ajouter les extensions dynamiques
+            CmbExtension.Items.Clear();
+            CmbExtension.Items.Add(new ComboBoxItem { Content = "Tous", IsSelected = true });
+
+            foreach (var ext in uniqueExtensions)
+            {
+                CmbExtension.Items.Add(new ComboBoxItem { Content = ext });
+            }
+
+            CmbExtension.SelectedIndex = 0;
+            Log($"[i] Filtre extension: {uniqueExtensions.Count} extensions detectees", LogLevel.INFO);
+        }
 
         /// <summary>
         /// Applique tous les filtres au DataGrid unifie
@@ -900,10 +935,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             Dispatcher.Invoke(() =>
             {
                 // Mise à jour des statistiques dans le header
+                int totalCount = _allFilesMaster.Count;
                 int inventorCount = _allFilesMaster.Count(f => f.IsInventorFile);
-                int nonInventorCount = _allFilesMaster.Count - inventorCount;
+                int nonInventorCount = totalCount - inventorCount;
                 int selectedCount = _allFilesMaster.Count(f => f.IsSelected);
                 
+                if (TxtStatsTotal != null) TxtStatsTotal.Text = totalCount.ToString();
                 TxtStatsInventor.Text = inventorCount.ToString();
                 TxtStatsNonInventor.Text = nonInventorCount.ToString();
                 TxtStatsSelected.Text = selectedCount.ToString();

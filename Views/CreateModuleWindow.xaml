@@ -200,7 +200,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Border Grid.Row="0" Background="#1A1A28" CornerRadius="8,8,0,0" 
+                            <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="8,8,0,0" 
                                     BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2,2,2,0" Padding="15,10">
                                 <ContentPresenter ContentSource="Header"/>
                             </Border>
@@ -229,8 +229,8 @@
         </Style>
 
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#1A1A28"/>
-            <Setter Property="Foreground" Value="#0078D4"/>
+            <Setter Property="Background" Value="#2A4A6F"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Padding" Value="12,10"/>
@@ -431,12 +431,12 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="180"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="180"/>
         </Grid.RowDefinitions>
 
         <!-- HEADER -->
-        <Border Grid.Row="0" Background="#0078D4" Padding="20,15">
+        <Border Grid.Row="0" Background="#2A4A6F" Padding="15,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -445,31 +445,73 @@
                 </Grid.ColumnDefinitions>
                 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="📦" FontSize="36" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                    <Border Background="#FF8C00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
+                        <TextBlock Text="&#x1F4E6;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Créer Module - Pack &amp; Go / Copy Design v1.0.0" FontSize="24" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock FontSize="13" FontWeight="Bold" Foreground="#FF8C00" Margin="0,4,0,0">
-                            <Run Text="🔧 Copie complète de modules Inventor avec renommage automatique, configuration iProperties et structure de dossiers"/>
+                        <TextBlock Text="📦 Creer Module - Pack &amp; Go / Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock FontSize="12" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                            <Run Text="💡 Copie complete de modules Inventor avec renommage automatique"/>
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtDestinationPreview" Text="Destination: Non définie" 
-                               Foreground="#B8D4E8" FontSize="12" VerticalAlignment="Center" Margin="0,0,20,0"/>
-                    <!-- Bouton Réglages Admin - Visible uniquement si admin Vault -->
-                    <Button x:Name="BtnSettings" Content="[#] Réglages" Style="{StaticResource SecondaryButton}" 
-                            Background="#404060" Foreground="#FFFFFF" Margin="0,0,10,0"
-                            Click="BtnSettings_Click" ToolTip="Réglages - Administrateurs Vault uniquement"
-                            Visibility="Collapsed"/>
-                    <Button x:Name="BtnClose" Content="[-] Fermer" Style="{StaticResource SecondaryButton}" 
-                            Background="#E81123" Foreground="White" Click="BtnClose_Click"/>
+                <!-- Centre: Statistiques -->
+                <Border Grid.Column="1" Background="#2D2D44" CornerRadius="6" Padding="15,4" Margin="20,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        BorderBrush="#404060" BorderThickness="1">
+                    <StackPanel VerticalAlignment="Center">
+                        <!-- Titre -->
+                        <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                        <!-- Valeurs -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtStatsTotal" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📊 Total" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtStatsInventor" Text="0" Foreground="#FFD700" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📐 Inventor" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtStatsOther" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📄 Autres" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="✅ Selection" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Droite: Statut connexion + Boutons -->
+                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                    <!-- Statut Connexion Vault (style identique VaultUploadModule) -->
+                    <Border Background="#2D2D44" CornerRadius="4" Padding="10,6" Margin="0,0,0,6"
+                            BorderBrush="#404060" BorderThickness="1">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtVaultStatus" Text="Vault: Non connecte" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock x:Name="TxtVaultUser" Text="" Foreground="#FFD700" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                    <!-- Boutons -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <TextBlock x:Name="TxtDestinationPreview" Text="Destination: Non definie" 
+                                   Foreground="#B8D4E8" FontSize="11" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <!-- Bouton Reglages Admin - Visible uniquement si admin Vault -->
+                        <Button x:Name="BtnSettings" Content="⚙️ Reglages" Style="{StaticResource SecondaryButton}" 
+                                Background="#404060" Foreground="#FFFFFF" Margin="0,0,8,0"
+                                Click="BtnSettings_Click" ToolTip="Reglages - Administrateurs Vault uniquement"
+                                Visibility="Collapsed"/>
+                        <Button x:Name="BtnClose" Content="❌ Fermer" Style="{StaticResource SecondaryButton}" 
+                                Background="#E81123" Foreground="White" Click="BtnClose_Click"/>
+                    </StackPanel>
                 </StackPanel>
             </Grid>
         </Border>
-
         <!-- SECTION INPUTS - En-tête avec propriétés (compacte) -->
-        <Border Grid.Row="1" Background="#1A1A28" Padding="15,8">
+        <Border Grid.Row="1" Background="#1E1E2E" Padding="15,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -554,7 +596,7 @@
                 <!-- Colonne droite: Propriétés Custom -->
                 <GroupBox Grid.Column="2" Style="{StaticResource ModernGroupBox}" Margin="10,0,0,0" Padding="10">
                     <GroupBox.Header>
-                        <TextBlock Text="👤 Paramètres / iProperties" FontSize="14" FontWeight="Bold" Foreground="#107C10"/>
+                        <TextBlock Text="⚙️ Paramètres / iProperties" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <Grid>
                         <Grid.RowDefinitions>
@@ -632,22 +674,22 @@
                 <!-- Source du module -->
                 <GroupBox Style="{StaticResource ModernGroupBox}">
                     <GroupBox.Header>
-                        <TextBlock Text="📥 Source du Module" FontSize="14" FontWeight="Bold" Foreground="#0078D4"/>
+                        <TextBlock Text="📥 Source du Module" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <StackPanel>
                         <RadioButton x:Name="RbFromTemplate" Style="{StaticResource ModernRadioButton}" 
                                      IsChecked="True" Checked="SourceOption_Changed">
                             <StackPanel>
-                                <TextBlock Text="📦 Créer depuis Template" FontWeight="Bold" Foreground="#E0E0E0" FontSize="12"/>
-                                <TextBlock Text="Xnrgy_Module (Library)" FontSize="10" Foreground="#888" Margin="0,2,0,0"/>
+                                <TextBlock Text="📦 Créer depuis Template" FontWeight="Bold" Foreground="#E0E0E0" FontSize="13"/>
+                                <TextBlock Text="Xnrgy_Module (Library)" FontSize="12" Foreground="#D0D0D0" Margin="0,2,0,0"/>
                             </StackPanel>
                         </RadioButton>
                         
                         <RadioButton x:Name="RbFromExisting" Style="{StaticResource ModernRadioButton}" 
                                      Checked="SourceOption_Changed" Margin="0,8,0,0">
                             <StackPanel>
-                                <TextBlock Text="📂 Créer depuis Projet Existant" FontWeight="Bold" Foreground="#E0E0E0" FontSize="12"/>
-                                <TextBlock Text="Sélectionner un projet Vault" FontSize="10" Foreground="#888" Margin="0,2,0,0"/>
+                                <TextBlock Text="📂 Créer depuis Projet Existant" FontWeight="Bold" Foreground="#E0E0E0" FontSize="13"/>
+                                <TextBlock Text="Sélectionner un projet Vault" FontSize="12" Foreground="#D0D0D0" Margin="0,2,0,0"/>
                             </StackPanel>
                         </RadioButton>
 
@@ -744,38 +786,50 @@
                 </GroupBox>
 
                 <!-- Statistiques -->
-                <Border Background="#252536" CornerRadius="8" Padding="12" BorderBrush="#404060" BorderThickness="2" Margin="0,10,0,10">
-                    <StackPanel>
-                        <TextBlock Text="📊 Statistiques" FontSize="13" FontWeight="Bold" Foreground="#0078D4" Margin="0,0,0,8"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                <Border Background="Transparent" CornerRadius="8" BorderBrush="#404060" BorderThickness="2" Margin="0,10,0,10">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <!-- Titre avec fond bleu marine -->
+                        <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8">
+                            <TextBlock Text="📊 Statistiques" FontSize="13" FontWeight="Bold" Foreground="White"/>
+                        </Border>
+                        
+                        <!-- Contenu sans fond -->
+                        <Border Grid.Row="1" Padding="12,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Fichiers IAM:" Foreground="#888" FontSize="11"/>
-                            <TextBlock x:Name="TxtCountIam" Grid.Row="0" Grid.Column="1" Text="0" Foreground="#FF8C00" FontWeight="Bold" FontSize="11"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Fichiers IAM:" Foreground="#E0E0E0" FontSize="11"/>
+                                <TextBlock x:Name="TxtCountIam" Grid.Row="0" Grid.Column="1" Text="0" Foreground="#FF8C00" FontWeight="Bold" FontSize="11"/>
 
-                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Fichiers IPT:" Foreground="#888" FontSize="11"/>
-                            <TextBlock x:Name="TxtCountIpt" Grid.Row="1" Grid.Column="1" Text="0" Foreground="#107C10" FontWeight="Bold" FontSize="11"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Fichiers IPT:" Foreground="#E0E0E0" FontSize="11"/>
+                                <TextBlock x:Name="TxtCountIpt" Grid.Row="1" Grid.Column="1" Text="0" Foreground="#107C10" FontWeight="Bold" FontSize="11"/>
 
-                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Fichiers IDW:" Foreground="#888" FontSize="11"/>
-                            <TextBlock x:Name="TxtCountIdw" Grid.Row="2" Grid.Column="1" Text="0" Foreground="#0078D4" FontWeight="Bold" FontSize="11"/>
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Fichiers IDW:" Foreground="#E0E0E0" FontSize="11"/>
+                                <TextBlock x:Name="TxtCountIdw" Grid.Row="2" Grid.Column="1" Text="0" Foreground="#0078D4" FontWeight="Bold" FontSize="11"/>
 
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Autres fichiers:" Foreground="#888" FontSize="11"/>
-                            <TextBlock x:Name="TxtCountOther" Grid.Row="3" Grid.Column="1" Text="0" Foreground="#888" FontWeight="Bold" FontSize="11"/>
+                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Autres fichiers:" Foreground="#E0E0E0" FontSize="11"/>
+                                <TextBlock x:Name="TxtCountOther" Grid.Row="3" Grid.Column="1" Text="0" Foreground="#888" FontWeight="Bold" FontSize="11"/>
 
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Total:" Foreground="#E0E0E0" FontWeight="Bold" Margin="0,5,0,0" FontSize="11"/>
-                            <TextBlock x:Name="TxtCountTotal" Grid.Row="4" Grid.Column="1" Text="0" Foreground="#E0E0E0" FontWeight="Bold" Margin="0,5,0,0" FontSize="11"/>
-                        </Grid>
-                    </StackPanel>
+                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Total:" Foreground="White" FontWeight="Bold" Margin="0,5,0,0" FontSize="11"/>
+                                <TextBlock x:Name="TxtCountTotal" Grid.Row="4" Grid.Column="1" Text="0" Foreground="White" FontWeight="Bold" Margin="0,5,0,0" FontSize="11"/>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </Border>
                 </StackPanel>
             </ScrollViewer>
@@ -813,20 +867,18 @@
                                 </StackPanel>
                             </Border>
                             
-                            <!-- Filtre par type (dynamique) -->
-                            <TextBlock Text="Type:" Foreground="#B0B0B0" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                            <!-- Filtre Extension (chargé dynamiquement) -->
+                            <TextBlock Text="📋 Extension:" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0" FontSize="11" FontWeight="Bold"/>
                             <ComboBox x:Name="CmbFilterType" Width="90" Style="{StaticResource ModernComboBox}"
                                       SelectionChanged="CmbFilterType_SelectionChanged" ToolTip="Filtrer par type de fichier">
                                 <ComboBoxItem Content="Tous" IsSelected="True"/>
                             </ComboBox>
                             
-                            <!-- Filtre par sélection -->
-                            <TextBlock Text="Afficher:" Foreground="#B0B0B0" VerticalAlignment="Center" Margin="10,0,5,0"/>
+                            <!-- Filtre Statut (chargé dynamiquement) -->
+                            <TextBlock Text="🔄 Statut:" Foreground="White" VerticalAlignment="Center" Margin="10,0,5,0" FontSize="11" FontWeight="Bold"/>
                             <ComboBox x:Name="CmbFilterSelection" Width="110" Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="CmbFilterSelection_SelectionChanged" ToolTip="Filtrer par état de sélection">
+                                      SelectionChanged="CmbFilterSelection_SelectionChanged" ToolTip="Filtrer par statut">
                                 <ComboBoxItem Content="Tous" IsSelected="True"/>
-                                <ComboBoxItem Content="Sélectionnés"/>
-                                <ComboBoxItem Content="Non sélectionnés"/>
                             </ComboBox>
                             
                             <!-- Compteur -->
@@ -888,53 +940,8 @@
             </GroupBox>
         </Grid>
 
-        <!-- JOURNAL DES OPÉRATIONS -->
-        <Border Grid.Row="3" Background="#252536" CornerRadius="8" Margin="20,10,20,0">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                
-                <Border Grid.Row="0" Background="#1E1E2E" CornerRadius="8,8,0,0" Padding="15,8">
-                    <Grid>
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="📋" FontSize="16" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock Text="Journal des Opérations" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                        </StackPanel>
-                        <Button Content="Effacer" 
-                                HorizontalAlignment="Right" 
-                                Style="{StaticResource SecondaryButton}" 
-                                Background="#505060" 
-                                Padding="10,5"
-                                Click="BtnClearLog_Click"/>
-                    </Grid>
-                </Border>
-                
-                <ListBox x:Name="LogListBox" Grid.Row="1" 
-                         Background="Transparent" 
-                         BorderThickness="0"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                         ScrollViewer.VerticalScrollBarVisibility="Auto">
-                    <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
-                            <Setter Property="Focusable" Value="False"/>
-                            <Setter Property="Background" Value="Transparent"/>
-                            <Setter Property="Template">
-                                <Setter.Value>
-                                    <ControlTemplate TargetType="ListBoxItem">
-                                        <ContentPresenter/>
-                                    </ControlTemplate>
-                                </Setter.Value>
-                            </Setter>
-                        </Style>
-                    </ListBox.ItemContainerStyle>
-                </ListBox>
-            </Grid>
-        </Border>
-
         <!-- FOOTER - Boutons d'action (compact) -->
-        <Border Grid.Row="4" Background="#1A1A28" Padding="15,8">
+        <Border Grid.Row="3" Background="#2A4A6F" Padding="15,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -981,13 +988,58 @@
 
                 <!-- Boutons d'action (compacts) -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button x:Name="BtnPreview" Content="👁 Prévisualiser" Style="{StaticResource SecondaryButton}" 
+                    <Button x:Name="BtnPreview" Content="👁️ Prévisualiser" Style="{StaticResource SecondaryButton}" 
                             Padding="12,6" Margin="0,0,8,0" Click="BtnPreview_Click"/>
-                    <Button x:Name="BtnCancel" Content="✕ Annuler" Style="{StaticResource SecondaryButton}" 
+                    <Button x:Name="BtnCancel" Content="✖️ Annuler" Style="{StaticResource SecondaryButton}" 
                             Padding="12,6" Margin="0,0,8,0" Click="BtnCancel_Click"/>
-                    <Button x:Name="BtnCreateModule" Content="✓ CRÉER LE MODULE" Style="{StaticResource SuccessButton}" 
+                    <Button x:Name="BtnCreateModule" Content="✅ CRÉER LE MODULE" Style="{StaticResource SuccessButton}" 
                             Padding="18,8" IsEnabled="False" Click="BtnCreateModule_Click"/>
                 </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- JOURNAL DES OPÉRATIONS -->
+        <Border Grid.Row="4" Background="#252536" CornerRadius="8" Margin="20,10,20,10">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="8,8,0,0" Padding="15,8">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📋" FontSize="16" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <TextBlock Text="Journal des Opérations" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <Button Content="🗑️ Effacer" 
+                                HorizontalAlignment="Right" 
+                                Style="{StaticResource SecondaryButton}" 
+                                Background="#505060" 
+                                Padding="10,5"
+                                Click="BtnClearLog_Click"/>
+                    </Grid>
+                </Border>
+                
+                <ListBox x:Name="LogListBox" Grid.Row="1" 
+                         Background="Transparent" 
+                         BorderThickness="0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Focusable" Value="False"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <ContentPresenter/>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
             </Grid>
         </Border>
     </Grid>

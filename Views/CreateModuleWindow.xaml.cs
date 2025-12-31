@@ -285,6 +285,9 @@ namespace XnrgyEngineeringAutomationTools.Views
             {
                 if (_vaultService != null && _vaultService.IsConnected)
                 {
+                    // Mettre à jour le statut de connexion dans l'en-tête
+                    UpdateVaultConnectionStatus(true, _vaultService.UserName);
+                    
                     _isVaultAdmin = _vaultService.IsCurrentUserAdmin();
                     
                     if (_isVaultAdmin)
@@ -301,15 +304,42 @@ namespace XnrgyEngineeringAutomationTools.Views
                 else
                 {
                     // Pas de connexion Vault - masquer le bouton par défaut
+                    UpdateVaultConnectionStatus(false, null);
                     BtnSettings.Visibility = Visibility.Collapsed;
                     AddLog("[i] Non connecté à Vault - Réglages non disponibles", "INFO");
                 }
             }
             catch (Exception ex)
             {
+                UpdateVaultConnectionStatus(false, null);
                 BtnSettings.Visibility = Visibility.Collapsed;
                 AddLog($"[!] Erreur vérification admin: {ex.Message}", "WARN");
             }
+        }
+
+        /// <summary>
+        /// Met à jour l'indicateur de connexion Vault dans l'en-tête
+        /// </summary>
+        private void UpdateVaultConnectionStatus(bool isConnected, string? userName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (VaultStatusIndicator != null)
+                {
+                    VaultStatusIndicator.Fill = new SolidColorBrush(
+                        isConnected ? (Color)ColorConverter.ConvertFromString("#107C10") : (Color)ColorConverter.ConvertFromString("#E81123"));
+                }
+                
+                if (TxtVaultStatus != null)
+                {
+                    TxtVaultStatus.Text = isConnected ? "Vault: Connecte" : "Vault: Non connecte";
+                }
+                
+                if (TxtVaultUser != null)
+                {
+                    TxtVaultUser.Text = isConnected && !string.IsNullOrEmpty(userName) ? $"Utilisateur: {userName}" : "";
+                }
+            });
         }
 
         private void InitializeReferenceModuleComboBoxes()
@@ -920,8 +950,9 @@ namespace XnrgyEngineeringAutomationTools.Views
                     _files.Add(item);
                 }
 
-                // Mettre à jour le filtre des types avec les extensions réellement trouvées
+                // Mettre à jour les filtres avec les valeurs réellement trouvées
                 UpdateFileTypeFilter();
+                UpdateStatusFilter();
 
                 UpdateStatistics();
                 UpdateFileCount();
@@ -1163,14 +1194,14 @@ namespace XnrgyEngineeringAutomationTools.Views
                 }
             }
 
-            // Filtre par état de sélection
+            // Filtre par statut (dynamique)
             if (CmbFilterSelection?.SelectedItem is ComboBoxItem selItem)
             {
-                var selection = selItem.Content.ToString();
-                if (selection == "Sélectionnés")
-                    filteredFiles = filteredFiles.Where(f => f.IsSelected);
-                else if (selection == "Non sélectionnés")
-                    filteredFiles = filteredFiles.Where(f => !f.IsSelected);
+                var selection = selItem.Content?.ToString();
+                if (!string.IsNullOrEmpty(selection) && selection != "Tous")
+                {
+                    filteredFiles = filteredFiles.Where(f => f.Status == selection);
+                }
             }
 
             DgFiles.ItemsSource = filteredFiles.ToList();
@@ -1184,6 +1215,9 @@ namespace XnrgyEngineeringAutomationTools.Views
             var displayed = (DgFiles.ItemsSource as IEnumerable<FileItem>)?.Count() ?? _files.Count;
             var selected = _files.Count(f => f.IsSelected);
             TxtFileCount.Text = $"{selected}/{_files.Count} sélectionnés";
+
+            // Mettre à jour les statistiques de l'en-tête (sélection)
+            if (TxtStatsSelected != null) TxtStatsSelected.Text = selected.ToString();
         }
 
         #endregion
@@ -1465,12 +1499,21 @@ namespace XnrgyEngineeringAutomationTools.Views
             var iptCount = _files.Count(f => f.FileType == "IPT");
             var idwCount = _files.Count(f => f.FileType == "IDW");
             var otherCount = _files.Count(f => f.FileType != "IAM" && f.FileType != "IPT" && f.FileType != "IDW");
+            var inventorCount = iamCount + iptCount + idwCount;
+            var selectedCount = _files.Count(f => f.IsSelected);
 
+            // Statistiques dans le panneau gauche (existantes)
             TxtCountIam.Text = iamCount.ToString();
             TxtCountIpt.Text = iptCount.ToString();
             TxtCountIdw.Text = idwCount.ToString();
             if (TxtCountOther != null) TxtCountOther.Text = otherCount.ToString();
             TxtCountTotal.Text = _files.Count.ToString();
+
+            // Statistiques dans l'en-tête (nouvelles)
+            if (TxtStatsTotal != null) TxtStatsTotal.Text = _files.Count.ToString();
+            if (TxtStatsInventor != null) TxtStatsInventor.Text = inventorCount.ToString();
+            if (TxtStatsOther != null) TxtStatsOther.Text = otherCount.ToString();
+            if (TxtStatsSelected != null) TxtStatsSelected.Text = selectedCount.ToString();
         }
 
         private void ValidateForm()
@@ -1601,6 +1644,53 @@ namespace XnrgyEngineeringAutomationTools.Views
             {
                 CmbFilterType.SelectedIndex = 0;
             }
+            
+            AddLog($"[i] Filtre extension: {extensions.Count} types detectes", "INFO");
+        }
+        
+        /// <summary>
+        /// Met à jour le filtre des statuts avec les statuts réellement trouvés
+        /// </summary>
+        private void UpdateStatusFilter()
+        {
+            if (CmbFilterSelection == null) return;
+            
+            // Collecter tous les statuts uniques
+            var statuses = _files
+                .Select(f => f.Status)
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+            
+            // Sauvegarder la sélection actuelle
+            string? currentSelection = null;
+            if (CmbFilterSelection.SelectedItem is ComboBoxItem selItem)
+                currentSelection = selItem.Content?.ToString();
+            
+            // Mettre à jour les items
+            CmbFilterSelection.Items.Clear();
+            CmbFilterSelection.Items.Add(new ComboBoxItem { Content = "Tous", IsSelected = true });
+            foreach (var status in statuses)
+            {
+                CmbFilterSelection.Items.Add(new ComboBoxItem { Content = status });
+            }
+            
+            // Restaurer la sélection ou mettre "Tous"
+            CmbFilterSelection.SelectedIndex = 0;
+            if (!string.IsNullOrEmpty(currentSelection))
+            {
+                for (int i = 0; i < CmbFilterSelection.Items.Count; i++)
+                {
+                    if (CmbFilterSelection.Items[i] is ComboBoxItem item && item.Content?.ToString() == currentSelection)
+                    {
+                        CmbFilterSelection.SelectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            
+            AddLog($"[i] Filtre statut: {statuses.Count} statuts detectes", "INFO");
         }
         
         /// <summary>
