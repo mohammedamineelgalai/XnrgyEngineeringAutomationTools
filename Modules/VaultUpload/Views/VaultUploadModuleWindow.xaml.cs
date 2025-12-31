@@ -36,9 +36,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
         // ====================================================================
         // Collections de fichiers
         // ====================================================================
-        public ObservableCollection<VaultUploadFileItem> InventorFiles { get; } = new();
-        public ObservableCollection<VaultUploadFileItem> NonInventorFiles { get; } = new();
-        private readonly List<VaultUploadFileItem> _allFiles = new();
+        public ObservableCollection<VaultUploadFileItem> AllFiles { get; } = new();
+        private readonly List<VaultUploadFileItem> _allFilesMaster = new();
+
+        // Collections legacy pour compatibilite (pointent vers AllFiles filtrees)
+        public ObservableCollection<VaultUploadFileItem> InventorFiles => AllFiles;
+        public ObservableCollection<VaultUploadFileItem> NonInventorFiles => AllFiles;
 
         // ====================================================================
         // Proprietes projet
@@ -75,8 +78,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             InitializeComponent();
             _vaultService = vaultService;
             
-            DgInventorFiles.ItemsSource = InventorFiles;
-            DgNonInventorFiles.ItemsSource = NonInventorFiles;
+            DgFiles.ItemsSource = AllFiles;
         }
 
         // ====================================================================
@@ -141,29 +143,24 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                 
                 Dispatcher.Invoke(() =>
                 {
-                    CmbCategoryInventor.Items.Clear();
-                    CmbCategoryNonInventor.Items.Clear();
+                    CmbCategory.Items.Clear();
 
                     foreach (var cat in categories)
                     {
-                        CmbCategoryInventor.Items.Add(new VaultCategoryItem { Id = cat.Id, Name = cat.Name });
-                        CmbCategoryNonInventor.Items.Add(new VaultCategoryItem { Id = cat.Id, Name = cat.Name });
+                        CmbCategory.Items.Add(new VaultCategoryItem { Id = cat.Id, Name = cat.Name });
                     }
 
                     // Selectionner "Engineering" par defaut
-                    var engineering = CmbCategoryInventor.Items.Cast<VaultCategoryItem>()
+                    var engineering = CmbCategory.Items.Cast<VaultCategoryItem>()
                         .FirstOrDefault(c => c.Name.Equals("Engineering", StringComparison.OrdinalIgnoreCase));
                     
                     if (engineering != null)
                     {
-                        CmbCategoryInventor.SelectedItem = engineering;
-                        CmbCategoryNonInventor.SelectedItem = CmbCategoryNonInventor.Items.Cast<VaultCategoryItem>()
-                            .FirstOrDefault(c => c.Name.Equals("Engineering", StringComparison.OrdinalIgnoreCase));
+                        CmbCategory.SelectedItem = engineering;
                     }
-                    else if (CmbCategoryInventor.Items.Count > 0)
+                    else if (CmbCategory.Items.Count > 0)
                     {
-                        CmbCategoryInventor.SelectedIndex = 0;
-                        CmbCategoryNonInventor.SelectedIndex = 0;
+                        CmbCategory.SelectedIndex = 0;
                     }
 
                     Log($"[+] {categories.Count()} categories chargees", LogLevel.INFO);
@@ -176,16 +173,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
         }
 
         // ====================================================================
-        // Changement de categorie - Charger les Lifecycle States
+        // Changement de categorie - Charger les Lifecycle States (unifie)
         // ====================================================================
         private void CmbCategoryInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            LoadLifecycleStatesForCategory(CmbCategoryInventor, CmbLifecycleStateInventor);
+            LoadLifecycleStatesForCategory(CmbCategory, CmbLifecycleState);
         }
 
         private void CmbCategoryNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            LoadLifecycleStatesForCategory(CmbCategoryNonInventor, CmbLifecycleStateNonInventor);
+            LoadLifecycleStatesForCategory(CmbCategory, CmbLifecycleState);
         }
 
         private void LoadLifecycleStatesForCategory(ComboBox categoryCombo, ComboBox stateCombo)
@@ -512,14 +509,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
 
                 Log($"[?] Scan du dossier: {_projectPath}", LogLevel.INFO);
 
-                InventorFiles.Clear();
-                NonInventorFiles.Clear();
-                _allFiles.Clear();
+                AllFiles.Clear();
+                _allFilesMaster.Clear();
 
-                var allFiles = Directory.GetFiles(_projectPath, "*.*", SearchOption.AllDirectories);
+                var allFilesOnDisk = Directory.GetFiles(_projectPath, "*.*", SearchOption.AllDirectories);
                 int excludedCount = 0;
 
-                foreach (var f in allFiles.OrderBy(p => Path.GetFileName(p), StringComparer.OrdinalIgnoreCase))
+                foreach (var f in allFilesOnDisk.OrderBy(p => Path.GetFileName(p), StringComparer.OrdinalIgnoreCase))
                 {
                     try
                     {
@@ -531,10 +527,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                         var dirName = fi.Directory?.Name ?? "";
                         if (ExcludedFolders.Any(ex => dirName.Equals(ex, StringComparison.OrdinalIgnoreCase))) { excludedCount++; continue; }
 
+                        // Calculer chemin relatif
+                        var relativePath = f.StartsWith(_projectPath) 
+                            ? f.Substring(_projectPath.Length).TrimStart('\\') 
+                            : fi.Directory?.Name ?? "";
+
                         var item = new VaultUploadFileItem
                         {
                             FileName = fi.Name,
                             FullPath = fi.FullName,
+                            RelativePath = relativePath,
                             FileType = fi.Extension,
                             FileExtension = fi.Extension,
                             FileSizeFormatted = FormatSize(fi.Length),
@@ -543,19 +545,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                             Status = "En attente"
                         };
 
-                        _allFiles.Add(item);
-
-                        if (item.IsInventorFile)
-                            InventorFiles.Add(item);
-                        else
-                            NonInventorFiles.Add(item);
+                        _allFilesMaster.Add(item);
+                        AllFiles.Add(item);
                     }
                     catch { }
                 }
 
                 UpdateStatistics();
                 
-                var statusMsg = $"[+] Scanne: {_allFiles.Count} fichiers ({InventorFiles.Count} inventor, {NonInventorFiles.Count} autres)";
+                int inventorCount = _allFilesMaster.Count(f => f.IsInventorFile);
+                int otherCount = _allFilesMaster.Count - inventorCount;
+                var statusMsg = $"[+] Scanne: {_allFilesMaster.Count} fichiers ({inventorCount} inventor, {otherCount} autres)";
                 if (excludedCount > 0) statusMsg += $" | {excludedCount} exclus";
                 Log(statusMsg, LogLevel.SUCCESS);
             }
@@ -566,106 +566,74 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
         }
 
         // ====================================================================
-        // Selection fichiers
+        // Selection fichiers (unifie)
         // ====================================================================
-        private void SelectAllInventor_Click(object sender, RoutedEventArgs e)
+        private void SelectAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var f in InventorFiles) f.IsSelected = true;
+            foreach (var f in AllFiles) f.IsSelected = true;
             UpdateStatistics();
         }
 
-        private void DeselectAllInventor_Click(object sender, RoutedEventArgs e)
+        private void DeselectAll_Click(object sender, RoutedEventArgs e)
         {
-            foreach (var f in InventorFiles) f.IsSelected = false;
+            foreach (var f in AllFiles) f.IsSelected = false;
             UpdateStatistics();
         }
 
-        private void SelectAllNonInventor_Click(object sender, RoutedEventArgs e)
-        {
-            foreach (var f in NonInventorFiles) f.IsSelected = true;
-            UpdateStatistics();
-        }
-
-        private void DeselectAllNonInventor_Click(object sender, RoutedEventArgs e)
-        {
-            foreach (var f in NonInventorFiles) f.IsSelected = false;
-            UpdateStatistics();
-        }
+        // Legacy handlers pour compatibilite
+        private void SelectAllInventor_Click(object sender, RoutedEventArgs e) => SelectAll_Click(sender, e);
+        private void DeselectAllInventor_Click(object sender, RoutedEventArgs e) => DeselectAll_Click(sender, e);
+        private void SelectAllNonInventor_Click(object sender, RoutedEventArgs e) => SelectAll_Click(sender, e);
+        private void DeselectAllNonInventor_Click(object sender, RoutedEventArgs e) => DeselectAll_Click(sender, e);
 
         // ====================================================================
-        // Recherche
+        // Recherche unifiee
         // ====================================================================
-        private void SearchInventor_TextChanged(object sender, TextChangedEventArgs e)
+        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
         {
-            ApplySearchFilter(TxtSearchInventor.Text, true);
+            ApplyAllFilters();
         }
 
-        private void SearchNonInventor_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ApplySearchFilter(TxtSearchNonInventor.Text, false);
-        }
-
-        private void ApplySearchFilter(string filter, bool isInventor)
-        {
-            var collection = isInventor ? InventorFiles : NonInventorFiles;
-            var source = _allFiles.Where(f => f.IsInventorFile == isInventor);
-
-            collection.Clear();
-
-            if (string.IsNullOrWhiteSpace(filter))
-            {
-                foreach (var f in source) collection.Add(f);
-            }
-            else
-            {
-                var filterLower = filter.ToLowerInvariant();
-                foreach (var f in source.Where(f => 
-                    f.FileName.ToLowerInvariant().Contains(filterLower) ||
-                    f.FullPath.ToLowerInvariant().Contains(filterLower)))
-                {
-                    collection.Add(f);
-                }
-            }
-            
-            // Re-appliquer les autres filtres
-            ApplyAllFilters(isInventor);
-        }
+        // Legacy handlers
+        private void SearchInventor_TextChanged(object sender, TextChangedEventArgs e) => ApplyAllFilters();
+        private void SearchNonInventor_TextChanged(object sender, TextChangedEventArgs e) => ApplyAllFilters();
 
         // ====================================================================
-        // Filtres Extension et Selection
+        // Filtres Extension et Etat (unifie)
         // ====================================================================
-        private void CmbExtensionInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbExtension_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ApplyAllFilters(true);
+            ApplyAllFilters();
         }
 
-        private void CmbExtensionNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbState_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ApplyAllFilters(false);
+            ApplyAllFilters();
         }
 
-        private void CmbStateInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void CmbCategory_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ApplyAllFilters(true);
+            // Charger les Lifecycle States pour la categorie selectionnee
+            LoadLifecycleStatesForCategory(CmbCategory, CmbLifecycleState);
         }
 
-        private void CmbStateNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            ApplyAllFilters(false);
-        }
+        // Legacy handlers pour compatibilite
+        private void CmbExtensionInventor_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyAllFilters();
+        private void CmbExtensionNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyAllFilters();
+        private void CmbStateInventor_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyAllFilters();
+        private void CmbStateNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e) => ApplyAllFilters();
 
-        private void ApplyAllFilters(bool isInventor)
+        /// <summary>
+        /// Applique tous les filtres au DataGrid unifie
+        /// </summary>
+        private void ApplyAllFilters()
         {
-            var collection = isInventor ? InventorFiles : NonInventorFiles;
-            var searchBox = isInventor ? TxtSearchInventor : TxtSearchNonInventor;
-            var extCombo = isInventor ? CmbExtensionInventor : CmbExtensionNonInventor;
-            var stateCombo = isInventor ? CmbStateInventor : CmbStateNonInventor;
+            if (_allFilesMaster == null || _allFilesMaster.Count == 0) return;
 
-            // Source de base
-            var source = _allFiles.Where(f => f.IsInventorFile == isInventor);
+            var source = _allFilesMaster.AsEnumerable();
 
             // Filtre recherche
-            var searchText = searchBox?.Text?.ToLowerInvariant() ?? "";
+            var searchText = TxtSearch?.Text?.ToLowerInvariant() ?? "";
             if (!string.IsNullOrWhiteSpace(searchText))
             {
                 source = source.Where(f => 
@@ -674,30 +642,37 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             }
 
             // Filtre extension
-            var extItem = extCombo?.SelectedItem as ComboBoxItem;
+            var extItem = CmbExtension?.SelectedItem as ComboBoxItem;
             var extFilter = extItem?.Content?.ToString() ?? "Tous";
             if (extFilter != "Tous" && !string.IsNullOrEmpty(extFilter))
             {
                 source = source.Where(f => f.FileExtension?.ToLowerInvariant() == extFilter.ToLowerInvariant());
             }
 
-            // Filtre selection
-            var stateItem = stateCombo?.SelectedItem as ComboBoxItem;
+            // Filtre etat
+            var stateItem = CmbState?.SelectedItem as ComboBoxItem;
             var stateFilter = stateItem?.Content?.ToString() ?? "Tous";
-            if (stateFilter == "Sélectionnés")
+            switch (stateFilter)
             {
-                source = source.Where(f => f.IsSelected);
-            }
-            else if (stateFilter == "Non sélectionnés")
-            {
-                source = source.Where(f => !f.IsSelected);
+                case "En attente":
+                    source = source.Where(f => f.Status == "En attente");
+                    break;
+                case "Uploade":
+                    source = source.Where(f => f.Status?.Contains("Uploade") == true || f.Status?.Contains("[+]") == true);
+                    break;
+                case "Ignore":
+                    source = source.Where(f => f.Status?.Contains("Ignore") == true || f.Status?.Contains("Existe") == true);
+                    break;
+                case "Erreur":
+                    source = source.Where(f => f.Status?.Contains("Erreur") == true || f.Status?.Contains("[-]") == true);
+                    break;
             }
 
             // Appliquer
-            collection.Clear();
+            AllFiles.Clear();
             foreach (var f in source)
             {
-                collection.Add(f);
+                AllFiles.Add(f);
             }
         }
 
@@ -712,7 +687,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                 return;
             }
 
-            var selectedFiles = _allFiles.Where(f => f.IsSelected).ToList();
+            var selectedFiles = _allFilesMaster.Where(f => f.IsSelected).ToList();
             if (selectedFiles.Count == 0)
             {
                 XnrgyMessageBox.ShowInfo("Aucun fichier selectionne pour l'upload.", "Information", this);
@@ -924,10 +899,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
         {
             Dispatcher.Invoke(() =>
             {
-                // Mise à jour des statistiques dans le header (affiche juste le nombre)
-                TxtStatsInventor.Text = InventorFiles.Count.ToString();
-                TxtStatsNonInventor.Text = NonInventorFiles.Count.ToString();
-                TxtStatsSelected.Text = _allFiles.Count(f => f.IsSelected).ToString();
+                // Mise à jour des statistiques dans le header
+                int inventorCount = _allFilesMaster.Count(f => f.IsInventorFile);
+                int nonInventorCount = _allFilesMaster.Count - inventorCount;
+                int selectedCount = _allFilesMaster.Count(f => f.IsSelected);
+                
+                TxtStatsInventor.Text = inventorCount.ToString();
+                TxtStatsNonInventor.Text = nonInventorCount.ToString();
+                TxtStatsSelected.Text = selectedCount.ToString();
             });
         }
 
@@ -1098,8 +1077,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                         }
                     }
 
-                    // Toggle la selection de l'item clique
-                    if (dataGrid.SelectedItem is FileItem fileItem)
+                    // Toggle la selection de l'item clique - utiliser VaultUploadFileItem
+                    if (dataGrid.SelectedItem is VaultUploadFileItem fileItem)
                     {
                         fileItem.IsSelected = !fileItem.IsSelected;
                         UpdateStatistics();

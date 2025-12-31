@@ -17,6 +17,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Models
         public string FileType { get; set; } = string.Empty;
         public string FileSizeFormatted { get; set; } = string.Empty;
         public string FullPath { get; set; } = string.Empty;
+        public string RelativePath { get; set; } = string.Empty;
         public string FileExtension { get; set; } = string.Empty;
 
         public bool IsSelected

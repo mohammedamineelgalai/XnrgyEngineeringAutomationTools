@@ -28,14 +28,14 @@
         <SolidColorBrush x:Key="TextMuted" Color="#888888"/>
         <SolidColorBrush x:Key="TextDark" Color="#1A1A28"/>
 
-        <!-- ========== STYLE TEXTBOX ========== -->
+        <!-- ========== STYLE TEXTBOX (identique VaultUploadModule) ========== -->
         <Style x:Key="ModernTextBox" TargetType="TextBox">
             <Setter Property="Background" Value="{DynamicResource DarkBg3}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextLight}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
-            <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -43,7 +43,7 @@
                         <Border Background="{TemplateBinding Background}" 
                                 BorderBrush="{TemplateBinding BorderBrush}" 
                                 BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="6">
+                                CornerRadius="4">
                             <ScrollViewer x:Name="PART_ContentHost" Margin="2"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -64,28 +64,29 @@
             <Setter Property="Margin" Value="0,0,0,5"/>
         </Style>
 
-        <!-- ========== STYLE BOUTON PRINCIPAL ========== -->
+        <!-- ========== STYLE BOUTON PRINCIPAL (identique VaultUploadModule) ========== -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource XnrgyBlue}"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="25,12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="15,8"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" 
-                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#1E8FE8"/>
+                                <Setter TargetName="border" Property="Background" Value="#005A9E"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Background" Value="#404060"/>
-                                <Setter Property="Foreground" Value="#666"/>
+                                <Setter Property="Foreground" Value="#666666"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -93,53 +94,62 @@
             </Setter>
         </Style>
 
-        <!-- ========== STYLE BOUTON SECONDAIRE ========== -->
+        <!-- ========== STYLE BOUTON SECONDAIRE (identique VaultUploadModule) ========== -->
         <Style x:Key="SecondaryButton" TargetType="Button">
             <Setter Property="Background" Value="{DynamicResource DarkBg3}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextLight}"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" 
-                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#3D3D56"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3D3D55"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="#555555"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
-        <!-- ========== STYLE BOUTON SUCCES ========== -->
+        <!-- ========== STYLE BOUTON SUCCES (identique VaultUploadModule) ========== -->
         <Style x:Key="SuccessButton" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource XnrgyGreen}"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="15"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="30,15"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="15,8"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8" 
-                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#0F6A0F"/>
+                                <Setter TargetName="border" Property="Background" Value="#0D5C0D"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Background" Value="#404060"/>
-                                <Setter Property="Foreground" Value="#666"/>
+                                <Setter Property="Foreground" Value="#666666"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -147,28 +157,59 @@
             </Setter>
         </Style>
 
-        <!-- ========== STYLE BOUTON DANGER ========== -->
-        <Style x:Key="DangerButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource XnrgyRed}"/>
+        <!-- ========== STYLE BOUTON WARNING (identique VaultUploadModule) ========== -->
+        <Style x:Key="WarningButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource XnrgyOrange}"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontWeight" Value="Bold"/>
-            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="15,8"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" 
-                                BorderBrush="{DynamicResource BorderColor}" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#C41020"/>
+                                <Setter TargetName="border" Property="Background" Value="#C44E09"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Background" Value="#404060"/>
-                                <Setter Property="Foreground" Value="#666"/>
+                                <Setter Property="Foreground" Value="#666666"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ========== STYLE BOUTON DANGER (identique VaultUploadModule) ========== -->
+        <Style x:Key="DangerButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource XnrgyRed}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#A72B2E"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#404060"/>
+                                <Setter Property="Foreground" Value="#666666"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -260,19 +301,83 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- ========== STYLE DATAGRID MODERNE ========== -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#1E1E2E"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="BorderBrush" Value="#404060"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="RowBackground" Value="#252536"/>
+            <Setter Property="AlternatingRowBackground" Value="#2D2D44"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#404060"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+        </Style>
+
+        <!-- Style Header DataGrid - fond bleu XNRGY avec texte blanc gras -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderBrush" Value="#005A9E"/>
+            <Setter Property="BorderThickness" Value="0,0,1,0"/>
+        </Style>
+
+        <!-- Style Cell DataGrid -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#0078D4"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Style Row DataGrid -->
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="#252536"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Style.Triggers>
+                <Trigger Property="AlternationIndex" Value="1">
+                    <Setter Property="Background" Value="#2D2D44"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#0078D4"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3D3D55"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <!-- ========== CONTENU PRINCIPAL ========== -->
     <Grid x:Name="MainGrid" Background="{DynamicResource DarkBg}">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="200"/>
+            <RowDefinition Height="Auto"/>      <!-- Header -->
+            <RowDefinition Height="Auto"/>      <!-- Configuration + Stats -->
+            <RowDefinition Height="*"/>         <!-- DataGrid fichiers -->
+            <RowDefinition Height="Auto"/>      <!-- Barre progression -->
+            <RowDefinition Height="150"/>       <!-- Journal -->
         </Grid.RowDefinitions>
 
-        <!-- ========== EN-TETE ========== -->
-        <Border Grid.Row="0" Background="{DynamicResource TextDark}" Padding="20,15">
+        <!-- ========== EN-TETE (Style Moderne comme Upload Module) ========== -->
+        <Border Grid.Row="0" Background="#0078D4" Padding="15,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -280,250 +385,234 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <!-- Logo et titre -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal">
-                    <Image x:Name="LogoImage" Width="45" Height="45" Margin="0,0,15,0"/>
+                <!-- Logo + Titre + Description -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="📤" FontSize="32" VerticalAlignment="Center" Margin="0,0,12,0"/>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Upload Template vers Vault" FontSize="22" FontWeight="Bold" 
-                                   Foreground="{StaticResource XnrgyBlue}"/>
-                        <TextBlock Text="Upload massif de fichiers vers Vault Production" 
-                                   FontSize="12" Foreground="{DynamicResource TextMuted}"/>
+                        <TextBlock Text="Upload Template vers Vault v1.1" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock FontSize="12" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                            <Run Text="🔧 Upload massif de fichiers vers Vault Production avec structure automatique"/>
+                        </TextBlock>
                     </StackPanel>
                 </StackPanel>
 
-                <!-- Statut connexion -->
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Ellipse x:Name="StatusIndicator" Width="12" Height="12" Fill="#666" Margin="0,0,8,0"/>
-                    <TextBlock x:Name="StatusText" Text="Non connecte" FontSize="13" 
-                               Foreground="{DynamicResource TextMuted}" VerticalAlignment="Center"/>
-                </StackPanel>
+                <!-- Centre: Statistiques -->
+                <Border Grid.Column="1" Background="#005A9E" CornerRadius="6" Padding="15,8" Margin="20,0" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
+                            <TextBlock Text="Total" FontSize="10" Foreground="#B0D0FF" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TxtTotalFiles" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
+                            <TextBlock Text="Selectionnes" FontSize="10" Foreground="#B0D0FF" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TxtSelectedFiles" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
+                            <TextBlock Text="Uploades" FontSize="10" Foreground="#B0D0FF" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TxtUploaded" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
+                            <TextBlock Text="Ignores" FontSize="10" Foreground="#B0D0FF" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TxtSkipped" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FFD700" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="Echecs" FontSize="10" Foreground="#B0D0FF" HorizontalAlignment="Center"/>
+                            <TextBlock x:Name="TxtFailed" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Statut connexion (identique VaultUploadModule) -->
+                <Border Grid.Column="2" Background="#005A9E" CornerRadius="4" Padding="12,8">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Ellipse x:Name="StatusIndicator" Width="10" Height="10" Fill="#E81123" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="StatusText" Text="Vault: Non connecte" Foreground="White" FontWeight="SemiBold" FontSize="12" 
+                                   VerticalAlignment="Center" Margin="8,0,0,0"/>
+                        <TextBlock x:Name="TxtVaultUser" Text="" Foreground="White" FontWeight="Bold" FontSize="11" 
+                                   VerticalAlignment="Center" Margin="10,0,0,0"/>
+                    </StackPanel>
+                </Border>
             </Grid>
         </Border>
 
-        <!-- ========== CONTENU CENTRAL ========== -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="20">
+        <!-- ========== SECTION CONFIGURATION ========== -->
+        <Border Grid.Row="1" Background="{DynamicResource DarkBg2}" Padding="15,10">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="20"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- ===== COLONNE GAUCHE - CONFIGURATION ===== -->
-                <StackPanel Grid.Column="0">
-
-                    <!-- Dossier Source -->
-                    <GroupBox Style="{StaticResource ModernGroupBox}">
-                        <GroupBox.Header>
-                            <TextBlock Text="[i] Dossier Source (Local)" FontSize="14" FontWeight="Bold" 
-                                       Foreground="{StaticResource XnrgyBlue}"/>
-                        </GroupBox.Header>
-                        <StackPanel>
-                            <TextBlock Text="Chemin local a uploader" Style="{StaticResource ModernLabel}"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox x:Name="TxtLocalPath" Style="{StaticResource ModernTextBox}" 
-                                         Text="C:\Vault" Grid.Column="0"/>
-                                <Button x:Name="BtnBrowse" Content="..." Style="{StaticResource SecondaryButton}" 
-                                        Grid.Column="1" Margin="10,0,0,0" Padding="15,8" Click="BtnBrowse_Click"/>
-                            </Grid>
-                            <TextBlock x:Name="TxtVaultPath" Text="Destination Vault: $/" Margin="0,10,0,0"
-                                       FontSize="12" Foreground="{DynamicResource TextMuted}"/>
-                        </StackPanel>
-                    </GroupBox>
-
-                    <!-- Options -->
-                    <GroupBox Style="{StaticResource ModernGroupBox}">
-                        <GroupBox.Header>
-                            <TextBlock Text="[i] Options d'Upload" FontSize="14" FontWeight="Bold" 
-                                       Foreground="{StaticResource XnrgyBlue}"/>
-                        </GroupBox.Header>
-                        <StackPanel>
-                            <CheckBox x:Name="ChkSkipExisting" Content="Ignorer les fichiers existants dans Vault" 
-                                      Style="{StaticResource ModernCheckBox}" IsChecked="True" Margin="0,5"/>
-                            <CheckBox x:Name="ChkCreateFolders" Content="Creer les dossiers automatiquement" 
-                                      Style="{StaticResource ModernCheckBox}" IsChecked="True" Margin="0,5"/>
-                            <CheckBox x:Name="ChkExcludeOldVersions" Content="Exclure dossiers OldVersions/Backup" 
-                                      Style="{StaticResource ModernCheckBox}" IsChecked="True" Margin="0,5"/>
-                            <CheckBox x:Name="ChkExcludeTempFiles" Content="Exclure fichiers temporaires (.bak, .tmp, .lck)" 
-                                      Style="{StaticResource ModernCheckBox}" IsChecked="True" Margin="0,5"/>
-                        </StackPanel>
-                    </GroupBox>
+                <!-- Dossier Source + Parcourir + Destination Vault + Scanner -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="📁 Dossier Source:" FontSize="13" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBox x:Name="TxtLocalPath" Style="{StaticResource ModernTextBox}" 
+                             Text="C:\Vault" Width="350" Height="32"/>
+                    <Button x:Name="BtnBrowse" Content="📂 Parcourir" Style="{StaticResource SecondaryButton}" 
+                            Margin="10,0,0,0" Height="32" Click="BtnBrowse_Click"/>
+                    
+                    <!-- Destination Vault -->
+                    <TextBlock Text="Destination Vault:" FontSize="12" Foreground="{DynamicResource TextMuted}" 
+                               VerticalAlignment="Center" Margin="20,0,5,0"/>
+                    <TextBlock x:Name="TxtVaultPath" Text="→ $/" FontSize="12" FontWeight="SemiBold"
+                               Foreground="{StaticResource XnrgyBlue}" VerticalAlignment="Center"/>
+                    
+                    <!-- Bouton Scanner -->
+                    <Button x:Name="BtnScan" Content="🔍 Scanner" Style="{StaticResource PrimaryButton}" 
+                            Click="BtnScan_Click" Height="32" Margin="20,0,0,0"/>
                 </StackPanel>
 
-                <!-- ===== COLONNE DROITE - STATISTIQUES ET ACTIONS ===== -->
-                <StackPanel Grid.Column="2">
+                <!-- Options d'Upload - GroupBox horizontal a droite -->
+                <Border Grid.Column="1" Background="#1A1A28" CornerRadius="6" Padding="10,6" 
+                        BorderBrush="{StaticResource XnrgyBlue}" BorderThickness="1" 
+                        HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⚙️ Options:" FontSize="12" FontWeight="Bold" Foreground="White" 
+                                   VerticalAlignment="Center" Margin="0,0,12,0"/>
+                        <CheckBox x:Name="ChkSkipExisting" Content="Ignorer fichiers existants" FontSize="11"
+                                  Style="{StaticResource ModernCheckBox}" IsChecked="True" Margin="0,0,15,0"/>
+                        <CheckBox x:Name="ChkCreateFolders" Content="Creer dossiers manquants" FontSize="11"
+                                  Style="{StaticResource ModernCheckBox}" IsChecked="True" Margin="0,0,15,0"/>
+                        <CheckBox x:Name="ChkExcludeOldVersions" Content="Exclure OldVersions/Backup" FontSize="11"
+                                  Style="{StaticResource ModernCheckBox}" IsChecked="True" Margin="0,0,15,0"/>
+                        <CheckBox x:Name="ChkExcludeTempFiles" Content="Exclure .bak/.tmp/.lck" FontSize="11"
+                                  Style="{StaticResource ModernCheckBox}" IsChecked="True"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+
+        <!-- ========== DATAGRID FICHIERS ========== -->
+        <GroupBox Grid.Row="2" Style="{StaticResource ModernGroupBox}" Margin="10,10,10,5">
+            <GroupBox.Header>
+                <TextBlock Text="📄 Fichiers a Uploader" Foreground="White" FontWeight="Bold"/>
+            </GroupBox.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Controles: Boutons selection + Recherche + Filtres -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Content="✅ Tout selectionner" Style="{StaticResource SecondaryButton}" 
+                            Click="SelectAll_Click" Height="30"/>
+                    <Button Content="❌ Tout deselectionner" Style="{StaticResource SecondaryButton}" 
+                            Click="DeselectAll_Click" Margin="6,0,0,0" Height="30"/>
                     
-                    <!-- Statistiques Scan -->
-                    <GroupBox Style="{StaticResource ModernGroupBox}">
-                        <GroupBox.Header>
-                            <TextBlock Text="[#] Statistiques" FontSize="14" FontWeight="Bold" 
-                                       Foreground="{StaticResource XnrgyBlue}"/>
-                        </GroupBox.Header>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                    <!-- Recherche -->
+                    <TextBlock Text="🔍" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="14" Foreground="White"/>
+                    <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Width="200" Height="30" 
+                             TextChanged="TxtSearch_TextChanged" ToolTip="Rechercher par nom"/>
+                    
+                    <!-- Filtre Extension -->
+                    <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                    <ComboBox x:Name="CmbExtension" Width="100" Height="30" VerticalContentAlignment="Center"
+                              SelectionChanged="CmbExtension_SelectionChanged">
+                        <ComboBoxItem Content="Tous" IsSelected="True"/>
+                        <ComboBoxItem Content=".ipt"/>
+                        <ComboBoxItem Content=".iam"/>
+                        <ComboBoxItem Content=".idw"/>
+                        <ComboBoxItem Content=".dwg"/>
+                        <ComboBoxItem Content=".pdf"/>
+                        <ComboBoxItem Content=".xlsx"/>
+                        <ComboBoxItem Content=".docx"/>
+                    </ComboBox>
+                    
+                    <!-- Filtre Selection -->
+                    <TextBlock Text="🔄 Etat:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                    <ComboBox x:Name="CmbState" Width="120" Height="30" VerticalContentAlignment="Center"
+                              SelectionChanged="CmbState_SelectionChanged">
+                        <ComboBoxItem Content="Tous" IsSelected="True"/>
+                        <ComboBoxItem Content="Selectionnes"/>
+                        <ComboBoxItem Content="Non selectionnes"/>
+                    </ComboBox>
+                </StackPanel>
 
-                            <Border Grid.Column="0" Grid.Row="0" Background="{DynamicResource DarkBg3}" 
-                                    CornerRadius="6" Padding="15,10" Margin="0,0,5,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Total Fichiers" FontSize="11" Foreground="{DynamicResource TextMuted}" 
-                                               HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtTotalFiles" Text="0" FontSize="28" FontWeight="Bold" 
-                                               Foreground="{StaticResource XnrgyBlue}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
+                <!-- DataGrid Fichiers -->
+                <DataGrid x:Name="DgFiles" Grid.Row="1" 
+                          AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                          IsReadOnly="False"
+                          Background="{DynamicResource DarkBg}"
+                          Foreground="{DynamicResource TextLight}"
+                          GridLinesVisibility="Horizontal"
+                          AlternatingRowBackground="{DynamicResource DarkBg3}"
+                          RowHeight="32" SelectionMode="Single" SelectionUnit="FullRow"
+                          BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                          MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
+                        <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="250" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileExtension}" Width="80" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="100" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📁 Chemin relatif" Binding="{Binding RelativePath}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="150" IsReadOnly="True"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </GroupBox>
 
-                            <Border Grid.Column="1" Grid.Row="0" Background="{DynamicResource DarkBg3}" 
-                                    CornerRadius="6" Padding="15,10" Margin="5,0,0,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Total Dossiers" FontSize="11" Foreground="{DynamicResource TextMuted}" 
-                                               HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtTotalFolders" Text="0" FontSize="28" FontWeight="Bold" 
-                                               Foreground="{StaticResource XnrgyOrange}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
+        <!-- ========== BARRE DE PROGRESSION + BOUTONS ========== -->
+        <Border Grid.Row="3" Background="#1A1A28" Padding="15,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-                            <Border Grid.Column="0" Grid.Row="1" Background="{DynamicResource DarkBg3}" 
-                                    CornerRadius="6" Padding="15,10" Margin="0,0,5,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Uploades" FontSize="11" Foreground="{DynamicResource TextMuted}" 
-                                               HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtUploaded" Text="0" FontSize="28" FontWeight="Bold" 
-                                               Foreground="{StaticResource XnrgyGreen}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
+                <!-- Barre de progression style Creer Module (rectangulaire avec texte) -->
+                <Border Grid.Column="0" Background="#252535" CornerRadius="6" Height="40" ClipToBounds="True" Margin="0,0,15,0">
+                    <Grid>
+                        <!-- Fond de progression (rempli par le code) -->
+                        <Border x:Name="ProgressBarFill" Background="#28A745" CornerRadius="6" 
+                                HorizontalAlignment="Left" Width="0"/>
+                        
+                        <!-- Effet brillant -->
+                        <Border x:Name="ProgressBarShine" CornerRadius="6" HorizontalAlignment="Left" Width="0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#40FFFFFF" Offset="0"/>
+                                    <GradientStop Color="#10FFFFFF" Offset="0.5"/>
+                                    <GradientStop Color="Transparent" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+                        
+                        <!-- Texte de statut (fichier en cours) -->
+                        <TextBlock x:Name="TxtProgressStatus" Text="Pret" Foreground="White" FontSize="12" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0" 
+                                   TextTrimming="CharacterEllipsis" MaxWidth="500"/>
+                        
+                        <!-- Pourcentage a droite -->
+                        <TextBlock x:Name="TxtProgressPercent" Text="" Foreground="#AAA" FontSize="12" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0"/>
+                    </Grid>
+                </Border>
 
-                            <Border Grid.Column="1" Grid.Row="1" Background="{DynamicResource DarkBg3}" 
-                                    CornerRadius="6" Padding="15,10" Margin="5,0,0,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Ignores" FontSize="11" Foreground="{DynamicResource TextMuted}" 
-                                               HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtSkipped" Text="0" FontSize="28" FontWeight="Bold" 
-                                               Foreground="{DynamicResource TextMuted}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Grid.Column="0" Grid.Row="2" Background="{DynamicResource DarkBg3}" 
-                                    CornerRadius="6" Padding="15,10" Margin="0,0,5,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Echecs" FontSize="11" Foreground="{DynamicResource TextMuted}" 
-                                               HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtFailed" Text="0" FontSize="28" FontWeight="Bold" 
-                                               Foreground="{StaticResource XnrgyRed}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Grid.Column="1" Grid.Row="2" Background="{DynamicResource DarkBg3}" 
-                                    CornerRadius="6" Padding="15,10" Margin="5,0,0,10">
-                                <StackPanel HorizontalAlignment="Center">
-                                    <TextBlock Text="Dossiers Crees" FontSize="11" Foreground="{DynamicResource TextMuted}" 
-                                               HorizontalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtFoldersCreated" Text="0" FontSize="28" FontWeight="Bold" 
-                                               Foreground="{StaticResource XnrgyBlue}" HorizontalAlignment="Center"/>
-                                </StackPanel>
-                            </Border>
-
-                            <!-- Bouton Scanner -->
-                            <Button x:Name="BtnScan" Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="3"
-                                    Content="[?] Scanner les fichiers" Style="{StaticResource SecondaryButton}" 
-                                    Click="BtnScan_Click" Margin="0,5,0,0"/>
-                        </Grid>
-                    </GroupBox>
-
-                    <!-- Apercu Extensions -->
-                    <GroupBox Style="{StaticResource ModernGroupBox}">
-                        <GroupBox.Header>
-                            <TextBlock Text="[i] Apercu par Extension" FontSize="14" FontWeight="Bold" 
-                                       Foreground="{StaticResource XnrgyBlue}"/>
-                        </GroupBox.Header>
-                        <ListBox x:Name="LstExtensions" Background="Transparent" BorderThickness="0" 
-                                 MaxHeight="150" Foreground="{DynamicResource TextLight}">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="5,3">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="80"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="60"/>
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding Extension}" Grid.Column="0" FontWeight="SemiBold" 
-                                                   Foreground="{StaticResource XnrgyBlue}"/>
-                                        <ProgressBar Grid.Column="1" Value="{Binding Percentage}" Maximum="100" 
-                                                     Height="8" Background="#404060" Foreground="{StaticResource XnrgyBlue}" 
-                                                     Margin="10,0"/>
-                                        <TextBlock Text="{Binding Count}" Grid.Column="2" HorizontalAlignment="Right" 
-                                                   Foreground="{DynamicResource TextMuted}"/>
-                                    </Grid>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
-                    </GroupBox>
-
-                    <!-- Actions -->
-                    <GroupBox Style="{StaticResource ModernGroupBox}">
-                        <GroupBox.Header>
-                            <TextBlock Text="[>] Actions" FontSize="14" FontWeight="Bold" 
-                                       Foreground="{StaticResource XnrgyBlue}"/>
-                        </GroupBox.Header>
-                        <StackPanel>
-                            <Button x:Name="BtnStartUpload" Content="[+] DEMARRER L'UPLOAD" 
-                                    Style="{StaticResource SuccessButton}" Click="BtnStartUpload_Click" 
-                                    IsEnabled="False" Margin="0,0,0,10"/>
-                            <Button x:Name="BtnCancel" Content="[-] Annuler" 
-                                    Style="{StaticResource DangerButton}" Click="BtnCancel_Click" 
-                                    IsEnabled="False"/>
-                        </StackPanel>
-                    </GroupBox>
+                <!-- Boutons d'action a droite (identique VaultUploadModule) -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button x:Name="BtnStartUpload" Content="▶️ UPLOAD" 
+                            Style="{StaticResource SuccessButton}" Height="32" Width="110"
+                            Click="BtnStartUpload_Click" IsEnabled="False" Margin="0,0,8,0"/>
+                    
+                    <Button x:Name="BtnPause" Content="⏸️ PAUSE" 
+                            Style="{StaticResource WarningButton}" Height="32" Width="100"
+                            Click="BtnPause_Click" IsEnabled="False" Margin="0,0,8,0"/>
+                    
+                    <Button x:Name="BtnStop" Content="⏹️ STOP" 
+                            Style="{StaticResource WarningButton}" Height="32" Width="90"
+                            Click="BtnStop_Click" IsEnabled="False" Margin="0,0,8,0"/>
+                    
+                    <Button x:Name="BtnCancel" Content="❌ FERMER" 
+                            Style="{StaticResource DangerButton}" Height="32" Width="110"
+                            Click="BtnCancel_Click"/>
                 </StackPanel>
             </Grid>
-        </ScrollViewer>
-
-        <!-- ========== BARRE DE PROGRESSION ========== -->
-        <Border Grid.Row="2" Background="{DynamicResource TextDark}" Padding="20,15">
-            <StackPanel>
-                <Grid Margin="0,0,0,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="TxtProgressStatus" Text="En attente..." FontSize="13" 
-                               Foreground="{DynamicResource TextLight}" Grid.Column="0"/>
-                    <TextBlock x:Name="TxtProgressPercent" Text="0%" FontSize="13" FontWeight="Bold" 
-                               Foreground="{StaticResource XnrgyBlue}" Grid.Column="1"/>
-                </Grid>
-                <ProgressBar x:Name="ProgressBar" Style="{StaticResource ModernProgressBar}" 
-                             Value="0" Maximum="100"/>
-                <Grid Margin="0,8,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock x:Name="TxtCurrentFile" Text="" FontSize="11" 
-                               Foreground="{DynamicResource TextMuted}" Grid.Column="0" TextTrimming="CharacterEllipsis"/>
-                    <TextBlock x:Name="TxtSpeed" Text="" FontSize="11" 
-                               Foreground="{DynamicResource TextMuted}" Grid.Column="1" HorizontalAlignment="Center"/>
-                    <TextBlock x:Name="TxtTimeRemaining" Text="" FontSize="11" 
-                               Foreground="{DynamicResource TextMuted}" Grid.Column="2" HorizontalAlignment="Right"/>
-                </Grid>
-            </StackPanel>
         </Border>
 
         <!-- ========== JOURNAL ========== -->
-        <Border Grid.Row="3" Background="{DynamicResource DarkBg2}" BorderBrush="{DynamicResource BorderColor}" 
-                BorderThickness="0,2,0,0">
+        <Border Grid.Row="4" Background="{DynamicResource DarkBg2}" BorderBrush="{DynamicResource BorderColor}" 
+                BorderThickness="0,2,0,0" MinHeight="150">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -531,22 +620,32 @@
                 </Grid.RowDefinitions>
                 
                 <!-- Header Journal -->
-                <Border Grid.Row="0" Background="{DynamicResource TextDark}" Padding="15,8">
+                <Border Grid.Row="0" Background="#1A1A28" Padding="10,6">
                     <Grid>
-                        <TextBlock Text="[#] Journal des operations" FontSize="12" FontWeight="SemiBold" 
-                                   Foreground="{StaticResource XnrgyBlue}"/>
-                        <Button x:Name="BtnClearLog" Content="Effacer" Style="{StaticResource SecondaryButton}" 
-                                HorizontalAlignment="Right" Padding="10,4" FontSize="11" Click="BtnClearLog_Click"/>
+                        <TextBlock Text="📋 Journal des operations" FontSize="13" FontWeight="Bold" 
+                                   Foreground="White"/>
+                        <Button x:Name="BtnClearLog" Content="🗑️ Effacer" HorizontalAlignment="Right" 
+                                Background="Transparent" Foreground="White" FontWeight="Bold"
+                                BorderBrush="#FFFFFF" BorderThickness="1"
+                                Padding="8,2" Click="BtnClearLog_Click" Cursor="Hand"/>
                     </Grid>
                 </Border>
                 
-                <!-- Contenu Journal -->
-                <ScrollViewer Grid.Row="1" x:Name="LogScrollViewer" VerticalScrollBarVisibility="Auto">
-                    <TextBox x:Name="TxtLog" Background="Transparent" Foreground="{DynamicResource TextLight}" 
-                             BorderThickness="0" IsReadOnly="True" TextWrapping="Wrap" 
-                             FontFamily="Consolas" FontSize="11" Padding="15,10"
-                             VerticalScrollBarVisibility="Disabled"/>
-                </ScrollViewer>
+                <!-- Contenu Journal avec couleurs -->
+                <RichTextBox x:Name="TxtLog" Grid.Row="1" Background="Transparent" 
+                             BorderThickness="0" IsReadOnly="True" 
+                             FontFamily="Consolas" FontSize="12" Padding="10,5"
+                             VerticalScrollBarVisibility="Auto"
+                             Foreground="{DynamicResource TextLight}">
+                    <RichTextBox.Resources>
+                        <Style TargetType="Paragraph">
+                            <Setter Property="Margin" Value="0,2"/>
+                        </Style>
+                    </RichTextBox.Resources>
+                    <FlowDocument>
+                        <Paragraph/>
+                    </FlowDocument>
+                </RichTextBox>
             </Grid>
         </Border>
     </Grid>

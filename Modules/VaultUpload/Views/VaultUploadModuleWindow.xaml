@@ -418,168 +418,89 @@
             </Grid>
         </Border>
 
-        <!-- ========== SECTION 2: LISTES FICHIERS ========== -->
-        <Grid Grid.Row="2" Margin="0,0,0,8">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="6"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <!-- ========== SECTION 2: LISTE FICHIERS UNIFIEE ========== -->
+        <GroupBox Grid.Row="2" Style="{StaticResource ModernGroupBox}" Margin="0,0,0,8">
+            <GroupBox.Header>
+                <TextBlock Text="📄 Tous les Fichiers a Uploader" Foreground="White" FontWeight="Bold"/>
+            </GroupBox.Header>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
 
-            <!-- Liste Fichiers Inventor -->
-            <GroupBox Grid.Row="0" Style="{StaticResource ModernGroupBox}" Margin="0">
-                <GroupBox.Header>
-                    <TextBlock Text="📐 Fichiers Inventor (.ipt, .iam, .idw, .ipn)" Foreground="White" FontWeight="Bold"/>
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+                <!-- Controles: Boutons selection + Recherche + Filtres -->
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+                    <Button Content="✅ Tout selectionner" Style="{StaticResource SecondaryButton}" 
+                            Click="SelectAll_Click" Height="30" FontSize="11" FontWeight="Bold"/>
+                    <Button Content="❌ Tout deselectionner" Style="{StaticResource SecondaryButton}" 
+                            Click="DeselectAll_Click" Margin="6,0,0,0" Height="30" FontSize="11" FontWeight="Bold"/>
+                    
+                    <!-- Recherche -->
+                    <TextBlock Text="🔍" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="14" Foreground="White"/>
+                    <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Width="180" Height="30" 
+                             TextChanged="TxtSearch_TextChanged" ToolTip="Rechercher par nom"/>
+                    
+                    <!-- Filtre Extension -->
+                    <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                    <ComboBox x:Name="CmbExtension" Width="90" Height="30" VerticalContentAlignment="Center"
+                              SelectionChanged="CmbExtension_SelectionChanged">
+                        <ComboBoxItem Content="Tous" IsSelected="True"/>
+                        <ComboBoxItem Content=".ipt"/>
+                        <ComboBoxItem Content=".iam"/>
+                        <ComboBoxItem Content=".idw"/>
+                        <ComboBoxItem Content=".ipn"/>
+                        <ComboBoxItem Content=".dwg"/>
+                        <ComboBoxItem Content=".pdf"/>
+                        <ComboBoxItem Content=".xlsx"/>
+                        <ComboBoxItem Content=".docx"/>
+                        <ComboBoxItem Content=".png"/>
+                    </ComboBox>
+                    
+                    <!-- Filtre Etat -->
+                    <TextBlock Text="📊 Etat:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                    <ComboBox x:Name="CmbState" Width="100" Height="30" VerticalContentAlignment="Center"
+                              SelectionChanged="CmbState_SelectionChanged">
+                        <ComboBoxItem Content="Tous" IsSelected="True"/>
+                        <ComboBoxItem Content="En attente"/>
+                        <ComboBoxItem Content="Uploade"/>
+                        <ComboBoxItem Content="Ignore"/>
+                        <ComboBoxItem Content="Erreur"/>
+                    </ComboBox>
+                    
+                    <!-- Categorie Vault -->
+                    <TextBlock Text="📁 Categorie:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                    <ComboBox x:Name="CmbCategory" Width="120" Height="30" DisplayMemberPath="Name" 
+                              VerticalContentAlignment="Center" SelectionChanged="CmbCategory_SelectionChanged"/>
+                    
+                    <!-- Lifecycle State Vault -->
+                    <TextBlock Text="🔄 State:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                    <ComboBox x:Name="CmbLifecycleState" Width="130" Height="30" DisplayMemberPath="Name"
+                              VerticalContentAlignment="Center"/>
+                </StackPanel>
 
-                    <!-- Controles Inventor - Ligne 1: Boutons et Recherche -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,4">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                            <Button Content="✅ Tout sélectionner" Style="{StaticResource SecondaryButton}" 
-                                    Click="SelectAllInventor_Click" Width="140" Height="30" FontSize="11" FontWeight="Bold"/>
-                            <Button Content="❌ Tout désélectionner" Style="{StaticResource SecondaryButton}" 
-                                    Click="DeselectAllInventor_Click" Margin="6,0,0,0" Width="150" Height="30" FontSize="11" FontWeight="Bold"/>
-                            
-                            <!-- Recherche -->
-                            <TextBlock Text="🔍" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="14" Foreground="White"/>
-                            <TextBox x:Name="TxtSearchInventor" Style="{StaticResource ModernTextBox}" Width="140" Height="30" 
-                                     TextChanged="SearchInventor_TextChanged" ToolTip="Rechercher par nom"/>
-                            
-                            <!-- Extension -->
-                            <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                            <ComboBox x:Name="CmbExtensionInventor" Width="80" Height="30" VerticalContentAlignment="Center"
-                                      SelectionChanged="CmbExtensionInventor_SelectionChanged">
-                                <ComboBoxItem Content="Tous" IsSelected="True"/>
-                                <ComboBoxItem Content=".ipt"/>
-                                <ComboBoxItem Content=".iam"/>
-                                <ComboBoxItem Content=".idw"/>
-                                <ComboBoxItem Content=".ipn"/>
-                                <ComboBoxItem Content=".dwg"/>
-                            </ComboBox>
-                            
-                            <!-- Categorie Vault -->
-                            <TextBlock Text="📁 Catégorie:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                            <ComboBox x:Name="CmbCategoryInventor" Width="120" Height="30" DisplayMemberPath="Name" 
-                                      VerticalContentAlignment="Center" SelectionChanged="CmbCategoryInventor_SelectionChanged"/>
-                            
-                            <!-- Lifecycle State Vault -->
-                            <TextBlock Text="🔄 State:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                            <ComboBox x:Name="CmbLifecycleStateInventor" Width="130" Height="30" DisplayMemberPath="Name"
-                                      VerticalContentAlignment="Center"/>
-                            
-                            <!-- Hidden State ComboBox for code compatibility -->
-                            <ComboBox x:Name="CmbStateInventor" Visibility="Collapsed">
-                                <ComboBoxItem Content="Tous" IsSelected="True"/>
-                            </ComboBox>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- DataGrid Inventor -->
-                    <DataGrid x:Name="DgInventorFiles" Grid.Row="1" 
-                              AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                              IsReadOnly="False"
-                              Background="{DynamicResource PanelBackground}"
-                              Foreground="{DynamicResource TextPrimary}"
-                              GridLinesVisibility="Horizontal"
-                              AlternatingRowBackground="{DynamicResource DataGridAltRow}"
-                              RowHeight="32" SelectionMode="Single" SelectionUnit="FullRow"
-                              BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
-                              MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
-                        <DataGrid.Columns>
-                            <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
-                            <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="📐 Type" Binding="{Binding FileType}" Width="80" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="100" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="📁 Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="200" IsReadOnly="True"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
-            </GroupBox>
-
-            <!-- Liste Fichiers Non-Inventor -->
-            <GroupBox Grid.Row="2" Style="{StaticResource ModernGroupBox}">
-                <GroupBox.Header>
-                    <TextBlock Text="📄 Autres Fichiers (.pdf, .xlsx, .docx, etc.)" Foreground="White" FontWeight="Bold"/>
-                </GroupBox.Header>
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
-
-                    <!-- Controles Non-Inventor - Ligne 1: Boutons et Recherche -->
-                    <StackPanel Grid.Row="0" Margin="0,0,0,4">
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
-                            <Button Content="✅ Tout sélectionner" Style="{StaticResource SecondaryButton}" 
-                                    Click="SelectAllNonInventor_Click" Width="140" Height="30" FontSize="11" FontWeight="Bold"/>
-                            <Button Content="❌ Tout désélectionner" Style="{StaticResource SecondaryButton}" 
-                                    Click="DeselectAllNonInventor_Click" Margin="6,0,0,0" Width="150" Height="30" FontSize="11" FontWeight="Bold"/>
-                            
-                            <!-- Recherche -->
-                            <TextBlock Text="🔍" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="14" Foreground="White"/>
-                            <TextBox x:Name="TxtSearchNonInventor" Style="{StaticResource ModernTextBox}" Width="140" Height="30" 
-                                     TextChanged="SearchNonInventor_TextChanged" ToolTip="Rechercher par nom"/>
-                            
-                            <!-- Extension -->
-                            <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                            <ComboBox x:Name="CmbExtensionNonInventor" Width="80" Height="30" VerticalContentAlignment="Center"
-                                      SelectionChanged="CmbExtensionNonInventor_SelectionChanged">
-                                <ComboBoxItem Content="Tous" IsSelected="True"/>
-                                <ComboBoxItem Content=".pdf"/>
-                                <ComboBoxItem Content=".xlsx"/>
-                                <ComboBoxItem Content=".xls"/>
-                                <ComboBoxItem Content=".docx"/>
-                                <ComboBoxItem Content=".doc"/>
-                                <ComboBoxItem Content=".png"/>
-                                <ComboBoxItem Content=".jpg"/>
-                            </ComboBox>
-                            
-                            <!-- Categorie Vault -->
-                            <TextBlock Text="📁 Catégorie:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                            <ComboBox x:Name="CmbCategoryNonInventor" Width="120" Height="30" DisplayMemberPath="Name"
-                                      VerticalContentAlignment="Center" SelectionChanged="CmbCategoryNonInventor_SelectionChanged"/>
-                            
-                            <!-- Lifecycle State Vault -->
-                            <TextBlock Text="🔄 State:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                            <ComboBox x:Name="CmbLifecycleStateNonInventor" Width="130" Height="30" DisplayMemberPath="Name"
-                                      VerticalContentAlignment="Center"/>
-                            
-                            <!-- Hidden State ComboBox for code compatibility -->
-                            <ComboBox x:Name="CmbStateNonInventor" Visibility="Collapsed">
-                                <ComboBoxItem Content="Tous" IsSelected="True"/>
-                            </ComboBox>
-                        </StackPanel>
-                    </StackPanel>
-
-                    <!-- DataGrid Non-Inventor -->
-                    <DataGrid x:Name="DgNonInventorFiles" Grid.Row="1" 
-                              AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
-                              IsReadOnly="False"
-                              Background="{DynamicResource PanelBackground}"
-                              Foreground="{DynamicResource TextPrimary}"
-                              GridLinesVisibility="Horizontal"
-                              AlternatingRowBackground="{DynamicResource DataGridAltRow}"
-                              RowHeight="32" SelectionMode="Single" SelectionUnit="FullRow"
-                              BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
-                              MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
-                        <DataGrid.Columns>
-                            <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
-                            <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="📋 Type" Binding="{Binding FileType}" Width="80" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="100" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="📁 Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
-                            <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="200" IsReadOnly="True"/>
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </Grid>
-            </GroupBox>
-        </Grid>
+                <!-- DataGrid Unifie -->
+                <DataGrid x:Name="DgFiles" Grid.Row="1" 
+                          AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                          IsReadOnly="False"
+                          Background="{DynamicResource PanelBackground}"
+                          Foreground="{DynamicResource TextPrimary}"
+                          GridLinesVisibility="Horizontal"
+                          AlternatingRowBackground="{DynamicResource DataGridAltRow}"
+                          RowHeight="32" SelectionMode="Single" SelectionUnit="FullRow"
+                          BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                          MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
+                    <DataGrid.Columns>
+                        <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
+                        <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="220" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileType}" Width="80" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="90" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📁 Chemin relatif" Binding="{Binding RelativePath}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="180" IsReadOnly="True"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </GroupBox>
 
         <!-- ========== SECTION 3: COMMENTAIRE ========== -->
         <GroupBox Grid.Row="3" Style="{StaticResource ModernGroupBox}" Padding="8" Margin="0,0,0,8">

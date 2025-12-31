@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,6 +17,39 @@ using ACW = Autodesk.Connectivity.WebServices;
 
 namespace XnrgyEngineeringAutomationTools.Views
 {
+    /// <summary>
+    /// Fichier a uploader - avec selection et statut
+    /// </summary>
+    public class TemplateFileItem : INotifyPropertyChanged
+    {
+        private bool _isSelected = true;
+        private string _status = "En attente";
+
+        public string FileName { get; set; } = string.Empty;
+        public string FileExtension { get; set; } = string.Empty;
+        public string FileSizeFormatted { get; set; } = string.Empty;
+        public string FullPath { get; set; } = string.Empty;
+        public string RelativePath { get; set; } = string.Empty;
+
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set { _isSelected = value; OnPropertyChanged(); }
+        }
+
+        public string Status
+        {
+            get => _status;
+            set { _status = value; OnPropertyChanged(); }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+        protected void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName ?? string.Empty));
+        }
+    }
+
     /// <summary>
     /// Upload Template vers Vault - Upload massif de fichiers
     /// Auteur: Mohammed Amine Elgalai - XNRGY Climate Systems
@@ -35,19 +69,26 @@ namespace XnrgyEngineeringAutomationTools.Views
         // ====================================================================
         private CancellationTokenSource _cancellationTokenSource;
         private bool _isUploading = false;
-        private List<string> _filesToUpload = new List<string>();
+        private bool _isPaused = false;
+        private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true);
         private Dictionary<string, ACW.Folder> _folderCache = new Dictionary<string, ACW.Folder>();
+
+        // ====================================================================
+        // DataGrid - Collection de fichiers
+        // ====================================================================
+        public ObservableCollection<TemplateFileItem> AllFiles { get; } = new();
+        private List<TemplateFileItem> _allFilesList = new();
+        private string _basePath = string.Empty;
 
         // ====================================================================
         // Statistiques
         // ====================================================================
-        private int _totalFiles = 0;
-        private int _totalFolders = 0;
         private int _uploadedFiles = 0;
         private int _skippedFiles = 0;
         private int _failedFiles = 0;
         private int _foldersCreated = 0;
         private DateTime _startTime;
+        private bool _createFoldersAutomatically = true;
 
         // ====================================================================
         // Exclusions
@@ -58,7 +99,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         private static readonly string[] ExcludedFileNames = { "desktop.ini", "Thumbs.db", ".DS_Store" };
 
         // ====================================================================
-        // Data Binding pour extensions
+        // Data Binding pour extensions (garde pour compatibilite)
         // ====================================================================
         public ObservableCollection<ExtensionInfo> ExtensionStats { get; set; } = new ObservableCollection<ExtensionInfo>();
 
@@ -68,7 +109,9 @@ namespace XnrgyEngineeringAutomationTools.Views
         public UploadTemplateWindow(VaultSdkService? vaultService)
         {
             InitializeComponent();
-            LstExtensions.ItemsSource = ExtensionStats;
+            
+            // Bind DataGrid
+            DgFiles.ItemsSource = AllFiles;
             
             _vaultService = vaultService;
             
@@ -85,28 +128,23 @@ namespace XnrgyEngineeringAutomationTools.Views
         // ====================================================================
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Charger le logo
-            try
-            {
-                string logoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "xnrgy_logo.png");
-                if (File.Exists(logoPath))
-                {
-                    LogoImage.Source = new BitmapImage(new Uri(logoPath));
-                }
-            }
-            catch { }
+            // Note: Logo remplace par emoji dans le header moderne
 
-            // Afficher le statut de connexion
+            // Afficher le statut de connexion (format identique VaultUploadModule)
             if (_isConnected)
             {
-                UpdateStatus($"Connecte - {_vaultService?.VaultName}", "#107C10");
+                StatusText.Text = $"Vault: {_vaultService?.VaultName}";
+                TxtVaultUser.Text = $"Utilisateur: {_vaultService?.UserName}";
+                StatusIndicator.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#107C10"));
                 Log($"[+] Connexion Vault heritee de l'application principale", LogLevel.SUCCESS);
                 Log($"[i] Vault: {_vaultService?.VaultName} | User: {_vaultService?.UserName}", LogLevel.INFO);
-                BtnStartUpload.IsEnabled = true;
+                BtnStartUpload.IsEnabled = false; // Active apres scan
             }
             else
             {
-                UpdateStatus("Non connecte - Vault requis", "#E81123");
+                StatusText.Text = "Vault: Non connecte";
+                TxtVaultUser.Text = "Veuillez vous connecter";
+                StatusIndicator.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E81123"));
                 Log("[-] Aucune connexion Vault. Veuillez vous connecter via l'application principale.", LogLevel.ERROR);
                 BtnStartUpload.IsEnabled = false;
             }
@@ -160,11 +198,11 @@ namespace XnrgyEngineeringAutomationTools.Views
             if (localPath.StartsWith(@"C:\Vault", StringComparison.OrdinalIgnoreCase))
             {
                 string relative = localPath.Substring(8).TrimStart('\\');
-                TxtVaultPath.Text = string.IsNullOrEmpty(relative) ? "Destination Vault: $/" : $"Destination Vault: $/{relative.Replace("\\", "/")}";
+                TxtVaultPath.Text = string.IsNullOrEmpty(relative) ? "-> $/" : $"-> $/{relative.Replace("\\", "/")}";
             }
             else
             {
-                TxtVaultPath.Text = "Destination Vault: $/";
+                TxtVaultPath.Text = "-> $/";
             }
         }
 
@@ -182,56 +220,61 @@ namespace XnrgyEngineeringAutomationTools.Views
             }
 
             BtnScan.IsEnabled = false;
+            _basePath = localPath;
             Log($"[?] Scan des fichiers dans {localPath}...", LogLevel.INFO);
             UpdateProgress("Scan en cours...", 0);
 
+            // Capturer les options AVANT le Task.Run (thread UI)
+            bool excludeOldVersions = ChkExcludeOldVersions.IsChecked == true;
+            bool excludeTempFiles = ChkExcludeTempFiles.IsChecked == true;
+
             try
             {
-                _filesToUpload.Clear();
+                AllFiles.Clear();
+                _allFilesList.Clear();
                 ExtensionStats.Clear();
+
+                var fileItems = new List<TemplateFileItem>();
 
                 await Task.Run(() =>
                 {
                     var allFiles = Directory.EnumerateFiles(localPath, "*.*", SearchOption.AllDirectories)
-                        .Where(f => !ShouldExclude(f))
+                        .Where(f => !ShouldExcludeFile(f, excludeOldVersions, excludeTempFiles))
                         .ToList();
 
-                    _filesToUpload = allFiles;
+                    foreach (var filePath in allFiles)
+                    {
+                        var fileInfo = new FileInfo(filePath);
+                        var relativePath = filePath.Substring(localPath.Length).TrimStart('\\');
+                        var relativeDir = Path.GetDirectoryName(relativePath) ?? "";
+
+                        fileItems.Add(new TemplateFileItem
+                        {
+                            FileName = fileInfo.Name,
+                            FileExtension = fileInfo.Extension.ToLower(),
+                            FileSizeFormatted = FormatFileSize(fileInfo.Length),
+                            FullPath = filePath,
+                            RelativePath = relativeDir,
+                            IsSelected = true,
+                            Status = "En attente"
+                        });
+                    }
                 });
 
-                _totalFiles = _filesToUpload.Count;
-                _totalFolders = _filesToUpload.Select(f => Path.GetDirectoryName(f)).Distinct().Count();
-
-                // Statistiques par extension
-                var byExtension = _filesToUpload
-                    .GroupBy(f => Path.GetExtension(f).ToLower())
-                    .OrderByDescending(g => g.Count())
-                    .Take(10);
-
-                double maxCount = byExtension.Any() ? byExtension.Max(g => g.Count()) : 1;
-
-                foreach (var grp in byExtension)
+                // Ajouter au DataGrid sur le thread UI
+                foreach (var item in fileItems)
                 {
-                    ExtensionStats.Add(new ExtensionInfo
-                    {
-                        Extension = grp.Key,
-                        Count = grp.Count(),
-                        Percentage = (grp.Count() / maxCount) * 100
-                    });
+                    AllFiles.Add(item);
+                    _allFilesList.Add(item);
                 }
 
-                // Mise a jour UI
-                TxtTotalFiles.Text = _totalFiles.ToString("N0");
-                TxtTotalFolders.Text = _totalFolders.ToString("N0");
-                TxtUploaded.Text = "0";
-                TxtSkipped.Text = "0";
-                TxtFailed.Text = "0";
-                TxtFoldersCreated.Text = "0";
+                // Mise a jour statistiques
+                UpdateStatistics();
 
-                Log($"[+] Scan termine: {_totalFiles} fichiers dans {_totalFolders} dossiers", LogLevel.SUCCESS);
-                UpdateProgress($"{_totalFiles} fichiers prets a uploader", 0);
+                Log($"[+] Scan termine: {AllFiles.Count} fichiers trouves", LogLevel.SUCCESS);
+                UpdateProgress($"{AllFiles.Count} fichiers prets a uploader", 0);
 
-                BtnStartUpload.IsEnabled = _isConnected && _totalFiles > 0;
+                BtnStartUpload.IsEnabled = _isConnected && AllFiles.Count > 0;
             }
             catch (Exception ex)
             {
@@ -244,7 +287,35 @@ namespace XnrgyEngineeringAutomationTools.Views
             }
         }
 
-        private bool ShouldExclude(string filePath)
+        private string FormatFileSize(long bytes)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB" };
+            int order = 0;
+            double size = bytes;
+            while (size >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                size /= 1024;
+            }
+            return $"{size:0.##} {sizes[order]}";
+        }
+
+        private void UpdateStatistics()
+        {
+            int total = _allFilesList.Count;
+            int selected = _allFilesList.Count(f => f.IsSelected);
+            
+            TxtTotalFiles.Text = total.ToString("N0");
+            TxtSelectedFiles.Text = selected.ToString("N0");
+            TxtUploaded.Text = _uploadedFiles.ToString("N0");
+            TxtSkipped.Text = _skippedFiles.ToString("N0");
+            TxtFailed.Text = _failedFiles.ToString("N0");
+        }
+
+        /// <summary>
+        /// Verifie si un fichier doit etre exclu (thread-safe)
+        /// </summary>
+        private bool ShouldExcludeFile(string filePath, bool excludeOldVersions, bool excludeTempFiles)
         {
             string fileName = Path.GetFileName(filePath);
 
@@ -252,16 +323,19 @@ namespace XnrgyEngineeringAutomationTools.Views
             if (ExcludedFileNames.Any(n => fileName.Equals(n, StringComparison.OrdinalIgnoreCase)))
                 return true;
 
-            // Extensions exclues
-            if (ExcludedExtensions.Any(ext => fileName.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
-                return true;
+            // Extensions exclues (si option activee)
+            if (excludeTempFiles)
+            {
+                if (ExcludedExtensions.Any(ext => fileName.EndsWith(ext, StringComparison.OrdinalIgnoreCase)))
+                    return true;
+            }
 
             // Prefixes exclus
             if (ExcludedPrefixes.Any(p => fileName.StartsWith(p)))
                 return true;
 
             // Dossiers exclus (si option cochee)
-            if (ChkExcludeOldVersions.IsChecked == true)
+            if (excludeOldVersions)
             {
                 if (ExcludedFolders.Any(f => filePath.Contains($"\\{f}\\") || filePath.EndsWith($"\\{f}")))
                     return true;
@@ -275,17 +349,19 @@ namespace XnrgyEngineeringAutomationTools.Views
         // ====================================================================
         private async void BtnStartUpload_Click(object sender, RoutedEventArgs e)
         {
-            if (!_isConnected || _filesToUpload.Count == 0)
+            var selectedFiles = _allFilesList.Where(f => f.IsSelected).ToList();
+            
+            if (!_isConnected || selectedFiles.Count == 0)
             {
-                XnrgyMessageBox.ShowError("Veuillez vous connecter et scanner les fichiers d'abord.", "Erreur", this);
+                XnrgyMessageBox.ShowError("Veuillez vous connecter et selectionner des fichiers d'abord.", "Erreur", this);
                 return;
             }
 
             // Confirmation
             var confirm = XnrgyMessageBox.Show(
-                $"Vous allez uploader {_totalFiles} fichiers vers le Vault PRODUCTION.\n\n" +
+                $"Vous allez uploader {selectedFiles.Count} fichiers vers le Vault PRODUCTION.\n\n" +
                 $"Source: {TxtLocalPath.Text}\n" +
-                $"Destination: {TxtVaultPath.Text.Replace("Destination Vault: ", "")}\n\n" +
+                $"Destination: {TxtVaultPath.Text.Replace("-> ", "")}\n\n" +
                 "Continuer?",
                 "Confirmer Upload",
                 XnrgyMessageBoxType.Warning,
@@ -297,6 +373,8 @@ namespace XnrgyEngineeringAutomationTools.Views
 
             // Initialiser
             _isUploading = true;
+            _isPaused = false;
+            _pauseEvent.Set(); // S'assurer qu'on n'est pas en pause
             _cancellationTokenSource = new CancellationTokenSource();
             _uploadedFiles = 0;
             _skippedFiles = 0;
@@ -304,12 +382,16 @@ namespace XnrgyEngineeringAutomationTools.Views
             _foldersCreated = 0;
             _folderCache.Clear();
             _startTime = DateTime.Now;
+            _createFoldersAutomatically = ChkCreateFolders.IsChecked == true;
 
-            // UI
+            // UI - Activer boutons de controle
             BtnStartUpload.IsEnabled = false;
-            BtnCancel.IsEnabled = true;
+            BtnPause.IsEnabled = true;
+            BtnStop.IsEnabled = true;
+            BtnCancel.IsEnabled = false;
             BtnScan.IsEnabled = false;
             BtnBrowse.IsEnabled = false;
+            BtnPause.Content = "⏸️ PAUSE";
 
             Log("[>] Debut de l'upload...", LogLevel.INFO);
 
@@ -318,8 +400,9 @@ namespace XnrgyEngineeringAutomationTools.Views
                 string localRoot = TxtLocalPath.Text.Trim();
                 var token = _cancellationTokenSource.Token;
                 int counter = 0;
+                int totalSelected = selectedFiles.Count;
 
-                foreach (var filePath in _filesToUpload)
+                foreach (var fileItem in selectedFiles)
                 {
                     if (token.IsCancellationRequested)
                     {
@@ -327,34 +410,44 @@ namespace XnrgyEngineeringAutomationTools.Views
                         break;
                     }
 
+                    // Attendre si en pause
+                    _pauseEvent.Wait(token);
+
                     counter++;
-                    string fileName = Path.GetFileName(filePath);
+                    string filePath = fileItem.FullPath;
+                    string fileName = fileItem.FileName;
                     string vaultFolder = GetVaultFolderPath(filePath, localRoot);
 
+                    // Mise a jour statut dans DataGrid
+                    Dispatcher.Invoke(() => { fileItem.Status = "Upload en cours..."; });
+
                     // Mise a jour progression
-                    double progress = (counter * 100.0) / _totalFiles;
+                    double progress = (counter * 100.0) / totalSelected;
                     var elapsed = DateTime.Now - _startTime;
                     double rate = counter / Math.Max(elapsed.TotalMinutes, 0.01);
-                    double remaining = (_totalFiles - counter) / Math.Max(rate, 1);
+                    double remaining = (totalSelected - counter) / Math.Max(rate, 1);
 
                     UpdateProgress(
-                        $"[{counter}/{_totalFiles}] {fileName}",
-                        progress,
-                        $"{rate:F1} fichiers/min",
-                        $"Reste: ~{remaining:F1} min");
-
-                    TxtCurrentFile.Text = filePath;
+                        $"[{counter}/{totalSelected}] {fileName}",
+                        progress);
 
                     // Upload
                     bool success = await Task.Run(() => UploadFile(filePath, vaultFolder), token);
 
-                    // Mise a jour stats
+                    // Mise a jour statut
                     Dispatcher.Invoke(() =>
                     {
+                        if (success)
+                            fileItem.Status = "Uploade";
+                        else if (_skippedFiles > 0 && fileItem.Status == "Upload en cours...")
+                            fileItem.Status = "Ignore (existe)";
+                        else
+                            fileItem.Status = "Echec";
+                            
                         TxtUploaded.Text = _uploadedFiles.ToString("N0");
                         TxtSkipped.Text = _skippedFiles.ToString("N0");
                         TxtFailed.Text = _failedFiles.ToString("N0");
-                        TxtFoldersCreated.Text = _foldersCreated.ToString("N0");
+                        UpdateStatistics();
                     });
                 }
 
@@ -401,14 +494,19 @@ namespace XnrgyEngineeringAutomationTools.Views
             finally
             {
                 _isUploading = false;
+                _isPaused = false;
+                _pauseEvent.Set();
                 _cancellationTokenSource?.Dispose();
                 _cancellationTokenSource = null;
 
                 // Restaurer UI
-                BtnStartUpload.IsEnabled = _isConnected && _totalFiles > 0;
-                BtnCancel.IsEnabled = false;
+                BtnStartUpload.IsEnabled = _isConnected && _allFilesList.Count > 0;
+                BtnPause.IsEnabled = false;
+                BtnStop.IsEnabled = false;
+                BtnCancel.IsEnabled = true;
                 BtnScan.IsEnabled = true;
                 BtnBrowse.IsEnabled = true;
+                BtnPause.Content = "⏸️ PAUSE";
             }
         }
 
@@ -416,6 +514,48 @@ namespace XnrgyEngineeringAutomationTools.Views
         {
             _cancellationTokenSource?.Cancel();
             BtnCancel.IsEnabled = false;
+        }
+
+        private void BtnPause_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isPaused)
+            {
+                // Reprendre
+                _isPaused = false;
+                _pauseEvent.Set();
+                BtnPause.Content = "⏸️ PAUSE";
+                Log("[>] Upload repris", LogLevel.INFO);
+                UpdateProgress("Upload en cours...", -1); // -1 = garder le pourcentage actuel
+            }
+            else
+            {
+                // Mettre en pause
+                _isPaused = true;
+                _pauseEvent.Reset();
+                BtnPause.Content = "▶️ REPRENDRE";
+                Log("[!] Upload en pause", LogLevel.WARNING);
+                UpdateProgress("En pause...", -1);
+            }
+        }
+
+        private void BtnStop_Click(object sender, RoutedEventArgs e)
+        {
+            if (_isUploading)
+            {
+                var confirm = XnrgyMessageBox.Show(
+                    "Voulez-vous vraiment arreter l'upload?\nLes fichiers deja uploades seront conserves.",
+                    "Arreter l'upload",
+                    XnrgyMessageBoxType.Warning,
+                    XnrgyMessageBoxButtons.YesNo,
+                    this);
+
+                if (confirm == XnrgyMessageBoxResult.Yes)
+                {
+                    _cancellationTokenSource?.Cancel();
+                    _pauseEvent.Set(); // Debloquer si en pause
+                    Log("[!] Upload arrete par l'utilisateur", LogLevel.WARNING);
+                }
+            }
         }
 
         // ====================================================================
@@ -515,10 +655,10 @@ namespace XnrgyEngineeringAutomationTools.Views
             }
             catch
             {
-                // Creer le dossier
-                if (ChkCreateFolders.IsChecked != true)
+                // Creer le dossier automatiquement (si option activee)
+                if (!_createFoldersAutomatically)
                     return null;
-
+                    
                 try
                 {
                     int lastSlash = vaultPath.LastIndexOf('/');
@@ -588,7 +728,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         // ====================================================================
         private void BtnClearLog_Click(object sender, RoutedEventArgs e)
         {
-            TxtLog.Clear();
+            TxtLog.Document.Blocks.Clear();
         }
 
         private void Log(string message, LogLevel level)
@@ -596,8 +736,45 @@ namespace XnrgyEngineeringAutomationTools.Views
             Dispatcher.Invoke(() =>
             {
                 string timestamp = DateTime.Now.ToString("HH:mm:ss");
-                TxtLog.AppendText($"[{timestamp}] {message}\n");
-                LogScrollViewer.ScrollToEnd();
+                
+                // Determiner la couleur selon le niveau
+                Color color = level switch
+                {
+                    LogLevel.SUCCESS => (Color)ColorConverter.ConvertFromString("#2ECC71"), // Vert
+                    LogLevel.ERROR => (Color)ColorConverter.ConvertFromString("#E74C3C"),   // Rouge
+                    LogLevel.WARNING => (Color)ColorConverter.ConvertFromString("#F39C12"), // Orange
+                    _ => (Color)ColorConverter.ConvertFromString("#B8D4E8")                 // Bleu clair (Info)
+                };
+                
+                // Determiner le prefix selon le niveau (sans emoji)
+                string prefix = level switch
+                {
+                    LogLevel.SUCCESS => "[+]",
+                    LogLevel.ERROR => "[-]",
+                    LogLevel.WARNING => "[!]",
+                    _ => "[>]"
+                };
+                
+                // Creer le paragraph avec couleur
+                var paragraph = new System.Windows.Documents.Paragraph();
+                paragraph.Margin = new Thickness(0, 2, 0, 2);
+                
+                // Timestamp en gris
+                var timestampRun = new System.Windows.Documents.Run($"[{timestamp}] ")
+                {
+                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"))
+                };
+                paragraph.Inlines.Add(timestampRun);
+                
+                // Message avec couleur
+                var messageRun = new System.Windows.Documents.Run($"{prefix} {message}")
+                {
+                    Foreground = new SolidColorBrush(color)
+                };
+                paragraph.Inlines.Add(messageRun);
+                
+                TxtLog.Document.Blocks.Add(paragraph);
+                TxtLog.ScrollToEnd();
             });
         }
 
@@ -615,11 +792,115 @@ namespace XnrgyEngineeringAutomationTools.Views
             Dispatcher.Invoke(() =>
             {
                 TxtProgressStatus.Text = status;
-                TxtProgressPercent.Text = $"{percent:F0}%";
-                ProgressBar.Value = percent;
-                TxtSpeed.Text = speed;
-                TxtTimeRemaining.Text = remaining;
+                
+                // Si percent < 0, garder le pourcentage actuel (utilisé pour pause)
+                if (percent >= 0)
+                {
+                    TxtProgressPercent.Text = percent > 0 ? $"{percent:F0}%" : "";
+                    
+                    // Mettre a jour la largeur de la barre de progression (style Creer Module)
+                    if (ProgressBarFill.Parent is Grid parentGrid)
+                    {
+                        double maxWidth = parentGrid.ActualWidth > 0 ? parentGrid.ActualWidth : 400;
+                        double fillWidth = (percent / 100.0) * maxWidth;
+                        ProgressBarFill.Width = fillWidth;
+                        ProgressBarShine.Width = fillWidth;
+                    }
+                }
             });
+        }
+
+        // ====================================================================
+        // Selection et filtres DataGrid
+        // ====================================================================
+        private void SelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var file in AllFiles)
+                file.IsSelected = true;
+            UpdateStatistics();
+        }
+
+        private void DeselectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var file in AllFiles)
+                file.IsSelected = false;
+            UpdateStatistics();
+        }
+
+        private void DataGrid_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            try
+            {
+                if (sender is DataGrid dataGrid)
+                {
+                    // Verifier si on a clique directement sur la checkbox
+                    var originalSource = e.OriginalSource as FrameworkElement;
+                    if (originalSource != null)
+                    {
+                        var parent = originalSource;
+                        while (parent != null)
+                        {
+                            if (parent is CheckBox)
+                                return;
+                            parent = VisualTreeHelper.GetParent(parent) as FrameworkElement;
+                        }
+                    }
+
+                    // Toggle la selection de l'item clique
+                    if (dataGrid.SelectedItem is TemplateFileItem fileItem)
+                    {
+                        fileItem.IsSelected = !fileItem.IsSelected;
+                        UpdateStatistics();
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void CmbExtension_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void CmbState_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void ApplyFilters()
+        {
+            if (_allFilesList == null || _allFilesList.Count == 0)
+                return;
+
+            string searchText = TxtSearch?.Text?.ToLower() ?? "";
+            string extensionFilter = (CmbExtension?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Tous";
+            string stateFilter = (CmbState?.SelectedItem as ComboBoxItem)?.Content?.ToString() ?? "Tous";
+
+            AllFiles.Clear();
+
+            foreach (var file in _allFilesList)
+            {
+                bool matchSearch = string.IsNullOrEmpty(searchText) || 
+                                   file.FileName.ToLower().Contains(searchText) ||
+                                   file.RelativePath.ToLower().Contains(searchText);
+
+                bool matchExtension = extensionFilter == "Tous" || 
+                                      file.FileExtension.Equals(extensionFilter, StringComparison.OrdinalIgnoreCase);
+
+                bool matchState = stateFilter == "Tous" ||
+                                  (stateFilter == "Selectionnes" && file.IsSelected) ||
+                                  (stateFilter == "Non selectionnes" && !file.IsSelected);
+
+                if (matchSearch && matchExtension && matchState)
+                {
+                    AllFiles.Add(file);
+                }
+            }
         }
 
         private enum LogLevel { INFO, SUCCESS, WARNING, ERROR }
