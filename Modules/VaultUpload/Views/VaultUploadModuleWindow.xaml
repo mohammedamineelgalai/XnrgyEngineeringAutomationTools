@@ -410,7 +410,7 @@
                         Click="BrowseFolder_Click" Margin="8,0,0,0" Width="110" Height="34" FontSize="12" FontWeight="Bold"
                         BorderBrush="White" BorderThickness="1"/>
                 <Button Grid.Column="3" Content="🔧 Depuis Inventor" Style="{StaticResource SecondaryButton}" 
-                        Click="GetFromInventor_Click" Margin="8,0,0,0" Width="145" Height="34" FontSize="12" FontWeight="Bold"
+                        Click="GetFromInventor_Click" Margin="8,0,0,0" Width="155" Height="34" FontSize="12" FontWeight="Bold"
                         BorderBrush="White" BorderThickness="1"/>
                 <Button Grid.Column="4" Content="🔍 Scanner" Style="{StaticResource PrimaryButton}" 
                         Click="ScanProject_Click" Margin="8,0,0,0" Width="100" Height="34" FontSize="12" FontWeight="Bold"
@@ -437,36 +437,46 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Controles Inventor -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                        <Button Content="✅ Tout sélectionner" Style="{StaticResource SecondaryButton}" 
-                                Click="SelectAllInventor_Click" Width="150" Height="32" FontSize="12" FontWeight="Bold"/>
-                        <Button Content="❌ Tout désélectionner" Style="{StaticResource SecondaryButton}" 
-                                Click="DeselectAllInventor_Click" Margin="8,0,0,0" Width="160" Height="32" FontSize="12" FontWeight="Bold"/>
-                        
-                        <!-- Recherche -->
-                        <TextBlock Text="🔍" VerticalAlignment="Center" Margin="15,0,5,0" FontSize="14" Foreground="White" FontWeight="Bold"/>
-                        <TextBox x:Name="TxtSearchInventor" Style="{StaticResource ModernTextBox}" Width="150" Height="32" 
-                                 TextChanged="SearchInventor_TextChanged" ToolTip="Rechercher par nom"/>
-                        
-                        <!-- Filtre Extension -->
-                        <TextBlock Text="� Extension:" VerticalAlignment="Center" Margin="15,0,5,0" FontSize="12" Foreground="White" FontWeight="Bold"/>
-                        <ComboBox x:Name="CmbExtensionInventor" Width="100" Height="32" SelectionChanged="CmbExtensionInventor_SelectionChanged">
-                            <ComboBoxItem Content="Tous" IsSelected="True"/>
-                            <ComboBoxItem Content=".ipt"/>
-                            <ComboBoxItem Content=".iam"/>
-                            <ComboBoxItem Content=".idw"/>
-                            <ComboBoxItem Content=".ipn"/>
-                            <ComboBoxItem Content=".dwg"/>
-                        </ComboBox>
-                        
-                        <!-- Filtre Sélection -->
-                        <TextBlock Text="� Afficher:" VerticalAlignment="Center" Margin="15,0,5,0" FontSize="12" Foreground="White" FontWeight="Bold"/>
-                        <ComboBox x:Name="CmbStateInventor" Width="130" Height="32" SelectionChanged="CmbStateInventor_SelectionChanged">
-                            <ComboBoxItem Content="Tous" IsSelected="True"/>
-                            <ComboBoxItem Content="Sélectionnés"/>
-                            <ComboBoxItem Content="Non sélectionnés"/>
-                        </ComboBox>
+                    <!-- Controles Inventor - Ligne 1: Boutons et Recherche -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,4">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Button Content="✅ Tout sélectionner" Style="{StaticResource SecondaryButton}" 
+                                    Click="SelectAllInventor_Click" Width="140" Height="30" FontSize="11" FontWeight="Bold"/>
+                            <Button Content="❌ Tout désélectionner" Style="{StaticResource SecondaryButton}" 
+                                    Click="DeselectAllInventor_Click" Margin="6,0,0,0" Width="150" Height="30" FontSize="11" FontWeight="Bold"/>
+                            
+                            <!-- Recherche -->
+                            <TextBlock Text="🔍" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="14" Foreground="White"/>
+                            <TextBox x:Name="TxtSearchInventor" Style="{StaticResource ModernTextBox}" Width="140" Height="30" 
+                                     TextChanged="SearchInventor_TextChanged" ToolTip="Rechercher par nom"/>
+                            
+                            <!-- Extension -->
+                            <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                            <ComboBox x:Name="CmbExtensionInventor" Width="80" Height="30" VerticalContentAlignment="Center"
+                                      SelectionChanged="CmbExtensionInventor_SelectionChanged">
+                                <ComboBoxItem Content="Tous" IsSelected="True"/>
+                                <ComboBoxItem Content=".ipt"/>
+                                <ComboBoxItem Content=".iam"/>
+                                <ComboBoxItem Content=".idw"/>
+                                <ComboBoxItem Content=".ipn"/>
+                                <ComboBoxItem Content=".dwg"/>
+                            </ComboBox>
+                            
+                            <!-- Categorie Vault -->
+                            <TextBlock Text="📁 Catégorie:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                            <ComboBox x:Name="CmbCategoryInventor" Width="120" Height="30" DisplayMemberPath="Name" 
+                                      VerticalContentAlignment="Center" SelectionChanged="CmbCategoryInventor_SelectionChanged"/>
+                            
+                            <!-- Lifecycle State Vault -->
+                            <TextBlock Text="🔄 State:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                            <ComboBox x:Name="CmbLifecycleStateInventor" Width="130" Height="30" DisplayMemberPath="Name"
+                                      VerticalContentAlignment="Center"/>
+                            
+                            <!-- Hidden State ComboBox for code compatibility -->
+                            <ComboBox x:Name="CmbStateInventor" Visibility="Collapsed">
+                                <ComboBoxItem Content="Tous" IsSelected="True"/>
+                            </ComboBox>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- DataGrid Inventor -->
@@ -503,38 +513,48 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Controles Non-Inventor -->
-                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                        <Button Content="✅ Tout sélectionner" Style="{StaticResource SecondaryButton}" 
-                                Click="SelectAllNonInventor_Click" Width="150" Height="32" FontSize="12" FontWeight="Bold"/>
-                        <Button Content="❌ Tout désélectionner" Style="{StaticResource SecondaryButton}" 
-                                Click="DeselectAllNonInventor_Click" Margin="8,0,0,0" Width="160" Height="32" FontSize="12" FontWeight="Bold"/>
-                        
-                        <!-- Recherche -->
-                        <TextBlock Text="🔍" VerticalAlignment="Center" Margin="15,0,5,0" FontSize="14" Foreground="White" FontWeight="Bold"/>
-                        <TextBox x:Name="TxtSearchNonInventor" Style="{StaticResource ModernTextBox}" Width="150" Height="32" 
-                                 TextChanged="SearchNonInventor_TextChanged" ToolTip="Rechercher par nom"/>
-                        
-                        <!-- Filtre Extension -->
-                        <TextBlock Text="� Extension:" VerticalAlignment="Center" Margin="15,0,5,0" FontSize="12" Foreground="White" FontWeight="Bold"/>
-                        <ComboBox x:Name="CmbExtensionNonInventor" Width="100" Height="32" SelectionChanged="CmbExtensionNonInventor_SelectionChanged">
-                            <ComboBoxItem Content="Tous" IsSelected="True"/>
-                            <ComboBoxItem Content=".pdf"/>
-                            <ComboBoxItem Content=".xlsx"/>
-                            <ComboBoxItem Content=".xls"/>
-                            <ComboBoxItem Content=".docx"/>
-                            <ComboBoxItem Content=".doc"/>
-                            <ComboBoxItem Content=".png"/>
-                            <ComboBoxItem Content=".jpg"/>
-                        </ComboBox>
-                        
-                        <!-- Filtre Sélection -->
-                        <TextBlock Text="📋 Afficher:" VerticalAlignment="Center" Margin="15,0,5,0" FontSize="12" Foreground="White" FontWeight="Bold"/>
-                        <ComboBox x:Name="CmbStateNonInventor" Width="130" Height="32" SelectionChanged="CmbStateNonInventor_SelectionChanged">
-                            <ComboBoxItem Content="Tous" IsSelected="True"/>
-                            <ComboBoxItem Content="Sélectionnés"/>
-                            <ComboBoxItem Content="Non sélectionnés"/>
-                        </ComboBox>
+                    <!-- Controles Non-Inventor - Ligne 1: Boutons et Recherche -->
+                    <StackPanel Grid.Row="0" Margin="0,0,0,4">
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                            <Button Content="✅ Tout sélectionner" Style="{StaticResource SecondaryButton}" 
+                                    Click="SelectAllNonInventor_Click" Width="140" Height="30" FontSize="11" FontWeight="Bold"/>
+                            <Button Content="❌ Tout désélectionner" Style="{StaticResource SecondaryButton}" 
+                                    Click="DeselectAllNonInventor_Click" Margin="6,0,0,0" Width="150" Height="30" FontSize="11" FontWeight="Bold"/>
+                            
+                            <!-- Recherche -->
+                            <TextBlock Text="🔍" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="14" Foreground="White"/>
+                            <TextBox x:Name="TxtSearchNonInventor" Style="{StaticResource ModernTextBox}" Width="140" Height="30" 
+                                     TextChanged="SearchNonInventor_TextChanged" ToolTip="Rechercher par nom"/>
+                            
+                            <!-- Extension -->
+                            <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                            <ComboBox x:Name="CmbExtensionNonInventor" Width="80" Height="30" VerticalContentAlignment="Center"
+                                      SelectionChanged="CmbExtensionNonInventor_SelectionChanged">
+                                <ComboBoxItem Content="Tous" IsSelected="True"/>
+                                <ComboBoxItem Content=".pdf"/>
+                                <ComboBoxItem Content=".xlsx"/>
+                                <ComboBoxItem Content=".xls"/>
+                                <ComboBoxItem Content=".docx"/>
+                                <ComboBoxItem Content=".doc"/>
+                                <ComboBoxItem Content=".png"/>
+                                <ComboBoxItem Content=".jpg"/>
+                            </ComboBox>
+                            
+                            <!-- Categorie Vault -->
+                            <TextBlock Text="📁 Catégorie:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                            <ComboBox x:Name="CmbCategoryNonInventor" Width="120" Height="30" DisplayMemberPath="Name"
+                                      VerticalContentAlignment="Center" SelectionChanged="CmbCategoryNonInventor_SelectionChanged"/>
+                            
+                            <!-- Lifecycle State Vault -->
+                            <TextBlock Text="🔄 State:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
+                            <ComboBox x:Name="CmbLifecycleStateNonInventor" Width="130" Height="30" DisplayMemberPath="Name"
+                                      VerticalContentAlignment="Center"/>
+                            
+                            <!-- Hidden State ComboBox for code compatibility -->
+                            <ComboBox x:Name="CmbStateNonInventor" Visibility="Collapsed">
+                                <ComboBoxItem Content="Tous" IsSelected="True"/>
+                            </ComboBox>
+                        </StackPanel>
                     </StackPanel>
 
                     <!-- DataGrid Non-Inventor -->
@@ -575,7 +595,7 @@
         <GroupBox Grid.Row="4" Style="{StaticResource ModernGroupBox}">
             <GroupBox.Header>
                 <Grid>
-                    <TextBlock Text="📋 Journal des Operations" Foreground="White" FontWeight="Bold"/>
+                    <TextBlock Text="📋 Journal des Opérations" Foreground="White" FontWeight="Bold"/>
                     <Button Content="🗑️ Effacer" HorizontalAlignment="Right" 
                             Background="Transparent" Foreground="White" FontWeight="Bold"
                             BorderBrush="#FFFFFF" BorderThickness="1"

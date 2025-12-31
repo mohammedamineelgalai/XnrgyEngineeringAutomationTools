@@ -176,6 +176,104 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
         }
 
         // ====================================================================
+        // Changement de categorie - Charger les Lifecycle States
+        // ====================================================================
+        private void CmbCategoryInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            LoadLifecycleStatesForCategory(CmbCategoryInventor, CmbLifecycleStateInventor);
+        }
+
+        private void CmbCategoryNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            LoadLifecycleStatesForCategory(CmbCategoryNonInventor, CmbLifecycleStateNonInventor);
+        }
+
+        private void LoadLifecycleStatesForCategory(ComboBox categoryCombo, ComboBox stateCombo)
+        {
+            try
+            {
+                if (_vaultService == null || !_vaultService.IsConnected) return;
+
+                var selectedCategory = categoryCombo.SelectedItem as VaultCategoryItem;
+                if (selectedCategory == null)
+                {
+                    stateCombo.Items.Clear();
+                    return;
+                }
+
+                // Obtenir le Lifecycle Definition ID pour cette categorie
+                var lifecycleDefId = _vaultService.GetLifecycleDefinitionIdByCategory(selectedCategory.Name);
+                
+                if (!lifecycleDefId.HasValue)
+                {
+                    stateCombo.Items.Clear();
+                    Log($"[i] Pas de Lifecycle pour la categorie '{selectedCategory.Name}'", LogLevel.INFO);
+                    return;
+                }
+
+                // Obtenir les states disponibles
+                var lifecycleDefs = _vaultService.GetAvailableLifecycleDefinitions();
+                var lifecycleDef = lifecycleDefs?.FirstOrDefault(d => d.Id == lifecycleDefId.Value);
+
+                if (lifecycleDef == null || lifecycleDef.States == null || !lifecycleDef.States.Any())
+                {
+                    stateCombo.Items.Clear();
+                    return;
+                }
+
+                Dispatcher.Invoke(() =>
+                {
+                    stateCombo.Items.Clear();
+                    
+                    // Filtrer les states selon la categorie
+                    var allowedStates = GetAllowedStatesForCategory(selectedCategory.Name.ToLowerInvariant());
+                    
+                    foreach (var state in lifecycleDef.States)
+                    {
+                        if (allowedStates.Count == 0 || allowedStates.Contains(state.Name.ToLowerInvariant()))
+                        {
+                            stateCombo.Items.Add(new VaultLifecycleStateItem { Id = state.Id, Name = state.Name });
+                        }
+                    }
+
+                    // Selectionner "Work in Progress" par defaut
+                    var wip = stateCombo.Items.Cast<VaultLifecycleStateItem>()
+                        .FirstOrDefault(s => s.Name.ToLowerInvariant().Contains("work in progress"));
+                    
+                    if (wip != null)
+                    {
+                        stateCombo.SelectedItem = wip;
+                    }
+                    else if (stateCombo.Items.Count > 0)
+                    {
+                        stateCombo.SelectedIndex = 0;
+                    }
+
+                    Log($"[+] {stateCombo.Items.Count} states charges pour '{selectedCategory.Name}'", LogLevel.INFO);
+                });
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur chargement states: {ex.Message}", LogLevel.ERROR);
+            }
+        }
+
+        private HashSet<string> GetAllowedStatesForCategory(string categoryLower)
+        {
+            // Filtrer les States selon ce qui est vraiment disponible dans Vault Client
+            return categoryLower switch
+            {
+                "engineering" => new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
+                    { "for review", "work in progress", "released", "obsolete" },
+                "office" => new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
+                    { "work in progress", "released", "obsolete" },
+                "design representation" => new HashSet<string>(StringComparer.OrdinalIgnoreCase) 
+                    { "released", "work in progress", "obsolete" },
+                _ => new HashSet<string>() // Tous les states pour les autres categories
+            };
+        }
+
+        // ====================================================================
         // Selection Module
         // ====================================================================
         private void SelectModule_Click(object sender, RoutedEventArgs e)
