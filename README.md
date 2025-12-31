@@ -1,12 +1,12 @@
-# XNRGY Engineering Automation Tools# XNRGY Engineering Automation Tools# XNRGY Engineering Automation Tools# 🏭 XNRGY Engineering Automation Tools# 🏭 XNRGY Engineering Automation Tools# XNRGY Engineering Automation Tools# VaultAutomationTool
+# XNRGY Engineering Automation Tools# XNRGY Engineering Automation Tools# XNRGY Engineering Automation Tools# XNRGY Engineering Automation Tools# XNRGY Engineering Automation Tools# 🏭 XNRGY Engineering Automation Tools# 🏭 XNRGY Engineering Automation Tools# XNRGY Engineering Automation Tools# VaultAutomationTool
 
 
 
-> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
+> **Suite d'outils d'automatisation engineering unifiee** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
 
 >
 
-> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
+> Developpe par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
 
 
 
@@ -18,7 +18,7 @@
 
 
 
-**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+**XNRGY Engineering Automation Tools** est une application hub centralisee (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering developpes pour XNRGY Climate Systems. Cette suite vise a simplifier et accelerer les workflows des equipes de design en integrant la gestion Vault, les manipulations Inventor, et les validations qualite dans une interface unifiee.
 
 
 
@@ -28,23 +28,23 @@
 
 Remplacer les multiples applications standalone par une **plateforme unique** avec :
 
-- Connexion centralisée à Vault & Inventor
+- Connexion centralisee a Vault & Inventor
 
-- Interface utilisateur moderne et cohérente (thème sombre)## Description> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
+- Interface utilisateur moderne et coherente (themes sombre/clair)## Description> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
 
-- Partage de services communs (logging, configuration chiffrée)
+- Partage de services communs (logging, configuration chiffree AES-256)
 
-- Déploiement multi-sites et maintenance simplifiés
+- Deploiement multi-sites et maintenance simplifies
 
-- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
+- Parametres centralises via Vault (50+ utilisateurs, 3 sites)
 
-**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems.
+**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
 
 ---
 
 
 
-## Modules Intégrés
+## Modules Integres
 
 ### Objectif Principal--->
 
@@ -52,291 +52,1107 @@ Remplacer les multiples applications standalone par une **plateforme unique** av
 
 |--------|-------------|--------|
 
-| **Vault Upload** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |
+| **Upload Module** | Upload automatise vers Vault avec proprietes (Project/Ref/Module) | [+] 100% |
 
-| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :
+| **Creer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :
 
-| **Réglages Admin** | Configuration centralisée et synchronisée via Vault (AES-256) | [+] 100% |
+| **Reglages Admin** | Configuration centralisee et synchronisee via Vault (AES-256) | [+] 100% |
 
-| **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | [~] Planifié |- Connexion centralisée à Vault & Inventor
+| **Upload Template** | Upload templates vers Vault (reserve Admin) | [+] 100% |- Connexion centralisée à Vault & Inventor
+
+| **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |
+
+| **Smart Tools** | Creation IPT/STEP, generation PDF, iLogic Forms | [~] Planifie |- Interface utilisateur moderne et cohérente (thèmes sombre/clair)## Description> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
 
 | **DXF Verifier** | Validation des fichiers DXF avant envoi | [~] Migration |
 
-| **Checklist HVAC** | Validation modules AHU avec stockage Vault | [~] Migration |- Interface utilisateur moderne et cohérente## Description> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
+| **Time Tracker** | Analyse temps de travail modules HVAC | [~] Migration |- Partage de services communs (logging, configuration chiffrée AES-256)
 
-| **Time Tracker** | Analyse temps de travail modules HVAC | [~] Migration |
+| **Update Workspace** | Synchronisation librairies depuis Vault | [~] Planifie |
 
-| **Update Workspace** | Synchronisation librairies depuis Vault | [~] Planifié |- Partage de services communs (logging, configuration, etc.)
+- Déploiement multi-sites et maintenance simplifiés
+
+---
+
+- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
+
+## Fonctionnalites Implementees
+
+**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+
+### 1. Upload Module (100%) - NOUVEAU v1.1
+
+---
+
+Module integre (ex-VaultAutomationTool) pour l'upload de fichiers vers Vault:
 
 
 
----- Déploiement et maintenance simplifiés
+- **Connexion centralisee** - Utilise la connexion Vault de l'app principale
 
+- **Scan automatique** des modules engineering avec extraction proprietes## Modules Intégrés
 
+- **Separation Inventor/Non-Inventor** dans deux DataGrids avec headers visibles
 
-## Fonctionnalités Implémentées
+- **Application automatique** des proprietes metier:### Objectif Principal--->
 
+  - Project (ID=112)
 
+  - Reference (ID=121)| Module | Description | Statut |
 
-### 1. Vault Upload (100%)---**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+  - Module (ID=122)
 
+- **Assignation complete**:|--------|-------------|--------|
 
+  - Categories Vault
 
-- Connexion directe via SDK Vault v31.0.84
+  - Lifecycle Definitions et States| **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |
 
-- Scan automatique des modules engineering
+  - Revisions
 
-- Upload de tous types de fichiers (Inventor, PDF, Excel, Word, images)## Modules Intégrés
+- **Synchronisation Vault vers iProperties** via `IExplorerUtil`| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :
 
-- Application automatique des propriétés métier extraites du chemin
+- **Journal des operations** avec barre de progression style Creer Module
 
-- Assignation de catégories, lifecycle definitions/states et révisions
+- **Controles**: Pause/Stop/Annuler pendant l'upload| **Réglages Admin** | Configuration centralisée et synchronisée via Vault (AES-256) | [+] 100% |
 
-- Synchronisation Vault vers iProperties via `IExplorerUtil`
+- **Styles DataGrid** avec headers fond sombre et texte bleu XNRGY
 
-| Module | Description | Statut |### Objectif Principal--->
+| **Upload Template** | Upload templates vers Vault (réservé Admin) | [+] 100% |- Connexion centralisée à Vault & Inventor
 
-### 2. Créer Module - Copy Design (100%)
+### 2. Creer Module - Copy Design (100%)
 
-|--------|-------------|--------|
+| **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | [~] Planifié |
 
 **Sources disponibles :**
 
-- Depuis Template : `$/Engineering/Library/Xnrgy_Module`| **Vault Upload** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | ✅ 100% |
+- Depuis Template : `$/Engineering/Library/Xnrgy_Module` (1083 fichiers Inventor)| **DXF Verifier** | Validation des fichiers DXF avant envoi | [~] Migration |- Interface utilisateur moderne et cohérente (thème sombre)## Description> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
 
-- Depuis Projet Existant : Sélection d'un projet local ou Vault
+- Depuis Projet Existant : Selection d'un projet local ou Vault
 
-| **Créer Module** | Copy Design natif depuis template Library ou projet existant | ✅ 100% |
+| **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |
 
-**Workflow automatisé :**
+**Workflow automatise :**
 
-1. Switch vers projet source (IPJ)| **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | Planifié |Remplacer les multiples applications standalone par une **plateforme unique** avec :
+1. Switch vers projet source (IPJ)| **Time Tracker** | Analyse temps de travail modules HVAC | [~] Migration |- Partage de services communs (logging, configuration chiffrée)
 
-2. Ouverture Top Assembly
+2. Ouverture Top Assembly (Module_.iam)
 
-3. Application iProperties| **DXF Verifier** | Validation des fichiers DXF avant envoi | Migration |
+3. Application iProperties sur le template| **Update Workspace** | Synchronisation librairies depuis Vault | [~] Planifié |
 
-4. Collecte références (bottom-up)
+4. Collecte de toutes les references (bottom-up)
 
-5. Copy Design natif avec SaveAs| **Checklist HVAC** | Validation modules AHU avec stockage Vault | Migration |- Connexion centralisée à Vault & Inventor
+5. Copy Design natif avec SaveAs (IPT -> IAM -> Top Assembly)- Déploiement multi-sites et maintenance simplifiés
 
-6. Traitement dessins (.idw) avec mise à jour références
+6. Traitement des dessins (.idw) avec mise a jour des references
 
-7. Mise à jour références des composants suppressed| **Time Tracker** | Analyse temps de travail modules HVAC | Migration |
+7. **Mise a jour des references des composants suppressed** (v1.1)---
 
-8. Copie fichiers orphelins et non-Inventor
+8. Copie des fichiers orphelins (1059 fichiers non-references)
 
-9. Renommage fichier .ipj| **Update Workspace** | Synchronisation librairies depuis Vault | Planifié |- Interface utilisateur moderne et cohérente## 📋 Description> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC🏭 **Suite d'outils d'automatisation engineering unifiée** pour piloter Autodesk Vault Professional 2026 et Inventor Professional 2026.2Application WPF pour l'upload automatisé de fichiers vers Autodesk Vault Professional 2026 avec application automatique des propriétés métier (Project, Reference, Module), catégories, lifecycle et révisions.
+9. Copie des fichiers non-Inventor (Excel, PDF, Word, etc.)- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
 
-10. Switch vers nouveau projet
+10. Renommage du fichier .ipj
 
-11. Application iProperties finales et paramètres Inventor
+11. Switch vers le nouveau projet## Fonctionnalités Implémentées
 
-12. Module reste ouvert pour le dessinateur
+12. Application des iProperties finales et parametres Inventor
 
----- Partage de services communs (logging, configuration, etc.)
+13. Design View -> "Default", masquage Workfeatures**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems.
 
-**Options de renommage :**
+14. Vue ISO + Zoom All (Fit)
 
-- Rechercher/Remplacer (cumulatif)
+15. Update All (rebuild) + Save All### 1. Upload Module (100%) - NOUVEAU
 
-- Préfixe/Suffixe
+16. Module reste ouvert pour le dessinateur
 
-- Checkbox "Inclure fichiers non-Inventor"## Fonctionnalités Implémentées- Déploiement et maintenance simplifiés
+---
+
+**Gestion intelligente des references :**
+
+- Fichiers Library (IPT_Typical_Drawing) : Liens preservesModule intégré (ex-VaultAutomationTool) pour l'upload de fichiers vers Vault:
+
+- Fichiers Module : Copies avec references mises a jour
+
+- Fichiers IDW : References corrigees via `PutLogicalFileNameUsingFull`
+
+- **Composants suppressed** : References mises a jour meme si supprimes
+
+- **Connexion centralisée** - Utilise la connexion Vault de l'app principale
+
+**Options de renommage (v1.1) :**
+
+- Rechercher/Remplacer (cumulatif sur NewFileName)- **Scan automatique** des modules engineering avec extraction propriétés## Modules Intégrés
+
+- Prefixe/Suffixe (applique sur OriginalFileName)
+
+- **Checkbox "Inclure fichiers non-Inventor"**- **Séparation Inventor/Non-Inventor** dans deux DataGrids
 
 
 
-### 3. Réglages Admin (100%) - NOUVEAU
+### 3. Reglages Admin (100%)- **Application automatique** des propriétés métier:### Objectif Principal--->
 
 
 
-**Système de configuration centralisée :**### 1. Vault Upload
+**Systeme de configuration centralisee :**  - Project (ID=112)
 
 - Chiffrement AES-256 des fichiers de configuration
 
-- Synchronisation automatique via Vault au démarrage
+- Synchronisation automatique via Vault au demarrage  - Reference (ID=121) | Module | Description | Statut |
 
-- Accès restreint aux administrateurs (Role "Administrator" ou Groupe "Admin_Designer")
+- Acces restreint aux administrateurs (Role "Administrator" ou Groupe "Admin_Designer")
 
-- Déploiement multi-sites : Saint-Hubert QC + Arizona US (2 usines) = 50+ utilisateurs- Connexion directe via SDK Vault v31.0.84---**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+- Deploiement multi-sites : Saint-Hubert QC + Arizona US (2 usines) = 50+ utilisateurs  - Module (ID=122)
 
 
 
-**Chemin Vault :**- Scan automatique des modules engineering
-
-```
-
-$/Engineering/Inventor_Standards/Automation_Standard/Configuration_Files/XnrgyEngineeringAutomationToolsApp/- Upload de tous types de fichiers (Inventor, PDF, Excel, Word, images)
+**Chemin Vault :**- **Assignation complète**:|--------|-------------|--------|
 
 ```
 
-- Application automatique des propriétés métier extraites du chemin
+$/Engineering/Inventor_Standards/Automation_Standard/Configuration_Files/XnrgyEngineeringAutomationToolsApp/  - Catégories Vault
 
-**Paramètres configurables :**
+```
 
-- Liste des initiales designers (26 entrées + "Autre...")- Assignation de catégories, lifecycle definitions/states et révisions## Modules Intégrés
+  - Lifecycle Definitions et States| **Vault Upload** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |
+
+**Sections configurables :**
+
+- Liste des initiales designers (26 entrees + "Autre...")  - Révisions
 
 - Chemins templates et projets
 
-- Extensions Inventor supportées- Synchronisation Vault vers iProperties via `IExplorerUtil`
+- Extensions Inventor supportees- **Synchronisation Vault vers iProperties** via `IExplorerUtil`| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :
 
 - Dossiers/fichiers exclus
 
-- Noms des iProperties
+- Noms des iProperties- **Journal des opérations** avec barre de progression
 
 
 
-### 4. Interface Utilisateur Moderne### 2. Créer Module - Copy Design
+### 4. Upload Template (100%)- **Contrôles**: Pause/Stop/Annuler pendant l'upload| **Réglages Admin** | Configuration centralisée et synchronisée via Vault (AES-256) | [+] 100% |
 
 
 
-**XnrgyMessageBox :**| Module | Description | Statut |### 🎯 Objectif Principal---
+- **Reserve aux administrateurs** - Message XnrgyMessageBox si non-admin
 
-- MessageBox personnalisé avec thème sombre XNRGY
+- **Upload templates** depuis Library vers Vault
 
-- Logo et icônes ASCII ([+], [-], [!], [?], [i])**Sources disponibles :**
+- **Utilise la connexion partagee** de l'app principale### 2. Créer Module - Copy Design (100%)| **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | [~] Planifié |- Connexion centralisée à Vault & Inventor
 
-- Types : Success, Error, Warning, Info, Question
-
-- Boutons : OK, OKCancel, YesNo, YesNoCancel- Depuis Template : `$/Engineering/Library/Xnrgy_Module`|--------|-------------|--------|
+- **Journal integre** avec barre de progression
 
 
 
-### 5. Connexions Automatiques- Depuis Projet Existant : Sélection d'un projet local ou Vault
+### 5. Checklist HVAC (100%)
+
+**Sources disponibles :**| **DXF Verifier** | Validation des fichiers DXF avant envoi | [~] Migration |
+
+- Validation des modules AHU
+
+- Checklist interactive avec criteres XNRGY- Depuis Template : `$/Engineering/Library/Xnrgy_Module`
+
+- Stockage des validations dans Vault
+
+- Depuis Projet Existant : Sélection d'un projet local ou Vault| **Checklist HVAC** | Validation modules AHU avec stockage Vault | [~] Migration |- Interface utilisateur moderne et cohérente## Description> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
+
+### 6. Connexions Automatiques
 
 
 
-- **Vault Professional 2026** - SDK v31.0.84| **Vault Upload** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | ✅ **100%** |
+- **Vault Professional 2026** - SDK v31.0.84 avec reconnexion automatique
 
-- **Inventor Professional 2026.2** - COM
+- **Inventor Professional 2026.2** - COM avec detection d'instance active**Workflow automatisé :**| **Time Tracker** | Analyse temps de travail modules HVAC | [~] Migration |
 
-- **Update Workspace** - Synchronisation dossiers au démarrage**Workflow automatisé :**
+- **Throttling intelligent** pour eviter spam logs (v1.1)
+
+- **Verification fenetre Inventor** prete avant connexion COM1. Switch vers projet source (IPJ)
+
+- **Update Workspace** - Synchronisation dossiers au demarrage :
+
+  - `$/Content Center Files`2. Ouverture Top Assembly| **Update Workspace** | Synchronisation librairies depuis Vault | [~] Planifié |- Partage de services communs (logging, configuration, etc.)
+
+  - `$/Engineering/Inventor_Standards`
+
+  - `$/Engineering/Library/Cabinet`3. Application iProperties
+
+  - `$/Engineering/Library/Xnrgy_M99`
+
+  - `$/Engineering/Library/Xnrgy_Module`4. Collecte références (bottom-up)
 
 
 
----1. Switch vers projet source (IPJ)| **Créer Module** | Copy Design natif depuis template Library ou projet existant | ✅ **100%** |
+---5. Copy Design natif avec SaveAs
 
 
 
-## Prérequis2. Ouverture Top Assembly
+## Architecture6. Traitement dessins (.idw) avec mise à jour références---- Déploiement et maintenance simplifiés
 
 
 
-- Windows 10/11 x643. Application iProperties| **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | 📋 Planifié |Remplacer les multiples applications standalone par une **plateforme unique** avec :
+```7. Mise à jour références des composants suppressed
 
-- .NET Framework 4.8
+XnrgyEngineeringAutomationTools/
 
-- Autodesk Vault Professional 2026 (SDK v31.0.84)4. Collecte références (bottom-up)
++-- App.xaml(.cs)                    # Point d'entree application8. Copie fichiers orphelins et non-Inventor
 
-- Autodesk Inventor Professional 2026.2
++-- MainWindow.xaml(.cs)             # Dashboard principal
 
-- Visual Studio 2022 (pour compilation)5. Copy Design natif avec SaveAs| **DXF Verifier** | Validation des fichiers DXF avant envoi | 📋 Migration |
++-- appsettings.json                 # Configuration sauvegardee9. Renommage fichier .ipj
 
-- MSBuild 18.0.0+ (REQUIS - `dotnet build` ne fonctionne PAS pour WPF)
+|
 
-6. Traitement dessins (.idw) avec mise à jour références
++-- Models/                          # Modeles de donnees10. Switch vers nouveau projet## Fonctionnalités Implémentées
 
----
+|   +-- ApplicationConfiguration.cs  # Configuration application
 
-7. Mise à jour références des composants suppressed| **Checklist HVAC** | Validation modules AHU avec stockage Vault | 📋 Migration |- Connexion centralisée à Vault & Inventor
+|   +-- CategoryItem.cs              # Item categorie pour ComboBox11. Application iProperties finales et paramètres Inventor
 
-## Compilation et Exécution
+|   +-- FileItem.cs                  # Item fichier pour DataGrid
 
-8. Copie fichiers orphelins et non-Inventor
+|   +-- FileToUpload.cs              # Fichier a uploader12. Module reste ouvert pour le dessinateur
 
-```powershell
+|   +-- LifecycleDefinitionItem.cs   # Lifecycle Definition
 
-# Utiliser le script build-and-run.ps19. Renommage fichier .ipj| **Time Tracker** | Analyse temps de travail modules HVAC | 📋 Migration |
+|   +-- LifecycleStateItem.cs        # Lifecycle State
 
-cd XnrgyEngineeringAutomationTools
+|   +-- ModuleInfo.cs                # Informations module
 
-.\build-and-run.ps110. Switch vers nouveau projet
+|   +-- ProjectInfo.cs               # Informations projet**Options de renommage :**### 1. Vault Upload (100%)---**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+
+|   +-- ProjectProperties.cs         # Proprietes Project/Ref/Module
+
+|   +-- VaultConfiguration.cs        # Configuration Vault- Rechercher/Remplacer (cumulatif)
+
+|   +-- CreateModuleRequest.cs       # Requete creation module
+
+|- Préfixe/Suffixe
+
++-- Services/                        # Services metier
+
+|   +-- VaultSdkService.cs           # SDK Vault v31.0.84- Checkbox "Inclure fichiers non-Inventor"
+
+|   +-- VaultSettingsService.cs      # Config chiffree + sync Vault
+
+|   +-- InventorService.cs           # Connexion Inventor COM- Connexion directe via SDK Vault v31.0.84
+
+|   +-- InventorCopyDesignService.cs # Copy Design natif
+
+|   +-- Logger.cs                    # Logging UTF-8### 3. Réglages Admin (100%)
+
+|
+
++-- Views/                           # Fenetres et dialogues- Scan automatique des modules engineering
+
+|   +-- LoginWindow.xaml(.cs)        # Connexion Vault
+
+|   +-- CreateModuleWindow.xaml(.cs) # Creer Module- **Configuration centralisée** stockée dans Vault (`$/Admin/Config/app_settings.json`)
+
+|   +-- CreateModuleSettingsWindow.xaml(.cs) # Reglages Admin
+
+|   +-- UploadTemplateWindow.xaml(.cs)       # Upload Template- **Chiffrement AES-256** pour les données sensibles (mots de passe)- Upload de tous types de fichiers (Inventor, PDF, Excel, Word, images)## Modules Intégrés
+
+|   +-- ChecklistHVACWindow.xaml(.cs)        # Checklist HVAC
+
+|   +-- ModuleSelectionWindow.xaml(.cs)      # Selection module- **Interface graphique** avec validation temps réel
+
+|   +-- PreviewWindow.xaml(.cs)              # Previsualisation
+
+|   +-- XnrgyMessageBox.xaml(.cs)            # MessageBox moderne- **Synchronisation automatique** au démarrage si connecté à Vault- Application automatique des propriétés métier extraites du chemin
+
+|
+
++-- Modules/                         # Modules integres- **Sections configurables**:
+
+|   +-- VaultUpload/
+
+|       +-- Models/  - Paramètres Vault (server, vault, credentials)- Assignation de catégories, lifecycle definitions/states et révisions
+
+|       |   +-- VaultUploadFileItem.cs
+
+|       |   +-- VaultUploadModels.cs  - Chemins par défaut (Library, Templates, Projects)
+
+|       +-- Views/
+
+|           +-- VaultUploadModuleWindow.xaml(.cs)  - Options Copy Design- Synchronisation Vault vers iProperties via `IExplorerUtil`
+
+|
+
++-- ViewModels/                      # MVVM ViewModels  - Paramètres généraux
+
+|   +-- AppMainViewModel.cs          # ViewModel principal
+
+|   +-- RelayCommand.cs              # Implementation ICommand| Module | Description | Statut |### Objectif Principal--->
+
+|
+
++-- Converters/                      # Convertisseurs WPF### 4. Upload Template (100%)
+
++-- Resources/                       # Images et icones
+
++-- Logs/                            # Fichiers logs### 2. Créer Module - Copy Design (100%)
+
++-- build-and-run.ps1                # Script compilation MSBuild
+
+```- **Réservé aux administrateurs** - Message XnrgyMessageBox si non-admin
+
+
+
+---- **Upload templates** depuis Library vers Vault|--------|-------------|--------|
+
+
+
+## Proprietes XNRGY- **Utilise la connexion partagée** de l'app principale
+
+
+
+Le systeme extrait automatiquement les proprietes depuis le chemin de fichier:- **Journal intégré** avec barre de progression**Sources disponibles :**
+
+
 
 ```
 
-11. Application iProperties finales et paramètres Inventor| **Update Workspace** | Synchronisation librairies depuis Vault | 📋 Planifié |- Interface utilisateur moderne et cohérente## 📋 Description## 📋 Description## 📋 Description
+C:\Vault\Engineering\Projects\[PROJECT]\REF[XX]\M[XX]
 
-> **IMPORTANT**: Ne PAS utiliser `dotnet build` - il ne génère pas les fichiers .g.cs pour WPF.
+                              |         |       |### 5. Checklist HVAC (100%)- Depuis Template : `$/Engineering/Library/Xnrgy_Module`| **Vault Upload** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | ✅ 100% |
 
-12. Module reste ouvert pour le dessinateur
-
----
-
-
-
-## Propriétés XNRGY
-
-**Options de renommage :**
-
-Le système extrait automatiquement les propriétés depuis le chemin de fichier:
-
-- Rechercher/Remplacer (cumulatif)---- Partage de services communs (logging, configuration, etc.)
+Vault Property IDs:        ID=112    ID=121  ID=122
 
 ```
 
-C:\Vault\Engineering\Projects\[PROJECT]\REF[XX]\M[XX]- Préfixe/Suffixe
 
-```
 
-- Checkbox "Inclure fichiers non-Inventor"
-
-| Propriété | ID Vault | Description |
+| Propriete | ID Vault | Description |- Validation des modules AHU- Depuis Projet Existant : Sélection d'un projet local ou Vault
 
 |-----------|----------|-------------|
 
-| Project | 112 | Numéro de projet (5 chiffres) |
+| Project | 112 | Numero de projet (5 chiffres) |- Checklist interactive avec critères XNRGY
 
-| Reference | 121 | Numéro de référence (2 chiffres) |### 3. Connexions Automatiques## Fonctionnalités Implémentées- Déploiement et maintenance simplifiés
+| Reference | 121 | Numero de reference (2 chiffres) |
 
-| Module | 122 | Numéro de module (2 chiffres) |
+| Module | 122 | Numero de module (2 chiffres) |- Stockage des validations dans Vault| **Créer Module** | Copy Design natif depuis template Library ou projet existant | ✅ 100% |
+
+
+
+### Mapping Categorie -> Lifecycle Definition
+
+
+
+| Categorie | Lifecycle Definition |---**Workflow automatisé :**
+
+|-----------|---------------------|
+
+| Engineering | Flexible Release Process |
+
+| Office | Simple Release Process |
+
+| Standard | Basic Release Process |## Architecture1. Switch vers projet source (IPJ)| **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | Planifié |Remplacer les multiples applications standalone par une **plateforme unique** avec :
+
+| Base | (aucun) |
 
 
 
 ---
 
-- **Vault Professional 2026** - SDK v31.0.84
+```2. Ouverture Top Assembly
 
-## Architecture
+## Prerequis
 
-- **Inventor Professional 2026.2** - COM
+XnrgyEngineeringAutomationTools/
+
+- **Windows 10/11 x64**
+
+- **.NET Framework 4.8**├── App.xaml(.cs)                    # Point d'entrée application3. Application iProperties| **DXF Verifier** | Validation des fichiers DXF avant envoi | Migration |
+
+- **Autodesk Vault Professional 2026** (SDK v31.0.84)
+
+- **Autodesk Inventor Professional 2026.2**├── MainWindow.xaml(.cs)             # Fenêtre principale hub
+
+- **Visual Studio 2022** (pour compilation)
+
+- **MSBuild 18.0.0+** (REQUIS - `dotnet build` ne fonctionne PAS pour WPF)├── Models/                          # Modèles de données4. Collecte références (bottom-up)
+
+
+
+---│   ├── ModuleInfo.cs
+
+
+
+## Compilation et Execution│   ├── FileEntry.cs5. Copy Design natif avec SaveAs| **Checklist HVAC** | Validation modules AHU avec stockage Vault | Migration |- Connexion centralisée à Vault & Inventor
+
+
+
+### Script automatique (RECOMMANDE)│   ├── CopyDesignOptions.cs
+
+
+
+```powershell│   └── AppSettings.cs6. Traitement dessins (.idw) avec mise à jour références
+
+cd XnrgyEngineeringAutomationTools
+
+.\build-and-run.ps1├── Services/                        # Services métier
 
 ```
 
+│   ├── VaultSdkService.cs           # SDK Vault v31.0.847. Mise à jour références des composants suppressed| **Time Tracker** | Analyse temps de travail modules HVAC | Migration |
+
+**Fonctionnalites du script :**
+
+- [+] Compilation automatique en mode Release│   ├── InventorService.cs           # COM Inventor
+
+- [+] Detection automatique de MSBuild (VS 2022 Enterprise/Professional/Community)
+
+- [+] Arret automatique de l'instance existante (taskkill /F)│   ├── InventorCopyDesignService.cs # Copy Design natif8. Copie fichiers orphelins et non-Inventor
+
+- [+] Lancement automatique apres compilation reussie
+
+- [+] Affichage des erreurs de compilation si presentes│   ├── VaultSettingsService.cs      # Config centralisée
+
+
+
+### MSBuild manuel│   └── Logger.cs                    # Logging UTF-89. Renommage fichier .ipj| **Update Workspace** | Synchronisation librairies depuis Vault | Planifié |- Interface utilisateur moderne et cohérente## 📋 Description> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC🏭 **Suite d'outils d'automatisation engineering unifiée** pour piloter Autodesk Vault Professional 2026 et Inventor Professional 2026.2Application WPF pour l'upload automatisé de fichiers vers Autodesk Vault Professional 2026 avec application automatique des propriétés métier (Project, Reference, Module), catégories, lifecycle et révisions.
+
+
+
+```powershell├── Views/                           # Fenêtres et dialogues
+
+& 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe' `
+
+  XnrgyEngineeringAutomationTools.csproj /t:Rebuild /p:Configuration=Release /m /v:minimal /nologo│   ├── LoginWindow.xaml(.cs)10. Switch vers nouveau projet
+
+```
+
+│   ├── CreateModuleWindow.xaml(.cs)
+
+> **[!] IMPORTANT**: Ne PAS utiliser `dotnet build` - il ne genere pas les fichiers .g.cs pour WPF .NET Framework 4.8.
+
+│   ├── CreateModuleSettingsWindow.xaml(.cs)11. Application iProperties finales et paramètres Inventor
+
+---
+
+│   ├── UploadTemplateWindow.xaml(.cs)
+
+## Exclusions de fichiers
+
+│   ├── ChecklistHVACWindow.xaml(.cs)12. Module reste ouvert pour le dessinateur
+
+**Extensions exclues:**
+
+- `.v`, `.bak`, `.old` (Backup Vault)│   ├── ModuleSelectionWindow.xaml(.cs)
+
+- `.tmp`, `.temp` (Temporaires)
+
+- `.ipj` (Projet Inventor)│   ├── PreviewWindow.xaml(.cs)---- Partage de services communs (logging, configuration, etc.)
+
+- `.lck`, `.lock`, `.log` (Systeme/logs)
+
+- `.dwl`, `.dwl2` (AutoCAD locks)│   └── XnrgyMessageBox.xaml(.cs)    # MessageBox custom
+
+
+
+**Prefixes exclus:**├── Modules/                         # Modules intégrés**Options de renommage :**
+
+- `~$` (Office temporaire)
+
+- `._` (macOS temporaire)│   └── VaultUpload/
+
+- `Backup_` (Backup generique)
+
+- `.~` (Temporaire generique)│       ├── Models/- Rechercher/Remplacer (cumulatif)
+
+
+
+**Dossiers exclus:**│       │   ├── VaultUploadFileItem.cs
+
+- `OldVersions`, `oldversions`
+
+- `Backup`, `backup`│       │   └── VaultUploadModels.cs- Préfixe/Suffixe
+
+- `.vault`, `.git`, `.vs`
+
+│       └── Views/
+
+---
+
+│           ├── VaultUploadModuleWindow.xaml- Checkbox "Inclure fichiers non-Inventor"## Fonctionnalités Implémentées- Déploiement et maintenance simplifiés
+
+## Logs et Debugging
+
+│           └── VaultUploadModuleWindow.xaml.cs
+
+### Emplacement des logs
+
+├── Converters/                      # Convertisseurs WPF
+
+```
+
+bin\Release\Logs\VaultSDK_POC_YYYYMMDD_HHMMSS.log├── Resources/                       # Images et icônes
+
+```
+
+└── Logs/                            # Fichiers logs### 3. Réglages Admin (100%) - NOUVEAU
+
+### Format des logs
+
+```
+
+```
+
+[YYYY-MM-DD HH:MM:SS.mmm] [LEVEL] [+] Message
+
+```
+
+---
+
+**Niveaux:** INFO, DEBUG, SUCCESS, WARN, ERROR
+
+**Système de configuration centralisée :**### 1. Vault Upload
+
+**Icones textuelles utilisees (pas d'emoji dans les logs):**
+
+- `[+]` = Succes## Compilation
+
+- `[-]` = Erreur
+
+- `[!]` = Avertissement- Chiffrement AES-256 des fichiers de configuration
+
+- `[>]` = Action en cours
+
+- `[i]` = Information### Script automatique (RECOMMANDÉ)
+
+- `[~]` = Attente/Polling
+
+- `[#]` = Liste/Proprietes- Synchronisation automatique via Vault au démarrage
+
+- `[?]` = Verification
+
+```powershell
+
+---
+
+cd XnrgyEngineeringAutomationTools- Accès restreint aux administrateurs (Role "Administrator" ou Groupe "Admin_Designer")
+
+## Services Principaux
+
+.\build-and-run.ps1
+
+### VaultSdkService.cs
+
+```- Déploiement multi-sites : Saint-Hubert QC + Arizona US (2 usines) = 50+ utilisateurs- Connexion directe via SDK Vault v31.0.84---**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+
+Service principal pour l'interaction avec Vault SDK.
+
+
+
+**Responsabilites :**
+
+- Connexion/deconnexion Vault**Fonctionnalités du script :**
+
+- Chargement des Property Definitions
+
+- Chargement des Categories- [+] Compilation automatique en mode Release
+
+- Chargement des Lifecycle Definitions
+
+- Upload de fichiers avec `FileManager.AddFile`- [+] Détection automatique de MSBuild (VS 2022)**Chemin Vault :**- Scan automatique des modules engineering
+
+- Application des proprietes via `UpdateFileProperties`
+
+- Synchronisation Vault -> iProperties via `IExplorerUtil.UpdateFileProperties`- [+] Arrêt automatique de l'instance existante
+
+- Assignation de categories via `UpdateFileCategories`
+
+- Assignation de lifecycle via `UpdateFileLifeCycleDefinitions` (reflection)- [+] Lancement automatique après compilation réussie```
+
+- Assignation de revisions via `UpdateFileRevisionNumbers`
+
+- Gestion des erreurs Vault (1003, 1013, 1136, etc.)- [+] Affichage des erreurs de compilation si présentes
+
+
+
+### InventorService.cs$/Engineering/Inventor_Standards/Automation_Standard/Configuration_Files/XnrgyEngineeringAutomationToolsApp/- Upload de tous types de fichiers (Inventor, PDF, Excel, Word, images)
+
+
+
+Service pour la connexion COM a Inventor.### Avec MSBuild directement
+
+
+
+**Ameliorations v1.1 :**```
+
+- Throttling intelligent (minimum 2 sec entre tentatives)
+
+- Verification fenetre Inventor prete (MainWindowHandle != IntPtr.Zero)```powershell
+
+- Logs silencieux pour COMException 0x800401E3
+
+- Compteur d'echecs consecutifs avec log periodique& 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe' `- Application automatique des propriétés métier extraites du chemin
+
+
+
+### InventorCopyDesignService.cs  XnrgyEngineeringAutomationTools.csproj `
+
+
+
+Service pour Copy Design natif avec gestion des references.  /t:Rebuild `**Paramètres configurables :**
+
+
+
+**Methode principale :**  /p:Configuration=Release `
+
+```csharp
+
+Task<bool> ExecuteRealPackAndGoAsync(  /m /v:minimal /nologo- Liste des initiales designers (26 entrées + "Autre...")- Assignation de catégories, lifecycle definitions/states et révisions## Modules Intégrés
+
+    string templatePath,
+
+    string destinationPath,```
+
+    string projectNumber,
+
+    string reference,- Chemins templates et projets
+
+    string module,
+
+    IProgress<string> progress**[!] IMPORTANT**: 
+
+)
+
+```- **NE PAS utiliser `dotnet build`** - il ne génère pas correctement les fichiers `.g.cs` depuis XAML pour WPF .NET Framework 4.8- Extensions Inventor supportées- Synchronisation Vault vers iProperties via `IExplorerUtil`
+
+
+
+---- Seul **MSBuild** supporte complètement la génération de code WPF
+
+
+
+## Depannage- Dossiers/fichiers exclus
+
+
+
+### L'application ne demarre pas---
+
+- Verifier .NET Framework 4.8 installe
+
+- Verifier Vault Professional 2026 installe- Noms des iProperties
+
+- Verifier les dependances NuGet restaurees
+
+## Configuration
+
+### Erreur de connexion Vault
+
+- Verifier serveur accessible
+
+- Verifier vault existe
+
+- Verifier identifiants### appsettings.json (local)
+
+- Voir logs dans `bin\Release\Logs\`
+
+### 4. Interface Utilisateur Moderne### 2. Créer Module - Copy Design
+
+### Erreur connexion Inventor (0x800401E3)
+
+- Inventor doit etre **completement demarre** (fenetre principale visible)```json
+
+- L'app attend que Inventor s'enregistre dans la Running Object Table (ROT)
+
+- Le timer de reconnexion reessaie automatiquement toutes les 3 secondes{
+
+
+
+### Proprietes non appliquees  "VaultConfig": {
+
+- Verifier logs : rechercher "Application des proprietes"
+
+- Si erreur 1003 : Fichier en traitement par Job Processor (normal)    "Server": "VAULTPOC",**XnrgyMessageBox :**| Module | Description | Statut |### 🎯 Objectif Principal---
+
+- Si erreur 1013 : CheckOut necessaire (automatique)
+
+- Verifier que les Property Definitions sont chargees (Project, Reference, Module)    "Vault": "PROD_XNGRY",
+
+- Pour fichiers Inventor : Verifier que `IExplorerUtil` est charge
+
+- Pour writeback iProperties : Verifier que le writeback est active dans Vault    "User": "username",- MessageBox personnalisé avec thème sombre XNRGY
+
+
+
+### Headers DataGrid invisibles    "Password": ""
+
+- Les styles DataGrid sont definis dans Window.Resources
+
+- Fond sombre (#1A1A28) avec texte bleu XNRGY (#0078D4)  },- Logo et icônes ASCII ([+], [-], [!], [?], [i])**Sources disponibles :**
+
+- Style applique globalement via `<Style TargetType="DataGridColumnHeader">`
+
+  "Paths": {
+
+---
+
+    "DefaultLibrary": "$/Engineering/Library",- Types : Success, Error, Warning, Info, Question
+
+## Changelog
+
+    "DefaultTemplate": "$/Engineering/Library/Xnrgy_Module",
+
+### v1.1.0 (30 Decembre 2025)
+
+    "ProjectsRoot": "C:\\Vault\\Engineering\\Projects"- Boutons : OK, OKCancel, YesNo, YesNoCancel- Depuis Template : `$/Engineering/Library/Xnrgy_Module`|--------|-------------|--------|
+
+**[+] Upload Module integre:**
+
+- Module VaultAutomationTool integre dans l'app principale (`Modules/VaultUpload/`)  }
+
+- Interface avec deux DataGrids (Inventor/Non-Inventor)
+
+- Styles DataGrid avec headers visibles (fond sombre #1A1A28, texte bleu #0078D4)}
+
+- Barre de progression et journal des operations style Creer Module
+
+- Utilise la connexion Vault partagee (pas de login separe)```
+
+- Controles Pause/Stop/Annuler
+
+### 5. Connexions Automatiques- Depuis Projet Existant : Sélection d'un projet local ou Vault
+
+**[+] Upload Template:**
+
+- Nouvelle fenetre pour upload templates (reserve Admin)### Configuration Vault centralisée
+
+- Utilise connexion partagee de l'app principale
+
+- XnrgyMessageBox si utilisateur non-admin
+
+
+
+**[+] Corrections Inventor:**Fichier stocké dans Vault: `$/Admin/Config/app_settings.json`
+
+- Throttling intelligent pour eviter spam logs
+
+- Verification fenetre Inventor prete avant connexion COM- Synchronisé automatiquement au démarrage- **Vault Professional 2026** - SDK v31.0.84| **Vault Upload** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | ✅ **100%** |
+
+- Logs silencieux pour COMException 0x800401E3
+
+- Timer de reconnexion optimise- Chiffrement AES-256 pour les mots de passe
+
+
+
+**[+] VaultBulkUploader:**- Accessible via le module "Réglages Admin"- **Inventor Professional 2026.2** - COM
+
+- Outil console pour upload massif (6152 fichiers uploades vers PROD_XNGRY)
+
+- Situe dans `Tools/VaultBulkUploader/`
+
+
+
+### v1.0.0 (17 Decembre 2025)---- **Update Workspace** - Synchronisation dossiers au démarrage**Workflow automatisé :**
+
+
+
+**[+] Creer Module - Copy Design:**
+
+- Copy Design natif avec 1133 fichiers
+
+- Gestion des fichiers orphelins (1059 fichiers)## Mapping Propriétés
+
+- Mise a jour references IDW
+
+- Switch IPJ automatique
+
+- Application iProperties et parametres Inventor
+
+- Design View "Default" + Workfeatures caches### Extraction depuis le chemin---1. Switch vers projet source (IPJ)| **Créer Module** | Copy Design natif depuis template Library ou projet existant | ✅ **100%** |
+
+- Vue ISO + Zoom All + Save All
+
+- Module reste ouvert pour le dessinateur
+
+
+
+**[+] Vault Upload:**```
+
+- Upload complet avec proprietes automatiques
+
+- Gestion Inventor et non-Inventor separeeC:\Vault\Engineering\Projects\[PROJECT]\REF[XX]\M[XX]\fichier.ipt
+
+- Categories, lifecycle et revisions
+
+- Synchronisation Vault -> iProperties via IExplorerUtil                              ↓         ↓       ↓## Prérequis2. Ouverture Top Assembly
+
+
+
+**[+] Reglages Admin:**Vault Property IDs:        ID=112    ID=121  ID=122
+
+- Chiffrement AES-256
+
+- Synchronisation automatique via Vault```
+
+- Interface graphique avec validation temps reel
+
+
+
+**[+] Connexions automatiques:**
+
+- Vault SDK v31.0.84### Catégorie vers Lifecycle Definition- Windows 10/11 x643. Application iProperties| **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | 📋 Planifié |Remplacer les multiples applications standalone par une **plateforme unique** avec :
+
+- Inventor COM 2026.2
+
+- Update Workspace au demarrage
+
+
+
+### v0.9.0 (15 Decembre 2025)| Catégorie | Lifecycle Definition |- .NET Framework 4.8
+
+
+
+- Release initiale beta|-----------|---------------------|
+
+- Dashboard principal avec boutons modules
+
+- Connexion Vault centralisee| Engineering | Flexible Release Process |- Autodesk Vault Professional 2026 (SDK v31.0.84)4. Collecte références (bottom-up)
+
+- Themes sombre/clair
+
+| Office | Simple Release Process |
+
+---
+
+| Standard | Basic Release Process |- Autodesk Inventor Professional 2026.2
+
+## Auteur
+
+| Base | (aucun) |
+
+**Mohammed Amine Elgalai**  
+
+Engineering Automation Developer  - Visual Studio 2022 (pour compilation)5. Copy Design natif avec SaveAs| **DXF Verifier** | Validation des fichiers DXF avant envoi | 📋 Migration |
+
+XNRGY Climate Systems ULC  
+
+Email: mohammedamine.elgalai@xnrgy.com---
+
+
+
+---- MSBuild 18.0.0+ (REQUIS - `dotnet build` ne fonctionne PAS pour WPF)
+
+
+
+## Licence## Exclusions de fichiers
+
+
+
+Proprietaire - XNRGY Climate Systems ULC (c) 20256. Traitement dessins (.idw) avec mise à jour références
+
+
+
+---**Extensions exclues:**
+
+
+
+**Derniere mise a jour**: 30 Decembre 2025- `.v`, `.bak`, `.old` (Backup Vault)---
+
+
+- `.tmp`, `.temp` (Temporaires)
+
+- `.ipj` (Projet Inventor)7. Mise à jour références des composants suppressed| **Checklist HVAC** | Validation modules AHU avec stockage Vault | 📋 Migration |- Connexion centralisée à Vault & Inventor
+
+- `.lck`, `.lock`, `.log` (Système/logs)
+
+- `.dwl`, `.dwl2` (AutoCAD locks)## Compilation et Exécution
+
+
+
+**Préfixes exclus:**8. Copie fichiers orphelins et non-Inventor
+
+- `~$` (Office temporaire)
+
+- `._` (macOS temporaire)```powershell
+
+- `Backup_` (Backup générique)
+
+# Utiliser le script build-and-run.ps19. Renommage fichier .ipj| **Time Tracker** | Analyse temps de travail modules HVAC | 📋 Migration |
+
+**Dossiers exclus:**
+
+- `OldVersions`, `Backup`cd XnrgyEngineeringAutomationTools
+
+- `.vault`, `.git`, `.vs`
+
+.\build-and-run.ps110. Switch vers nouveau projet
+
+---
+
+```
+
+## Dépannage
+
+11. Application iProperties finales et paramètres Inventor| **Update Workspace** | Synchronisation librairies depuis Vault | 📋 Planifié |- Interface utilisateur moderne et cohérente## 📋 Description## 📋 Description## 📋 Description
+
+### L'application ne démarre pas
+
+- Vérifier .NET Framework 4.8 installé> **IMPORTANT**: Ne PAS utiliser `dotnet build` - il ne génère pas les fichiers .g.cs pour WPF.
+
+- Vérifier Vault Professional 2026 installé
+
+- Vérifier les dépendances NuGet restaurées12. Module reste ouvert pour le dessinateur
+
+
+
+### Erreur de connexion Vault---
+
+- Vérifier serveur accessible
+
+- Vérifier vault existe
+
+- Vérifier identifiants
+
+- Voir logs dans `bin\Release\Logs\`## Propriétés XNRGY
+
+
+
+### Erreur connexion Inventor (0x800401E3)**Options de renommage :**
+
+- Inventor doit être **complètement démarré** (fenêtre principale visible)
+
+- L'app attend que Inventor s'enregistre dans la Running Object Table (ROT)Le système extrait automatiquement les propriétés depuis le chemin de fichier:
+
+- Le timer de reconnexion réessaie automatiquement toutes les 3 secondes
+
+- Rechercher/Remplacer (cumulatif)---- Partage de services communs (logging, configuration, etc.)
+
+### Propriétés non appliquées
+
+- Vérifier logs : rechercher "Application des propriétés"```
+
+- Si erreur 1003 : Fichier en traitement par Job Processor (normal)
+
+- Si erreur 1013 : CheckOut nécessaire (automatique)C:\Vault\Engineering\Projects\[PROJECT]\REF[XX]\M[XX]- Préfixe/Suffixe
+
+
+
+---```
+
+
+
+## Dépendances- Checkbox "Inclure fichiers non-Inventor"
+
+
+
+```xml| Propriété | ID Vault | Description |
+
+<PackageReference Include="Autodesk.Connectivity.WebServices" Version="31.0.0" />
+
+<PackageReference Include="Autodesk.DataManagement.Client.Framework" Version="31.0.0" />|-----------|----------|-------------|
+
+```
+
+| Project | 112 | Numéro de projet (5 chiffres) |
+
+**Logiciels requis:**
+
+- Autodesk Inventor Professional 2026.2| Reference | 121 | Numéro de référence (2 chiffres) |### 3. Connexions Automatiques## Fonctionnalités Implémentées- Déploiement et maintenance simplifiés
+
+- Autodesk Vault Professional 2026 (SDK v31.0.84)
+
+- Visual Studio 2022 (MSBuild 18.0.0+)| Module | 122 | Numéro de module (2 chiffres) |
+
+- .NET Framework 4.8
+
+
+
+---
+
+---
+
+## Auteur
+
+- **Vault Professional 2026** - SDK v31.0.84
+
+**Mohammed Amine Elgalai**  
+
+Design Engineer - XNRGY Climate Systems ULC  ## Architecture
+
+Email: mohammedamine.elgalai@xnrgy.com
+
+- **Inventor Professional 2026.2** - COM
+
+---
+
+```
+
+## Licence
+
 XnrgyEngineeringAutomationTools/- **Update Workspace** - Synchronisation dossiers au démarrage### 1. Vault Upload (100%)
+
+Propriétaire - XNRGY Climate Systems ULC © 2025
 
 ├── Views/
 
+---
+
 │   ├── MainWindow.xaml                    # Fenêtre principale hub
+
+## Changelog
 
 │   ├── LoginWindow.xaml                   # Connexion Vault
 
+### v1.1.0 (30 Décembre 2025)
+
 │   ├── CreateModuleWindow.xaml            # Créer Module---
 
-│   ├── CreateModuleSettingsWindow.xaml    # Réglages Admin
+**[+] Upload Module intégré:**
 
-│   ├── PreviewWindow.xaml                 # Prévisualisation
+- Module VaultAutomationTool intégré dans l'app principale│   ├── CreateModuleSettingsWindow.xaml    # Réglages Admin
 
-│   └── XnrgyMessageBox.xaml               # MessageBox moderne
+- Interface avec deux DataGrids (Inventor/Non-Inventor)
 
-├── Services/## PrérequisModule complet pour l'upload automatisé vers Autodesk Vault Professional 2026.---**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+- Styles DataGrid avec headers visibles (fond sombre, texte bleu XNRGY)│   ├── PreviewWindow.xaml                 # Prévisualisation
 
-│   ├── VaultSdkService.cs                 # Connexion Vault SDK
+- Barre de progression et journal des opérations
+
+- Utilise la connexion Vault partagée│   └── XnrgyMessageBox.xaml               # MessageBox moderne
+
+
+
+**[+] Upload Template:**├── Services/## PrérequisModule complet pour l'upload automatisé vers Autodesk Vault Professional 2026.---**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+
+- Nouvelle fenêtre pour upload templates (réservé Admin)
+
+- Utilise connexion partagée (pas de login séparé)│   ├── VaultSdkService.cs                 # Connexion Vault SDK
+
+- XnrgyMessageBox si utilisateur non-admin
 
 │   ├── VaultSettingsService.cs            # Config chiffrée + sync Vault
 
-│   ├── InventorService.cs                 # Connexion Inventor COM
+**[+] Corrections Inventor:**
 
-│   ├── InventorCopyDesignService.cs       # Copy Design natif- Windows 10/11 x64
+- Throttling intelligent pour éviter spam logs│   ├── InventorService.cs                 # Connexion Inventor COM
 
-│   └── SettingsService.cs                 # Configuration locale
+- Vérification fenêtre Inventor prête avant connexion COM
 
-├── Models/- .NET Framework 4.8
+- Logs silencieux pour COMException 0x800401E3│   ├── InventorCopyDesignService.cs       # Copy Design natif- Windows 10/11 x64
 
-│   ├── ModuleSettings.cs                  # Modèle settings global
 
-│   └── CreateModuleSettings.cs            # Settings Créer Module- Autodesk Vault Professional 2026 (SDK v31.0.84)**Caractéristiques :**
 
-├── ViewModels/
+### v1.0.0 (17 Décembre 2025)│   └── SettingsService.cs                 # Configuration locale
+
+
+
+- Version initiale avec Créer Module et Réglages Admin├── Models/- .NET Framework 4.8
+
+- Connexion centralisée Vault/Inventor
+
+- Thèmes sombre/clair│   ├── ModuleSettings.cs                  # Modèle settings global
+
+
+
+---│   └── CreateModuleSettings.cs            # Settings Créer Module- Autodesk Vault Professional 2026 (SDK v31.0.84)**Caractéristiques :**
+
+
+
+**Dernière mise à jour**: 30 Décembre 2025├── ViewModels/
+
 
 │   └── AppMainViewModel.cs                # MVVM ViewModel- Autodesk Inventor Professional 2026.2
 

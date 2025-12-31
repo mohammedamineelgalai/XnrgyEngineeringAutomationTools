@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -14,6 +15,8 @@ namespace XnrgyEngineeringAutomationTools.Services
     {
         private dynamic? _inventorApp;
         private bool _isConnected = false;
+        private DateTime _lastConnectionAttempt = DateTime.MinValue;
+        private int _consecutiveFailures = 0;
 
         // P/Invoke pour COM
         [DllImport("ole32.dll")]
@@ -34,46 +37,94 @@ namespace XnrgyEngineeringAutomationTools.Services
 
         private const uint COINIT_MULTITHREADED = 0x0;
         private const uint COINIT_APARTMENTTHREADED = 0x2;
+        
+        // Constantes pour le throttling
+        private const int MIN_RETRY_INTERVAL_MS = 2000; // Minimum 2 sec entre tentatives
+        private const int MAX_CONSECUTIVE_FAILURES = 10; // Apres 10 echecs, augmenter l'intervalle
 
         public bool IsConnected => _isConnected && _inventorApp != null;
 
         /// <summary>
         /// Tente de se connecter à une instance Inventor en cours d'exécution
         /// Utilise plusieurs méthodes et retries pour maximiser les chances de connexion
+        /// Implemente un throttling pour eviter de spammer les logs
         /// </summary>
         public bool TryConnect()
         {
-            Logger.Log("[>] Tentative de connexion a Inventor...", Logger.LogLevel.DEBUG);
-
-            // Essayer plusieurs méthodes de connexion
-            for (int retry = 0; retry < 3; retry++)
+            // Throttling: eviter les tentatives trop rapprochees
+            var now = DateTime.Now;
+            var elapsed = (now - _lastConnectionAttempt).TotalMilliseconds;
+            
+            if (elapsed < MIN_RETRY_INTERVAL_MS && _lastConnectionAttempt != DateTime.MinValue)
             {
-                if (retry > 0)
+                return false; // Trop tot, skip silencieusement
+            }
+            
+            _lastConnectionAttempt = now;
+            
+            // Verifier d'abord si le processus Inventor existe
+            var inventorProcesses = Process.GetProcessesByName("Inventor");
+            if (inventorProcesses.Length == 0)
+            {
+                return false; // Pas de processus, pas de log
+            }
+            
+            // Verifier si le processus principal est pret (pas juste le splash screen)
+            bool processReady = false;
+            foreach (var proc in inventorProcesses)
+            {
+                try
                 {
-                    Logger.Log($"[>] Retry connexion COM ({retry + 1}/3)...", Logger.LogLevel.DEBUG);
-                    Thread.Sleep(1000);
+                    // MainWindowHandle > 0 indique que la fenetre principale est creee
+                    if (proc.MainWindowHandle != IntPtr.Zero && !string.IsNullOrEmpty(proc.MainWindowTitle))
+                    {
+                        processReady = true;
+                        break;
+                    }
                 }
-
-                // Méthode 1: Marshal.GetActiveObject (classique .NET Framework)
-                if (TryConnectViaMarshall())
+                catch { }
+            }
+            
+            if (!processReady)
+            {
+                // Inventor demarre mais fenetre pas encore prete
+                if (_consecutiveFailures == 0)
                 {
-                    return true;
+                    Logger.Log("[~] Inventor en cours de demarrage (fenetre pas prete)...", Logger.LogLevel.DEBUG);
                 }
-
-                // Méthode 2: P/Invoke GetActiveObject via oleaut32
-                if (TryConnectViaPInvoke())
-                {
-                    return true;
-                }
-
-                // Méthode 3: Type.GetTypeFromProgID + Activator (pour instance existante)
-                if (TryConnectViaActivator())
-                {
-                    return true;
-                }
+                return false;
+            }
+            
+            // Log uniquement si c'est une nouvelle serie de tentatives
+            if (_consecutiveFailures == 0)
+            {
+                Logger.Log("[>] Tentative de connexion a Inventor...", Logger.LogLevel.DEBUG);
             }
 
+            // Essayer une seule fois chaque methode (pas de retry interne - le timer gere ca)
+            // Methode 1: Marshal.GetActiveObject (classique .NET Framework)
+            if (TryConnectViaMarshall())
+            {
+                _consecutiveFailures = 0;
+                return true;
+            }
+
+            // Methode 2: P/Invoke GetActiveObject via oleaut32
+            if (TryConnectViaPInvoke())
+            {
+                _consecutiveFailures = 0;
+                return true;
+            }
+
+            _consecutiveFailures++;
             _isConnected = false;
+            
+            // Log periodique pour indiquer que ca continue
+            if (_consecutiveFailures % 5 == 0)
+            {
+                Logger.Log($"[~] Connexion Inventor: {_consecutiveFailures} tentatives, en attente du ROT...", Logger.LogLevel.DEBUG);
+            }
+            
             return false;
         }
 
@@ -92,9 +143,9 @@ namespace XnrgyEngineeringAutomationTools.Services
                     return true;
                 }
             }
-            catch (COMException comEx)
+            catch (COMException)
             {
-                Logger.Log($"[!] Marshal.GetActiveObject echoue: 0x{comEx.ErrorCode:X8}", Logger.LogLevel.DEBUG);
+                // Silencieux - gere par le throttling dans TryConnect
             }
             catch (Exception ex)
             {
@@ -127,9 +178,9 @@ namespace XnrgyEngineeringAutomationTools.Services
                     }
                 }
             }
-            catch (COMException comEx)
+            catch (COMException)
             {
-                Logger.Log($"[!] P/Invoke GetActiveObject echoue: 0x{comEx.ErrorCode:X8}", Logger.LogLevel.DEBUG);
+                // Silencieux - gere par le throttling
             }
             catch (Exception ex)
             {
@@ -139,72 +190,20 @@ namespace XnrgyEngineeringAutomationTools.Services
         }
 
         /// <summary>
-        /// Méthode 3: Connexion via Type.GetTypeFromProgID + test si instance existe
-        /// </summary>
-        private bool TryConnectViaActivator()
-        {
-            try
-            {
-                // GetTypeFromProgID avec le flag pour obtenir une instance existante
-                Type? inventorType = Type.GetTypeFromProgID("Inventor.Application", false);
-                
-                if (inventorType != null)
-                {
-                    // Essayer d'obtenir l'instance existante via ROT (Running Object Table)
-                    object? inventorObj = null;
-                    
-                    try
-                    {
-                        // Cette méthode peut fonctionner dans certains contextes COM
-                        inventorObj = System.Runtime.InteropServices.Marshal.GetActiveObject("Inventor.Application");
-                    }
-                    catch
-                    {
-                        // Si échec, on ne crée PAS de nouvelle instance (on veut une existante)
-                        return false;
-                    }
-                    
-                    if (inventorObj != null)
-                    {
-                        _inventorApp = inventorObj;
-                        _isConnected = true;
-                        Logger.Log($"[+] Connecte a Inventor via Activator/ROT", Logger.LogLevel.INFO);
-                        return true;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Log($"[!] Activator erreur: {ex.Message}", Logger.LogLevel.DEBUG);
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Force la réinitialisation de la connexion COM et réessaie
-        /// Utile quand l'app est lancée depuis un script
+        /// Utilise la meme logique que TryConnect sans throttling
         /// </summary>
         public bool ForceReconnect()
         {
-            Logger.Log("[>] Force reconnexion COM...", Logger.LogLevel.INFO);
-            
             // Libérer la connexion existante
             Disconnect();
             
-            // Attendre un peu pour que COM se stabilise
-            Thread.Sleep(500);
+            // Reset le compteur de failures pour que TryConnect log si besoin
+            _consecutiveFailures = 0;
+            _lastConnectionAttempt = DateTime.MinValue;
             
-            // Réessayer avec plus de tentatives
-            for (int i = 0; i < 5; i++)
-            {
-                if (TryConnect())
-                {
-                    return true;
-                }
-                Thread.Sleep(1000);
-            }
-            
-            return false;
+            // Une seule tentative - le timer rappellera si besoin
+            return TryConnect();
         }
 
         /// <summary>

@@ -181,14 +181,24 @@
                                 <TextBlock x:Name="BtnSmartToolsDesc" Text="Outils Inventor" FontSize="13" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <!-- Vault Upload -->
+                        <!-- Upload Module -->
                         <Button x:Name="BtnVaultUpload" Style="{StaticResource ModuleButton}" Click="OpenVaultUpload_Click" Width="270" Height="225" Margin="12">
                             <StackPanel HorizontalAlignment="Center">
                                 <Border Background="#0078D4" CornerRadius="15" Width="105" Height="105" Margin="0,0,0,18">
                                     <TextBlock Text="&#x1F4E4;" FontSize="54" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnVaultUploadTitle" Text="Vault Upload" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnVaultUploadTitle" Text="Upload Module" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="BtnVaultUploadDesc" Text="Upload vers Vault" FontSize="13" HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <!-- Upload Template (Admin Only) -->
+                        <Button x:Name="BtnUploadTemplate" Style="{StaticResource ModuleButton}" Click="OpenUploadTemplate_Click" Width="270" Height="225" Margin="12">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="#9B59B6" CornerRadius="15" Width="105" Height="105" Margin="0,0,0,18">
+                                    <TextBlock Text="&#x1F4C1;" FontSize="54" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock x:Name="BtnUploadTemplateTitle" Text="Upload Template" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnUploadTemplateDesc" Text="Admin - Templates Vault" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Button>
                     </WrapPanel>

@@ -1,0 +1,602 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views.VaultUploadModuleWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Upload Module vers Vault v1.0 - XNRGY Climate Systems ULC - By Mohammed Amine Elgalai" 
+        Height="950" Width="1550"
+        MinWidth="1400"
+        MinHeight="800"
+        WindowStartupLocation="CenterOwner"
+        WindowState="Maximized"
+        Background="{DynamicResource WindowBackground}"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
+
+    <Window.Resources>
+        <!-- ========== COULEURS THEME ========== -->
+        <SolidColorBrush x:Key="XnrgyBlue" Color="#0078D4"/>
+        <SolidColorBrush x:Key="XnrgyGreen" Color="#107C10"/>
+        <SolidColorBrush x:Key="XnrgyOrange" Color="#FF8C00"/>
+        <SolidColorBrush x:Key="XnrgyRed" Color="#E81123"/>
+        
+        <!-- Theme Sombre (defaut) -->
+        <SolidColorBrush x:Key="WindowBackground" Color="#1E1E2E"/>
+        <SolidColorBrush x:Key="PanelBackground" Color="#252536"/>
+        <SolidColorBrush x:Key="InputBackground" Color="#2D2D44"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#404060"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#888888"/>
+        <SolidColorBrush x:Key="DataGridAltRow" Color="#2A2A3E"/>
+        
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+        <!-- ========== STYLE GROUPBOX MODERNE ========== -->
+        <Style x:Key="ModernGroupBox" TargetType="GroupBox">
+            <Setter Property="Background" Value="{DynamicResource PanelBackground}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GroupBox">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Background="{DynamicResource XnrgyBlue}" CornerRadius="6,6,0,0" Padding="12,8">
+                                <ContentPresenter ContentSource="Header" TextElement.Foreground="White" TextElement.FontWeight="Bold" TextElement.FontSize="14"/>
+                            </Border>
+                            <Border Grid.Row="1" Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="0,0,6,6"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ========== BOUTON PRIMAIRE ========== -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource XnrgyBlue}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="15,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#005A9E"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#404060"/>
+                                <Setter Property="Foreground" Value="#666666"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ========== BOUTON SUCCES ========== -->
+        <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{DynamicResource XnrgyGreen}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <Border.RenderTransform>
+                                <ScaleTransform x:Name="scaleTransform" ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#0D5C0D"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform" Storyboard.TargetProperty="ScaleX" To="0.95" Duration="0:0:0.1"/>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform" Storyboard.TargetProperty="ScaleY" To="0.95" Duration="0:0:0.1"/>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform" Storyboard.TargetProperty="ScaleX" To="1.0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction><ElasticEase Oscillations="1" Springiness="3"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                            <DoubleAnimation Storyboard.TargetName="scaleTransform" Storyboard.TargetProperty="ScaleY" To="1.0" Duration="0:0:0.2">
+                                                <DoubleAnimation.EasingFunction><ElasticEase Oscillations="1" Springiness="3"/></DoubleAnimation.EasingFunction>
+                                            </DoubleAnimation>
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#404060"/>
+                                <Setter Property="Foreground" Value="#666666"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ========== BOUTON DANGER ========== -->
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{DynamicResource XnrgyRed}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#A72B2E"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#404060"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ========== BOUTON WARNING ========== -->
+        <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{DynamicResource XnrgyOrange}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#C44E09"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#404060"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ========== BOUTON SECONDAIRE ========== -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3D3D55"/>
+                </Trigger>
+                <Trigger Property="IsEnabled" Value="False">
+                    <Setter Property="Foreground" Value="#555555"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- ========== TEXTBOX MODERNE ========== -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{DynamicResource InputBackground}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderColor}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="2"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="{DynamicResource XnrgyBlue}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- ========== STYLE DATAGRID MODERNE ========== -->
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#1E1E2E"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="BorderBrush" Value="#404060"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="RowBackground" Value="#252536"/>
+            <Setter Property="AlternatingRowBackground" Value="#2D2D44"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#404060"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+        </Style>
+
+        <!-- Style Header DataGrid - fond sombre avec texte bleu XNRGY -->
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#1A1A28"/>
+            <Setter Property="Foreground" Value="#0078D4"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="BorderBrush" Value="#404060"/>
+            <Setter Property="BorderThickness" Value="0,0,1,2"/>
+        </Style>
+
+        <!-- Style Cell DataGrid -->
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#0078D4"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Style Row DataGrid -->
+        <Style TargetType="DataGridRow">
+            <Setter Property="Background" Value="#252536"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Style.Triggers>
+                <Trigger Property="AlternationIndex" Value="1">
+                    <Setter Property="Background" Value="#2D2D44"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#0078D4"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3D3D55"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>    <!-- Selection module -->
+            <RowDefinition Height="Auto"/>    <!-- Statut connexion -->
+            <RowDefinition Height="5*"/>      <!-- Listes fichiers -->
+            <RowDefinition Height="Auto"/>    <!-- Statistiques -->
+            <RowDefinition Height="Auto"/>    <!-- Commentaire -->
+            <RowDefinition Height="Auto"/>    <!-- Boutons action -->
+            <RowDefinition Height="Auto"/>    <!-- Barre progression -->
+            <RowDefinition Height="2*"/>      <!-- Journal -->
+        </Grid.RowDefinitions>
+
+        <!-- ========== SECTION 1: SELECTION MODULE ========== -->
+        <GroupBox Grid.Row="0" Style="{StaticResource ModernGroupBox}">
+            <GroupBox.Header>
+                <TextBlock Text="[i] Selection du Module"/>
+            </GroupBox.Header>
+            <StackPanel>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBox x:Name="TxtProjectPath" Grid.Column="0" Style="{StaticResource ModernTextBox}" Height="32"/>
+                    
+                    <Button Grid.Column="1" Content="[#] Selection Module" Style="{StaticResource SecondaryButton}" 
+                            Click="SelectModule_Click" Margin="10,0,0,0" Width="145" Height="32"/>
+                    <Button Grid.Column="2" Content="[i] Parcourir..." Style="{StaticResource SecondaryButton}" 
+                            Click="BrowseFolder_Click" Margin="10,0,0,0" Width="120" Height="32"/>
+                    <Button Grid.Column="3" Content="[>] Depuis Inventor" Style="{StaticResource SecondaryButton}" 
+                            Click="GetFromInventor_Click" Margin="10,0,0,0" Width="140" Height="32"/>
+                    <Button Grid.Column="4" Content="[?] Scanner" Style="{StaticResource PrimaryButton}" 
+                            Click="ScanProject_Click" Margin="10,0,0,0" Width="100" Height="32"/>
+                </Grid>
+
+                <!-- Proprietes detectees -->
+                <Border x:Name="PropertiesPanel" Background="#1A3A5C" CornerRadius="4" Padding="12" Margin="0,10,0,0" Visibility="Collapsed">
+                    <StackPanel>
+                        <TextBlock FontWeight="Bold" FontSize="13" Foreground="#4FC3F7" Margin="0,0,0,5">
+                            [+] Proprietes detectees:
+                        </TextBlock>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="[#] Projet: " FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock x:Name="TxtProjectNumber" Foreground="#4FC3F7" FontWeight="Bold" Margin="5,0,20,0"/>
+                            <TextBlock Text="[#] Reference: " FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock x:Name="TxtReference" Foreground="#4FC3F7" FontWeight="Bold" Margin="5,0,20,0"/>
+                            <TextBlock Text="[#] Module: " FontWeight="SemiBold" Foreground="{DynamicResource TextSecondary}"/>
+                            <TextBlock x:Name="TxtModule" Foreground="#4FC3F7" FontWeight="Bold" Margin="5,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- ========== SECTION 2: STATUT CONNEXION VAULT (info seulement) ========== -->
+        <Border Grid.Row="1" Background="{DynamicResource PanelBackground}" CornerRadius="6" Padding="12,8" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Ellipse x:Name="VaultStatusIndicator" Width="12" Height="12" Fill="#E81123" Margin="0,0,10,0"/>
+                    <TextBlock x:Name="TxtVaultStatus" Text="Vault: Non connecte" Foreground="{DynamicResource TextPrimary}" FontWeight="SemiBold"/>
+                </StackPanel>
+                
+                <TextBlock Grid.Column="1" x:Name="TxtVaultUser" Text="" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                
+                <Image Grid.Column="2" Source="/Resources/VaultAutomationTool.png" Width="48" Height="48" Margin="10,0,0,0"
+                       ToolTip="Upload Module v1.0 - XNRGY Climate Systems"/>
+            </Grid>
+        </Border>
+
+        <!-- ========== SECTION 3: LISTES FICHIERS ========== -->
+        <Grid Grid.Row="2" Margin="0,0,0,10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="8"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <!-- Liste Fichiers Inventor -->
+            <GroupBox Grid.Row="0" Style="{StaticResource ModernGroupBox}">
+                <GroupBox.Header>
+                    <TextBlock Text="[#] Fichiers Inventor (.ipt, .iam, .idw, .ipn)"/>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Controles Inventor -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="[+] Tout selectionner" Style="{StaticResource SecondaryButton}" 
+                                Click="SelectAllInventor_Click" Width="140" Height="28"/>
+                        <Button Content="[-] Tout deselectionner" Style="{StaticResource SecondaryButton}" 
+                                Click="DeselectAllInventor_Click" Margin="10,0,0,0" Width="150" Height="28"/>
+                        <TextBox x:Name="TxtSearchInventor" Style="{StaticResource ModernTextBox}" Width="200" Height="28" 
+                                 Margin="15,0,0,0" TextChanged="SearchInventor_TextChanged"/>
+                        <TextBlock Text="[?] Rechercher" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                        <ComboBox x:Name="CmbCategoryInventor" Width="180" Height="28" Margin="15,0,0,0"/>
+                        <TextBlock Text="[#] Categorie" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                        <ComboBox x:Name="CmbStateInventor" Width="140" Height="28" Margin="15,0,0,0"/>
+                        <TextBlock Text="[>] State" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                    </StackPanel>
+
+                    <!-- DataGrid Inventor -->
+                    <DataGrid x:Name="DgInventorFiles" Grid.Row="1" 
+                              AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                              Background="{DynamicResource PanelBackground}"
+                              Foreground="{DynamicResource TextPrimary}"
+                              GridLinesVisibility="Horizontal"
+                              AlternatingRowBackground="{DynamicResource DataGridAltRow}"
+                              RowHeight="32" SelectionMode="Single" SelectionUnit="FullRow"
+                              BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="[+]" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
+                            <DataGridTextColumn Header="[i] Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="[#] Type" Binding="{Binding FileType}" Width="80" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="[#] Taille" Binding="{Binding FileSizeFormatted}" Width="100" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="[i] Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="[+] Statut" Binding="{Binding Status}" Width="200" IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </GroupBox>
+
+            <!-- Liste Fichiers Non-Inventor -->
+            <GroupBox Grid.Row="2" Style="{StaticResource ModernGroupBox}">
+                <GroupBox.Header>
+                    <TextBlock Text="[#] Autres Fichiers (.pdf, .xlsx, .docx, etc.)"/>
+                </GroupBox.Header>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Controles Non-Inventor -->
+                    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,10">
+                        <Button Content="[+] Tout selectionner" Style="{StaticResource SecondaryButton}" 
+                                Click="SelectAllNonInventor_Click" Width="140" Height="28"/>
+                        <Button Content="[-] Tout deselectionner" Style="{StaticResource SecondaryButton}" 
+                                Click="DeselectAllNonInventor_Click" Margin="10,0,0,0" Width="150" Height="28"/>
+                        <TextBox x:Name="TxtSearchNonInventor" Style="{StaticResource ModernTextBox}" Width="200" Height="28" 
+                                 Margin="15,0,0,0" TextChanged="SearchNonInventor_TextChanged"/>
+                        <TextBlock Text="[?] Rechercher" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                        <ComboBox x:Name="CmbCategoryNonInventor" Width="180" Height="28" Margin="15,0,0,0"/>
+                        <TextBlock Text="[#] Categorie" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                        <ComboBox x:Name="CmbStateNonInventor" Width="140" Height="28" Margin="15,0,0,0"/>
+                        <TextBlock Text="[>] State" VerticalAlignment="Center" Margin="8,0,0,0" FontSize="11" Foreground="{DynamicResource TextSecondary}"/>
+                    </StackPanel>
+
+                    <!-- DataGrid Non-Inventor -->
+                    <DataGrid x:Name="DgNonInventorFiles" Grid.Row="1" 
+                              AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                              Background="{DynamicResource PanelBackground}"
+                              Foreground="{DynamicResource TextPrimary}"
+                              GridLinesVisibility="Horizontal"
+                              AlternatingRowBackground="{DynamicResource DataGridAltRow}"
+                              RowHeight="32" SelectionMode="Single" SelectionUnit="FullRow"
+                              BorderBrush="{DynamicResource BorderColor}" BorderThickness="1">
+                        <DataGrid.Columns>
+                            <DataGridCheckBoxColumn Header="[+]" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
+                            <DataGridTextColumn Header="[i] Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="[#] Type" Binding="{Binding FileType}" Width="80" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="[#] Taille" Binding="{Binding FileSizeFormatted}" Width="100" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="[i] Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
+                            <DataGridTextColumn Header="[+] Statut" Binding="{Binding Status}" Width="200" IsReadOnly="True"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </GroupBox>
+        </Grid>
+
+        <!-- ========== SECTION 4: STATISTIQUES ========== -->
+        <Border Grid.Row="3" Background="{DynamicResource PanelBackground}" CornerRadius="6" Padding="15" Margin="0,0,0,10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtTotalFiles" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource XnrgyBlue}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Total Fichiers" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtInventorCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource XnrgyGreen}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Fichiers Inventor" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtNonInventorCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource XnrgyBlue}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Autres Fichiers" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtSelectedCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource XnrgyOrange}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Selectionnes" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                </StackPanel>
+
+                <StackPanel Grid.Column="4" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtUploadedCount" Text="0" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource XnrgyGreen}" HorizontalAlignment="Center"/>
+                    <TextBlock Text="Uploades" FontSize="11" Foreground="{DynamicResource TextSecondary}" HorizontalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ========== SECTION 5: COMMENTAIRE ========== -->
+        <GroupBox Grid.Row="4" Style="{StaticResource ModernGroupBox}" Padding="8">
+            <GroupBox.Header>
+                <TextBlock Text="[#] Commentaire Check-In"/>
+            </GroupBox.Header>
+            <TextBox x:Name="TxtComment" Style="{StaticResource ModernTextBox}" Height="40" 
+                     TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                     Text="Premier check-in effectue par XNRGY Engineering Automation Tools"/>
+        </GroupBox>
+
+        <!-- ========== SECTION 6: BOUTONS ACTION ========== -->
+        <Grid Grid.Row="5" Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Button x:Name="BtnCheckIn" Grid.Column="0" Content="[>] UPLOAD MODULE VERS VAULT" 
+                    Style="{StaticResource SuccessButton}" Height="40" FontSize="14"
+                    Click="CheckIn_Click" Margin="0,0,10,0"/>
+            
+            <Button x:Name="BtnPause" Grid.Column="1" Content="[~] PAUSE" 
+                    Style="{StaticResource WarningButton}" Height="40" Width="120"
+                    Click="Pause_Click" Margin="0,0,10,0" IsEnabled="False"/>
+            
+            <Button x:Name="BtnStop" Grid.Column="2" Content="[!] ARRETER" 
+                    Style="{StaticResource WarningButton}" Height="40" Width="120"
+                    Click="Stop_Click" Margin="0,0,10,0" IsEnabled="False"/>
+            
+            <Button x:Name="BtnCancel" Grid.Column="3" Content="[-] ANNULER" 
+                    Style="{StaticResource DangerButton}" Height="40" Width="120"
+                    Click="Cancel_Click" IsEnabled="False"/>
+        </Grid>
+
+        <!-- ========== SECTION 7: BARRE DE PROGRESSION ========== -->
+        <Border Grid.Row="6" Background="{DynamicResource PanelBackground}" CornerRadius="6" Padding="2" Height="35" Margin="0,0,0,10">
+            <Grid>
+                <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Value="0" Height="30"
+                             Foreground="{DynamicResource XnrgyGreen}" Background="Transparent" BorderThickness="0"/>
+                <TextBlock x:Name="TxtProgress" Text="0% - Pret" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           FontSize="12" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+            </Grid>
+        </Border>
+
+        <!-- ========== SECTION 8: JOURNAL ========== -->
+        <GroupBox Grid.Row="7" Style="{StaticResource ModernGroupBox}">
+            <GroupBox.Header>
+                <Grid>
+                    <TextBlock Text="[#] Journal des Operations"/>
+                    <Button Content="Effacer" HorizontalAlignment="Right" Style="{StaticResource SecondaryButton}" 
+                            Padding="8,2" Click="ClearLog_Click"/>
+                </Grid>
+            </GroupBox.Header>
+            <RichTextBox x:Name="LogBox" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
+                         Background="{DynamicResource InputBackground}" Foreground="{DynamicResource TextPrimary}"
+                         BorderThickness="0" FontFamily="Consolas" FontSize="11">
+                <FlowDocument>
+                    <Paragraph>
+                        <Run Text="[i] Module Upload initialise - Pret" Foreground="#4FC3F7"/>
+                    </Paragraph>
+                </FlowDocument>
+            </RichTextBox>
+        </GroupBox>
+    </Grid>
+</Window>

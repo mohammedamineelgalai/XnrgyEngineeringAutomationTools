@@ -45,6 +45,11 @@ namespace XnrgyEngineeringAutomationTools.Services
         private readonly object _pendingLock = new object();
 
         public bool IsConnected => _connection != null;
+
+        /// <summary>
+        /// Retourne la connexion Vault brute pour usage avance
+        /// </summary>
+        public VDF.Vault.Currency.Connections.Connection? Connection => _connection;
         
         /// <summary>
         /// Nombre de proprietes en attente d'application
@@ -58,6 +63,14 @@ namespace XnrgyEngineeringAutomationTools.Services
                     return _pendingPropertyUpdates.Count; 
                 } 
             } 
+        }
+
+        /// <summary>
+        /// Retourne le nom d'utilisateur actuellement connecte
+        /// </summary>
+        public string GetCurrentUsername()
+        {
+            return UserName ?? string.Empty;
         }
 
         /// <summary>

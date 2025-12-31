@@ -209,9 +209,16 @@ if ($BuildOnly) {
 } else {
     Write-Host ""
     Write-Host "  [4/4] Lancement de l'application..." -ForegroundColor Yellow
-    Start-Process -FilePath $exePath
-    Start-Sleep -Seconds 2
-    Write-Host "        ✓ Application lancee!" -ForegroundColor Green
+    
+    # Utiliser le chemin ABSOLU et definir le working directory correctement
+    $absoluteExePath = (Resolve-Path $exePath).Path
+    $workingDir = Split-Path -Parent $absoluteExePath
+    
+    Write-Host "        Working Dir: $workingDir" -ForegroundColor DarkGray
+    
+    Start-Process -FilePath $absoluteExePath -WorkingDirectory $workingDir
+    Start-Sleep -Seconds 1
+    Write-Host "        [+] Application lancee!" -ForegroundColor Green
 }
 
 # Restaurer le répertoire original

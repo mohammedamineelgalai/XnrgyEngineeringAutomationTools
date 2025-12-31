@@ -1,0 +1,912 @@
+#nullable enable
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
+using XnrgyEngineeringAutomationTools.Models;
+using XnrgyEngineeringAutomationTools.Modules.VaultUpload.Models;
+using XnrgyEngineeringAutomationTools.Services;
+using XnrgyEngineeringAutomationTools.Views;
+
+namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
+{
+    /// <summary>
+    /// Upload Module vers Vault - Module integre dans XNRGY Engineering Automation Tools
+    /// Auteur: Mohammed Amine Elgalai - XNRGY Climate Systems ULC
+    /// Version: 1.0.0 - Decembre 2025
+    /// </summary>
+    public partial class VaultUploadModuleWindow : Window
+    {
+        // ====================================================================
+        // Services et connexion
+        // ====================================================================
+        private readonly VaultSdkService? _vaultService;
+        private bool _isVaultConnected = false;
+
+        // ====================================================================
+        // Collections de fichiers
+        // ====================================================================
+        public ObservableCollection<VaultUploadFileItem> InventorFiles { get; } = new();
+        public ObservableCollection<VaultUploadFileItem> NonInventorFiles { get; } = new();
+        private readonly List<VaultUploadFileItem> _allFiles = new();
+
+        // ====================================================================
+        // Proprietes projet
+        // ====================================================================
+        private VaultProjectProperties? _projectProperties;
+        private string _projectPath = string.Empty;
+
+        // ====================================================================
+        // Etat du traitement
+        // ====================================================================
+        private bool _isProcessing = false;
+        private bool _isPaused = false;
+        private CancellationTokenSource? _cancellationTokenSource;
+        private int _uploadedCount = 0;
+        private int _failedCount = 0;
+
+        // ====================================================================
+        // Extensions a exclure
+        // ====================================================================
+        private static readonly HashSet<string> ExcludedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ".v", ".bak", ".old", ".tmp", ".temp", ".ipj", ".lck", ".lock", ".log", ".dwl", ".dwl2"
+        };
+
+        private static readonly string[] ExcludedPrefixes = { "~$", "._", "Backup_", ".~" };
+        private static readonly string[] ExcludedFolders = { "OldVersions", "oldversions", "Backup", "backup", ".vault", ".git", ".vs" };
+        private static readonly HashSet<string> InventorExtensions = new(StringComparer.OrdinalIgnoreCase) { ".ipt", ".iam", ".idw", ".ipn" };
+
+        // ====================================================================
+        // Constructeur
+        // ====================================================================
+        public VaultUploadModuleWindow(VaultSdkService? vaultService)
+        {
+            InitializeComponent();
+            _vaultService = vaultService;
+            
+            DgInventorFiles.ItemsSource = InventorFiles;
+            DgNonInventorFiles.ItemsSource = NonInventorFiles;
+        }
+
+        // ====================================================================
+        // Chargement fenetre
+        // ====================================================================
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            Log("[i] Module Upload vers Vault initialise", LogLevel.INFO);
+            
+            // Verifier connexion Vault
+            if (_vaultService != null && _vaultService.IsConnected)
+            {
+                _isVaultConnected = true;
+                VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(16, 124, 16)); // Vert
+                TxtVaultStatus.Text = $"Vault: Connecte ({_vaultService.VaultName})";
+                TxtVaultUser.Text = $"Utilisateur: {_vaultService.UserName}";
+                Log($"[+] Connexion Vault active: {_vaultService.UserName}@{_vaultService.ServerName}/{_vaultService.VaultName}", LogLevel.SUCCESS);
+                
+                // Charger categories
+                LoadCategories();
+            }
+            else
+            {
+                _isVaultConnected = false;
+                VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(232, 17, 35)); // Rouge
+                TxtVaultStatus.Text = "Vault: Non connecte";
+                TxtVaultUser.Text = "Veuillez vous connecter depuis la fenetre principale";
+                Log("[!] Vault non connecte - Upload impossible", LogLevel.WARNING);
+            }
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            if (_isProcessing)
+            {
+                var result = XnrgyMessageBox.Show(
+                    "Un upload est en cours. Voulez-vous vraiment annuler et fermer?",
+                    "Upload en cours",
+                    XnrgyMessageBoxType.Warning,
+                    XnrgyMessageBoxButtons.YesNo,
+                    this);
+
+                if (result != XnrgyMessageBoxResult.Yes)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                _cancellationTokenSource?.Cancel();
+            }
+        }
+
+        // ====================================================================
+        // Charger categories depuis Vault
+        // ====================================================================
+        private void LoadCategories()
+        {
+            try
+            {
+                if (_vaultService == null || !_vaultService.IsConnected) return;
+
+                var categories = _vaultService.GetAvailableCategories();
+                
+                Dispatcher.Invoke(() =>
+                {
+                    CmbCategoryInventor.Items.Clear();
+                    CmbCategoryNonInventor.Items.Clear();
+
+                    foreach (var cat in categories)
+                    {
+                        CmbCategoryInventor.Items.Add(new VaultCategoryItem { Id = cat.Id, Name = cat.Name });
+                        CmbCategoryNonInventor.Items.Add(new VaultCategoryItem { Id = cat.Id, Name = cat.Name });
+                    }
+
+                    // Selectionner "Engineering" par defaut
+                    var engineering = CmbCategoryInventor.Items.Cast<VaultCategoryItem>()
+                        .FirstOrDefault(c => c.Name.Equals("Engineering", StringComparison.OrdinalIgnoreCase));
+                    
+                    if (engineering != null)
+                    {
+                        CmbCategoryInventor.SelectedItem = engineering;
+                        CmbCategoryNonInventor.SelectedItem = CmbCategoryNonInventor.Items.Cast<VaultCategoryItem>()
+                            .FirstOrDefault(c => c.Name.Equals("Engineering", StringComparison.OrdinalIgnoreCase));
+                    }
+                    else if (CmbCategoryInventor.Items.Count > 0)
+                    {
+                        CmbCategoryInventor.SelectedIndex = 0;
+                        CmbCategoryNonInventor.SelectedIndex = 0;
+                    }
+
+                    Log($"[+] {categories.Count()} categories chargees", LogLevel.INFO);
+                });
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur chargement categories: {ex.Message}", LogLevel.ERROR);
+            }
+        }
+
+        // ====================================================================
+        // Selection Module
+        // ====================================================================
+        private void SelectModule_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Log("[?] Scan des modules disponibles...", LogLevel.INFO);
+                const string basePath = @"C:\Vault\Engineering\Projects";
+
+                if (!Directory.Exists(basePath))
+                {
+                    Log($"[-] Dossier Vault introuvable: {basePath}", LogLevel.ERROR);
+                    XnrgyMessageBox.ShowError($"Dossier Vault introuvable:\n{basePath}", "Erreur", this);
+                    return;
+                }
+
+                var modules = ScanAvailableModules(basePath);
+
+                if (modules.Count == 0)
+                {
+                    Log("[!] Aucun module trouve", LogLevel.WARNING);
+                    XnrgyMessageBox.ShowInfo($"Aucun module trouve dans:\n{basePath}", "Information", this);
+                    return;
+                }
+
+                Log($"[+] {modules.Count} modules trouves", LogLevel.SUCCESS);
+
+                // Creer fenetre de selection
+                var window = new ModuleSelectionWindow(modules.Select(m => new ModuleInfo
+                {
+                    FullPath = m.FullPath,
+                    DisplayName = m.DisplayName,
+                    ProjectNumber = m.ProjectNumber,
+                    Reference = m.Reference,
+                    Module = m.Module
+                }).ToList());
+                window.Owner = this;
+
+                if (window.ShowDialog() == true && window.SelectedModule != null)
+                {
+                    var selected = window.SelectedModule;
+                    _projectPath = selected.FullPath;
+                    TxtProjectPath.Text = _projectPath;
+                    _projectProperties = new VaultProjectProperties
+                    {
+                        ProjectNumber = selected.ProjectNumber,
+                        Reference = selected.Reference,
+                        Module = selected.Module
+                    };
+                    UpdatePropertiesDisplay();
+                    Log($"[+] Module selectionne: {selected.DisplayName}", LogLevel.SUCCESS);
+                    
+                    // Scanner automatiquement
+                    ScanProject();
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur selection module: {ex.Message}", LogLevel.ERROR);
+            }
+        }
+
+        private List<VaultModuleInfo> ScanAvailableModules(string basePath)
+        {
+            var modules = new List<VaultModuleInfo>();
+
+            try
+            {
+                var projectDirs = Directory.GetDirectories(basePath)
+                    .Where(d => Regex.IsMatch(Path.GetFileName(d), @"^\d+$"))
+                    .OrderBy(d => d);
+
+                foreach (var projectDir in projectDirs)
+                {
+                    string projectNum = Path.GetFileName(projectDir);
+                    var refDirs = Directory.GetDirectories(projectDir)
+                        .Where(d => Regex.IsMatch(Path.GetFileName(d), @"^REF\d+$", RegexOptions.IgnoreCase))
+                        .OrderBy(d => d);
+
+                    foreach (var refDir in refDirs)
+                    {
+                        string refFull = Path.GetFileName(refDir);
+                        string refNum = refFull.Substring(3);
+                        var moduleDirs = Directory.GetDirectories(refDir)
+                            .Where(d => Regex.IsMatch(Path.GetFileName(d), @"^M\d+$", RegexOptions.IgnoreCase))
+                            .OrderBy(d => d);
+
+                        foreach (var moduleDir in moduleDirs)
+                        {
+                            string moduleFull = Path.GetFileName(moduleDir);
+                            string moduleNum = moduleFull.Substring(1);
+                            int fileCount = 0;
+                            try { fileCount = Directory.GetFiles(moduleDir, "*.*", SearchOption.AllDirectories).Length; }
+                            catch { }
+
+                            if (fileCount > 0)
+                            {
+                                modules.Add(new VaultModuleInfo
+                                {
+                                    ProjectNumber = projectNum,
+                                    Reference = refNum,
+                                    Module = moduleNum,
+                                    FullPath = moduleDir,
+                                    DisplayName = $"{projectNum} / {refFull} / {moduleFull} ({fileCount} fichiers)"
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur scan: {ex.Message}", LogLevel.ERROR);
+            }
+
+            return modules;
+        }
+
+        // ====================================================================
+        // Parcourir dossier
+        // ====================================================================
+        private void BrowseFolder_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var dialog = new Microsoft.Win32.OpenFileDialog
+                {
+                    Title = "Selectionner un dossier (naviguez vers le dossier puis cliquez Ouvrir)",
+                    Filter = "Dossiers|*.folder|Tous les fichiers|*.*",
+                    FileName = "Selectionner ce dossier",
+                    CheckFileExists = false,
+                    CheckPathExists = true,
+                    InitialDirectory = string.IsNullOrEmpty(_projectPath) ? @"C:\Vault\Engineering\Projects" : _projectPath
+                };
+
+                if (dialog.ShowDialog() == true)
+                {
+                    string selectedPath = Path.GetDirectoryName(dialog.FileName) ?? dialog.FileName;
+                    if (Directory.Exists(selectedPath))
+                    {
+                        _projectPath = selectedPath;
+                        TxtProjectPath.Text = _projectPath;
+                        _projectProperties = ExtractPropertiesFromPath(_projectPath);
+                        UpdatePropertiesDisplay();
+                        ScanProject();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur parcourir: {ex.Message}", LogLevel.ERROR);
+            }
+        }
+
+        // ====================================================================
+        // Depuis Inventor
+        // ====================================================================
+        private void GetFromInventor_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Log("[?] Recherche Inventor en cours...", LogLevel.INFO);
+
+                var processes = System.Diagnostics.Process.GetProcessesByName("Inventor");
+                if (processes.Length == 0)
+                {
+                    Log("[-] Inventor n'est pas lance", LogLevel.ERROR);
+                    XnrgyMessageBox.ShowInfo("Inventor n'est pas lance.\nVeuillez ouvrir Inventor avec un document.", "Information", this);
+                    return;
+                }
+
+                // Tenter de recuperer via COM
+                try
+                {
+                    var inventorType = Type.GetTypeFromProgID("Inventor.Application");
+                    if (inventorType != null)
+                    {
+                        dynamic? inventorApp = Marshal.GetActiveObject("Inventor.Application");
+                        if (inventorApp != null)
+                        {
+                            dynamic? activeDoc = inventorApp.ActiveDocument;
+                            if (activeDoc != null)
+                            {
+                                string fullPath = activeDoc.FullFileName;
+                                if (!string.IsNullOrEmpty(fullPath))
+                                {
+                                    string? folder = Path.GetDirectoryName(fullPath);
+                                    if (!string.IsNullOrEmpty(folder))
+                                    {
+                                        _projectPath = folder;
+                                        TxtProjectPath.Text = _projectPath;
+                                        _projectProperties = ExtractPropertiesFromPath(_projectPath);
+                                        UpdatePropertiesDisplay();
+                                        Log($"[+] Chemin Inventor: {_projectPath}", LogLevel.SUCCESS);
+                                        ScanProject();
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                catch (COMException)
+                {
+                    Log("[!] Impossible de communiquer avec Inventor via COM", LogLevel.WARNING);
+                }
+
+                XnrgyMessageBox.ShowInfo("Aucun document actif dans Inventor.\nOuvrez un fichier et reessayez.", "Information", this);
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur Inventor: {ex.Message}", LogLevel.ERROR);
+            }
+        }
+
+        // ====================================================================
+        // Scanner projet
+        // ====================================================================
+        private void ScanProject_Click(object sender, RoutedEventArgs e)
+        {
+            _projectPath = TxtProjectPath.Text;
+            _projectProperties = ExtractPropertiesFromPath(_projectPath);
+            UpdatePropertiesDisplay();
+            ScanProject();
+        }
+
+        private void ScanProject()
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(_projectPath) || !Directory.Exists(_projectPath))
+                {
+                    Log($"[-] Dossier introuvable: {_projectPath}", LogLevel.ERROR);
+                    return;
+                }
+
+                Log($"[?] Scan du dossier: {_projectPath}", LogLevel.INFO);
+
+                InventorFiles.Clear();
+                NonInventorFiles.Clear();
+                _allFiles.Clear();
+
+                var allFiles = Directory.GetFiles(_projectPath, "*.*", SearchOption.AllDirectories);
+                int excludedCount = 0;
+
+                foreach (var f in allFiles.OrderBy(p => Path.GetFileName(p), StringComparer.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        var fi = new FileInfo(f);
+
+                        // Exclure fichiers backup/temporaires
+                        if (ExcludedExtensions.Contains(fi.Extension)) { excludedCount++; continue; }
+                        if (ExcludedPrefixes.Any(p => fi.Name.StartsWith(p, StringComparison.OrdinalIgnoreCase))) { excludedCount++; continue; }
+                        var dirName = fi.Directory?.Name ?? "";
+                        if (ExcludedFolders.Any(ex => dirName.Equals(ex, StringComparison.OrdinalIgnoreCase))) { excludedCount++; continue; }
+
+                        var item = new VaultUploadFileItem
+                        {
+                            FileName = fi.Name,
+                            FullPath = fi.FullName,
+                            FileType = fi.Extension,
+                            FileExtension = fi.Extension,
+                            FileSizeFormatted = FormatSize(fi.Length),
+                            IsInventorFile = InventorExtensions.Contains(fi.Extension),
+                            IsSelected = true,
+                            Status = "En attente"
+                        };
+
+                        _allFiles.Add(item);
+
+                        if (item.IsInventorFile)
+                            InventorFiles.Add(item);
+                        else
+                            NonInventorFiles.Add(item);
+                    }
+                    catch { }
+                }
+
+                UpdateStatistics();
+                
+                var statusMsg = $"[+] Scanne: {_allFiles.Count} fichiers ({InventorFiles.Count} inventor, {NonInventorFiles.Count} autres)";
+                if (excludedCount > 0) statusMsg += $" | {excludedCount} exclus";
+                Log(statusMsg, LogLevel.SUCCESS);
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur scan: {ex.Message}", LogLevel.ERROR);
+            }
+        }
+
+        // ====================================================================
+        // Selection fichiers
+        // ====================================================================
+        private void SelectAllInventor_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var f in InventorFiles) f.IsSelected = true;
+            UpdateStatistics();
+        }
+
+        private void DeselectAllInventor_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var f in InventorFiles) f.IsSelected = false;
+            UpdateStatistics();
+        }
+
+        private void SelectAllNonInventor_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var f in NonInventorFiles) f.IsSelected = true;
+            UpdateStatistics();
+        }
+
+        private void DeselectAllNonInventor_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var f in NonInventorFiles) f.IsSelected = false;
+            UpdateStatistics();
+        }
+
+        // ====================================================================
+        // Recherche
+        // ====================================================================
+        private void SearchInventor_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplySearchFilter(TxtSearchInventor.Text, true);
+        }
+
+        private void SearchNonInventor_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplySearchFilter(TxtSearchNonInventor.Text, false);
+        }
+
+        private void ApplySearchFilter(string filter, bool isInventor)
+        {
+            var collection = isInventor ? InventorFiles : NonInventorFiles;
+            var source = _allFiles.Where(f => f.IsInventorFile == isInventor);
+
+            collection.Clear();
+
+            if (string.IsNullOrWhiteSpace(filter))
+            {
+                foreach (var f in source) collection.Add(f);
+            }
+            else
+            {
+                var filterLower = filter.ToLowerInvariant();
+                foreach (var f in source.Where(f => 
+                    f.FileName.ToLowerInvariant().Contains(filterLower) ||
+                    f.FullPath.ToLowerInvariant().Contains(filterLower)))
+                {
+                    collection.Add(f);
+                }
+            }
+        }
+
+        // ====================================================================
+        // Upload vers Vault
+        // ====================================================================
+        private async void CheckIn_Click(object sender, RoutedEventArgs e)
+        {
+            if (!_isVaultConnected || _vaultService == null)
+            {
+                XnrgyMessageBox.ShowError("Vault non connecte.\nVeuillez vous connecter depuis la fenetre principale.", "Erreur", this);
+                return;
+            }
+
+            var selectedFiles = _allFiles.Where(f => f.IsSelected).ToList();
+            if (selectedFiles.Count == 0)
+            {
+                XnrgyMessageBox.ShowInfo("Aucun fichier selectionne pour l'upload.", "Information", this);
+                return;
+            }
+
+            var confirm = XnrgyMessageBox.Show(
+                $"Vous allez uploader {selectedFiles.Count} fichiers vers Vault.\n\n" +
+                $"Projet: {_projectProperties?.ProjectNumber ?? "N/A"}\n" +
+                $"Reference: {_projectProperties?.Reference ?? "N/A"}\n" +
+                $"Module: {_projectProperties?.Module ?? "N/A"}\n\n" +
+                "Continuer?",
+                "Confirmation Upload",
+                XnrgyMessageBoxType.Info,
+                XnrgyMessageBoxButtons.YesNo,
+                this);
+
+            if (confirm != XnrgyMessageBoxResult.Yes) return;
+
+            await StartUploadAsync(selectedFiles);
+        }
+
+        private async Task StartUploadAsync(List<VaultUploadFileItem> files)
+        {
+            _isProcessing = true;
+            _isPaused = false;
+            _uploadedCount = 0;
+            _failedCount = 0;
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            SetProcessingState(true);
+
+            Log($"[>] Debut upload de {files.Count} fichiers...", LogLevel.INFO);
+
+            try
+            {
+                int total = files.Count;
+                int current = 0;
+
+                foreach (var file in files)
+                {
+                    if (_cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        Log("[!] Upload annule par l'utilisateur", LogLevel.WARNING);
+                        break;
+                    }
+
+                    // Pause
+                    while (_isPaused && !_cancellationTokenSource.Token.IsCancellationRequested)
+                    {
+                        await Task.Delay(100);
+                    }
+
+                    current++;
+                    UpdateProgress(current, total, file.FileName);
+
+                    try
+                    {
+                        file.Status = "Upload en cours...";
+                        
+                        // Upload vers Vault
+                        bool success = await Task.Run(() => UploadFileToVault(file));
+
+                        if (success)
+                        {
+                            file.Status = "[+] Uploade";
+                            _uploadedCount++;
+                            Log($"[+] {file.FileName}", LogLevel.SUCCESS);
+                        }
+                        else
+                        {
+                            file.Status = "[-] Echec";
+                            _failedCount++;
+                            Log($"[-] Echec: {file.FileName}", LogLevel.ERROR);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        file.Status = $"[-] Erreur: {ex.Message}";
+                        _failedCount++;
+                        Log($"[-] Erreur {file.FileName}: {ex.Message}", LogLevel.ERROR);
+                    }
+
+                    UpdateStatistics();
+                }
+
+                // Resultat final
+                if (_uploadedCount > 0)
+                {
+                    Log($"[+] Upload termine: {_uploadedCount} fichiers uploades, {_failedCount} echecs", LogLevel.SUCCESS);
+                    XnrgyMessageBox.ShowSuccess(
+                        $"Upload termine!\n\n" +
+                        $"Fichiers uploades: {_uploadedCount}\n" +
+                        $"Echecs: {_failedCount}",
+                        "Succes", this);
+                }
+                else
+                {
+                    Log($"[-] Aucun fichier uploade", LogLevel.ERROR);
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur upload: {ex.Message}", LogLevel.ERROR);
+            }
+            finally
+            {
+                _isProcessing = false;
+                SetProcessingState(false);
+                UpdateProgress(0, 100, "Termine");
+            }
+        }
+
+        private bool UploadFileToVault(VaultUploadFileItem file)
+        {
+            if (_vaultService == null) return false;
+
+            try
+            {
+                // Calculer le chemin Vault relatif
+                string localRoot = @"C:\Vault";
+                string vaultPath = "$/";
+
+                if (file.FullPath.StartsWith(localRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    string relativePath = file.FullPath.Substring(localRoot.Length).TrimStart('\\');
+                    string? folder = Path.GetDirectoryName(relativePath);
+                    vaultPath = "$/" + (folder?.Replace("\\", "/") ?? "");
+                }
+
+                // Creer commentaire avec infos projet
+                string comment = TxtComment.Text;
+                if (_projectProperties != null)
+                {
+                    comment = $"{TxtComment.Text} | Project: {_projectProperties.ProjectNumber}, Ref: {_projectProperties.Reference}, Module: {_projectProperties.Module}";
+                }
+
+                // Upload fichier vers Vault
+                return _vaultService.AddFileToVault(
+                    file.FullPath,
+                    vaultPath,
+                    comment
+                );
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur upload {file.FileName}: {ex.Message}", Logger.LogLevel.ERROR);
+                return false;
+            }
+        }
+
+        // ====================================================================
+        // Controles traitement
+        // ====================================================================
+        private void Pause_Click(object sender, RoutedEventArgs e)
+        {
+            _isPaused = !_isPaused;
+            BtnPause.Content = _isPaused ? "[>] REPRENDRE" : "[~] PAUSE";
+            Log(_isPaused ? "[~] Upload en pause" : "[>] Upload repris", LogLevel.INFO);
+        }
+
+        private void Stop_Click(object sender, RoutedEventArgs e)
+        {
+            Log("[!] Arret demande - Finalisation du fichier en cours...", LogLevel.WARNING);
+            _cancellationTokenSource?.Cancel();
+        }
+
+        private void Cancel_Click(object sender, RoutedEventArgs e)
+        {
+            var confirm = XnrgyMessageBox.Show(
+                "Voulez-vous vraiment annuler l'upload?",
+                "Confirmation",
+                XnrgyMessageBoxType.Warning,
+                XnrgyMessageBoxButtons.YesNo,
+                this);
+
+            if (confirm == XnrgyMessageBoxResult.Yes)
+            {
+                Log("[-] Upload annule", LogLevel.WARNING);
+                _cancellationTokenSource?.Cancel();
+            }
+        }
+
+        // ====================================================================
+        // Utilitaires
+        // ====================================================================
+        private void SetProcessingState(bool isProcessing)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                BtnCheckIn.IsEnabled = !isProcessing;
+                BtnPause.IsEnabled = isProcessing;
+                BtnStop.IsEnabled = isProcessing;
+                BtnCancel.IsEnabled = isProcessing;
+            });
+        }
+
+        private void UpdateProgress(int current, int total, string fileName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                int percent = total > 0 ? (current * 100 / total) : 0;
+                ProgressBar.Value = percent;
+                TxtProgress.Text = $"{percent}% - {current}/{total} - {fileName}";
+            });
+        }
+
+        private void UpdateStatistics()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                TxtTotalFiles.Text = _allFiles.Count.ToString();
+                TxtInventorCount.Text = InventorFiles.Count.ToString();
+                TxtNonInventorCount.Text = NonInventorFiles.Count.ToString();
+                TxtSelectedCount.Text = _allFiles.Count(f => f.IsSelected).ToString();
+                TxtUploadedCount.Text = _uploadedCount.ToString();
+            });
+        }
+
+        private void UpdatePropertiesDisplay()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (_projectProperties != null && !string.IsNullOrWhiteSpace(_projectProperties.ProjectNumber))
+                {
+                    PropertiesPanel.Visibility = Visibility.Visible;
+                    TxtProjectNumber.Text = _projectProperties.ProjectNumber;
+                    TxtReference.Text = _projectProperties.Reference;
+                    TxtModule.Text = _projectProperties.Module;
+                }
+                else
+                {
+                    PropertiesPanel.Visibility = Visibility.Collapsed;
+                }
+            });
+        }
+
+        private VaultProjectProperties? ExtractPropertiesFromPath(string path)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(path)) return null;
+
+                path = path.TrimEnd('\\', '/');
+                var parts = path.Split(new[] { '\\', '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+                // Chercher "Projects" et extraire les 3 niveaux suivants
+                int projectsIndex = -1;
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    if (parts[i].Equals("Projects", StringComparison.OrdinalIgnoreCase))
+                    {
+                        projectsIndex = i;
+                        break;
+                    }
+                }
+
+                if (projectsIndex >= 0 && projectsIndex + 3 < parts.Length)
+                {
+                    string projectNumber = parts[projectsIndex + 1];
+                    string refFolder = parts[projectsIndex + 2];
+                    string moduleFolder = parts[projectsIndex + 3];
+
+                    if (Regex.IsMatch(projectNumber, @"^\d+$") &&
+                        Regex.IsMatch(refFolder, @"^REF(\d+)$", RegexOptions.IgnoreCase) &&
+                        Regex.IsMatch(moduleFolder, @"^M(\d+)$", RegexOptions.IgnoreCase))
+                    {
+                        var refMatch = Regex.Match(refFolder, @"^REF(\d+)$", RegexOptions.IgnoreCase);
+                        var moduleMatch = Regex.Match(moduleFolder, @"^M(\d+)$", RegexOptions.IgnoreCase);
+
+                        return new VaultProjectProperties
+                        {
+                            ProjectNumber = projectNumber,
+                            Reference = refMatch.Groups[1].Value,
+                            Module = moduleMatch.Groups[1].Value
+                        };
+                    }
+                }
+
+                // Alternative: 3 derniers dossiers
+                if (parts.Length >= 3)
+                {
+                    string projectNumber = parts[parts.Length - 3];
+                    string refFolder = parts[parts.Length - 2];
+                    string moduleFolder = parts[parts.Length - 1];
+
+                    if (Regex.IsMatch(projectNumber, @"^\d+$") &&
+                        Regex.IsMatch(refFolder, @"^REF(\d+)$", RegexOptions.IgnoreCase) &&
+                        Regex.IsMatch(moduleFolder, @"^M(\d+)$", RegexOptions.IgnoreCase))
+                    {
+                        var refMatch = Regex.Match(refFolder, @"^REF(\d+)$", RegexOptions.IgnoreCase);
+                        var moduleMatch = Regex.Match(moduleFolder, @"^M(\d+)$", RegexOptions.IgnoreCase);
+
+                        return new VaultProjectProperties
+                        {
+                            ProjectNumber = projectNumber,
+                            Reference = refMatch.Groups[1].Value,
+                            Module = moduleMatch.Groups[1].Value
+                        };
+                    }
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string FormatSize(long bytes)
+        {
+            if (bytes < 1024) return bytes + " B";
+            double kb = bytes / 1024.0;
+            if (kb < 1024) return kb.ToString("0.0") + " KB";
+            double mb = kb / 1024.0;
+            if (mb < 1024) return mb.ToString("0.0") + " MB";
+            double gb = mb / 1024.0;
+            return gb.ToString("0.00") + " GB";
+        }
+
+        // ====================================================================
+        // Journal
+        // ====================================================================
+        private enum LogLevel { INFO, SUCCESS, WARNING, ERROR }
+
+        private void Log(string message, LogLevel level)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var paragraph = new Paragraph();
+                var run = new Run($"[{DateTime.Now:HH:mm:ss}] {message}");
+
+                switch (level)
+                {
+                    case LogLevel.SUCCESS:
+                        run.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 16));
+                        break;
+                    case LogLevel.WARNING:
+                        run.Foreground = new SolidColorBrush(Color.FromRgb(255, 140, 0));
+                        break;
+                    case LogLevel.ERROR:
+                        run.Foreground = new SolidColorBrush(Color.FromRgb(232, 17, 35));
+                        break;
+                    default:
+                        run.Foreground = new SolidColorBrush(Color.FromRgb(79, 195, 247));
+                        break;
+                }
+
+                paragraph.Inlines.Add(run);
+                paragraph.Margin = new Thickness(0, 2, 0, 2);
+                LogBox.Document.Blocks.Add(paragraph);
+                LogBox.ScrollToEnd();
+            });
+
+            // Logger aussi vers fichier
+            Services.Logger.Log(message, level == LogLevel.ERROR ? Services.Logger.LogLevel.ERROR :
+                                         level == LogLevel.WARNING ? Services.Logger.LogLevel.WARNING :
+                                         Services.Logger.LogLevel.INFO);
+        }
+
+        private void ClearLog_Click(object sender, RoutedEventArgs e)
+        {
+            LogBox.Document.Blocks.Clear();
+            Log("[i] Journal efface", LogLevel.INFO);
+        }
+    }
+}

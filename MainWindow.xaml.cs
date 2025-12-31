@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -924,6 +925,7 @@ namespace XnrgyEngineeringAutomationTools
         /// <summary>
         /// Timer de reconnexion automatique à Inventor
         /// Se déclenche toutes les 3 secondes si Inventor n'est pas connecté
+        /// Optimise pour eviter le spam de logs
         /// </summary>
         private void InventorReconnectTimer_Tick(object? sender, EventArgs e)
         {
@@ -935,13 +937,13 @@ namespace XnrgyEngineeringAutomationTools
                 return;
             }
 
-            // Tentative de reconnexion
-            if (_inventorService.ForceReconnect())
+            // Tentative de reconnexion (le throttling est gere dans InventorService)
+            if (_inventorService.TryConnect())
             {
                 _isInventorConnected = true;
                 string version = _inventorService.GetInventorVersion() ?? "";
                 
-                AddLog("[+] Reconnexion a Inventor reussie!", "SUCCESS");
+                AddLog("[+] Connexion a Inventor etablie!", "SUCCESS");
                 if (!string.IsNullOrEmpty(version))
                 {
                     AddLog("   [i] Version: " + version, "INFO");
@@ -984,32 +986,107 @@ namespace XnrgyEngineeringAutomationTools
 
         private void OpenVaultUpload_Click(object sender, RoutedEventArgs e)
         {
-            AddLog("Lancement de Vault Upload Tool...", "START");
-            StatusText.Text = "Lancement de Vault Upload...";
+            AddLog("Ouverture de l'outil Upload Module vers Vault...", "START");
+            StatusText.Text = "Upload Module...";
+            
             try
             {
-                if (File.Exists(VaultUploadExePath))
+                // Ouvrir le module integre (plus besoin de l'exe externe)
+                var uploadWindow = new Modules.VaultUpload.Views.VaultUploadModuleWindow(_isVaultConnected ? _vaultService : null);
+                uploadWindow.Owner = this;
+                
+                AddLog("Fenetre Upload Module ouverte", "INFO");
+                AddLog("Options disponibles:", "INFO");
+                AddLog("  - Selection de module depuis C:\\Vault\\Engineering\\Projects", "INFO");
+                AddLog("  - Parcourir dossier local", "INFO");
+                AddLog("  - Depuis Inventor (document actif)", "INFO");
+                
+                var result = uploadWindow.ShowDialog();
+                
+                if (result == true)
                 {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = VaultUploadExePath,
-                        UseShellExecute = true
-                    });
-                    AddLog("VaultAutomationTool lance avec succes", "SUCCESS");
-                    AddLog("Chemin: " + VaultUploadExePath, "INFO");
-                    StatusText.Text = "Vault Upload lance";
+                    AddLog("Upload Module termine avec succes!", "SUCCESS");
+                    StatusText.Text = "Upload termine";
                 }
                 else
                 {
-                    AddLog("ERREUR: Application non trouvee!", "CRITICAL");
-                    AddLog("Chemin attendu: " + VaultUploadExePath, "ERROR");
-                    AddLog("Compilez le projet VaultAutomationTool d'abord", "WARN");
-                    StatusText.Text = "Erreur: Application non trouvee";
+                    AddLog("Upload Module ferme", "INFO");
+                    StatusText.Text = "Upload annule";
                 }
             }
             catch (Exception ex)
             {
-                AddLog("Erreur lancement VaultUpload: " + ex.Message, "CRITICAL");
+                AddLog("Erreur ouverture Upload Module: " + ex.Message, "ERROR");
+                StatusText.Text = "Erreur";
+            }
+        }
+
+        private void OpenUploadTemplate_Click(object sender, RoutedEventArgs e)
+        {
+            AddLog("Ouverture de l'outil Upload Template...", "START");
+            StatusText.Text = "Upload Template...";
+            
+            try
+            {
+                // Liste des admins autorisés (case-insensitive)
+                var admins = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "Administrator",
+                    "mohammedamine.elgalai"
+                };
+
+                // Vérifier si l'utilisateur actuel est admin
+                string currentUser = _vaultService?.GetCurrentUsername() ?? "";
+                bool isAdmin = admins.Contains(currentUser);
+
+                if (!isAdmin)
+                {
+                    XnrgyMessageBox.ShowInfo(
+                        "Cette fonctionnalite est reservee aux Administrateurs.\n\n" +
+                        "Si vous avez une demande d'amelioration ou besoin d'acces,\n" +
+                        "veuillez contacter les Admins ou le developpeur de l'application.\n\n" +
+                        "Contact: mohammedamine.elgalai@xnrgy.com",
+                        "Acces Reserve - Admin Only",
+                        this);
+                    AddLog("Acces refuse - fonctionnalite reservee aux admins", "WARN");
+                    StatusText.Text = "Acces refuse";
+                    return;
+                }
+
+                // Verifier connexion Vault
+                if (!_isVaultConnected || _vaultService == null)
+                {
+                    XnrgyMessageBox.ShowWarning(
+                        "Veuillez d'abord vous connecter au Vault.",
+                        "Connexion Vault requise",
+                        this);
+                    AddLog("Upload Template - Connexion Vault requise", "WARN");
+                    return;
+                }
+
+                // Ouvrir la fenetre Upload Template avec le service partage
+                var uploadTemplateWindow = new UploadTemplateWindow(_vaultService);
+                uploadTemplateWindow.Owner = this;
+                
+                AddLog("Fenetre Upload Template ouverte", "INFO");
+                AddLog("Fonctionnalite: Upload de templates vers Vault PROD", "INFO");
+                
+                var result = uploadTemplateWindow.ShowDialog();
+                
+                if (result == true)
+                {
+                    AddLog("Upload Template termine avec succes!", "SUCCESS");
+                    StatusText.Text = "Upload termine";
+                }
+                else
+                {
+                    AddLog("Upload Template ferme", "INFO");
+                    StatusText.Text = "Upload annule";
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("Erreur ouverture Upload Template: " + ex.Message, "ERROR");
                 StatusText.Text = "Erreur";
             }
         }
