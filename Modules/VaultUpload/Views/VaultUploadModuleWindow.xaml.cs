@@ -528,6 +528,79 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                     collection.Add(f);
                 }
             }
+            
+            // Re-appliquer les autres filtres
+            ApplyAllFilters(isInventor);
+        }
+
+        // ====================================================================
+        // Filtres Extension et Selection
+        // ====================================================================
+        private void CmbExtensionInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyAllFilters(true);
+        }
+
+        private void CmbExtensionNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyAllFilters(false);
+        }
+
+        private void CmbStateInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyAllFilters(true);
+        }
+
+        private void CmbStateNonInventor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyAllFilters(false);
+        }
+
+        private void ApplyAllFilters(bool isInventor)
+        {
+            var collection = isInventor ? InventorFiles : NonInventorFiles;
+            var searchBox = isInventor ? TxtSearchInventor : TxtSearchNonInventor;
+            var extCombo = isInventor ? CmbExtensionInventor : CmbExtensionNonInventor;
+            var stateCombo = isInventor ? CmbStateInventor : CmbStateNonInventor;
+
+            // Source de base
+            var source = _allFiles.Where(f => f.IsInventorFile == isInventor);
+
+            // Filtre recherche
+            var searchText = searchBox?.Text?.ToLowerInvariant() ?? "";
+            if (!string.IsNullOrWhiteSpace(searchText))
+            {
+                source = source.Where(f => 
+                    f.FileName.ToLowerInvariant().Contains(searchText) ||
+                    f.FullPath.ToLowerInvariant().Contains(searchText));
+            }
+
+            // Filtre extension
+            var extItem = extCombo?.SelectedItem as ComboBoxItem;
+            var extFilter = extItem?.Content?.ToString() ?? "Tous";
+            if (extFilter != "Tous" && !string.IsNullOrEmpty(extFilter))
+            {
+                source = source.Where(f => f.FileExtension?.ToLowerInvariant() == extFilter.ToLowerInvariant());
+            }
+
+            // Filtre selection
+            var stateItem = stateCombo?.SelectedItem as ComboBoxItem;
+            var stateFilter = stateItem?.Content?.ToString() ?? "Tous";
+            if (stateFilter == "Sélectionnés")
+            {
+                source = source.Where(f => f.IsSelected);
+            }
+            else if (stateFilter == "Non sélectionnés")
+            {
+                source = source.Where(f => !f.IsSelected);
+            }
+
+            // Appliquer
+            collection.Clear();
+            foreach (var f in source)
+            {
+                collection.Add(f);
+            }
         }
 
         // ====================================================================
@@ -753,11 +826,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
         {
             Dispatcher.Invoke(() =>
             {
-                TxtTotalFiles.Text = _allFiles.Count.ToString();
-                TxtInventorCount.Text = InventorFiles.Count.ToString();
-                TxtNonInventorCount.Text = NonInventorFiles.Count.ToString();
-                TxtSelectedCount.Text = _allFiles.Count(f => f.IsSelected).ToString();
-                TxtUploadedCount.Text = _uploadedCount.ToString();
+                // Mise à jour des statistiques dans le header (affiche juste le nombre)
+                TxtStatsInventor.Text = InventorFiles.Count.ToString();
+                TxtStatsNonInventor.Text = NonInventorFiles.Count.ToString();
+                TxtStatsSelected.Text = _allFiles.Count(f => f.IsSelected).ToString();
             });
         }
 
@@ -901,6 +973,45 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             Services.Logger.Log(message, level == LogLevel.ERROR ? Services.Logger.LogLevel.ERROR :
                                          level == LogLevel.WARNING ? Services.Logger.LogLevel.WARNING :
                                          Services.Logger.LogLevel.INFO);
+        }
+
+        /// <summary>
+        /// Toggle la checkbox IsSelected quand on clique sur une ligne du DataGrid
+        /// </summary>
+        private void DataGrid_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            try
+            {
+                if (sender is System.Windows.Controls.DataGrid dataGrid)
+                {
+                    // Verifier si on a clique directement sur la checkbox (ne pas toggle deux fois)
+                    var originalSource = e.OriginalSource as System.Windows.FrameworkElement;
+                    if (originalSource != null)
+                    {
+                        // Si c'est un CheckBox, ne pas faire le toggle (deja gere par le CheckBox)
+                        var parent = originalSource;
+                        while (parent != null)
+                        {
+                            if (parent is System.Windows.Controls.CheckBox)
+                            {
+                                return;
+                            }
+                            parent = System.Windows.Media.VisualTreeHelper.GetParent(parent) as System.Windows.FrameworkElement;
+                        }
+                    }
+
+                    // Toggle la selection de l'item clique
+                    if (dataGrid.SelectedItem is FileItem fileItem)
+                    {
+                        fileItem.IsSelected = !fileItem.IsSelected;
+                        UpdateStatistics();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur toggle selection: {ex.Message}", LogLevel.ERROR);
+            }
         }
 
         private void ClearLog_Click(object sender, RoutedEventArgs e)
