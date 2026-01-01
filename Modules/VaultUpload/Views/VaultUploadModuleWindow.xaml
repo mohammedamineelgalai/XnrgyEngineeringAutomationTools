@@ -17,7 +17,7 @@
     <Window.Resources>
         <!-- ========== COULEURS THEME ========== -->
         <SolidColorBrush x:Key="XnrgyBlue" Color="#0078D4"/>
-        <SolidColorBrush x:Key="XnrgyGreen" Color="#107C10"/>
+        <SolidColorBrush x:Key="XnrgyGreen" Color="#00D26A"/>
         <SolidColorBrush x:Key="XnrgyOrange" Color="#FF8C00"/>
         <SolidColorBrush x:Key="XnrgyRed" Color="#E81123"/>
         
@@ -25,8 +25,8 @@
         <SolidColorBrush x:Key="WindowBackground" Color="#1E1E2E"/>
         <SolidColorBrush x:Key="PanelBackground" Color="#252536"/>
         <SolidColorBrush x:Key="InputBackground" Color="#2D2D44"/>
-        <SolidColorBrush x:Key="BorderColor" Color="#404060"/>
-        <SolidColorBrush x:Key="TextPrimary" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#4A7FBF"/>
+        <SolidColorBrush x:Key="TextPrimary" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="TextSecondary" Color="#888888"/>
         <SolidColorBrush x:Key="DataGridAltRow" Color="#2A2A3E"/>
         
@@ -85,7 +85,7 @@
                                 <Setter TargetName="border" Property="Background" Value="#005A9E"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#404060"/>
+                                <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
                                 <Setter Property="Foreground" Value="#666666"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -135,7 +135,7 @@
                                 </Trigger.ExitActions>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#404060"/>
+                                <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
                                 <Setter Property="Foreground" Value="#666666"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -159,7 +159,7 @@
                                 <Setter TargetName="border" Property="Background" Value="#A72B2E"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#404060"/>
+                                <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -182,7 +182,7 @@
                                 <Setter TargetName="border" Property="Background" Value="#C44E09"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="border" Property="Background" Value="#404060"/>
+                                <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -229,9 +229,10 @@
             <Setter Property="Foreground" Value="{DynamicResource TextPrimary}"/>
             <Setter Property="BorderBrush" Value="White"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -239,7 +240,8 @@
                                 BorderBrush="{TemplateBinding BorderBrush}" 
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4">
-                            <ScrollViewer x:Name="PART_ContentHost" Margin="2"/>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalScrollBarVisibility="Disabled"
+                                          VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsFocused" Value="True">
@@ -254,19 +256,19 @@
         <!-- ========== STYLE DATAGRID MODERNE ========== -->
         <Style TargetType="DataGrid">
             <Setter Property="Background" Value="#1E1E2E"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
-            <Setter Property="BorderBrush" Value="#404060"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="RowBackground" Value="#252536"/>
             <Setter Property="AlternatingRowBackground" Value="#2D2D44"/>
             <Setter Property="GridLinesVisibility" Value="Horizontal"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="#404060"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#4A7FBF"/>
             <Setter Property="HeadersVisibility" Value="Column"/>
         </Style>
 
         <!-- Style Header DataGrid - fond bleu marine XNRGY avec texte blanc gras -->
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#2A4A6F"/>
+            <Setter Property="Background" Value="#4A7FBF"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="12"/>
@@ -299,7 +301,7 @@
         <!-- Style Row DataGrid -->
         <Style TargetType="DataGridRow">
             <Setter Property="Background" Value="#252536"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
             <Style.Triggers>
                 <Trigger Property="AlternationIndex" Value="1">
                     <Setter Property="Background" Value="#2D2D44"/>
@@ -317,12 +319,12 @@
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>    <!-- Header: Logo + Connexion + Stats -->
-            <RowDefinition Height="Auto"/>    <!-- Selection module -->
-            <RowDefinition Height="*"/>       <!-- Listes fichiers (prend tout l'espace) -->
-            <RowDefinition Height="Auto"/>    <!-- Commentaire -->
-            <RowDefinition Height="Auto"/>    <!-- Barre progression + Boutons -->
-            <RowDefinition Height="150"/>     <!-- Journal (en bas) -->
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="150"/>
         </Grid.RowDefinitions>
 
         <!-- ========== SECTION 0: HEADER (Style Créer Module) ========== -->
@@ -349,7 +351,7 @@
 
                 <!-- Centre: Statistiques (agrandies) -->
                 <Border Grid.Column="1" Background="#2D2D44" CornerRadius="6" Padding="15,4" Margin="20,0" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        BorderBrush="#404060" BorderThickness="1">
+                        BorderBrush="#4A7FBF" BorderThickness="1">
                     <StackPanel VerticalAlignment="Center">
                         <!-- Titre -->
                         <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
@@ -379,7 +381,7 @@
                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
                     <!-- Status Connexion -->
                     <Border Background="#2D2D44" CornerRadius="4" Padding="10,6" Margin="0,0,0,6"
-                            BorderBrush="#404060" BorderThickness="1">
+                            BorderBrush="#4A7FBF" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtVaultStatus" FontWeight="SemiBold" FontSize="12">
@@ -389,14 +391,19 @@
                     </Border>
                     <!-- Propriétés détectées -->
                     <Border x:Name="PropertiesPanel" Background="#2D2D44" CornerRadius="4" Padding="10,6" Visibility="Collapsed"
-                            BorderBrush="#404060" BorderThickness="1">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="📋 Projet: " Foreground="White" FontSize="11"/>
-                            <TextBlock x:Name="TxtProjectNumber" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="12"/>
-                            <TextBlock Text=" | REF: " Foreground="White" FontSize="11" Margin="8,0,0,0"/>
-                            <TextBlock x:Name="TxtReference" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="12"/>
-                            <TextBlock Text=" | M: " Foreground="White" FontSize="11" Margin="8,0,0,0"/>
-                            <TextBlock x:Name="TxtModule" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="12"/>
+                            BorderBrush="#4A7FBF" BorderThickness="1">
+                        <StackPanel>
+                            <!-- Titre du groupe -->
+                            <TextBlock Text="🏷️ Propriétés Vault" Foreground="#00BFFF" FontWeight="Bold" FontSize="12" Margin="0,0,0,6"/>
+                            <!-- Valeurs -->
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📋 Projet: " Foreground="White" FontSize="11"/>
+                                <TextBlock x:Name="TxtProjectNumber" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="12"/>
+                                <TextBlock Text=" | REF: " Foreground="White" FontSize="11" Margin="8,0,0,0"/>
+                                <TextBlock x:Name="TxtReference" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="12"/>
+                                <TextBlock Text=" | M: " Foreground="White" FontSize="11" Margin="8,0,0,0"/>
+                                <TextBlock x:Name="TxtModule" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="12"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -503,11 +510,11 @@
                           MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
-                        <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="220" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileType}" Width="80" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="90" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📁 Chemin relatif" Binding="{Binding RelativePath}" Width="*" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="180" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileType}" Width="70" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="80" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📁 Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="150" IsReadOnly="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -520,7 +527,7 @@
             </GroupBox.Header>
             <TextBox x:Name="TxtComment" Style="{StaticResource ModernTextBox}" Height="36" 
                      TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
-                     Text="Premier check-in effectue par XNRGY Engineering Automation Tools"/>
+                     Text="[Auto] Check-in effectue par XNRGY Engineering Automation Tools - Module Upload Module"/>
         </GroupBox>
 
         <!-- ========== SECTION 4: BARRE PROGRESSION + BOUTONS ========== -->
@@ -533,32 +540,32 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Barre de progression -->
-                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" Padding="2" Height="32" Margin="0,0,15,0"
-                        BorderBrush="#404060" BorderThickness="1">
+                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" Padding="2" Height="40" Margin="0,0,15,0"
+                        BorderBrush="#4A7FBF" BorderThickness="1">
                     <Grid>
-                        <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Value="0" Height="28"
+                        <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Value="0" Height="36"
                                      Foreground="{DynamicResource XnrgyGreen}" Background="Transparent" BorderThickness="0"/>
                         <TextBlock x:Name="TxtProgress" Text="0% - Pret" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   FontSize="11" FontWeight="Bold" Foreground="White"/>
+                                   FontSize="12" FontWeight="Bold" Foreground="White"/>
                     </Grid>
                 </Border>
 
                 <!-- Boutons action -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button x:Name="BtnCheckIn" Content="▶️ UPLOAD" 
-                            Style="{StaticResource SuccessButton}" Height="32" Width="110"
+                            Style="{StaticResource SuccessButton}" Height="40" Width="110"
                             Click="CheckIn_Click" Margin="0,0,8,0"/>
                     
                     <Button x:Name="BtnPause" Content="⏸️ PAUSE" 
-                            Style="{StaticResource WarningButton}" Height="32" Width="100"
+                            Style="{StaticResource WarningButton}" Height="40" Width="100"
                             Click="Pause_Click" Margin="0,0,8,0" IsEnabled="False"/>
                     
                     <Button x:Name="BtnStop" Content="⏹️ STOP" 
-                            Style="{StaticResource WarningButton}" Height="32" Width="90"
+                            Style="{StaticResource DangerButton}" Height="40" Width="90"
                             Click="Stop_Click" Margin="0,0,8,0" IsEnabled="False"/>
                     
                     <Button x:Name="BtnCancel" Content="❌ FERMER" 
-                            Style="{StaticResource DangerButton}" Height="32" Width="100"
+                            Style="{StaticResource DangerButton}" Height="40" Width="100"
                             Click="Cancel_Click"/>
                 </StackPanel>
             </Grid>

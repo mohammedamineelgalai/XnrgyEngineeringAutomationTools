@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using XnrgyEngineeringAutomationTools.Models;
+using XnrgyEngineeringAutomationTools.Modules.CreateModule.Models;
 
 namespace XnrgyEngineeringAutomationTools.Services
 {

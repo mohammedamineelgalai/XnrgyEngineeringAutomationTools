@@ -19,7 +19,7 @@
         <SolidColorBrush x:Key="ButtonBg" Color="#252536"/>
         <SolidColorBrush x:Key="ButtonHover" Color="#3D3D56"/>
         <SolidColorBrush x:Key="LogBg" Color="#12121C"/>
-        <SolidColorBrush x:Key="TextLight" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="TextLight" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="TextMuted" Color="#888888"/>
         
         <Style x:Key="ModuleButton" TargetType="Button">
@@ -35,7 +35,7 @@
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
                                 CornerRadius="6" 
-                                BorderBrush="#2A4A6F" 
+                                BorderBrush="#4A7FBF" 
                                 BorderThickness="2"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -67,7 +67,7 @@
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
                                 CornerRadius="6" 
-                                BorderBrush="#2A4A6F"
+                                BorderBrush="#4A7FBF"
                                 BorderThickness="2"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -102,7 +102,7 @@
 
                 <!-- Status Vault et Inventor -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border x:Name="VaultStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" Margin="0,0,15,0" BorderBrush="#2A4A6F" BorderThickness="2">
+                    <Border x:Name="VaultStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" Margin="0,0,15,0" BorderBrush="#4A7FBF" BorderThickness="2">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Ellipse x:Name="VaultIndicator" Width="11" Height="11" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="VaultStatusText" VerticalAlignment="Center" FontSize="12">
@@ -110,7 +110,7 @@
                             </TextBlock>
                         </StackPanel>
                     </Border>
-                    <Border x:Name="InventorStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" BorderBrush="#2A4A6F" BorderThickness="2">
+                    <Border x:Name="InventorStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" BorderBrush="#4A7FBF" BorderThickness="2">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Ellipse x:Name="InventorIndicator" Width="11" Height="11" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="InventorLabel" Text="Inventor: " Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center" FontSize="12"/>
@@ -153,7 +153,7 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="15,5">
             <StackPanel>
                 <!-- GroupBox: Vault & Inventor -->
-                <GroupBox x:Name="GroupBox1" Margin="0,0,0,12" Padding="12" Background="#252536" BorderBrush="#2A4A6F" BorderThickness="2">
+                <GroupBox x:Name="GroupBox1" Margin="0,0,0,12" Padding="12" Background="#252536" BorderBrush="#4A7FBF" BorderThickness="2">
                     <GroupBox.Header>
                         <TextBlock x:Name="GroupBox1Header" Text="&#x1F527; Vault &amp; Inventor Tools" FontSize="16" FontWeight="Bold" Foreground="White"/>
                     </GroupBox.Header>
@@ -212,7 +212,7 @@
                 </GroupBox>
                 
                 <!-- GroupBox: Verification & Quality -->
-                <GroupBox x:Name="GroupBox2" Margin="0,0,0,12" Padding="12" Background="#252536" BorderBrush="#2A4A6F" BorderThickness="2">
+                <GroupBox x:Name="GroupBox2" Margin="0,0,0,12" Padding="12" Background="#252536" BorderBrush="#4A7FBF" BorderThickness="2">
                     <GroupBox.Header>
                         <TextBlock x:Name="GroupBox2Header" Text="&#x2705; Verification &amp; Quality" FontSize="16" FontWeight="Bold" Foreground="White"/>
                     </GroupBox.Header>
@@ -242,8 +242,8 @@
             </StackPanel>
         </ScrollViewer>
 
-        <!-- Log Panel -->
-        <Border x:Name="LogBorder" Grid.Row="2" Background="#12121C" CornerRadius="8" Margin="20,10,20,0" BorderBrush="#2A4A6F" BorderThickness="2">
+        <!-- Log Panel - Meme largeur que les GroupBox (Margin 15 horizontal) -->
+        <Border x:Name="LogBorder" Grid.Row="2" Background="#12121C" CornerRadius="8" Margin="15,10,15,0" BorderBrush="#4A7FBF" BorderThickness="2">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

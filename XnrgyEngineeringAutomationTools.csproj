@@ -184,46 +184,58 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\ModuleSelectionWindow.xaml">
+    <!-- ========== SHARED VIEWS ========== -->
+    <Page Include="Shared\Views\LoginWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\LoginWindow.xaml">
+    <Page Include="Shared\Views\ModuleSelectionWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\VaultUploadWindow.xaml">
+    <Page Include="Shared\Views\PreviewWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\ChecklistHVACWindow.xaml">
+    <Page Include="Shared\Views\XnrgyMessageBox.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="Views\CreateModuleWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\CreateModuleSettingsWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\PreviewWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\XnrgyMessageBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="Views\UploadTemplateWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
+    <!-- ========== MODULE: VAULT UPLOAD ========== -->
     <Page Include="Modules\VaultUpload\Views\VaultUploadModuleWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <!-- ========== MODULE: CREATE MODULE ========== -->
+    <Page Include="Modules\CreateModule\Views\CreateModuleWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\CreateModule\Views\CreateModuleSettingsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <!-- ========== MODULE: UPLOAD TEMPLATE ========== -->
+    <Page Include="Modules\UploadTemplate\Views\UploadTemplateWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <!-- ========== MODULE: CHECKLIST HVAC ========== -->
+    <Page Include="Modules\ChecklistHVAC\Views\ChecklistHVACWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <!-- ========== LEGACY VIEWS (kept for compatibility) ========== -->
+    <Page Include="Views\VaultUploadWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <!-- ========== STYLES ========== -->
+    <Page Include="Styles\XnrgyStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <!-- ========== CODE-BEHIND: MAIN ========== -->
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -232,47 +244,56 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\ModuleSelectionWindow.xaml.cs">
-      <DependentUpon>ModuleSelectionWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Views\LoginWindow.xaml.cs">
+    <!-- ========== CODE-BEHIND: SHARED VIEWS ========== -->
+    <Compile Include="Shared\Views\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\VaultUploadWindow.xaml.cs">
-      <DependentUpon>VaultUploadWindow.xaml</DependentUpon>
+    <Compile Include="Shared\Views\ModuleSelectionWindow.xaml.cs">
+      <DependentUpon>ModuleSelectionWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\ChecklistHVACWindow.xaml.cs">
-      <DependentUpon>ChecklistHVACWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Views\CreateModuleWindow.xaml.cs">
-      <DependentUpon>CreateModuleWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Views\CreateModuleSettingsWindow.xaml.cs">
-      <DependentUpon>CreateModuleSettingsWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Views\PreviewWindow.xaml.cs">
+    <Compile Include="Shared\Views\PreviewWindow.xaml.cs">
       <DependentUpon>PreviewWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\XnrgyMessageBox.xaml.cs">
+    <Compile Include="Shared\Views\XnrgyMessageBox.xaml.cs">
       <DependentUpon>XnrgyMessageBox.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Views\UploadTemplateWindow.xaml.cs">
-      <DependentUpon>UploadTemplateWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
+    <!-- ========== CODE-BEHIND: MODULE VAULT UPLOAD ========== -->
     <Compile Include="Modules\VaultUpload\Views\VaultUploadModuleWindow.xaml.cs">
       <DependentUpon>VaultUploadModuleWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Modules\VaultUpload\Models\*.cs" />
+    <!-- ========== CODE-BEHIND: MODULE CREATE MODULE ========== -->
+    <Compile Include="Modules\CreateModule\Views\CreateModuleWindow.xaml.cs">
+      <DependentUpon>CreateModuleWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\CreateModule\Views\CreateModuleSettingsWindow.xaml.cs">
+      <DependentUpon>CreateModuleSettingsWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\CreateModule\Models\*.cs" />
+    <Compile Include="Modules\CreateModule\Services\*.cs" />
+    <!-- ========== CODE-BEHIND: MODULE UPLOAD TEMPLATE ========== -->
+    <Compile Include="Modules\UploadTemplate\Views\UploadTemplateWindow.xaml.cs">
+      <DependentUpon>UploadTemplateWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <!-- ========== CODE-BEHIND: MODULE CHECKLIST HVAC ========== -->
+    <Compile Include="Modules\ChecklistHVAC\Views\ChecklistHVACWindow.xaml.cs">
+      <DependentUpon>ChecklistHVACWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <!-- ========== LEGACY CODE-BEHIND ========== -->
+    <Compile Include="Views\VaultUploadWindow.xaml.cs">
+      <DependentUpon>VaultUploadWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <!-- ========== CORE CODE ========== -->
     <Compile Include="ViewModels\*.cs" />
     <Compile Include="Models\*.cs" />
     <Compile Include="Services\*.cs" />

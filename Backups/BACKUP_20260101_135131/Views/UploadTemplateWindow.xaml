@@ -24,7 +24,7 @@
         <SolidColorBrush x:Key="DarkBg2" Color="#252536"/>
         <SolidColorBrush x:Key="DarkBg3" Color="#2D2D44"/>
         <SolidColorBrush x:Key="BorderColor" Color="#404060"/>
-        <SolidColorBrush x:Key="TextLight" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="TextLight" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="TextMuted" Color="#888888"/>
         <SolidColorBrush x:Key="TextDark" Color="#1A1A28"/>
 
@@ -34,9 +34,10 @@
             <Setter Property="Foreground" Value="{DynamicResource TextLight}"/>
             <Setter Property="BorderBrush" Value="White"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -44,7 +45,8 @@
                                 BorderBrush="{TemplateBinding BorderBrush}" 
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4">
-                            <ScrollViewer x:Name="PART_ContentHost" Margin="2"/>
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalScrollBarVisibility="Disabled" 
+                                          VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsFocused" Value="True">
@@ -307,7 +309,7 @@
         <!-- ========== STYLE DATAGRID MODERNE ========== -->
         <Style TargetType="DataGrid">
             <Setter Property="Background" Value="#1E1E2E"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="BorderBrush" Value="#404060"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="RowBackground" Value="#252536"/>
@@ -352,7 +354,7 @@
         <!-- Style Row DataGrid -->
         <Style TargetType="DataGridRow">
             <Setter Property="Background" Value="#252536"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
             <Style.Triggers>
                 <Trigger Property="AlternationIndex" Value="1">
                     <Setter Property="Background" Value="#2D2D44"/>
@@ -371,11 +373,12 @@
     <!-- ========== CONTENU PRINCIPAL ========== -->
     <Grid x:Name="MainGrid" Background="#1E1E2E">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>      <!-- Header -->
-            <RowDefinition Height="Auto"/>      <!-- Configuration + Stats -->
-            <RowDefinition Height="*"/>         <!-- DataGrid fichiers -->
-            <RowDefinition Height="Auto"/>      <!-- Barre progression -->
-            <RowDefinition Height="150"/>       <!-- Journal -->
+            <RowDefinition Height="Auto"/>              <!-- Header -->
+            <RowDefinition Height="Auto"/>              <!-- Configuration + Stats -->
+            <RowDefinition Height="*" MinHeight="200"/> <!-- DataGrid fichiers (min 200) -->
+            <RowDefinition Height="Auto"/>              <!-- Commentaire -->
+            <RowDefinition Height="Auto"/>              <!-- Barre progression -->
+            <RowDefinition Height="Auto" MinHeight="100" MaxHeight="200"/> <!-- Journal (flexible) -->
         </Grid.RowDefinitions>
 
         <!-- ========== EN-TETE (Style Moderne comme Upload Module) ========== -->
@@ -393,7 +396,7 @@
                         <TextBlock Text="&#x1F4E4;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="📤 Upload Template vers Vault v1.1" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="📤 Upload Template vers Vault v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
                         <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
                             <Run Text="💡 Upload massif de fichiers vers Vault Production avec structure automatique"/>
                         </TextBlock>
@@ -446,7 +449,7 @@
         </Border>
 
         <!-- ========== SECTION CONFIGURATION ========== -->
-        <Border Grid.Row="1" Background="#2A4A6F" CornerRadius="6" Padding="15,10" Margin="10,8,10,0"
+        <Border Grid.Row="1" Background="#2A4A6F" CornerRadius="6" Padding="15,10" Margin="10,8,10,5"
                 BorderBrush="White" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -495,7 +498,7 @@
         </Border>
 
         <!-- ========== DATAGRID FICHIERS ========== -->
-        <GroupBox Grid.Row="2" Style="{StaticResource ModernGroupBox}" Margin="10,10,10,5">
+        <GroupBox Grid.Row="2" Style="{StaticResource ModernGroupBox}" Margin="10,5,10,5">
             <GroupBox.Header>
                 <TextBlock Text="📄 Fichiers a Uploader" Foreground="White" FontWeight="Bold"/>
             </GroupBox.Header>
@@ -551,18 +554,28 @@
                           MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
-                        <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="250" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileExtension}" Width="80" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="100" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📁 Chemin relatif" Binding="{Binding RelativePath}" Width="*" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="150" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileExtension}" Width="70" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="80" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📁 Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="120" IsReadOnly="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
         </GroupBox>
 
+        <!-- ========== SECTION COMMENTAIRE ========== -->
+        <GroupBox Grid.Row="3" Style="{StaticResource ModernGroupBox}" Padding="8" Margin="10,5,10,5">
+            <GroupBox.Header>
+                <TextBlock Text="📝 Commentaire Check-In" Foreground="White" FontWeight="Bold"/>
+            </GroupBox.Header>
+            <TextBox x:Name="TxtComment" Style="{StaticResource ModernTextBox}" Height="36" 
+                     TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+                     Text="[Auto] Upload effectue par XNRGY Engineering Automation Tools - Module Upload Template"/>
+        </GroupBox>
+
         <!-- ========== BARRE DE PROGRESSION + BOUTONS ========== -->
-        <Border Grid.Row="3" Background="#2A4A6F" CornerRadius="8" Padding="15,10" Margin="10,5,10,5"
+        <Border Grid.Row="4" Background="#2A4A6F" CornerRadius="8" Padding="15,10" Margin="10,5,10,5"
                 BorderBrush="#3A5A7F" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -622,8 +635,8 @@
         </Border>
 
         <!-- ========== JOURNAL ========== -->
-        <Border Grid.Row="4" Background="{DynamicResource DarkBg2}" BorderBrush="White" 
-                BorderThickness="1" CornerRadius="6" MinHeight="150">
+        <Border Grid.Row="5" Background="{DynamicResource DarkBg2}" BorderBrush="White" 
+                BorderThickness="1" CornerRadius="6" Margin="10,5,10,8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

@@ -12,10 +12,11 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using XnrgyEngineeringAutomationTools.Services;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 using VDF = Autodesk.DataManagement.Client.Framework;
 using ACW = Autodesk.Connectivity.WebServices;
 
-namespace XnrgyEngineeringAutomationTools.Views
+namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
 {
     /// <summary>
     /// Fichier a uploader - avec selection et statut
@@ -72,6 +73,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         private bool _isPaused = false;
         private ManualResetEventSlim _pauseEvent = new ManualResetEventSlim(true);
         private Dictionary<string, ACW.Folder> _folderCache = new Dictionary<string, ACW.Folder>();
+        private string _uploadComment = string.Empty; // Commentaire pour l'upload
 
         // ====================================================================
         // DataGrid - Collection de fichiers
@@ -158,7 +160,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         // ====================================================================
         // Chargement fenetre
         // ====================================================================
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Note: Logo remplace par emoji dans le header moderne
 
@@ -184,6 +186,15 @@ namespace XnrgyEngineeringAutomationTools.Views
             }
             
             Log("[i] Fenetre Upload Template initialisee", LogLevel.INFO);
+            
+            // Scan automatique au demarrage si le chemin existe
+            string localPath = TxtLocalPath.Text.Trim();
+            if (Directory.Exists(localPath))
+            {
+                Log("[>] Scan automatique au demarrage...", LogLevel.INFO);
+                await Task.Delay(100); // Petit delai pour laisser l'UI se charger
+                BtnScan_Click(sender, e);
+            }
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
@@ -264,6 +275,11 @@ namespace XnrgyEngineeringAutomationTools.Views
 
             try
             {
+                // Desabonner les anciens items avant de vider
+                foreach (var item in _allFilesList)
+                {
+                    item.PropertyChanged -= FileItem_PropertyChanged;
+                }
                 AllFiles.Clear();
                 _allFilesList.Clear();
                 ExtensionStats.Clear();
@@ -293,11 +309,16 @@ namespace XnrgyEngineeringAutomationTools.Views
                             Status = "En attente"
                         });
                     }
+                    
+                    // Trier par ordre alphabetique (nom de fichier)
+                    fileItems = fileItems.OrderBy(f => f.FileName, StringComparer.OrdinalIgnoreCase).ToList();
                 });
 
                 // Ajouter au DataGrid sur le thread UI
                 foreach (var item in fileItems)
                 {
+                    // S'abonner au changement de IsSelected pour mettre a jour les statistiques en temps reel
+                    item.PropertyChanged += FileItem_PropertyChanged;
                     AllFiles.Add(item);
                     _allFilesList.Add(item);
                 }
@@ -347,6 +368,18 @@ namespace XnrgyEngineeringAutomationTools.Views
             TxtUploaded.Text = _uploadedFiles.ToString("N0");
             TxtSkipped.Text = _skippedFiles.ToString("N0");
             TxtFailed.Text = _failedFiles.ToString("N0");
+        }
+
+        /// <summary>
+        /// Gestionnaire pour mettre a jour les statistiques quand IsSelected change
+        /// </summary>
+        private void FileItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == "IsSelected")
+            {
+                // Mise a jour sur le thread UI
+                Dispatcher.BeginInvoke(new Action(() => UpdateStatistics()));
+            }
         }
 
         /// <summary>
@@ -420,6 +453,7 @@ namespace XnrgyEngineeringAutomationTools.Views
             _folderCache.Clear();
             _startTime = DateTime.Now;
             _createFoldersAutomatically = ChkCreateFolders.IsChecked == true;
+            _uploadComment = TxtComment.Text.Trim(); // Recuperer le commentaire
 
             // UI - Activer boutons de controle
             BtnStartUpload.IsEnabled = false;
@@ -428,20 +462,25 @@ namespace XnrgyEngineeringAutomationTools.Views
             BtnCancel.IsEnabled = false;
             BtnScan.IsEnabled = false;
             BtnBrowse.IsEnabled = false;
-            BtnPause.Content = "⏸️ PAUSE";
+            BtnPause.Content = "[||] PAUSE";
 
+            int totalSelected = selectedFiles.Count;
+            
             Log("[>] Debut de l'upload...", LogLevel.INFO);
+            Log($"[i] {totalSelected} fichiers selectionnes pour upload", LogLevel.INFO);
+            Log($"[i] Destination Vault: {TxtVaultPath.Text.Replace("-> ", "")}", LogLevel.INFO);
+            Log($"[i] Commentaire: {_uploadComment}", LogLevel.INFO);
 
             try
             {
                 string localRoot = TxtLocalPath.Text.Trim();
                 var token = _cancellationTokenSource.Token;
                 int counter = 0;
-                int totalSelected = selectedFiles.Count;
 
                 foreach (var fileItem in selectedFiles)
                 {
-                    if (token.IsCancellationRequested)
+                    // Verification multiple du token pour arret immediat
+                    if (token.IsCancellationRequested || !_isUploading)
                     {
                         Log("[!] Upload annule par l'utilisateur", LogLevel.WARNING);
                         break;
@@ -449,13 +488,20 @@ namespace XnrgyEngineeringAutomationTools.Views
 
                     // Attendre si en pause
                     _pauseEvent.Wait(token);
+                    
+                    // Re-verifier apres la pause
+                    if (token.IsCancellationRequested || !_isUploading)
+                    {
+                        Log("[!] Upload annule par l'utilisateur", LogLevel.WARNING);
+                        break;
+                    }
 
                     counter++;
                     string filePath = fileItem.FullPath;
                     string fileName = fileItem.FileName;
                     string vaultFolder = GetVaultFolderPath(filePath, localRoot);
 
-                    // Mise a jour statut dans DataGrid
+                    // Mise a jour statut dans DataGrid (AVANT upload)
                     Dispatcher.Invoke(() => { fileItem.Status = "Upload en cours..."; });
 
                     // Mise a jour progression
@@ -468,18 +514,33 @@ namespace XnrgyEngineeringAutomationTools.Views
                         $"[{counter}/{totalSelected}] {fileName}",
                         progress);
 
-                    // Upload
-                    bool success = await Task.Run(() => UploadFile(filePath, vaultFolder), token);
+                    // Sauvegarder les compteurs avant l'upload pour detecter les changements
+                    int uploadedBefore = _uploadedFiles;
+                    int skippedBefore = _skippedFiles;
+                    int failedBefore = _failedFiles;
 
-                    // Mise a jour statut
+                    // Upload - verifier le flag _isUploading aussi
+                    bool success = false;
+                    if (_isUploading && !token.IsCancellationRequested)
+                    {
+                        success = await Task.Run(() => UploadFile(filePath, vaultFolder), token);
+                    }
+                    else
+                    {
+                        break;
+                    }
+
+                    // Mise a jour statut (APRES upload) - determiner le statut selon les compteurs
                     Dispatcher.Invoke(() =>
                     {
-                        if (success)
-                            fileItem.Status = "Uploade";
-                        else if (_skippedFiles > 0 && fileItem.Status == "Upload en cours...")
-                            fileItem.Status = "Ignore (existe)";
+                        if (_uploadedFiles > uploadedBefore)
+                            fileItem.Status = "[+] Uploade";
+                        else if (_skippedFiles > skippedBefore)
+                            fileItem.Status = "[~] Ignore (existe)";
+                        else if (_failedFiles > failedBefore)
+                            fileItem.Status = "[-] Echec";
                         else
-                            fileItem.Status = "Echec";
+                            fileItem.Status = "[?] Inconnu";
                             
                         TxtUploaded.Text = _uploadedFiles.ToString("N0");
                         TxtSkipped.Text = _skippedFiles.ToString("N0");
@@ -491,7 +552,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                 // Resume
                 var totalTime = DateTime.Now - _startTime;
                 Log($"[+] Upload termine en {totalTime.TotalMinutes:F1} minutes", LogLevel.SUCCESS);
-                Log($"    Uploades: {_uploadedFiles} | Ignores: {_skippedFiles} | Echecs: {_failedFiles}", LogLevel.INFO);
+                Log($"[i] Uploades: {_uploadedFiles} | Ignores: {_skippedFiles} | Echecs: {_failedFiles}", LogLevel.INFO);
 
                 UpdateProgress($"Termine! {_uploadedFiles} fichiers uploades", 100);
 
@@ -588,9 +649,23 @@ namespace XnrgyEngineeringAutomationTools.Views
 
                 if (confirm == XnrgyMessageBoxResult.Yes)
                 {
+                    // Forcer l'arret immediat
+                    _isUploading = false;
                     _cancellationTokenSource?.Cancel();
                     _pauseEvent.Set(); // Debloquer si en pause
+                    
+                    // Restaurer UI immediatement
+                    BtnStartUpload.IsEnabled = _isConnected && _allFilesList.Count > 0;
+                    BtnPause.IsEnabled = false;
+                    BtnStop.IsEnabled = false;
+                    BtnCancel.IsEnabled = true;
+                    BtnScan.IsEnabled = true;
+                    BtnBrowse.IsEnabled = true;
+                    BtnPause.Content = "[||] PAUSE";
+                    
                     Log("[!] Upload arrete par l'utilisateur", LogLevel.WARNING);
+                    UpdateProgress("Arrete par l'utilisateur", 0);
+                    UpdateStatistics();
                 }
             }
         }
@@ -611,12 +686,15 @@ namespace XnrgyEngineeringAutomationTools.Views
                 if (folder == null)
                 {
                     Interlocked.Increment(ref _failedFiles);
-                    Dispatcher.Invoke(() => Log($"[-] Dossier introuvable: {vaultFolderPath}", LogLevel.ERROR));
+                    Log($"[-] Dossier introuvable: {vaultFolderPath}", LogLevel.ERROR);
                     return false;
                 }
 
                 // Verifier si le fichier existe deja
-                if (ChkSkipExisting.IsChecked == true)
+                bool skipExisting = false;
+                Dispatcher.Invoke(() => { skipExisting = ChkSkipExisting.IsChecked == true; });
+                
+                if (skipExisting)
                 {
                     try
                     {
@@ -626,6 +704,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                         if (existingFiles != null && existingFiles.Any(f => f.Name.Equals(fileName, StringComparison.OrdinalIgnoreCase)))
                         {
                             Interlocked.Increment(ref _skippedFiles);
+                            Log($"[~] {fileName}: Fichier existe deja - ignore", LogLevel.WARNING);
                             return true;
                         }
                     }
@@ -642,7 +721,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                     var result = _connection.FileManager.AddFile(
                         vdfFolder,
                         fileName,
-                        "Upload Template - XNRGY",
+                        _uploadComment, // Utiliser le commentaire du TextBox
                         fileInfo.LastWriteTimeUtc,
                         null,
                         null,
@@ -654,26 +733,58 @@ namespace XnrgyEngineeringAutomationTools.Views
                     if (result != null)
                     {
                         Interlocked.Increment(ref _uploadedFiles);
+                        Log($"[+] {fileName}: Upload reussi", LogLevel.SUCCESS);
                         return true;
                     }
                 }
 
                 Interlocked.Increment(ref _failedFiles);
+                Log($"[-] {fileName}: Echec de l'upload (resultat null)", LogLevel.ERROR);
                 return false;
             }
             catch (Exception ex)
             {
-                // Fichier existant?
+                // Fichier existant? (traduire le message)
                 if (ex.Message.Contains("already exists") || ex.Message.Contains("1008"))
                 {
                     Interlocked.Increment(ref _skippedFiles);
+                    Log($"[~] {fileName}: Fichier existe deja dans Vault - ignore", LogLevel.WARNING);
                     return true;
                 }
 
+                // Traduire les erreurs courantes en francais
+                string errorMsg = TranslateVaultError(ex.Message);
+                
                 Interlocked.Increment(ref _failedFiles);
-                Dispatcher.Invoke(() => Log($"[-] {fileName}: {ex.Message}", LogLevel.ERROR));
+                Log($"[-] {fileName}: {errorMsg}", LogLevel.ERROR);
                 return false;
             }
+        }
+        
+        /// <summary>
+        /// Traduit les messages d'erreur Vault SDK en francais
+        /// </summary>
+        private string TranslateVaultError(string englishMessage)
+        {
+            if (englishMessage.Contains("The calling thread cannot access this object"))
+                return "Erreur de thread - acces interdit depuis ce thread";
+            if (englishMessage.Contains("already exists"))
+                return "Le fichier existe deja";
+            if (englishMessage.Contains("1008"))
+                return "Fichier deja present dans Vault (erreur 1008)";
+            if (englishMessage.Contains("1003"))
+                return "Fichier en cours de traitement par Job Processor (erreur 1003)";
+            if (englishMessage.Contains("1013"))
+                return "Fichier doit etre checke out d'abord (erreur 1013)";
+            if (englishMessage.Contains("Access denied") || englishMessage.Contains("permission"))
+                return "Acces refuse - verifiez vos permissions";
+            if (englishMessage.Contains("connection") || englishMessage.Contains("network"))
+                return "Erreur de connexion reseau";
+            if (englishMessage.Contains("timeout"))
+                return "Delai d'attente depasse (timeout)";
+                
+            // Si pas de traduction, retourner le message original
+            return englishMessage;
         }
 
         private ACW.Folder EnsureVaultFolder(string vaultPath)
@@ -770,36 +881,41 @@ namespace XnrgyEngineeringAutomationTools.Views
 
         private void Log(string message, LogLevel level)
         {
+            // Ecrire aussi dans le fichier log principal de l'application
+            var logLevel = level switch
+            {
+                LogLevel.SUCCESS => Logger.LogLevel.INFO,
+                LogLevel.ERROR => Logger.LogLevel.ERROR,
+                LogLevel.WARNING => Logger.LogLevel.WARNING,
+                _ => Logger.LogLevel.INFO
+            };
+            Logger.Log($"[UploadTemplate] {message}", logLevel);
+            
             Dispatcher.Invoke(() =>
             {
                 string timestamp = DateTime.Now.ToString("HH:mm:ss");
                 
-                // Determiner la couleur selon le niveau
-                Color color = level switch
+                // Utilise JournalColorService pour les couleurs uniformisees
+                var serviceLevel = level switch
                 {
-                    LogLevel.SUCCESS => (Color)ColorConverter.ConvertFromString("#2ECC71"), // Vert
-                    LogLevel.ERROR => (Color)ColorConverter.ConvertFromString("#E74C3C"),   // Rouge
-                    LogLevel.WARNING => (Color)ColorConverter.ConvertFromString("#F39C12"), // Orange
-                    _ => (Color)ColorConverter.ConvertFromString("#B8D4E8")                 // Bleu clair (Info)
+                    LogLevel.SUCCESS => JournalColorService.LogLevel.SUCCESS,
+                    LogLevel.ERROR => JournalColorService.LogLevel.ERROR,
+                    LogLevel.WARNING => JournalColorService.LogLevel.WARNING,
+                    _ => JournalColorService.LogLevel.INFO
                 };
                 
-                // Determiner le prefix selon le niveau (sans emoji)
-                string prefix = level switch
-                {
-                    LogLevel.SUCCESS => "[+]",
-                    LogLevel.ERROR => "[-]",
-                    LogLevel.WARNING => "[!]",
-                    _ => "[>]"
-                };
+                // Obtenir couleur et prefix depuis le service centralise
+                var color = JournalColorService.GetColorForLevel(serviceLevel);
+                string prefix = JournalColorService.GetPrefixForLevel(serviceLevel);
                 
                 // Creer le paragraph avec couleur
                 var paragraph = new System.Windows.Documents.Paragraph();
                 paragraph.Margin = new Thickness(0, 2, 0, 2);
                 
-                // Timestamp en gris
+                // Timestamp en gris (depuis le service)
                 var timestampRun = new System.Windows.Documents.Run($"[{timestamp}] ")
                 {
-                    Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"))
+                    Foreground = JournalColorService.TimestampBrush
                 };
                 paragraph.Inlines.Add(timestampRun);
                 

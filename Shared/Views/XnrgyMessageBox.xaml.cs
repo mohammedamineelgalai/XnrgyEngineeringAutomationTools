@@ -5,7 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace XnrgyEngineeringAutomationTools.Views
+namespace XnrgyEngineeringAutomationTools.Shared.Views
 {
     /// <summary>
     /// MessageBox moderne avec theme XNRGY
@@ -89,7 +89,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         /// <summary>
         /// Raccourci pour message de succes
         /// </summary>
-        public static void ShowSuccess(string message, string title = "Succes", Window? owner = null)
+        public static void ShowSuccess(string message, string title = "✅ Succès", Window? owner = null)
         {
             Show(message, title, XnrgyMessageBoxType.Success, XnrgyMessageBoxButtons.OK, owner);
         }
@@ -97,7 +97,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         /// <summary>
         /// Raccourci pour message d'erreur
         /// </summary>
-        public static void ShowError(string message, string title = "Erreur", Window? owner = null)
+        public static void ShowError(string message, string title = "❌ Erreur", Window? owner = null)
         {
             Show(message, title, XnrgyMessageBoxType.Error, XnrgyMessageBoxButtons.OK, owner);
         }
@@ -105,7 +105,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         /// <summary>
         /// Raccourci pour message d'information
         /// </summary>
-        public static void ShowInfo(string message, string title = "Information", Window? owner = null)
+        public static void ShowInfo(string message, string title = "ℹ️ Information", Window? owner = null)
         {
             Show(message, title, XnrgyMessageBoxType.Info, XnrgyMessageBoxButtons.OK, owner);
         }
@@ -113,7 +113,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         /// <summary>
         /// Raccourci pour message d'avertissement
         /// </summary>
-        public static void ShowWarning(string message, string title = "Attention", Window? owner = null)
+        public static void ShowWarning(string message, string title = "⚠️ Avertissement", Window? owner = null)
         {
             Show(message, title, XnrgyMessageBoxType.Warning, XnrgyMessageBoxButtons.OK, owner);
         }
@@ -121,7 +121,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         /// <summary>
         /// Raccourci pour confirmation Oui/Non
         /// </summary>
-        public static bool Confirm(string message, string title = "Confirmation", Window? owner = null)
+        public static bool Confirm(string message, string title = "❓ Confirmation", Window? owner = null)
         {
             return Show(message, title, XnrgyMessageBoxType.Question, XnrgyMessageBoxButtons.YesNo, owner) == XnrgyMessageBoxResult.Yes;
         }
@@ -132,32 +132,32 @@ namespace XnrgyEngineeringAutomationTools.Views
             {
                 case XnrgyMessageBoxType.Success:
                     msgBox.IconBorder.Background = new SolidColorBrush(Color.FromRgb(16, 124, 16));
-                    msgBox.IconText.Text = "[+]";
+                    msgBox.IconText.Text = "✅";
                     msgBox.IconText.Foreground = Brushes.White;
                     break;
                     
                 case XnrgyMessageBoxType.Error:
                     msgBox.IconBorder.Background = new SolidColorBrush(Color.FromRgb(232, 17, 35));
-                    msgBox.IconText.Text = "[-]";
+                    msgBox.IconText.Text = "❌";
                     msgBox.IconText.Foreground = Brushes.White;
                     break;
                     
                 case XnrgyMessageBoxType.Warning:
                     msgBox.IconBorder.Background = new SolidColorBrush(Color.FromRgb(255, 140, 0));
-                    msgBox.IconText.Text = "[!]";
+                    msgBox.IconText.Text = "⚠️";
                     msgBox.IconText.Foreground = Brushes.White;
                     break;
                     
                 case XnrgyMessageBoxType.Question:
                     msgBox.IconBorder.Background = new SolidColorBrush(Color.FromRgb(0, 120, 212));
-                    msgBox.IconText.Text = "[?]";
+                    msgBox.IconText.Text = "❓";
                     msgBox.IconText.Foreground = Brushes.White;
                     break;
                     
                 case XnrgyMessageBoxType.Info:
                 default:
                     msgBox.IconBorder.Background = new SolidColorBrush(Color.FromRgb(0, 120, 212));
-                    msgBox.IconText.Text = "[i]";
+                    msgBox.IconText.Text = "ℹ️";
                     msgBox.IconText.Foreground = Brushes.White;
                     break;
             }

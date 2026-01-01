@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using XnrgyEngineeringAutomationTools.Models;
 using XnrgyEngineeringAutomationTools.Views;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.ViewModels
 {

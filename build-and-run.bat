@@ -1,136 +1,269 @@
-@echo off@echo off@echo off
+@echo off@echo off@echo off@echo off
 
 :: ═══════════════════════════════════════════════════════════════════════════════
 
-:: XNRGY ENGINEERING AUTOMATION TOOLS - BUILD & RUN SCRIPT (BAT):: ═══════════════════════════════════════════════════════════════════════════════:: ═══════════════════════════════════════════════════════════════════════════════
+:: XNRGY ENGINEERING AUTOMATION TOOLS - BUILD & RUN SCRIPT (BAT):: ═══════════════════════════════════════════════════════════════════════════════
 
-:: Version: 1.0.0
+:: ═══════════════════════════════════════════════════════════════════════════════
+
+:: Version: 1.0.0:: XNRGY ENGINEERING AUTOMATION TOOLS - BUILD & RUN SCRIPT (BAT):: ═══════════════════════════════════════════════════════════════════════════════:: ═══════════════════════════════════════════════════════════════════════════════
+
+:: Auteur: Mohammed Amine Elgalai - XNRGY Climate Systems ULC
+
+:: Date: 2026-01-01:: Version: 1.0.0
+
+:: ═══════════════════════════════════════════════════════════════════════════════
 
 :: Auteur: Smart Tools Amine - XNRGY Climate Systems ULC:: VAULT AUTOMATION TOOL - BUILD & RUN SCRIPT:: VAULT AUTOMATION TOOL - BUILD & RUN SCRIPT (BAT)
 
-:: ═══════════════════════════════════════════════════════════════════════════════
-
-:: Version: 1.0.0:: ═══════════════════════════════════════════════════════════════════════════════
-
 setlocal enabledelayedexpansion
 
-title XNRGY Engineering Automation Tools - Build ^& Run:: Auteur: Smart Tools Amine - XNRGY Climate Systems ULC:: Version: 2.0
+title XNRGY Engineering Automation Tools - Build ^& Run:: ═══════════════════════════════════════════════════════════════════════════════
 
 cd /d "%~dp0"
 
-:: ═══════════════════════════════════════════════════════════════════════════════:: Auteur: Smart Tools Amine - XNRGY Climate Systems ULC
+:: Version: 1.0.0:: ═══════════════════════════════════════════════════════════════════════════════
 
 echo.
 
-echo ===============================================================:: Date: 2025-12-17
+echo ===============================================================setlocal enabledelayedexpansion
 
-echo   XNRGY ENGINEERING AUTOMATION TOOLS - BUILD ^& RUN
+echo   XNRGY ENGINEERING AUTOMATION TOOLS - BUILD ^& RUN v1.0.0
 
-echo ===============================================================setlocal enabledelayedexpansion:: ═══════════════════════════════════════════════════════════════════════════════
+echo ===============================================================title XNRGY Engineering Automation Tools - Build ^& Run:: Auteur: Smart Tools Amine - XNRGY Climate Systems ULC:: Version: 2.0
 
 echo.
 
-title Vault Automation Tool - Build and Run
+cd /d "%~dp0"
 
 :: ═══════════════════════════════════════════════════════════════════════════════
 
-:: ETAPE 1: Forcer l'arret de l'application si elle est en courscd /d "%~dp0"setlocal enabledelayedexpansion
+:: ETAPE 1: Arret des instances existantes:: ═══════════════════════════════════════════════════════════════════════════════:: Auteur: Smart Tools Amine - XNRGY Climate Systems ULC
 
 :: ═══════════════════════════════════════════════════════════════════════════════
 
-echo [1/3] Arret des instances existantes...title Vault Automation Tool - Build ^& Run
+echo [1/3] Arret des instances existantes...echo.
 
 
 
-tasklist /FI "IMAGENAME eq XnrgyEngineeringAutomationTools.exe" 2>NUL | find /I "XnrgyEngineeringAutomationTools.exe" >NULecho.cd /d "%~dp0"
+tasklist /FI "IMAGENAME eq XnrgyEngineeringAutomationTools.exe" 2>NUL | find /I "XnrgyEngineeringAutomationTools.exe" >NULecho ===============================================================:: Date: 2025-12-17
 
 if %ERRORLEVEL%==0 (
 
-    echo       Instance trouvee, arret en cours...echo =========================================================
+    echo       Instance trouvee, arret en cours...echo   XNRGY ENGINEERING AUTOMATION TOOLS - BUILD ^& RUN
 
     taskkill /F /IM "XnrgyEngineeringAutomationTools.exe" >NUL 2>&1
 
-    timeout /t 2 /nobreak >NULecho   VAULT AUTOMATION TOOL - BUILD ^& RUNecho.
+    timeout /t 2 /nobreak >NULecho ===============================================================setlocal enabledelayedexpansion:: ═══════════════════════════════════════════════════════════════════════════════
 
-    echo       [OK] Instance arretee
+    echo       [+] Instance arretee
 
-) else (echo =========================================================echo ===============================================================
+) else (echo.
 
     echo       Aucune instance en cours
 
-)echo.echo   VAULT AUTOMATION TOOL - BUILD ^& RUN
+)title Vault Automation Tool - Build and Run
 
 echo.
 
-echo ===============================================================
+:: ═══════════════════════════════════════════════════════════════════════════════
 
 :: ═══════════════════════════════════════════════════════════════════════════════
+
+:: ETAPE 2: Trouver MSBuild et Compiler:: ETAPE 1: Forcer l'arret de l'application si elle est en courscd /d "%~dp0"setlocal enabledelayedexpansion
+
+:: ═══════════════════════════════════════════════════════════════════════════════
+
+echo [2/3] Compilation en mode Release...:: ═══════════════════════════════════════════════════════════════════════════════
+
+
+
+set "MSBUILD="echo [1/3] Arret des instances existantes...title Vault Automation Tool - Build ^& Run
+
+
+
+:: VS 18 Insiders/Enterprise (prioritaire - nouveau)
+
+if exist "C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe" (
+
+    set "MSBUILD=C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe"tasklist /FI "IMAGENAME eq XnrgyEngineeringAutomationTools.exe" 2>NUL | find /I "XnrgyEngineeringAutomationTools.exe" >NULecho.cd /d "%~dp0"
+
+    echo       MSBuild: VS 18 Enterprise
+
+    goto :compileif %ERRORLEVEL%==0 (
+
+)
+
+    echo       Instance trouvee, arret en cours...echo =========================================================
+
+if exist "C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe" (
+
+    set "MSBUILD=C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe"    taskkill /F /IM "XnrgyEngineeringAutomationTools.exe" >NUL 2>&1
+
+    echo       MSBuild: VS 18 Insiders
+
+    goto :compile    timeout /t 2 /nobreak >NULecho   VAULT AUTOMATION TOOL - BUILD ^& RUNecho.
+
+)
+
+    echo       [OK] Instance arretee
+
+:: VS 2022 Enterprise
+
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe" () else (echo =========================================================echo ===============================================================
+
+    set "MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe"
+
+    echo       MSBuild: VS 2022 Enterprise    echo       Aucune instance en cours
+
+    goto :compile
+
+))echo.echo   VAULT AUTOMATION TOOL - BUILD ^& RUN
+
+
+
+:: VS 2022 Professionalecho.
+
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe" (
+
+    set "MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe"echo ===============================================================
+
+    echo       MSBuild: VS 2022 Professional
+
+    goto :compile:: ═══════════════════════════════════════════════════════════════════════════════
+
+)
 
 :: ETAPE 2: Trouver MSBuild:: ═══════════════════════════════════════════════════════════════════════════════echo.
 
-:: ═══════════════════════════════════════════════════════════════════════════════
+:: VS 2022 Community
 
-echo [2/3] Compilation en mode Release...:: ÉTAPE 1: Forcer l'arrêt de l'application si elle est en cours
+if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe" (:: ═══════════════════════════════════════════════════════════════════════════════
 
+    set "MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"
 
+    echo       MSBuild: VS 2022 Communityecho [2/3] Compilation en mode Release...:: ÉTAPE 1: Forcer l'arrêt de l'application si elle est en cours
 
-set "MSBUILD=":: ═══════════════════════════════════════════════════════════════════════════════:: ═══════════════════════════════════════════════════════════════════════════════
-
-
-
-:: Chercher MSBuild VS 2022 Enterpriseecho [1/3] Arret des instances existantes...:: ÉTAPE 1: Forcer l'arrêt de l'application si elle est en cours
-
-if exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe" (
-
-    set "MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe":: ═══════════════════════════════════════════════════════════════════════════════
+    goto :compile
 
 )
 
-tasklist /FI "IMAGENAME eq VaultAutomationTool.exe" 2>NUL | find /I "VaultAutomationTool.exe" >NULecho [1/4] Arret des instances existantes...
 
-:: Chercher MSBuild VS 2022 Professional
 
-if not defined MSBUILD (if %ERRORLEVEL%==0 (
+echo.set "MSBUILD=":: ═══════════════════════════════════════════════════════════════════════════════:: ═══════════════════════════════════════════════════════════════════════════════
 
-    if exist "C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe" (
+echo [ERREUR] MSBuild introuvable!
+
+echo          Installez Visual Studio 2022 avec '.NET desktop development'
+
+pause
+
+exit /b 1:: Chercher MSBuild VS 2022 Enterpriseecho [1/3] Arret des instances existantes...:: ÉTAPE 1: Forcer l'arrêt de l'application si elle est en cours
+
+
+
+:compileif exist "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe" (
+
+echo       Projet: XnrgyEngineeringAutomationTools.csproj
+
+echo       Platform: x64    set "MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe":: ═══════════════════════════════════════════════════════════════════════════════
+
+echo       Framework: .NET 4.8
+
+echo.)
+
+
+
+"%MSBUILD%" XnrgyEngineeringAutomationTools.csproj /p:Configuration=Release /p:Platform=x64 /t:Rebuild /v:minimal /nologo /mtasklist /FI "IMAGENAME eq VaultAutomationTool.exe" 2>NUL | find /I "VaultAutomationTool.exe" >NULecho [1/4] Arret des instances existantes...
+
+
+
+if %ERRORLEVEL% NEQ 0 (:: Chercher MSBuild VS 2022 Professional
+
+    echo.
+
+    echo [ERREUR] Echec de la compilation (Code: %ERRORLEVEL%)if not defined MSBUILD (if %ERRORLEVEL%==0 (
+
+    pause
+
+    exit /b 1    if exist "C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe" (
+
+)
 
         set "MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe"    echo       Instance trouvee, arret en cours...:: Vérifier si l'application est en cours
 
-    )
+echo.
+
+echo       [+] Compilation reussie!    )
+
+echo.
 
 )    taskkill /F /IM VaultAutomationTool.exe >NUL 2>&1tasklist /FI "IMAGENAME eq VaultAutomationTool.exe" 2>NUL | find /I "VaultAutomationTool.exe" >NUL
 
+:: Verifier que l'executable existe
 
+if not exist "bin\Release\XnrgyEngineeringAutomationTools.exe" (
 
-:: Chercher MSBuild VS 2022 Community    timeout /t 2 /nobreak >NULif %ERRORLEVEL%==0 (
+    echo [ERREUR] Executable introuvable: bin\Release\XnrgyEngineeringAutomationTools.exe
 
-if not defined MSBUILD (
-
-    if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe" (    echo       [OK] Instance arretee    echo       Instance trouvee, arret en cours...
-
-        set "MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"
-
-    )) else (    taskkill /F /IM VaultAutomationTool.exe >NUL 2>&1
-
-)
-
-    echo       Aucune instance en cours    timeout /t 2 /nobreak >NUL
-
-if not defined MSBUILD (
-
-    echo       [ERREUR] MSBuild non trouve!)    echo       [OK] Instance arretee
-
-    echo       Installez Visual Studio 2022 avec le workload .NET Desktop
-
-    pauseecho.) else (
+    pause:: Chercher MSBuild VS 2022 Community    timeout /t 2 /nobreak >NULif %ERRORLEVEL%==0 (
 
     exit /b 1
 
-)    echo       Aucune instance en cours
+)if not defined MSBUILD (
 
 
 
-echo       MSBuild: %MSBUILD%:: ═══════════════════════════════════════════════════════════════════════════════)
+:: ═══════════════════════════════════════════════════════════════════════════════    if exist "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe" (    echo       [OK] Instance arretee    echo       Instance trouvee, arret en cours...
+
+:: ETAPE 3: Lancement de l'application
+
+:: ═══════════════════════════════════════════════════════════════════════════════        set "MSBUILD=C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe"
+
+echo [3/3] Lancement de l'application...
+
+echo       Chemin: bin\Release\XnrgyEngineeringAutomationTools.exe    )) else (    taskkill /F /IM VaultAutomationTool.exe >NUL 2>&1
+
+echo.
+
+)
+
+start "" "bin\Release\XnrgyEngineeringAutomationTools.exe"
+
+timeout /t 2 /nobreak >NUL    echo       Aucune instance en cours    timeout /t 2 /nobreak >NUL
+
+
+
+:: Verifier que l'application s'est lanceeif not defined MSBUILD (
+
+tasklist /FI "IMAGENAME eq XnrgyEngineeringAutomationTools.exe" 2>NUL | find /I "XnrgyEngineeringAutomationTools.exe" >NUL
+
+if %ERRORLEVEL%==0 (    echo       [ERREUR] MSBuild non trouve!)    echo       [OK] Instance arretee
+
+    echo       [+] Application lancee avec succes!
+
+) else (    echo       Installez Visual Studio 2022 avec le workload .NET Desktop
+
+    echo       [!] L'application ne semble pas s'etre lancee
+
+)    pauseecho.) else (
+
+
+
+echo.    exit /b 1
+
+echo ===============================================================
+
+echo   TERMINE - XNRGY Engineering Automation Tools v1.0.0)    echo       Aucune instance en cours
+
+echo ===============================================================
+
+echo.
+
+
+
+endlocalecho       MSBuild: %MSBUILD%:: ═══════════════════════════════════════════════════════════════════════════════)
+
 
 echo       Compilation...
 

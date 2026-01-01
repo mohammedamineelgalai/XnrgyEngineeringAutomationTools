@@ -9,7 +9,10 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using XnrgyEngineeringAutomationTools.Services;
-using XnrgyEngineeringAutomationTools.Views;
+using XnrgyEngineeringAutomationTools.Shared.Views;
+using XnrgyEngineeringAutomationTools.Modules.CreateModule.Views;
+using XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views;
+using XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views;
 
 namespace XnrgyEngineeringAutomationTools
 {
@@ -68,19 +71,20 @@ namespace XnrgyEngineeringAutomationTools
         
         /// <summary>
         /// Ajoute une entree au journal avec couleur et clignotement pour les erreurs
+        /// Utilise JournalColorService pour uniformite des couleurs
         /// </summary>
         private void AddLog(string message, string level = "INFO")
         {
             string timestamp = DateTime.Now.ToString("HH:mm:ss");
             string icon = level switch
             {
-                "ERROR" => "X",
-                "WARN" => "!",
-                "SUCCESS" => "OK",
-                "START" => ">>",
-                "STOP" => "||",
-                "CRITICAL" => "XX",
-                _ => "i"
+                "ERROR" => "[-]",
+                "WARN" => "[!]",
+                "SUCCESS" => "[+]",
+                "START" => "[>]",
+                "STOP" => "[~]",
+                "CRITICAL" => "[X]",
+                _ => "[i]"
             };
             
             string text = "[" + timestamp + "] " + icon + " " + message;
@@ -96,31 +100,32 @@ namespace XnrgyEngineeringAutomationTools
                     TextWrapping = TextWrapping.Wrap
                 };
                 
+                // Utilise JournalColorService pour les couleurs uniformisees
                 switch (level)
                 {
                     case "ERROR":
                     case "CRITICAL":
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 80, 80));
+                        textBlock.Foreground = Services.JournalColorService.ErrorBrush;
                         textBlock.FontWeight = FontWeights.Bold;
                         StartBlinkAnimation(textBlock);
                         break;
                     case "WARN":
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 180, 0));
+                        textBlock.Foreground = Services.JournalColorService.WarningBrush;
                         textBlock.FontWeight = FontWeights.SemiBold;
                         break;
                     case "SUCCESS":
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(80, 200, 80));
+                        textBlock.Foreground = Services.JournalColorService.SuccessBrush;
                         break;
                     case "START":
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(100, 180, 255));
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(100, 180, 255)); // Bleu clair pour START
                         textBlock.FontWeight = FontWeights.SemiBold;
                         break;
                     case "STOP":
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(180, 100, 255));
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(180, 100, 255)); // Violet pour STOP
                         break;
                     default:
-                        // INFO - TOUJOURS blanc car le fond du journal est noir fixe
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(220, 220, 220)); // Blanc leger - FIXE
+                        // INFO - Blanc pur depuis JournalColorService
+                        textBlock.Foreground = Services.JournalColorService.InfoBrush;
                         break;
                 }
                 
@@ -145,16 +150,17 @@ namespace XnrgyEngineeringAutomationTools
         
         private void StartBlinkAnimation(TextBlock textBlock)
         {
+            // Utilise JournalColorService pour la couleur d'erreur
             var animation = new ColorAnimation
             {
-                From = Color.FromRgb(255, 80, 80),
+                From = Services.JournalColorService.ErrorColor,
                 To = Color.FromRgb(255, 200, 200),
                 Duration = TimeSpan.FromMilliseconds(300),
                 AutoReverse = true,
                 RepeatBehavior = new RepeatBehavior(5)
             };
             
-            var brush = new SolidColorBrush(Color.FromRgb(255, 80, 80));
+            var brush = new SolidColorBrush(Services.JournalColorService.ErrorColor);
             textBlock.Foreground = brush;
             brush.BeginAnimation(SolidColorBrush.ColorProperty, animation);
         }
@@ -1218,7 +1224,7 @@ namespace XnrgyEngineeringAutomationTools
                 if (File.Exists(ChecklistHVACPath))
                 {
                     // Ouvrir dans une fenêtre intégrée avec le service Vault
-                    var checklistWindow = new Views.ChecklistHVACWindow(ChecklistHVACPath, _vaultService);
+                    var checklistWindow = new ChecklistHVACWindow(ChecklistHVACPath, _vaultService);
                     checklistWindow.Show();
                     AddLog("Checklist HVAC ouvert dans l'application", "SUCCESS");
                     AddLog("Fichier: " + ChecklistHVACPath, "INFO");

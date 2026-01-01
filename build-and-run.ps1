@@ -1,8 +1,8 @@
 ﻿#######################################################################
 #  XNRGY Engineering Automation Tools - BUILD & RUN SCRIPT
-#  Version: 2.0.0
-#  Author: Mohammed Amine Elgalai
-#  Date: 2025-12-26
+#  Version: 1.0.0
+#  Author: Mohammed Amine Elgalai - XNRGY Climate Systems ULC
+#  Date: 2026-01-01
 #
 #  Usage:
 #    .\build-and-run.ps1              # Build Release + Run
@@ -32,7 +32,7 @@ function Show-Header {
     Clear-Host
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║     XNRGY ENGINEERING AUTOMATION TOOLS - BUILD & RUN v2.0         ║" -ForegroundColor Cyan
+    Write-Host "║     XNRGY ENGINEERING AUTOMATION TOOLS - BUILD & RUN v1.0.0       ║" -ForegroundColor Cyan
     Write-Host "║     Configuration: $Configuration                                         ║" -ForegroundColor Cyan
     Write-Host "╚═══════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
@@ -41,6 +41,10 @@ function Show-Header {
 # Fonction pour trouver MSBuild
 function Get-MSBuildPath {
     $paths = @(
+        # VS 18 (prioritaire)
+        "C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
+        "C:\Program Files\Microsoft Visual Studio\18\Insiders\MSBuild\Current\Bin\MSBuild.exe",
+        # VS 2022
         "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\amd64\MSBuild.exe",
         "C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\amd64\MSBuild.exe",
         "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\amd64\MSBuild.exe",
@@ -55,7 +59,7 @@ function Get-MSBuildPath {
         }
     }
     
-    throw "MSBuild introuvable! Installer Visual Studio 2022."
+    throw "MSBuild introuvable! Installer Visual Studio 2022 ou VS 18."
 }
 
 # Fonction pour tuer les instances - FORCE MODE

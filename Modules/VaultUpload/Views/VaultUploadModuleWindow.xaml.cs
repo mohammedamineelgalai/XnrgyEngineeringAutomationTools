@@ -17,6 +17,7 @@ using XnrgyEngineeringAutomationTools.Models;
 using XnrgyEngineeringAutomationTools.Modules.VaultUpload.Models;
 using XnrgyEngineeringAutomationTools.Services;
 using XnrgyEngineeringAutomationTools.Views;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
 {
@@ -787,9 +788,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             _failedCount = 0;
             _cancellationTokenSource = new CancellationTokenSource();
 
+            // Capturer le commentaire AVANT le Task.Run (sur le thread UI)
+            string baseComment = TxtComment.Text;
+            string uploadComment = baseComment;
+            if (_projectProperties != null)
+            {
+                uploadComment = $"{baseComment} | Project: {_projectProperties.ProjectNumber}, Ref: {_projectProperties.Reference}, Module: {_projectProperties.Module}";
+            }
+
             SetProcessingState(true);
 
             Log($"[>] Debut upload de {files.Count} fichiers...", LogLevel.INFO);
+            Log($"[i] Commentaire: {uploadComment}", LogLevel.INFO);
 
             try
             {
@@ -817,8 +827,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                     {
                         file.Status = "Upload en cours...";
                         
-                        // Upload vers Vault
-                        bool success = await Task.Run(() => UploadFileToVault(file));
+                        // Upload vers Vault - passer le commentaire en parametre
+                        bool success = await Task.Run(() => UploadFileToVault(file, uploadComment));
 
                         if (success)
                         {
@@ -870,7 +880,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             }
         }
 
-        private bool UploadFileToVault(VaultUploadFileItem file)
+        private bool UploadFileToVault(VaultUploadFileItem file, string comment)
         {
             if (_vaultService == null) return false;
 
@@ -887,18 +897,25 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                     vaultPath = "$/" + (folder?.Replace("\\", "/") ?? "");
                 }
 
-                // Creer commentaire avec infos projet
-                string comment = TxtComment.Text;
-                if (_projectProperties != null)
-                {
-                    comment = $"{TxtComment.Text} | Project: {_projectProperties.ProjectNumber}, Ref: {_projectProperties.Reference}, Module: {_projectProperties.Module}";
-                }
+                // Extraire les proprietes du fichier (Project, Reference, Module)
+                string? projectNumber = _projectProperties?.ProjectNumber;
+                string? reference = _projectProperties?.Reference;
+                string? module = _projectProperties?.Module;
 
-                // Upload fichier vers Vault
-                return _vaultService.AddFileToVault(
+                // Upload fichier vers Vault avec proprietes et commentaire
+                // Utilise UploadFile qui applique les proprietes (Check-in/Lifecycle/Properties)
+                return _vaultService.UploadFile(
                     file.FullPath,
                     vaultPath,
-                    comment
+                    projectNumber,
+                    reference,
+                    module,
+                    categoryId: null,
+                    categoryName: null,
+                    lifecycleDefinitionId: null,
+                    lifecycleStateId: null,
+                    revision: null,
+                    checkInComment: comment
                 );
             }
             catch (Exception ex)
@@ -1084,7 +1101,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
         }
 
         // ====================================================================
-        // Journal
+        // Journal - Utilise JournalColorService pour uniformite
         // ====================================================================
         private enum LogLevel { INFO, SUCCESS, WARNING, ERROR }
 
@@ -1095,21 +1112,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
                 var paragraph = new Paragraph();
                 var run = new Run($"[{DateTime.Now:HH:mm:ss}] {message}");
 
-                switch (level)
+                // Utilise JournalColorService pour les couleurs uniformisees
+                var serviceLevel = level switch
                 {
-                    case LogLevel.SUCCESS:
-                        run.Foreground = new SolidColorBrush(Color.FromRgb(16, 124, 16));
-                        break;
-                    case LogLevel.WARNING:
-                        run.Foreground = new SolidColorBrush(Color.FromRgb(255, 140, 0));
-                        break;
-                    case LogLevel.ERROR:
-                        run.Foreground = new SolidColorBrush(Color.FromRgb(232, 17, 35));
-                        break;
-                    default:
-                        run.Foreground = new SolidColorBrush(Color.FromRgb(79, 195, 247));
-                        break;
-                }
+                    LogLevel.SUCCESS => Services.JournalColorService.LogLevel.SUCCESS,
+                    LogLevel.ERROR => Services.JournalColorService.LogLevel.ERROR,
+                    LogLevel.WARNING => Services.JournalColorService.LogLevel.WARNING,
+                    _ => Services.JournalColorService.LogLevel.INFO
+                };
+                run.Foreground = Services.JournalColorService.GetBrushForLevel(serviceLevel);
 
                 paragraph.Inlines.Add(run);
                 paragraph.Margin = new Thickness(0, 2, 0, 2);

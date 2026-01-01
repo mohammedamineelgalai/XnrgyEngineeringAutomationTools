@@ -473,6 +473,25 @@ Task<bool> ExecuteRealPackAndGoAsync(
 - Inventor COM 2026.2
 - Update Workspace au demarrage
 
+### v1.0.1 (01 Janvier 2026) - Organisation Structure
+
+**[+] Organisation professionnelle:**
+- Nouveau fichier ARCHITECTURE.md avec plan de structure
+- Creation dossiers modules: Modules/UploadTemplate, Modules/CreateModule, Modules/ChecklistHVAC
+- Creation dossier Shared/ pour composants partages
+- Dossier Temp&Test/ pour fichiers de debug/test
+- Documentation structure actuelle et cible
+
+**[+] Styles centralises:**
+- XnrgyStyles.xaml: 50+ styles collectes de toutes les fenetres
+- 11 sections: Colors, Buttons, Inputs, DataGrid, Containers, Labels, ProgressBar, DatePicker, ListBox, Special, Responsive
+- Effets glow sur boutons au hover
+- Aliases pour compatibilite (XnrgyPrimaryButton = PrimaryButton)
+
+**[+] Backup automatique:**
+- Dossier Backups/ avec sauvegardes horodatees
+- Format: BACKUP_YYYYMMDD_HHMMSS/
+
 ### v1.0.0 (31 Decembre 2025) - RELEASE OFFICIELLE
 
 **[+] Systeme de Themes Ameliore:**
@@ -502,6 +521,14 @@ Task<bool> ExecuteRealPackAndGoAsync(
 
 ---
 
+## Documentation
+
+- **README.md** - Ce fichier (documentation utilisateur)
+- **ARCHITECTURE.md** - Structure projet et plan de migration
+- **.github/instructions/XnrgyEngineeringAutomationTools.instructions.md** - Instructions pour Copilot
+
+---
+
 ## Auteur
 
 **Mohammed Amine Elgalai**  
@@ -513,8 +540,8 @@ Email: mohammedamine.elgalai@xnrgy.com
 
 ## Licence
 
-Proprietaire - XNRGY Climate Systems ULC (c) 2025
+Proprietaire - XNRGY Climate Systems ULC (c) 2025-2026
 
 ---
 
-**Derniere mise a jour**: 31 Decembre 2025 - v1.0.0 Release
+**Derniere mise a jour**: 01 Janvier 2026 - v1.0.1 Organisation Structure

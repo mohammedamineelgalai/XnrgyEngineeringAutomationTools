@@ -1,0 +1,1208 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════════════════════════════════════════════
+         XNRGY ENGINEERING AUTOMATION TOOLS - STYLES CENTRALISES COMPLETS
+         Version: 2.0.0
+         Auteur: Mohammed Amine Elgalai - XNRGY Climate Systems ULC
+         Date: 2026-01-01
+         
+         PALETTE XNRGY OFFICIELLE:
+         ┌──────────────────────────────────────────────────────────────────────────────────────────────┐
+         │ BACKGROUNDS                    │ ACCENTS                        │ TEXT                       │
+         │ #1E1E2E - Fond principal       │ #0078D4 - Bleu XNRGY           │ #FFFFFF - Texte principal  │
+         │ #252536 - Fond secondaire      │ #00D26A - Vert succes          │ #AAAAAA - Texte secondaire │
+         │ #2D2D44 - Fond input           │ #FF8C00 - Orange warning       │ #888888 - Texte muted      │
+         │ #2A4A6F - Header bleu marine   │ #E81123 - Rouge danger         │                            │
+         │ #404060 - Bordures             │ #7C3AED - Violet (special)     │                            │
+         └──────────────────────────────────────────────────────────────────────────────────────────────┘
+         
+         HOVER EFFECTS (Glow brillant):
+         - Bleu: #1E90FF avec DropShadow
+         - Vert: #00FF7F avec DropShadow  
+         - Orange: #FFA500 avec DropShadow
+         - Rouge: #FF4444 avec DropShadow
+         
+         TOUS LES STYLES COLLECTES DE TOUTES LES FENETRES:
+         - MainWindow, LoginWindow, CreateModuleWindow, VaultUploadModuleWindow
+         - UploadTemplateWindow, PreviewWindow, CreateModuleSettingsWindow, XnrgyMessageBox
+         ═══════════════════════════════════════════════════════════════════════════════════════════════ -->
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                              SECTION 1: COULEURS THEME                                     ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+    
+    <!-- Couleurs de base (Color) -->
+    <Color x:Key="XnrgyBlueColor">#0078D4</Color>
+    <Color x:Key="XnrgyBlueHoverColor">#1E90FF</Color>
+    <Color x:Key="XnrgyBlueDarkColor">#005A9E</Color>
+    <Color x:Key="XnrgyGreenColor">#00D26A</Color>
+    <Color x:Key="XnrgyGreenHoverColor">#00FF7F</Color>
+    <Color x:Key="XnrgyGreenDarkColor">#0D5C0D</Color>
+    <Color x:Key="XnrgyOrangeColor">#FF8C00</Color>
+    <Color x:Key="XnrgyOrangeHoverColor">#FFA500</Color>
+    <Color x:Key="XnrgyOrangeDarkColor">#C44E09</Color>
+    <Color x:Key="XnrgyRedColor">#E81123</Color>
+    <Color x:Key="XnrgyRedHoverColor">#FF4444</Color>
+    <Color x:Key="XnrgyRedDarkColor">#A72B2E</Color>
+    <Color x:Key="XnrgyPurpleColor">#7C3AED</Color>
+    <Color x:Key="XnrgyPurpleHoverColor">#9F67FF</Color>
+    
+    <!-- Couleurs de fond -->
+    <Color x:Key="WindowBackgroundColor">#1E1E2E</Color>
+    <Color x:Key="PanelBackgroundColor">#252536</Color>
+    <Color x:Key="InputBackgroundColor">#2D2D44</Color>
+    <Color x:Key="HeaderBackgroundColor">#2A4A6F</Color>
+    <Color x:Key="BorderColorValue">#404060</Color>
+    <Color x:Key="HoverBackgroundColor">#3D3D56</Color>
+    
+    <!-- Couleurs de texte -->
+    <Color x:Key="TextPrimaryColor">#FFFFFF</Color>
+    <Color x:Key="TextSecondaryColor">#AAAAAA</Color>
+    <Color x:Key="TextMutedColor">#888888</Color>
+    <Color x:Key="TextDisabledColor">#666666</Color>
+    
+    <!-- Couleurs speciales -->
+    <Color x:Key="SuccessGlowColor">#00FF7F</Color>
+    <Color x:Key="WarningGlowColor">#FFA500</Color>
+    <Color x:Key="DangerGlowColor">#FF4444</Color>
+    <Color x:Key="InfoGlowColor">#00BFFF</Color>
+    
+    <!-- SolidColorBrush - Accents -->
+    <SolidColorBrush x:Key="XnrgyBlue" Color="{StaticResource XnrgyBlueColor}"/>
+    <SolidColorBrush x:Key="XnrgyBlueHover" Color="{StaticResource XnrgyBlueHoverColor}"/>
+    <SolidColorBrush x:Key="XnrgyBlueDark" Color="{StaticResource XnrgyBlueDarkColor}"/>
+    <SolidColorBrush x:Key="XnrgyGreen" Color="{StaticResource XnrgyGreenColor}"/>
+    <SolidColorBrush x:Key="XnrgyGreenHover" Color="{StaticResource XnrgyGreenHoverColor}"/>
+    <SolidColorBrush x:Key="XnrgyGreenDark" Color="{StaticResource XnrgyGreenDarkColor}"/>
+    <SolidColorBrush x:Key="XnrgyOrange" Color="{StaticResource XnrgyOrangeColor}"/>
+    <SolidColorBrush x:Key="XnrgyOrangeHover" Color="{StaticResource XnrgyOrangeHoverColor}"/>
+    <SolidColorBrush x:Key="XnrgyOrangeDark" Color="{StaticResource XnrgyOrangeDarkColor}"/>
+    <SolidColorBrush x:Key="XnrgyRed" Color="{StaticResource XnrgyRedColor}"/>
+    <SolidColorBrush x:Key="XnrgyRedHover" Color="{StaticResource XnrgyRedHoverColor}"/>
+    <SolidColorBrush x:Key="XnrgyRedDark" Color="{StaticResource XnrgyRedDarkColor}"/>
+    <SolidColorBrush x:Key="XnrgyPurple" Color="{StaticResource XnrgyPurpleColor}"/>
+    <SolidColorBrush x:Key="XnrgyPurpleHover" Color="{StaticResource XnrgyPurpleHoverColor}"/>
+    
+    <!-- SolidColorBrush - Backgrounds -->
+    <SolidColorBrush x:Key="WindowBackground" Color="{StaticResource WindowBackgroundColor}"/>
+    <SolidColorBrush x:Key="PanelBackground" Color="{StaticResource PanelBackgroundColor}"/>
+    <SolidColorBrush x:Key="InputBackground" Color="{StaticResource InputBackgroundColor}"/>
+    <SolidColorBrush x:Key="HeaderBackground" Color="{StaticResource HeaderBackgroundColor}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColorValue}"/>
+    <SolidColorBrush x:Key="HoverBackground" Color="{StaticResource HoverBackgroundColor}"/>
+    
+    <!-- SolidColorBrush - Texte -->
+    <SolidColorBrush x:Key="TextPrimary" Color="{StaticResource TextPrimaryColor}"/>
+    <SolidColorBrush x:Key="TextSecondary" Color="{StaticResource TextSecondaryColor}"/>
+    <SolidColorBrush x:Key="TextMuted" Color="{StaticResource TextMutedColor}"/>
+    <SolidColorBrush x:Key="TextDisabled" Color="{StaticResource TextDisabledColor}"/>
+    
+    <!-- Alias pour compatibilite avec anciennes fenetres -->
+    <SolidColorBrush x:Key="DarkBg" Color="{StaticResource WindowBackgroundColor}"/>
+    <SolidColorBrush x:Key="DarkBg2" Color="{StaticResource PanelBackgroundColor}"/>
+    <SolidColorBrush x:Key="DarkBg3" Color="{StaticResource InputBackgroundColor}"/>
+    <SolidColorBrush x:Key="BorderColor" Color="{StaticResource BorderColorValue}"/>
+    <SolidColorBrush x:Key="TextLight" Color="{StaticResource TextPrimaryColor}"/>
+    <SolidColorBrush x:Key="ButtonBg" Color="{StaticResource PanelBackgroundColor}"/>
+    <SolidColorBrush x:Key="ButtonHover" Color="{StaticResource HoverBackgroundColor}"/>
+    <SolidColorBrush x:Key="LogBg" Color="#12121C"/>
+    
+    <!-- Convertisseurs -->
+    <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 2: STYLES BOUTONS                                        ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== BOUTON PRINCIPAL (Bleu XNRGY) - Avec Glow Hover ========== -->
+    <Style x:Key="XnrgyPrimaryButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource XnrgyBlue}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            CornerRadius="6" Padding="{TemplateBinding Padding}"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyBlueHover}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#1E90FF" BlurRadius="20" ShadowDepth="0" Opacity="0.7"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyBlueDark}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="#404060"/>
+                            <Setter Property="Foreground" Value="#666666"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias PrimaryButton pour compatibilite -->
+    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource XnrgyPrimaryButton}"/>
+
+    <!-- ========== BOUTON SUCCES (Vert) - Avec Glow Hover ========== -->
+    <Style x:Key="XnrgySuccessButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource XnrgyGreen}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border.RenderTransform>
+                            <ScaleTransform x:Name="scaleTransform" ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyGreenHover}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#00FF7F" BlurRadius="20" ShadowDepth="0" Opacity="0.7"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="scaleTransform" Storyboard.TargetProperty="ScaleX" To="0.95" Duration="0:0:0.1"/>
+                                        <DoubleAnimation Storyboard.TargetName="scaleTransform" Storyboard.TargetProperty="ScaleY" To="0.95" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="scaleTransform" Storyboard.TargetProperty="ScaleX" To="1.0" Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction><ElasticEase Oscillations="1" Springiness="3"/></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="scaleTransform" Storyboard.TargetProperty="ScaleY" To="1.0" Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction><ElasticEase Oscillations="1" Springiness="3"/></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="#404060"/>
+                            <Setter Property="Foreground" Value="#666666"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias SuccessButton pour compatibilite -->
+    <Style x:Key="SuccessButton" TargetType="Button" BasedOn="{StaticResource XnrgySuccessButton}"/>
+
+    <!-- ========== BOUTON WARNING (Orange) - Avec Glow Hover ========== -->
+    <Style x:Key="XnrgyWarningButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource XnrgyOrange}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyOrangeHover}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#FFA500" BlurRadius="20" ShadowDepth="0" Opacity="0.7"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyOrangeDark}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="#404060"/>
+                            <Setter Property="Foreground" Value="#666666"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias WarningButton pour compatibilite -->
+    <Style x:Key="WarningButton" TargetType="Button" BasedOn="{StaticResource XnrgyWarningButton}"/>
+
+    <!-- ========== BOUTON DANGER (Rouge) - Avec Glow Hover ========== -->
+    <Style x:Key="XnrgyDangerButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource XnrgyRed}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyRedHover}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#FF4444" BlurRadius="20" ShadowDepth="0" Opacity="0.7"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyRedDark}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="Background" Value="#404060"/>
+                            <Setter Property="Foreground" Value="#666666"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias DangerButton pour compatibilite -->
+    <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource XnrgyDangerButton}"/>
+
+    <!-- ========== BOUTON SECONDAIRE (Outline Bleu) - Avec Glow Hover ========== -->
+    <Style x:Key="XnrgySecondaryButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource InputBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="White"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            CornerRadius="6" Padding="{TemplateBinding Padding}"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource HoverBackground}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#0078D4" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyBlue}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="border" Property="BorderBrush" Value="#404060"/>
+                            <Setter Property="Foreground" Value="#666666"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias SecondaryButton pour compatibilite -->
+    <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource XnrgySecondaryButton}"/>
+
+    <!-- ========== BOUTON MODULE (Cartes MainWindow) ========== -->
+    <Style x:Key="ModuleButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource PanelBackground}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Margin" Value="3"/>
+        <Setter Property="Padding" Value="10"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            CornerRadius="6" 
+                            BorderBrush="#2A4A6F" 
+                            BorderThickness="2"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource HoverBackground}"/>
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#0078D4" BlurRadius="15" ShadowDepth="0" Opacity="0.4"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyBlue}"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========== BOUTON ACTION (Header MainWindow) ========== -->
+    <Style x:Key="ActionButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource XnrgyBlue}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Margin" Value="5,0"/>
+        <Setter Property="Padding" Value="14,8"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            CornerRadius="6" 
+                            BorderBrush="#2A4A6F"
+                            BorderThickness="2"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyBlueHover}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#1E90FF" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========== BOUTON MODERNE (Preview/General) ========== -->
+    <Style x:Key="ModernButton" TargetType="Button">
+        <Setter Property="Background" Value="{StaticResource InputBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="20,10"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" 
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource HoverBackground}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#0078D4" BlurRadius="12" ShadowDepth="0" Opacity="0.4"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 3: STYLES INPUTS                                         ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== TEXTBOX MODERNE - Avec Glow Focus ========== -->
+    <Style x:Key="XnrgyTextBox" TargetType="TextBox">
+        <Setter Property="Background" Value="{StaticResource InputBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="White"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="CaretBrush" Value="White"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            CornerRadius="4">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="0" VerticalAlignment="Center" VerticalScrollBarVisibility="Disabled"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#0078D4" BlurRadius="10" ShadowDepth="0" Opacity="0.4"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource XnrgyBlueHover}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#1E90FF" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias ModernTextBox pour compatibilite -->
+    <Style x:Key="ModernTextBox" TargetType="TextBox" BasedOn="{StaticResource XnrgyTextBox}"/>
+
+    <!-- ========== PASSWORDBOX MODERNE - Avec Glow Focus ========== -->
+    <Style x:Key="XnrgyPasswordBox" TargetType="PasswordBox">
+        <Setter Property="Background" Value="{StaticResource InputBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="White"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="CaretBrush" Value="White"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+            </Trigger>
+            <Trigger Property="IsFocused" Value="True">
+                <Setter Property="BorderBrush" Value="{StaticResource XnrgyBlueHover}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+    
+    <!-- Alias ModernPasswordBox pour compatibilite -->
+    <Style x:Key="ModernPasswordBox" TargetType="PasswordBox" BasedOn="{StaticResource XnrgyPasswordBox}"/>
+
+    <!-- ========== COMBOBOX MODERNE - Avec Hover Effect ========== -->
+    <Style x:Key="XnrgyComboBox" TargetType="ComboBox">
+        <Setter Property="Background" Value="{StaticResource InputBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="White"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <Border x:Name="Border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter Grid.Column="0" Margin="10,8" 
+                                                  Content="{TemplateBinding SelectionBoxItem}"
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                  VerticalAlignment="Center"/>
+                                <ToggleButton Grid.Column="1" x:Name="ToggleButton" 
+                                              Background="Transparent" BorderThickness="0"
+                                              IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                              ClickMode="Press">
+                                    <Path Fill="#AAAAAA" Data="M0,0 L4,4 L8,0 Z" 
+                                          HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </ToggleButton>
+                                <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" 
+                                       AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                    <Border x:Name="DropDownBorder" Background="{StaticResource InputBackground}" 
+                                            BorderBrush="{StaticResource XnrgyBlue}" BorderThickness="2" CornerRadius="4"
+                                            MinWidth="{TemplateBinding ActualWidth}" MaxHeight="300">
+                                        <ScrollViewer>
+                                            <StackPanel IsItemsHost="True"/>
+                                        </ScrollViewer>
+                                    </Border>
+                                </Popup>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="Border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#0078D4" BlurRadius="10" ShadowDepth="0" Opacity="0.4"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias ModernComboBox pour compatibilite -->
+    <Style x:Key="ModernComboBox" TargetType="ComboBox" BasedOn="{StaticResource XnrgyComboBox}"/>
+
+    <!-- ========== COMBOBOXITEM MODERNE ========== -->
+    <Style x:Key="XnrgyComboBoxItem" TargetType="ComboBoxItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource HoverBackground}"/>
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{StaticResource XnrgyBlue}"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ========== CHECKBOX MODERNE - Avec Glow Hover ========== -->
+    <Style x:Key="XnrgyCheckBox" TargetType="CheckBox">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="CheckBox">
+                    <StackPanel Orientation="Horizontal">
+                        <Border x:Name="checkBorder" Width="22" Height="22" 
+                                Background="{StaticResource InputBackground}" 
+                                BorderBrush="White" 
+                                BorderThickness="2" CornerRadius="4" Margin="0,0,10,0"
+                                VerticalAlignment="Center">
+                            <Path x:Name="checkMark" Data="M2,6 L6,10 L14,2" 
+                                  Stroke="White" StrokeThickness="2.5" 
+                                  Visibility="Collapsed" Margin="2"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ContentPresenter VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="checkBorder" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#0078D4" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="checkBorder" Property="Background" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="checkMark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="checkBorder" Property="Background" Value="{StaticResource XnrgyBlueHover}"/>
+                            <Setter TargetName="checkBorder" Property="BorderBrush" Value="{StaticResource XnrgyBlueHover}"/>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias ModernCheckBox pour compatibilite -->
+    <Style x:Key="ModernCheckBox" TargetType="CheckBox" BasedOn="{StaticResource XnrgyCheckBox}"/>
+
+    <!-- ========== RADIOBUTTON MODERNE - Avec Glow Hover ========== -->
+    <Style x:Key="XnrgyRadioButton" TargetType="RadioButton">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <StackPanel Orientation="Horizontal">
+                        <Border x:Name="radioBorder" Width="22" Height="22" 
+                                Background="{StaticResource InputBackground}" 
+                                BorderBrush="White" 
+                                BorderThickness="2" CornerRadius="11" Margin="0,0,10,0"
+                                VerticalAlignment="Center">
+                            <Ellipse x:Name="radioMark" Width="10" Height="10" 
+                                     Fill="White" Visibility="Collapsed"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ContentPresenter VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="radioBorder" Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="radioBorder" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#0078D4" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="radioBorder" Property="Background" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="radioBorder" Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="radioMark" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsChecked" Value="True"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="radioBorder" Property="Background" Value="{StaticResource XnrgyBlueHover}"/>
+                            <Setter TargetName="radioBorder" Property="BorderBrush" Value="{StaticResource XnrgyBlueHover}"/>
+                            <Setter TargetName="radioBorder" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#1E90FF" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+                                </Setter.Value>
+                            </Setter>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias ModernRadioButton pour compatibilite -->
+    <Style x:Key="ModernRadioButton" TargetType="RadioButton" BasedOn="{StaticResource XnrgyRadioButton}"/>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 4: STYLES DATAGRID                                       ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== DATAGRID MODERNE ========== -->
+    <Style x:Key="XnrgyDataGrid" TargetType="DataGrid">
+        <Setter Property="Background" Value="{StaticResource WindowBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="RowBackground" Value="{StaticResource PanelBackground}"/>
+        <Setter Property="AlternatingRowBackground" Value="{StaticResource InputBackground}"/>
+        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="HeadersVisibility" Value="Column"/>
+        <Setter Property="SelectionMode" Value="Extended"/>
+        <Setter Property="SelectionUnit" Value="FullRow"/>
+        <Setter Property="AutoGenerateColumns" Value="False"/>
+        <Setter Property="CanUserAddRows" Value="False"/>
+        <Setter Property="CanUserDeleteRows" Value="False"/>
+    </Style>
+
+    <!-- ========== DATAGRID COLUMN HEADER - Fond Bleu Marine ========== -->
+    <Style x:Key="XnrgyDataGridColumnHeader" TargetType="DataGridColumnHeader">
+        <Setter Property="Background" Value="{StaticResource HeaderBackground}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="BorderBrush" Value="#3A5A7F"/>
+        <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridColumnHeader">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="#3A5A8F"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========== DATAGRID ROW - Avec Hover Effect ========== -->
+    <Style x:Key="XnrgyDataGridRow" TargetType="DataGridRow">
+        <Setter Property="Background" Value="{StaticResource PanelBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Style.Triggers>
+            <Trigger Property="AlternationIndex" Value="1">
+                <Setter Property="Background" Value="{StaticResource InputBackground}"/>
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{StaticResource XnrgyBlue}"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource HoverBackground}"/>
+            </Trigger>
+            <MultiTrigger>
+                <MultiTrigger.Conditions>
+                    <Condition Property="IsSelected" Value="True"/>
+                    <Condition Property="IsMouseOver" Value="True"/>
+                </MultiTrigger.Conditions>
+                <Setter Property="Background" Value="{StaticResource XnrgyBlueHover}"/>
+            </MultiTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ========== DATAGRID CELL ========== -->
+    <Style x:Key="XnrgyDataGridCell" TargetType="DataGridCell">
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DataGridCell">
+                    <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter VerticalAlignment="Center"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 5: STYLES CONTAINERS                                     ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== GROUPBOX MODERNE - Header Bleu Marine ========== -->
+    <Style x:Key="XnrgyGroupBox" TargetType="GroupBox">
+        <Setter Property="Background" Value="{StaticResource PanelBackground}"/>
+        <Setter Property="BorderBrush" Value="White"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Padding" Value="12"/>
+        <Setter Property="Margin" Value="0,0,0,10"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="GroupBox">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
+                                CornerRadius="6,6,0,0" Padding="12,8"
+                                BorderBrush="White" BorderThickness="1,1,1,0">
+                            <ContentPresenter ContentSource="Header" 
+                                              TextElement.Foreground="White" 
+                                              TextElement.FontWeight="Bold" 
+                                              TextElement.FontSize="14"/>
+                        </Border>
+                        <Border Grid.Row="1" Background="{TemplateBinding Background}" 
+                                BorderBrush="White" 
+                                BorderThickness="1,0,1,1"
+                                CornerRadius="0,0,6,6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias ModernGroupBox pour compatibilite -->
+    <Style x:Key="ModernGroupBox" TargetType="GroupBox" BasedOn="{StaticResource XnrgyGroupBox}"/>
+
+    <!-- ========== BORDER PANEL MODERNE ========== -->
+    <Style x:Key="XnrgyPanel" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource PanelBackground}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12"/>
+    </Style>
+
+    <!-- ========== HEADER PANEL (Bleu Marine) ========== -->
+    <Style x:Key="XnrgyHeaderPanel" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource HeaderBackground}"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="Padding" Value="15,12"/>
+    </Style>
+
+    <!-- ========== SCROLLVIEWER MODERNE ========== -->
+    <Style x:Key="XnrgyScrollViewer" TargetType="ScrollViewer">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+    </Style>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 6: STYLES LABELS & TEXT                                  ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== LABEL MODERNE ========== -->
+    <Style x:Key="XnrgyLabel" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,0,0,5"/>
+    </Style>
+    
+    <!-- Alias ModernLabel pour compatibilite -->
+    <Style x:Key="ModernLabel" TargetType="TextBlock" BasedOn="{StaticResource XnrgyLabel}"/>
+
+    <!-- ========== LABEL TITRE SECTION ========== -->
+    <Style x:Key="XnrgySectionTitle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource XnrgyOrange}"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Margin" Value="0,0,0,15"/>
+    </Style>
+
+    <!-- ========== LABEL SOUS-TITRE ========== -->
+    <Style x:Key="XnrgySubtitle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Margin" Value="0,3,0,0"/>
+    </Style>
+
+    <!-- ========== LABEL SETTINGS ========== -->
+    <Style x:Key="SettingsLabel" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="#CCCCCC"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Margin" Value="0,0,0,4"/>
+    </Style>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 7: STYLES PROGRESSBAR                                    ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== PROGRESSBAR MODERNE - Avec Glow Effect ========== -->
+    <Style x:Key="XnrgyProgressBar" TargetType="ProgressBar">
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Background" Value="{StaticResource InputBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource XnrgyGreen}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Grid>
+                        <Border x:Name="PART_Track" Background="{TemplateBinding Background}" CornerRadius="6"/>
+                        <Border x:Name="PART_Indicator" Background="{TemplateBinding Foreground}" 
+                                CornerRadius="6" HorizontalAlignment="Left">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00FF7F" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias ModernProgressBar pour compatibilite -->
+    <Style x:Key="ModernProgressBar" TargetType="ProgressBar" BasedOn="{StaticResource XnrgyProgressBar}"/>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 8: STYLES DATEPICKER                                     ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== DATEPICKER MODERNE ========== -->
+    <Style x:Key="XnrgyDatePicker" TargetType="DatePicker">
+        <Setter Property="Background" Value="{StaticResource InputBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="White"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="DatePicker">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}" 
+                            CornerRadius="4" Padding="2">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <DatePickerTextBox x:Name="PART_TextBox" Grid.Column="0"
+                                               Foreground="{StaticResource TextPrimary}"
+                                               Background="Transparent"
+                                               BorderThickness="0"
+                                               Padding="6,4"
+                                               VerticalAlignment="Center"/>
+                            <Button x:Name="PART_Button" Grid.Column="1"
+                                    Background="Transparent" BorderThickness="0"
+                                    Cursor="Hand" Padding="6,4" VerticalAlignment="Center">
+                                <Path Data="M19,4H18V2H16V4H8V2H6V4H5C3.89,4 3,4.9 3,6V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V6A2,2 0 0,0 19,4M19,20H5V10H19V20M19,8H5V6H19V8M12,13H17V18H12V13Z" 
+                                      Fill="{StaticResource TextPrimary}" Width="18" Height="18" Stretch="Uniform"/>
+                            </Button>
+                            <Popup x:Name="PART_Popup" 
+                                   PlacementTarget="{Binding ElementName=PART_TextBox}" 
+                                   Placement="Bottom" 
+                                   IsOpen="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}}"
+                                   AllowsTransparency="True" StaysOpen="False">
+                                <Border Background="{StaticResource InputBackground}" 
+                                        BorderBrush="{StaticResource XnrgyBlue}" 
+                                        BorderThickness="2" CornerRadius="6">
+                                    <Calendar x:Name="PART_Calendar"
+                                              Background="{StaticResource InputBackground}"
+                                              Foreground="{StaticResource TextPrimary}"
+                                              BorderThickness="0"/>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            <Setter TargetName="border" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="#0078D4" BlurRadius="10" ShadowDepth="0" Opacity="0.4"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Alias ModernDatePicker pour compatibilite -->
+    <Style x:Key="ModernDatePicker" TargetType="DatePicker" BasedOn="{StaticResource XnrgyDatePicker}"/>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 9: STYLES LISTBOX                                        ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== LISTBOX MODERNE ========== -->
+    <Style x:Key="XnrgyListBox" TargetType="ListBox">
+        <Setter Property="Background" Value="{StaticResource PanelBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="5"/>
+    </Style>
+
+    <!-- ========== LISTBOXITEM MODERNE ========== -->
+    <Style x:Key="XnrgyListBoxItem" TargetType="ListBoxItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="Padding" Value="10,8"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource HoverBackground}"/>
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="{StaticResource XnrgyBlue}"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 10: STYLES SPECIAUX                                      ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== BOUTON FERMER (X) - XnrgyMessageBox ========== -->
+    <Style x:Key="XnrgyCloseButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="#808080"/>
+        <Setter Property="Width" Value="28"/>
+        <Setter Property="Height" Value="28"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="4">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyRed}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ========== TOOLTIP MODERNE ========== -->
+    <Style x:Key="XnrgyToolTip" TargetType="ToolTip">
+        <Setter Property="Background" Value="{StaticResource InputBackground}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <!-- ========== SEPARATOR MODERNE ========== -->
+    <Style x:Key="XnrgySeparator" TargetType="Separator">
+        <Setter Property="Background" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="Margin" Value="0,10"/>
+        <Setter Property="Height" Value="1"/>
+    </Style>
+
+    <!-- ========== SETTINGS TEXTBOX (pour fenetres parametres) ========== -->
+    <Style x:Key="SettingsTextBox" TargetType="TextBox">
+        <Setter Property="Background" Value="#2D2D3D"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="CaretBrush" Value="White"/>
+    </Style>
+
+    <!-- ========== SETTINGS GROUPBOX ========== -->
+    <Style x:Key="SettingsGroupBox" TargetType="GroupBox">
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Margin" Value="0,0,0,10"/>
+        <Setter Property="Padding" Value="10"/>
+        <Setter Property="Foreground" Value="{StaticResource XnrgyOrange}"/>
+    </Style>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                           SECTION 11: STYLES RESPONSIVE / AUTO-FIT                         ║
+         ╠═══════════════════════════════════════════════════════════════════════════════════════════╣
+         ║  IMPORTANT: Pour rendre une fenetre responsive, utiliser ces techniques:                   ║
+         ║                                                                                            ║
+         ║  1. VIEWBOX (Scale proportionnel):                                                         ║
+         ║     Viewbox Stretch="Uniform" StretchDirection="Both"                                      ║
+         ║         Grid Width="1400" Height="900"                                                     ║
+         ║                                                                                            ║
+         ║  2. GRID avec proportions (* et Auto):                                                     ║
+         ║     RowDefinition Height="Auto"    = Header fixe                                           ║
+         ║     RowDefinition Height="*"       = Contenu extensible                                    ║
+         ║     RowDefinition Height="Auto"    = Footer fixe                                           ║
+         ║                                                                                            ║
+         ║  3. MINWIDTH/MINHEIGHT sur Window:                                                         ║
+         ║     MinWidth="900" MinHeight="600"                                                         ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ========== VIEWBOX RESPONSIVE - Scale uniforme ========== -->
+    <Style x:Key="XnrgyResponsiveViewbox" TargetType="Viewbox">
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="StretchDirection" Value="Both"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+    </Style>
+
+    <!-- ========== VIEWBOX RESPONSIVE - Scale horizontal seulement ========== -->
+    <Style x:Key="XnrgyResponsiveViewboxHorizontal" TargetType="Viewbox">
+        <Setter Property="Stretch" Value="Uniform"/>
+        <Setter Property="StretchDirection" Value="DownOnly"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+    </Style>
+
+    <!-- ========== GRID RESPONSIVE - Conteneur principal ========== -->
+    <Style x:Key="XnrgyResponsiveGrid" TargetType="Grid">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+    </Style>
+
+    <!-- ========== SCROLLVIEWER RESPONSIVE - Pour contenu qui deborde ========== -->
+    <Style x:Key="XnrgyResponsiveScrollViewer" TargetType="ScrollViewer">
+        <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+    </Style>
+
+    <!-- ========== DATAGRID RESPONSIVE ========== -->
+    <Style x:Key="XnrgyResponsiveDataGrid" TargetType="DataGrid" BasedOn="{StaticResource XnrgyDataGrid}">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ColumnWidth" Value="*"/>
+    </Style>
+
+    <!-- ========== STACKPANEL RESPONSIVE - Wrap si necessaire ========== -->
+    <Style x:Key="XnrgyResponsiveWrapPanel" TargetType="WrapPanel">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="Orientation" Value="Horizontal"/>
+    </Style>
+
+    <!-- ========== UNIFORM GRID RESPONSIVE ========== -->
+    <Style x:Key="XnrgyResponsiveUniformGrid" TargetType="UniformGrid">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+    </Style>
+
+    <!-- ========== TEXTBLOCK RESPONSIVE - Wrap automatique ========== -->
+    <Style x:Key="XnrgyResponsiveTextBlock" TargetType="TextBlock">
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+    </Style>
+
+    <!-- ========== BUTTON RESPONSIVE - Taille minimum ========== -->
+    <Style x:Key="XnrgyResponsiveButton" TargetType="Button" BasedOn="{StaticResource XnrgyPrimaryButton}">
+        <Setter Property="MinWidth" Value="80"/>
+        <Setter Property="MinHeight" Value="32"/>
+        <Setter Property="MaxWidth" Value="300"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    </Style>
+
+    <!-- ========== TEXTBOX RESPONSIVE ========== -->
+    <Style x:Key="XnrgyResponsiveTextBox" TargetType="TextBox" BasedOn="{StaticResource XnrgyTextBox}">
+        <Setter Property="MinWidth" Value="100"/>
+        <Setter Property="MinHeight" Value="30"/>
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+    </Style>
+
+    <!-- ========== GROUPBOX RESPONSIVE ========== -->
+    <Style x:Key="XnrgyResponsiveGroupBox" TargetType="GroupBox" BasedOn="{StaticResource XnrgyGroupBox}">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="VerticalAlignment" Value="Stretch"/>
+    </Style>
+
+</ResourceDictionary>
