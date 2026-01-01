@@ -88,7 +88,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                 {
                     Text = text,
                     FontFamily = new FontFamily("Consolas"),
-                    FontSize = 13,
+                    FontSize = 14,
                     Padding = new Thickness(10, 4, 10, 4),
                     TextWrapping = TextWrapping.Wrap
                 };
@@ -286,7 +286,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                 if (_vaultService != null && _vaultService.IsConnected)
                 {
                     // Mettre à jour le statut de connexion dans l'en-tête
-                    UpdateVaultConnectionStatus(true, _vaultService.UserName);
+                    UpdateVaultConnectionStatus(true, _vaultService.VaultName, _vaultService.UserName);
                     
                     _isVaultAdmin = _vaultService.IsCurrentUserAdmin();
                     
@@ -304,14 +304,14 @@ namespace XnrgyEngineeringAutomationTools.Views
                 else
                 {
                     // Pas de connexion Vault - masquer le bouton par défaut
-                    UpdateVaultConnectionStatus(false, null);
+                    UpdateVaultConnectionStatus(false, null, null);
                     BtnSettings.Visibility = Visibility.Collapsed;
                     AddLog("[i] Non connecté à Vault - Réglages non disponibles", "INFO");
                 }
             }
             catch (Exception ex)
             {
-                UpdateVaultConnectionStatus(false, null);
+                UpdateVaultConnectionStatus(false, null, null);
                 BtnSettings.Visibility = Visibility.Collapsed;
                 AddLog($"[!] Erreur vérification admin: {ex.Message}", "WARN");
             }
@@ -320,7 +320,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         /// <summary>
         /// Met à jour l'indicateur de connexion Vault dans l'en-tête
         /// </summary>
-        private void UpdateVaultConnectionStatus(bool isConnected, string? userName)
+        private void UpdateVaultConnectionStatus(bool isConnected, string? vaultName, string? userName)
         {
             Dispatcher.Invoke(() =>
             {
@@ -332,12 +332,9 @@ namespace XnrgyEngineeringAutomationTools.Views
                 
                 if (TxtVaultStatus != null)
                 {
-                    TxtVaultStatus.Text = isConnected ? "Vault: Connecte" : "Vault: Non connecte";
-                }
-                
-                if (TxtVaultUser != null)
-                {
-                    TxtVaultUser.Text = isConnected && !string.IsNullOrEmpty(userName) ? $"Utilisateur: {userName}" : "";
+                    TxtVaultStatus.Text = isConnected 
+                        ? $"🗄️ Vault : {vaultName}  /  👤 Utilisateur : {userName}  /  📡 Statut : Connecte"
+                        : "🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte";
                 }
             });
         }

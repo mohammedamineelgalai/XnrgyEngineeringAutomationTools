@@ -232,7 +232,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Border Grid.Row="0" Background="#1E3A5F" CornerRadius="6,6,0,0" Padding="12,8"
+                            <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8"
                                     BorderBrush="White" BorderThickness="1,1,1,0">
                                 <ContentPresenter ContentSource="Header" TextElement.Foreground="White" TextElement.FontWeight="Bold" TextElement.FontSize="14"/>
                             </Border>
@@ -379,7 +379,7 @@
         </Grid.RowDefinitions>
 
         <!-- ========== EN-TETE (Style Moderne comme Upload Module) ========== -->
-        <Border Grid.Row="0" Background="#1E3A5F" Padding="15,12">
+        <Border Grid.Row="0" Background="#2A4A6F" Padding="15,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -394,8 +394,8 @@
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="📤 Upload Template vers Vault v1.1" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock FontSize="12" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                            <Run Text="[i] Upload massif de fichiers vers Vault Production avec structure automatique"/>
+                        <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                            <Run Text="💡 Upload massif de fichiers vers Vault Production avec structure automatique"/>
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
@@ -437,10 +437,8 @@
                         BorderBrush="#404060" BorderThickness="1">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Ellipse x:Name="StatusIndicator" Width="10" Height="10" Fill="#E81123" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="StatusText" Text="🔒 Vault: Non connecte" Foreground="White" FontWeight="SemiBold" FontSize="12" 
+                        <TextBlock x:Name="StatusText" Text="�️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte" Foreground="White" FontWeight="SemiBold" FontSize="12" 
                                    VerticalAlignment="Center" Margin="8,0,0,0"/>
-                        <TextBlock x:Name="TxtVaultUser" Text="" Foreground="#FFD700" FontWeight="Bold" FontSize="11" 
-                                   VerticalAlignment="Center" Margin="10,0,0,0"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -460,6 +458,7 @@
                     <TextBox x:Name="TxtLocalPath" Style="{StaticResource ModernTextBox}" 
                              Text="C:\Vault" Width="350" Height="32"/>
                     <Button x:Name="BtnBrowse" Content="📂 Parcourir" Style="{StaticResource SecondaryButton}" 
+                            Background="#0891B2" Foreground="White"
                             Margin="10,0,0,0" Height="32" Click="BtnBrowse_Click"/>
                     
                     <!-- Destination Vault -->
@@ -507,8 +506,10 @@
                 <!-- Controles: Boutons selection + Recherche + Filtres -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
                     <Button Content="✅ Tout selectionner" Style="{StaticResource SecondaryButton}" 
+                            Background="#059669" Foreground="White"
                             Click="SelectAll_Click" Height="30"/>
                     <Button Content="❌ Tout deselectionner" Style="{StaticResource SecondaryButton}" 
+                            Background="#DC2626" Foreground="White"
                             Click="DeselectAll_Click" Margin="6,0,0,0" Height="30"/>
                     
                     <!-- Recherche -->
@@ -559,7 +560,8 @@
         </GroupBox>
 
         <!-- ========== BARRE DE PROGRESSION + BOUTONS ========== -->
-        <Border Grid.Row="3" Background="#1A1A28" Padding="15,10">
+        <Border Grid.Row="3" Background="#2D2D44" CornerRadius="8" Padding="15,10" Margin="10,5,10,5"
+                BorderBrush="#2A4A6F" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -567,7 +569,8 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Barre de progression style Creer Module (rectangulaire avec texte) -->
-                <Border Grid.Column="0" Background="#252535" CornerRadius="6" Height="40" ClipToBounds="True" Margin="0,0,15,0">
+                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" Height="40" ClipToBounds="True" Margin="0,0,15,0"
+                        BorderBrush="#2A4A6F" BorderThickness="1">
                     <Grid>
                         <!-- Fond de progression (rempli par le code) -->
                         <Border x:Name="ProgressBarFill" Background="#28A745" CornerRadius="6" 
@@ -626,13 +629,13 @@
                 </Grid.RowDefinitions>
                 
                 <!-- Header Journal -->
-                <Border Grid.Row="0" Background="#1E3A5F" CornerRadius="6,6,0,0" Padding="12,8">
+                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8">
                     <Grid>
-                        <TextBlock Text="📋 Journal des operations" FontSize="14" FontWeight="Bold" 
+                        <TextBlock Text="📋 Journal des Opérations" FontSize="14" FontWeight="Bold" 
                                    Foreground="White"/>
                         <Button x:Name="BtnClearLog" Content="🗑️ Effacer" HorizontalAlignment="Right" 
-                                Background="Transparent" Foreground="White" FontWeight="Bold"
-                                BorderBrush="#FFFFFF" BorderThickness="1"
+                                Background="#DC2626" Foreground="White" FontWeight="Bold"
+                                BorderBrush="#DC2626" BorderThickness="1"
                                 Padding="8,2" Click="BtnClearLog_Click" Cursor="Hand"/>
                     </Grid>
                 </Border>
@@ -640,7 +643,7 @@
                 <!-- Contenu Journal avec couleurs -->
                 <RichTextBox x:Name="TxtLog" Grid.Row="1" Background="Transparent" 
                              BorderThickness="0" IsReadOnly="True" 
-                             FontFamily="Consolas" FontSize="12" Padding="10,5"
+                             FontFamily="Consolas" FontSize="14" Padding="10,5"
                              VerticalScrollBarVisibility="Auto"
                              Foreground="{DynamicResource TextLight}">
                     <RichTextBox.Resources>

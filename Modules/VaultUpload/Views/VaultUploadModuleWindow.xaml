@@ -47,7 +47,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Border Grid.Row="0" Background="#1E3A5F" CornerRadius="6,6,0,0" Padding="12,8"
+                            <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8"
                                     BorderBrush="White" BorderThickness="1,1,1,0">
                                 <ContentPresenter ContentSource="Header" TextElement.Foreground="White" TextElement.FontWeight="Bold" TextElement.FontSize="14"/>
                             </Border>
@@ -326,7 +326,7 @@
         </Grid.RowDefinitions>
 
         <!-- ========== SECTION 0: HEADER (Style Créer Module) ========== -->
-        <Border Grid.Row="0" Background="#1E3A5F" Padding="15,12" Margin="0,0,0,8">
+        <Border Grid.Row="0" Background="#2A4A6F" Padding="15,12" Margin="0,0,0,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -341,8 +341,8 @@
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="📤 Upload Module - Vault Check-In v1.1" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock FontSize="12" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                            <Run Text="[i] Upload des fichiers Inventor et documents vers Autodesk Vault avec les proprietes XNRGY automatiques"/>
+                        <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                            <Run Text="💡 Upload des fichiers Inventor et documents vers Autodesk Vault avec les proprietes XNRGY automatiques"/>
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
@@ -382,8 +382,7 @@
                             BorderBrush="#404060" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtVaultStatus" Text="🔒 Vault: Non connecté" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
-                            <TextBlock x:Name="TxtVaultUser" Text="" Foreground="#FFD700" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtVaultStatus" Text="�️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
                         </StackPanel>
                     </Border>
                     <!-- Propriétés détectées -->
@@ -418,12 +417,15 @@
                          BorderBrush="White" BorderThickness="1"/>
                 
                 <Button Grid.Column="1" Content="📋 Module" Style="{StaticResource SecondaryButton}" 
+                        Background="#5B5FC7" Foreground="White"
                         Click="SelectModule_Click" Margin="8,0,0,0" Width="100" Height="34" FontSize="12" FontWeight="Bold"
                         BorderBrush="White" BorderThickness="1"/>
                 <Button Grid.Column="2" Content="📁 Parcourir" Style="{StaticResource SecondaryButton}" 
+                        Background="#0891B2" Foreground="White"
                         Click="BrowseFolder_Click" Margin="8,0,0,0" Width="110" Height="34" FontSize="12" FontWeight="Bold"
                         BorderBrush="White" BorderThickness="1"/>
                 <Button Grid.Column="3" Content="🔧 Depuis Inventor" Style="{StaticResource SecondaryButton}" 
+                        Background="#7C3AED" Foreground="White"
                         Click="GetFromInventor_Click" Margin="8,0,0,0" Width="155" Height="34" FontSize="12" FontWeight="Bold"
                         BorderBrush="White" BorderThickness="1"/>
                 <Button Grid.Column="4" Content="🔍 Scanner" Style="{StaticResource PrimaryButton}" 
@@ -446,8 +448,10 @@
                 <!-- Controles: Boutons selection + Recherche + Filtres -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
                     <Button Content="✅ Tout selectionner" Style="{StaticResource SecondaryButton}" 
+                            Background="#059669" Foreground="White"
                             Click="SelectAll_Click" Height="30" FontSize="11" FontWeight="Bold"/>
                     <Button Content="❌ Tout deselectionner" Style="{StaticResource SecondaryButton}" 
+                            Background="#DC2626" Foreground="White"
                             Click="DeselectAll_Click" Margin="6,0,0,0" Height="30" FontSize="11" FontWeight="Bold"/>
                     
                     <!-- Recherche -->
@@ -518,7 +522,8 @@
         </GroupBox>
 
         <!-- ========== SECTION 4: BARRE PROGRESSION + BOUTONS ========== -->
-        <Border Grid.Row="4" Background="#1A1A28" CornerRadius="6" Padding="15,12" Margin="0,0,0,8">
+        <Border Grid.Row="4" Background="#2D2D44" CornerRadius="8" Padding="15,12" Margin="0,0,0,8"
+                BorderBrush="#2A4A6F" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -526,7 +531,8 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Barre de progression -->
-                <Border Grid.Column="0" Background="#252536" CornerRadius="4" Padding="2" Height="32" Margin="0,0,15,0">
+                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" Padding="2" Height="32" Margin="0,0,15,0"
+                        BorderBrush="#2A4A6F" BorderThickness="1">
                     <Grid>
                         <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Value="0" Height="28"
                                      Foreground="{DynamicResource XnrgyGreen}" Background="Transparent" BorderThickness="0"/>
@@ -566,11 +572,11 @@
                 </Grid.RowDefinitions>
                 
                 <!-- Header Journal -->
-                <Border Grid.Row="0" Background="#1E3A5F" CornerRadius="6,6,0,0" Padding="12,8">
+                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8">
                     <Grid>
-                        <TextBlock Text="📋 Journal des Operations" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="📋 Journal des Opérations" FontSize="14" FontWeight="Bold" Foreground="White"/>
                         <Button Content="🗑️ Effacer" HorizontalAlignment="Right" 
-                                Background="Transparent" Foreground="White" FontWeight="Bold"
+                                Background="#DC2626" Foreground="White" FontWeight="Bold"
                                 BorderBrush="#FFFFFF" BorderThickness="1"
                                 Padding="8,2" Click="ClearLog_Click" Cursor="Hand"/>
                     </Grid>
@@ -579,10 +585,10 @@
                 <!-- Contenu Journal -->
                 <RichTextBox x:Name="LogBox" Grid.Row="1" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
                              Background="{DynamicResource InputBackground}" Foreground="{DynamicResource TextPrimary}"
-                             BorderThickness="0" FontFamily="Consolas" FontSize="11" Padding="10,5">
+                             BorderThickness="0" FontFamily="Consolas" FontSize="14" Padding="10,5">
                     <FlowDocument>
                         <Paragraph>
-                            <Run Text="[i] Module Upload initialise - Pret" Foreground="#4FC3F7"/>
+                            <Run Text="[i] Module Upload initialisé - Prêt" Foreground="#4FC3F7"/>
                         </Paragraph>
                     </FlowDocument>
                 </RichTextBox>

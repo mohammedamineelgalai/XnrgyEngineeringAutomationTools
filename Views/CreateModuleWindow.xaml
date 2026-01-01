@@ -450,7 +450,7 @@
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="📦 Creer Module - Pack &amp; Go / Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock FontSize="12" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                        <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
                             <Run Text="💡 Copie complete de modules Inventor avec renommage automatique"/>
                         </TextBlock>
                     </StackPanel>
@@ -491,8 +491,7 @@
                             BorderBrush="#404060" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtVaultStatus" Text="Vault: Non connecte" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
-                            <TextBlock x:Name="TxtVaultUser" Text="" Foreground="#FFD700" FontSize="11" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtVaultStatus" Text="🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
                         </StackPanel>
                     </Border>
                     <!-- Boutons -->
@@ -501,7 +500,7 @@
                                    Foreground="#B8D4E8" FontSize="11" VerticalAlignment="Center" Margin="0,0,10,0"/>
                         <!-- Bouton Reglages Admin - Visible uniquement si admin Vault -->
                         <Button x:Name="BtnSettings" Content="⚙️ Reglages" Style="{StaticResource SecondaryButton}" 
-                                Background="#404060" Foreground="#FFFFFF" Margin="0,0,8,0"
+                                Background="#5B5FC7" Foreground="#FFFFFF" Margin="0,0,8,0"
                                 Click="BtnSettings_Click" ToolTip="Reglages - Administrateurs Vault uniquement"
                                 Visibility="Collapsed"/>
                         <Button x:Name="BtnClose" Content="❌ Fermer" Style="{StaticResource SecondaryButton}" 
@@ -941,7 +940,8 @@
         </Grid>
 
         <!-- FOOTER - Boutons d'action (compact) -->
-        <Border Grid.Row="3" Background="#2A4A6F" Padding="15,8">
+        <Border Grid.Row="3" Background="#2D2D44" CornerRadius="8" Margin="20,10,20,10" Padding="15,10"
+                BorderBrush="#2A4A6F" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -949,8 +949,9 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Barre de progression avec texte de statut intégré -->
-                <Border Grid.Column="0" Background="#252535" CornerRadius="6" 
-                        Height="36" Margin="0,0,15,0" ClipToBounds="True">
+                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" 
+                        Height="36" Margin="0,0,15,0" ClipToBounds="True"
+                        BorderBrush="#2A4A6F" BorderThickness="1">
                     <Grid>
                         <!-- Barre de progression verte (fond) -->
                         <Border x:Name="ProgressBarFill" Background="#28A745" 
@@ -989,9 +990,9 @@
                 <!-- Boutons d'action (compacts) -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button x:Name="BtnPreview" Content="👁️ Prévisualiser" Style="{StaticResource SecondaryButton}" 
-                            Padding="12,6" Margin="0,0,8,0" Click="BtnPreview_Click"/>
+                            Background="#0891B2" Foreground="White" Padding="12,6" Margin="0,0,8,0" Click="BtnPreview_Click"/>
                     <Button x:Name="BtnCancel" Content="✖️ Annuler" Style="{StaticResource SecondaryButton}" 
-                            Padding="12,6" Margin="0,0,8,0" Click="BtnCancel_Click"/>
+                            Background="#E81123" Foreground="White" Padding="12,6" Margin="0,0,8,0" Click="BtnCancel_Click"/>
                     <Button x:Name="BtnCreateModule" Content="✅ CRÉER LE MODULE" Style="{StaticResource SuccessButton}" 
                             Padding="18,8" IsEnabled="False" Click="BtnCreateModule_Click"/>
                 </StackPanel>
@@ -1015,7 +1016,7 @@
                         <Button Content="🗑️ Effacer" 
                                 HorizontalAlignment="Right" 
                                 Style="{StaticResource SecondaryButton}" 
-                                Background="#505060" 
+                                Background="#DC2626" Foreground="White"
                                 Padding="10,5"
                                 Click="BtnClearLog_Click"/>
                     </Grid>

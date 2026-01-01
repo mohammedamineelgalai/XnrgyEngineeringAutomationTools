@@ -93,8 +93,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             {
                 _isVaultConnected = true;
                 VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(16, 124, 16)); // Vert
-                TxtVaultStatus.Text = $"Vault: Connecte ({_vaultService.VaultName})";
-                TxtVaultUser.Text = $"Utilisateur: {_vaultService.UserName}";
+                TxtVaultStatus.Text = $"🗄️ Vault : {_vaultService.VaultName}  /  👤 Utilisateur : {_vaultService.UserName}  /  📡 Statut : Connecte";
                 Log($"[+] Connexion Vault active: {_vaultService.UserName}@{_vaultService.ServerName}/{_vaultService.VaultName}", LogLevel.SUCCESS);
                 
                 // Charger categories
@@ -104,8 +103,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             {
                 _isVaultConnected = false;
                 VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(232, 17, 35)); // Rouge
-                TxtVaultStatus.Text = "Vault: Non connecte";
-                TxtVaultUser.Text = "Veuillez vous connecter depuis la fenetre principale";
+                TxtVaultStatus.Text = "🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte";
                 Log("[!] Vault non connecte - Upload impossible", LogLevel.WARNING);
             }
         }

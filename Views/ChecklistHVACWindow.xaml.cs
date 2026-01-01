@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Media;
 using Microsoft.Web.WebView2.Core;
 using XnrgyEngineeringAutomationTools.Services;
 
@@ -14,14 +15,36 @@ namespace XnrgyEngineeringAutomationTools.Views
     public partial class ChecklistHVACWindow : Window
     {
         private readonly string _htmlFilePath;
+        private readonly VaultSdkService _vaultService;
 
-        public ChecklistHVACWindow(string htmlFilePath)
+        public ChecklistHVACWindow(string htmlFilePath, VaultSdkService vaultService = null)
         {
             InitializeComponent();
             _htmlFilePath = htmlFilePath;
+            _vaultService = vaultService;
+            
+            // Afficher statut Vault
+            UpdateVaultStatus();
             
             // Initialiser WebView2 et charger le fichier HTML
             InitializeWebView();
+        }
+        
+        /// <summary>
+        /// Met a jour le statut Vault avec le format uniforme
+        /// </summary>
+        private void UpdateVaultStatus()
+        {
+            if (_vaultService != null && _vaultService.IsConnected)
+            {
+                VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(16, 124, 16)); // Vert
+                StatusText.Text = $"🗄️ Vault : {_vaultService.VaultName}  /  👤 Utilisateur : {_vaultService.UserName}  /  📡 Statut : Connecte";
+            }
+            else
+            {
+                VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(232, 17, 35)); // Rouge
+                StatusText.Text = "🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte";
+            }
         }
 
         /// <summary>
@@ -31,7 +54,7 @@ namespace XnrgyEngineeringAutomationTools.Views
         {
             try
             {
-                StatusText.Text = "Initialisation WebView2...";
+                FilePathText.Text = "Initialisation WebView2...";
                 
                 // S'assurer que WebView2 est prêt
                 await WebViewControl.EnsureCoreWebView2Async(null);
@@ -42,7 +65,7 @@ namespace XnrgyEngineeringAutomationTools.Views
             catch (Exception ex)
             {
                 Logger.Log("Erreur WebView2: " + ex.Message, Logger.LogLevel.ERROR);
-                StatusText.Text = "Erreur WebView2";
+                FilePathText.Text = "Erreur WebView2";
                 
                 // Message d'erreur avec instruction d'installation
                 MessageBox.Show(
@@ -66,14 +89,12 @@ namespace XnrgyEngineeringAutomationTools.Views
                 {
                     // Naviguer vers le fichier HTML local
                     WebViewControl.CoreWebView2.Navigate(new Uri(_htmlFilePath).AbsoluteUri);
-                    FilePathText.Text = _htmlFilePath;
-                    StatusText.Text = "Chargement...";
+                    FilePathText.Text = "Chargement: " + _htmlFilePath;
                     Logger.Log("ChecklistHVAC charge avec WebView2: " + _htmlFilePath, Logger.LogLevel.INFO);
                 }
                 else
                 {
-                    StatusText.Text = "Fichier non trouvé!";
-                    FilePathText.Text = "Erreur: " + _htmlFilePath;
+                    FilePathText.Text = "Erreur: Fichier non trouve - " + _htmlFilePath;
                     MessageBox.Show("Fichier Checklist non trouvé:\n" + _htmlFilePath, 
                         "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
@@ -81,7 +102,7 @@ namespace XnrgyEngineeringAutomationTools.Views
             catch (Exception ex)
             {
                 Logger.Log("Erreur chargement ChecklistHVAC: " + ex.Message, Logger.LogLevel.ERROR);
-                StatusText.Text = "Erreur de chargement";
+                FilePathText.Text = "Erreur de chargement";
                 MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -90,9 +111,9 @@ namespace XnrgyEngineeringAutomationTools.Views
         {
             try
             {
-                StatusText.Text = "Rafraîchissement...";
+                FilePathText.Text = "Rafraichissement...";
                 WebViewControl.Reload();
-                StatusText.Text = "Actualisé";
+                FilePathText.Text = "[+] Actualise - " + _htmlFilePath;
             }
             catch (Exception ex)
             {
@@ -111,7 +132,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                         FileName = _htmlFilePath,
                         UseShellExecute = true
                     });
-                    StatusText.Text = "Ouvert dans le navigateur";
+                    FilePathText.Text = "[+] Ouvert dans le navigateur";
                 }
             }
             catch (Exception ex)
@@ -124,11 +145,11 @@ namespace XnrgyEngineeringAutomationTools.Views
         {
             if (e.IsSuccess)
             {
-                StatusText.Text = "[+] Pret - Checklist chargee";
+                FilePathText.Text = "[+] Pret - " + _htmlFilePath;
             }
             else
             {
-                StatusText.Text = "[-] Erreur de navigation";
+                FilePathText.Text = "[-] Erreur de navigation";
                 Logger.Log("WebView2 navigation error: " + e.WebErrorStatus, Logger.LogLevel.ERROR);
             }
         }

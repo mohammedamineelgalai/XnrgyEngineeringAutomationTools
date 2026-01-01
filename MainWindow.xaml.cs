@@ -83,7 +83,7 @@ namespace XnrgyEngineeringAutomationTools
                 {
                     Text = text,
                     FontFamily = new FontFamily("Consolas"),
-                    FontSize = 13,
+                    FontSize = 14,
                     Padding = new Thickness(10, 4, 10, 4),
                     TextWrapping = TextWrapping.Wrap
                 };
@@ -206,17 +206,17 @@ namespace XnrgyEngineeringAutomationTools
             {
                 // Theme SOMBRE
                 MainWindowRoot.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46));
-                ConnectionBorder.Background = new SolidColorBrush(Color.FromRgb(0, 120, 212)); // Bleu
+                ConnectionBorder.Background = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F - FIXE
                 LogBorder.Background = new SolidColorBrush(Color.FromRgb(18, 18, 28));
-                LogBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine #1E3A5F
-                LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
+                LogBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
+                LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 StatusBorder.Background = new SolidColorBrush(Color.FromRgb(37, 37, 54));
                 
                 // GroupBox
                 GroupBox1.Background = darkBgBrush;
                 GroupBox2.Background = darkBgBrush;
-                GroupBox1.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
-                GroupBox2.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
+                GroupBox1.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
+                GroupBox2.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 
                 // Titres GroupBox - BLANC sur fond sombre
                 GroupBox1Header.Foreground = whiteBrush;
@@ -229,7 +229,6 @@ namespace XnrgyEngineeringAutomationTools
                 
                 // Status indicators
                 VaultStatusBorder.Background = statusDarkBg;
-                VaultLabel.Foreground = whiteBrush;
                 VaultStatusText.Foreground = whiteBrush;
                 InventorStatusBorder.Background = statusDarkBg;
                 InventorLabel.Foreground = whiteBrush;
@@ -278,17 +277,17 @@ namespace XnrgyEngineeringAutomationTools
             {
                 // Theme CLAIR - Couleurs élégantes
                 MainWindowRoot.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250)); // Bleu-gris très clair
-                ConnectionBorder.Background = new SolidColorBrush(Color.FromRgb(0, 120, 212)); // Bleu reste
+                ConnectionBorder.Background = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F - FIXE
                 LogBorder.Background = new SolidColorBrush(Color.FromRgb(252, 253, 255)); // Blanc bleuté
-                LogBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine #1E3A5F
-                LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
+                LogBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
+                LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 StatusBorder.Background = new SolidColorBrush(Color.FromRgb(235, 240, 248)); // Bleu très pâle
-                
+
                 // GroupBox - fond blanc avec teinte bleutée
                 GroupBox1.Background = new SolidColorBrush(Color.FromRgb(252, 253, 255));
                 GroupBox2.Background = new SolidColorBrush(Color.FromRgb(252, 253, 255));
-                GroupBox1.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
-                GroupBox2.BorderBrush = new SolidColorBrush(Color.FromRgb(30, 58, 95)); // Bleu marine
+                GroupBox1.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
+                GroupBox2.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 
                 // Titres GroupBox - NOIR sur fond clair
                 GroupBox1Header.Foreground = darkTextBrush;
@@ -301,7 +300,6 @@ namespace XnrgyEngineeringAutomationTools
                 
                 // Status indicators - fond bleu très pâle
                 VaultStatusBorder.Background = new SolidColorBrush(Color.FromRgb(235, 242, 252));
-                VaultLabel.Foreground = darkTextBrush;
                 VaultStatusText.Foreground = darkTextBrush;
                 InventorStatusBorder.Background = new SolidColorBrush(Color.FromRgb(235, 242, 252));
                 InventorLabel.Foreground = darkTextBrush;
@@ -910,14 +908,14 @@ namespace XnrgyEngineeringAutomationTools
             if (_isVaultConnected && _vaultService.IsConnected)
             {
                 VaultIndicator.Fill = _greenBrush;
-                VaultStatusText.Text = _vaultService.VaultName + " (" + _vaultService.UserName + ")";
+                VaultStatusText.Text = $"🗄️ Vault : {_vaultService.VaultName}  /  👤 Utilisateur : {_vaultService.UserName}  /  📡 Statut : Connecte";
                 ConnectButton.Content = "Deconnecter";
                 ConnectButton.Background = greenBtnBrush;  // Vert brillant quand connecté
             }
             else
             {
                 VaultIndicator.Fill = _redBrush;
-                VaultStatusText.Text = "Deconnecte";
+                VaultStatusText.Text = "🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte";
                 ConnectButton.Content = "Connecter";
                 ConnectButton.Background = redBtnBrush;    // Rouge clair quand déconnecté
             }
@@ -1205,8 +1203,8 @@ namespace XnrgyEngineeringAutomationTools
             {
                 if (File.Exists(ChecklistHVACPath))
                 {
-                    // Ouvrir dans une fenêtre intégrée
-                    var checklistWindow = new Views.ChecklistHVACWindow(ChecklistHVACPath);
+                    // Ouvrir dans une fenêtre intégrée avec le service Vault
+                    var checklistWindow = new Views.ChecklistHVACWindow(ChecklistHVACPath, _vaultService);
                     checklistWindow.Show();
                     AddLog("Checklist HVAC ouvert dans l'application", "SUCCESS");
                     AddLog("Fichier: " + ChecklistHVACPath, "INFO");

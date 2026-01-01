@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Background="#1E3A5F" Padding="15,12">
+        <Border Grid.Row="0" Background="#2A4A6F" Padding="15,12">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -27,19 +27,24 @@
                 
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Background="#107C10" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
-                        <TextBlock Text="&#x2705;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="&#x1F4DD;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="📋 Checklist HVAC AHU" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock FontSize="12" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                            <Run Text="[i] Verification Qualite AHU - Engineering Automation Tools"/>
+                        <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                            <Run Text="💡 Vérification Qualité AHU - Engineering Automation Tools"/>
                         </TextBlock>
                     </StackPanel>
                 </StackPanel>
 
-                <TextBlock Grid.Column="1" x:Name="StatusText" Text="" 
-                           Foreground="#B0D0FF" VerticalAlignment="Center" 
-                           HorizontalAlignment="Center" FontSize="12"/>
+                <Border Grid.Column="1" Background="#2D2D44" CornerRadius="4" Padding="10,6"
+                        BorderBrush="#404060" BorderThickness="1" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="StatusText" Text="🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte" 
+                                   Foreground="White" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
 
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <Button x:Name="RefreshButton" Content="🔄 Rafraichir" 
