@@ -614,7 +614,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Border x:Name="checkBorder" Width="22" Height="22" 
                                 Background="{StaticResource InputBackground}" 
-                                BorderBrush="White" 
+                                BorderBrush="#4A7FBF" 
                                 BorderThickness="2" CornerRadius="4" Margin="0,0,10,0"
                                 VerticalAlignment="Center">
                             <Path x:Name="checkMark" Data="M2,6 L6,10 L14,2" 
@@ -666,7 +666,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Border x:Name="radioBorder" Width="22" Height="22" 
                                 Background="{StaticResource InputBackground}" 
-                                BorderBrush="White" 
+                                BorderBrush="#4A7FBF" 
                                 BorderThickness="2" CornerRadius="11" Margin="0,0,10,0"
                                 VerticalAlignment="Center">
                             <Ellipse x:Name="radioMark" Width="10" Height="10" 
@@ -740,7 +740,7 @@
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="Padding" Value="10,8"/>
-        <Setter Property="BorderBrush" Value="#3A5A7F"/>
+        <Setter Property="BorderBrush" Value="#4A7FBF"/>
         <Setter Property="BorderThickness" Value="0,0,1,1"/>
         <Setter Property="Template">
             <Setter.Value>
@@ -832,14 +832,14 @@
                         </Grid.RowDefinitions>
                         <Border Grid.Row="0" Background="{StaticResource HeaderBackground}" 
                                 CornerRadius="6,6,0,0" Padding="12,8"
-                                BorderBrush="White" BorderThickness="1,1,1,0">
+                                BorderBrush="#4A7FBF" BorderThickness="1,1,1,0">
                             <ContentPresenter ContentSource="Header" 
                                               TextElement.Foreground="White" 
                                               TextElement.FontWeight="Bold" 
                                               TextElement.FontSize="14"/>
                         </Border>
                         <Border Grid.Row="1" Background="{TemplateBinding Background}" 
-                                BorderBrush="White" 
+                                BorderBrush="#4A7FBF" 
                                 BorderThickness="1,0,1,1"
                                 CornerRadius="0,0,6,6"
                                 Padding="{TemplateBinding Padding}">

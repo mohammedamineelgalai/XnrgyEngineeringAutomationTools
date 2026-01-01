@@ -853,7 +853,7 @@
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="20,0,20,0" VerticalAlignment="Center">
                             <!-- Recherche -->
                             <Border Background="#2D2D3D" CornerRadius="4" Padding="6,4" Margin="0,0,10,0"
-                                    BorderBrush="#3D3D56" BorderThickness="1">
+                                    BorderBrush="#4A7FBF" BorderThickness="1">
                                 <StackPanel Orientation="Horizontal">
                                     <TextBlock Text="🔍" VerticalAlignment="Center" Margin="0,0,8,0" Foreground="White"/>
                                     <TextBox x:Name="TxtSearchFiles" Width="180" Background="Transparent" 
@@ -943,7 +943,7 @@
 
         <!-- FOOTER - Boutons d'action (compact) -->
         <Border Grid.Row="3" Background="#2A4A6F" CornerRadius="8" Margin="20,10,20,10" Padding="15,10"
-                BorderBrush="#3A5A7F" BorderThickness="2">
+                BorderBrush="#4A7FBF" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -1002,14 +1002,14 @@
         </Border>
 
         <!-- JOURNAL DES OPÉRATIONS -->
-        <Border Grid.Row="4" Background="#252536" CornerRadius="8" Margin="20,10,20,10">
+        <Border Grid.Row="4" Background="#252536" CornerRadius="8" Margin="20,10,20,10" BorderBrush="#4A7FBF" BorderThickness="2">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
-                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="8,8,0,0" Padding="15,8">
+                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="15,8">
                     <Grid>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <TextBlock Text="📋" FontSize="16" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0"/>

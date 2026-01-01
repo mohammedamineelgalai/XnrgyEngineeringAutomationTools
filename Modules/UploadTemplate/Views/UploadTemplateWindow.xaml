@@ -235,11 +235,11 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8"
-                                    BorderBrush="White" BorderThickness="1,1,1,0">
+                                    BorderBrush="#4A7FBF" BorderThickness="1,1,1,0">
                                 <ContentPresenter ContentSource="Header" TextElement.Foreground="White" TextElement.FontWeight="Bold" TextElement.FontSize="14"/>
                             </Border>
                             <Border Grid.Row="1" Background="{TemplateBinding Background}" 
-                                    BorderBrush="White" 
+                                    BorderBrush="#4A7FBF" 
                                     BorderThickness="1,0,1,1"
                                     CornerRadius="0,0,6,6"
                                     Padding="{TemplateBinding Padding}">
@@ -450,7 +450,7 @@
 
         <!-- ========== SECTION CONFIGURATION ========== -->
         <Border Grid.Row="1" Background="#2A4A6F" CornerRadius="6" Padding="15,10" Margin="10,8,10,5"
-                BorderBrush="White" BorderThickness="1">
+                BorderBrush="#4A7FBF" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -479,7 +479,7 @@
 
                 <!-- Options d'Upload - a droite -->
                 <Border Grid.Column="1" Background="#1E3A5F" CornerRadius="6" Padding="10,6" 
-                        BorderBrush="#3A5A7F" BorderThickness="1" 
+                        BorderBrush="#4A7FBF" BorderThickness="1" 
                         HorizontalAlignment="Right" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="⚙️ Options:" FontSize="12" FontWeight="Bold" Foreground="White" 
@@ -576,7 +576,7 @@
 
         <!-- ========== BARRE DE PROGRESSION + BOUTONS ========== -->
         <Border Grid.Row="4" Background="#2A4A6F" CornerRadius="8" Padding="15,10" Margin="10,5,10,5"
-                BorderBrush="#3A5A7F" BorderThickness="2">
+                BorderBrush="#4A7FBF" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -635,7 +635,7 @@
         </Border>
 
         <!-- ========== JOURNAL ========== -->
-        <Border Grid.Row="5" Background="{DynamicResource DarkBg2}" BorderBrush="White" 
+        <Border Grid.Row="5" Background="{DynamicResource DarkBg2}" BorderBrush="#4A7FBF" 
                 BorderThickness="1" CornerRadius="6" Margin="10,5,10,8">
             <Grid>
                 <Grid.RowDefinitions>

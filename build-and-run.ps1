@@ -205,25 +205,23 @@ if (-not (Test-Path $exePath)) {
 $exeSize = [math]::Round((Get-Item $exePath).Length / 1MB, 2)
 Write-Host "        Executable: $exePath ($exeSize MB)" -ForegroundColor DarkGray
 
-# ETAPE 4: Lancement
-if ($BuildOnly) {
-    Write-Host ""
-    Write-Host "  [4/4] Lancement..." -ForegroundColor DarkGray
-    Write-Host "        - Ignore (mode BuildOnly)" -ForegroundColor DarkGray
-} else {
+# ETAPE 4: Lancer l'application (sauf BuildOnly)
+if (-not $BuildOnly) {
     Write-Host ""
     Write-Host "  [4/4] Lancement de l'application..." -ForegroundColor Yellow
-    
-    # Utiliser le chemin ABSOLU et definir le working directory correctement
-    $absoluteExePath = (Resolve-Path $exePath).Path
-    $workingDir = Split-Path -Parent $absoluteExePath
-    
-    Write-Host "        Working Dir: $workingDir" -ForegroundColor DarkGray
-    
-    Start-Process -FilePath $absoluteExePath -WorkingDirectory $workingDir
-    Start-Sleep -Seconds 1
-    Write-Host "        [+] Application lancee!" -ForegroundColor Green
-}
+    try {                                                                                       
+        Start-Process -FilePath $exePath
+        Write-Host "        ✓ Application lancee" -ForegroundColor Green
+    } catch {
+        Write-Host "        ✗ ERREUR: Impossible de lancer l'application" -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+} else {
+    Write-Host ""
+    Write-Host "  [4/4] Lancement de l'application..." -ForegroundColor DarkGray
+    Write-Host "        - Ignore (mode BuildOnly)" -ForegroundColor DarkGray
+} 
 
 # Restaurer le répertoire original
 Pop-Location

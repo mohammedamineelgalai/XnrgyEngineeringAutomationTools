@@ -48,11 +48,11 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8"
-                                    BorderBrush="White" BorderThickness="1,1,1,0">
+                                    BorderBrush="#4A7FBF" BorderThickness="1,1,1,0">
                                 <ContentPresenter ContentSource="Header" TextElement.Foreground="White" TextElement.FontWeight="Bold" TextElement.FontSize="14"/>
                             </Border>
                             <Border Grid.Row="1" Background="{TemplateBinding Background}" 
-                                    BorderBrush="White" 
+                                    BorderBrush="#4A7FBF" 
                                     BorderThickness="1,0,1,1"
                                     CornerRadius="0,0,6,6"
                                     Padding="{TemplateBinding Padding}">
@@ -412,7 +412,7 @@
 
         <!-- ========== SECTION 1: SELECTION MODULE ========== -->
         <Border Grid.Row="1" Background="#2A4A6F" CornerRadius="6" Padding="10" Margin="0,0,0,8"
-                BorderBrush="White" BorderThickness="1">
+                BorderBrush="#4A7FBF" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" MinWidth="200"/>
@@ -423,23 +423,23 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBox x:Name="TxtProjectPath" Grid.Column="0" Style="{StaticResource ModernTextBox}" Height="34" FontSize="12"
-                         BorderBrush="White" BorderThickness="1"/>
+                         BorderBrush="#4A7FBF" BorderThickness="1"/>
                 
                 <Button Grid.Column="1" Content="📋 Module" Style="{StaticResource SecondaryButton}" 
                         Background="#5B5FC7" Foreground="White"
                         Click="SelectModule_Click" Margin="8,0,0,0" Width="100" Height="34" FontSize="12" FontWeight="Bold"
-                        BorderBrush="White" BorderThickness="1"/>
+                        BorderBrush="#4A7FBF" BorderThickness="1"/>
                 <Button Grid.Column="2" Content="📁 Parcourir" Style="{StaticResource SecondaryButton}" 
                         Background="#0891B2" Foreground="White"
                         Click="BrowseFolder_Click" Margin="8,0,0,0" Width="110" Height="34" FontSize="12" FontWeight="Bold"
-                        BorderBrush="White" BorderThickness="1"/>
+                        BorderBrush="#4A7FBF" BorderThickness="1"/>
                 <Button Grid.Column="3" Content="🔧 Depuis Inventor" Style="{StaticResource SecondaryButton}" 
                         Background="#7C3AED" Foreground="White"
                         Click="GetFromInventor_Click" Margin="8,0,0,0" Width="155" Height="34" FontSize="12" FontWeight="Bold"
-                        BorderBrush="White" BorderThickness="1"/>
+                        BorderBrush="#4A7FBF" BorderThickness="1"/>
                 <Button Grid.Column="4" Content="🔍 Scanner" Style="{StaticResource PrimaryButton}" 
                         Click="ScanProject_Click" Margin="8,0,0,0" Width="100" Height="34" FontSize="12" FontWeight="Bold"
-                        BorderBrush="White" BorderThickness="1"/>
+                        BorderBrush="#4A7FBF" BorderThickness="1"/>
             </Grid>
         </Border>
 
@@ -532,7 +532,7 @@
 
         <!-- ========== SECTION 4: BARRE PROGRESSION + BOUTONS ========== -->
         <Border Grid.Row="4" Background="#2A4A6F" CornerRadius="8" Padding="15,12" Margin="0,0,0,8"
-                BorderBrush="#3A5A7F" BorderThickness="2">
+                BorderBrush="#4A7FBF" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -572,7 +572,7 @@
         </Border>
 
         <!-- ========== SECTION 5: JOURNAL (en bas) ========== -->
-        <Border Grid.Row="5" Background="{DynamicResource PanelBackground}" BorderBrush="White" 
+        <Border Grid.Row="5" Background="{DynamicResource PanelBackground}" BorderBrush="#4A7FBF" 
                 BorderThickness="1" CornerRadius="6">
             <Grid>
                 <Grid.RowDefinitions>
@@ -586,7 +586,7 @@
                         <TextBlock Text="📋 Journal des Opérations" FontSize="14" FontWeight="Bold" Foreground="White"/>
                         <Button Content="🗑️ Effacer" HorizontalAlignment="Right" 
                                 Background="#DC2626" Foreground="White" FontWeight="Bold"
-                                BorderBrush="#FFFFFF" BorderThickness="1"
+                                BorderBrush="#4A7FBF" BorderThickness="1"
                                 Padding="8,2" Click="ClearLog_Click" Cursor="Hand"/>
                     </Grid>
                 </Border>
