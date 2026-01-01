@@ -473,6 +473,26 @@ Task<bool> ExecuteRealPackAndGoAsync(
 - Inventor COM 2026.2
 - Update Workspace au demarrage
 
+### v1.0.0 (31 Decembre 2025) - RELEASE OFFICIELLE
+
+**[+] Systeme de Themes Ameliore:**
+- Propagation theme light/dark vers TOUTES les sous-fenetres
+- Event MainWindow.ThemeChanged declenche ApplyTheme() partout
+- Elements a fond FIXE noir (#1A1A28): journal, panneaux stats
+- Texte journal toujours blanc (#DCDCDC) quel que soit le theme
+- UserPreferencesManager pour persistance locale du theme
+
+**[+] Standardisation Titres Fenetres:**
+- Format uniforme: [Nom] - v1.0.0 - Released on 2025-12-31 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC
+- Applique a toutes les 9 fenetres de l'application
+
+**[+] Couleurs Theme:**
+| Element | Dark | Light |
+|---------|------|-------|
+| MainGrid | #1E1E2E | #F5F7FA |
+| Stats/Log | #1A1A28 (FIXE) | #1A1A28 (FIXE) |
+| Headers | #2A4A6F | #2A4A6F |
+
 ### v0.9.0 (15 Decembre 2025)
 
 - Release initiale beta
@@ -497,4 +517,4 @@ Proprietaire - XNRGY Climate Systems ULC (c) 2025
 
 ---
 
-**Derniere mise a jour**: 30 Decembre 2025
+**Derniere mise a jour**: 31 Decembre 2025 - v1.0.0 Release
