@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Upload Module vers Vault v1.0 - XNRGY Climate Systems ULC - By Mohammed Amine Elgalai" 
+        Title="Upload Module vers Vault - v1.0.0 - Released on 2025-12-31 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="950" Width="1550"
         MinWidth="1400"
         MinHeight="800"
@@ -264,14 +264,14 @@
             <Setter Property="HeadersVisibility" Value="Column"/>
         </Style>
 
-        <!-- Style Header DataGrid - fond sombre avec texte blanc gras -->
+        <!-- Style Header DataGrid - fond bleu marine XNRGY avec texte blanc gras -->
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Background" Value="#2A4A6F"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="BorderBrush" Value="#005A9E"/>
+            <Setter Property="BorderBrush" Value="#3A5A7F"/>
             <Setter Property="BorderThickness" Value="0,0,1,0"/>
         </Style>
 
@@ -361,15 +361,15 @@
                             </StackPanel>
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtStatsInventor" Text="0" Foreground="#FFD700" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📐 Inventor" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📐 Inventor" Foreground="#FFD700" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtStatsNonInventor" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📄 Autres" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📄 Autres" Foreground="#FFB74D" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="✅ Selection" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock Text="✅ Selection" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
@@ -382,7 +382,9 @@
                             BorderBrush="#404060" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtVaultStatus" Text="�️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock x:Name="TxtVaultStatus" FontWeight="SemiBold" FontSize="12">
+                                <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/><Run Text="👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/><Run Text="📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
                     <!-- Propriétés détectées -->
@@ -402,7 +404,7 @@
         </Border>
 
         <!-- ========== SECTION 1: SELECTION MODULE ========== -->
-        <Border Grid.Row="1" Background="{DynamicResource PanelBackground}" CornerRadius="6" Padding="10" Margin="0,0,0,8"
+        <Border Grid.Row="1" Background="#2A4A6F" CornerRadius="6" Padding="10" Margin="0,0,0,8"
                 BorderBrush="White" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -522,8 +524,8 @@
         </GroupBox>
 
         <!-- ========== SECTION 4: BARRE PROGRESSION + BOUTONS ========== -->
-        <Border Grid.Row="4" Background="#2D2D44" CornerRadius="8" Padding="15,12" Margin="0,0,0,8"
-                BorderBrush="#2A4A6F" BorderThickness="2">
+        <Border Grid.Row="4" Background="#2A4A6F" CornerRadius="8" Padding="15,12" Margin="0,0,0,8"
+                BorderBrush="#3A5A7F" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -532,12 +534,12 @@
 
                 <!-- Barre de progression -->
                 <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" Padding="2" Height="32" Margin="0,0,15,0"
-                        BorderBrush="#2A4A6F" BorderThickness="1">
+                        BorderBrush="#404060" BorderThickness="1">
                     <Grid>
                         <ProgressBar x:Name="ProgressBar" Minimum="0" Maximum="100" Value="0" Height="28"
                                      Foreground="{DynamicResource XnrgyGreen}" Background="Transparent" BorderThickness="0"/>
                         <TextBlock x:Name="TxtProgress" Text="0% - Pret" HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   FontSize="11" FontWeight="Bold" Foreground="{DynamicResource TextPrimary}"/>
+                                   FontSize="11" FontWeight="Bold" Foreground="White"/>
                     </Grid>
                 </Border>
 

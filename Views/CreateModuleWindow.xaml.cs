@@ -57,8 +57,46 @@ namespace XnrgyEngineeringAutomationTools.Views
             
             InitializeComponent();
             
+            // S'abonner aux changements de theme
+            MainWindow.ThemeChanged += OnThemeChanged;
+            
+            // Appliquer le theme actuel au demarrage
+            ApplyTheme(MainWindow.CurrentThemeIsDark);
+            
             // Attendre que la fenêtre soit chargée pour initialiser les contrôles
             this.Loaded += CreateModuleWindow_Loaded;
+            this.Closed += (s, e) => MainWindow.ThemeChanged -= OnThemeChanged;
+        }
+
+        /// <summary>
+        /// Gestionnaire de changement de theme depuis MainWindow
+        /// </summary>
+        private void OnThemeChanged(bool isDarkTheme)
+        {
+            Dispatcher.Invoke(() => ApplyTheme(isDarkTheme));
+        }
+
+        /// <summary>
+        /// Applique le theme a cette fenetre
+        /// </summary>
+        private void ApplyTheme(bool isDarkTheme)
+        {
+            // Elements avec fond noir FIXE (ne changent jamais)
+            StatisticsBorder.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - Header stats
+            LeftStatsPanel.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - Panel gauche stats
+            
+            if (isDarkTheme)
+            {
+                // Theme SOMBRE
+                this.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46)); // #1E1E2E
+                InputsSectionBorder.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46)); // #1E1E2E
+            }
+            else
+            {
+                // Theme CLAIR
+                this.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250)); // Bleu-gris tres clair
+                InputsSectionBorder.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250)); // Meme fond clair
+            }
         }
 
         #region Journal des Opérations
@@ -330,11 +368,11 @@ namespace XnrgyEngineeringAutomationTools.Views
                         isConnected ? (Color)ColorConverter.ConvertFromString("#107C10") : (Color)ColorConverter.ConvertFromString("#E81123"));
                 }
                 
-                if (TxtVaultStatus != null)
+                if (RunVaultName != null && RunUserName != null && RunStatus != null)
                 {
-                    TxtVaultStatus.Text = isConnected 
-                        ? $"🗄️ Vault : {vaultName}  /  👤 Utilisateur : {userName}  /  📡 Statut : Connecte"
-                        : "🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte";
+                    RunVaultName.Text = isConnected ? $" Vault : {vaultName}  /  " : " Vault : --  /  ";
+                    RunUserName.Text = isConnected ? $" Utilisateur : {userName}  /  " : " Utilisateur : --  /  ";
+                    RunStatus.Text = isConnected ? " Statut : Connecte" : " Statut : Deconnecte";
                 }
             });
         }

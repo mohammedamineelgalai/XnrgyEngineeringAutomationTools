@@ -121,6 +121,38 @@ namespace XnrgyEngineeringAutomationTools.Views
                 _connection = _vaultService.Connection;
                 _isConnected = _connection != null;
             }
+            
+            // S'abonner aux changements de theme
+            MainWindow.ThemeChanged += OnThemeChanged;
+            this.Closed += (s, e) => MainWindow.ThemeChanged -= OnThemeChanged;
+            
+            // Appliquer le theme actuel au demarrage
+            ApplyTheme(MainWindow.CurrentThemeIsDark);
+        }
+
+        /// <summary>
+        /// Gestionnaire de changement de theme depuis MainWindow
+        /// </summary>
+        private void OnThemeChanged(bool isDarkTheme)
+        {
+            Dispatcher.Invoke(() => ApplyTheme(isDarkTheme));
+        }
+
+        /// <summary>
+        /// Applique le theme a cette fenetre
+        /// </summary>
+        private void ApplyTheme(bool isDarkTheme)
+        {
+            if (isDarkTheme)
+            {
+                // Theme SOMBRE
+                MainGrid.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46)); // #1E1E2E
+            }
+            else
+            {
+                // Theme CLAIR
+                MainGrid.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250)); // Bleu-gris tres clair
+            }
         }
 
         // ====================================================================
@@ -133,7 +165,9 @@ namespace XnrgyEngineeringAutomationTools.Views
             // Afficher le statut de connexion (format identique MainWindow)
             if (_isConnected)
             {
-                StatusText.Text = $"🗄️ Vault : {_vaultService?.VaultName}  /  👤 Utilisateur : {_vaultService?.UserName}  /  📡 Statut : Connecte";
+                RunVaultName.Text = $" Vault : {_vaultService?.VaultName}  /  ";
+                RunUserName.Text = $" Utilisateur : {_vaultService?.UserName}  /  ";
+                RunStatus.Text = " Statut : Connecte";
                 StatusIndicator.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#107C10"));
                 Log($"[+] Connexion Vault heritee de l'application principale", LogLevel.SUCCESS);
                 Log($"[i] Vault: {_vaultService?.VaultName} | User: {_vaultService?.UserName}", LogLevel.INFO);
@@ -141,7 +175,9 @@ namespace XnrgyEngineeringAutomationTools.Views
             }
             else
             {
-                StatusText.Text = "🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte";
+                RunVaultName.Text = " Vault : --  /  ";
+                RunUserName.Text = " Utilisateur : --  /  ";
+                RunStatus.Text = " Statut : Deconnecte";
                 StatusIndicator.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E81123"));
                 Log("[-] Aucune connexion Vault. Veuillez vous connecter via l'application principale.", LogLevel.ERROR);
                 BtnStartUpload.IsEnabled = false;

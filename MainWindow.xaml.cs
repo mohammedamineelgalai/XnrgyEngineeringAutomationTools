@@ -44,12 +44,20 @@ namespace XnrgyEngineeringAutomationTools
         private readonly SolidColorBrush _greenBrush = new SolidColorBrush(Color.FromRgb(16, 124, 16));
         private readonly SolidColorBrush _redBrush = new SolidColorBrush(Color.FromRgb(232, 17, 35));
 
+        // === THEME GLOBAL (accessible par tous les sous-formulaires) ===
+        public static bool CurrentThemeIsDark { get; private set; } = true;
+        public static event Action<bool>? ThemeChanged;
+
         public MainWindow()
         {
             InitializeComponent();
             Logger.Initialize();
             _vaultService = new VaultSdkService();
             _inventorService = new InventorService();
+            
+            // Charger le theme sauvegarde
+            _isDarkTheme = UserPreferencesManager.LoadTheme();
+            CurrentThemeIsDark = _isDarkTheme;
             
             // Timer pour réessayer la connexion Inventor si elle échoue au démarrage
             // Utile quand l'app est lancée par script avant que COM soit prêt
@@ -111,10 +119,8 @@ namespace XnrgyEngineeringAutomationTools
                         textBlock.Foreground = new SolidColorBrush(Color.FromRgb(180, 100, 255));
                         break;
                     default:
-                        // INFO - couleur selon le thème (blanc foncé ou noir foncé)
-                        textBlock.Foreground = _isDarkTheme 
-                            ? new SolidColorBrush(Color.FromRgb(220, 220, 220))  // Blanc léger pour dark
-                            : new SolidColorBrush(Color.FromRgb(40, 40, 40));    // Noir foncé pour light
+                        // INFO - TOUJOURS blanc car le fond du journal est noir fixe
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(220, 220, 220)); // Blanc leger - FIXE
                         break;
                 }
                 
@@ -132,31 +138,9 @@ namespace XnrgyEngineeringAutomationTools
         
         private void UpdateLogColors()
         {
-            // Met à jour les couleurs des logs INFO existants selon le thème
-            var infoBrush = _isDarkTheme 
-                ? new SolidColorBrush(Color.FromRgb(220, 220, 220))  // Blanc léger pour dark
-                : new SolidColorBrush(Color.FromRgb(40, 40, 40));    // Noir foncé pour light
-            
-            foreach (var item in LogListBox.Items)
-            {
-                if (item is TextBlock tb)
-                {
-                    // Vérifier si c'est un log INFO (couleur grise/blanche)
-                    var brush = tb.Foreground as SolidColorBrush;
-                    if (brush != null)
-                    {
-                        var color = brush.Color;
-                        // Si c'est une couleur grise/blanc/noir (INFO), la mettre à jour
-                        bool isInfoColor = (color.R == color.G && color.G == color.B) || 
-                                          (color.R >= 180 && color.G >= 180 && color.B >= 180) ||
-                                          (color.R <= 60 && color.G <= 60 && color.B <= 60);
-                        if (isInfoColor && tb.FontWeight != FontWeights.Bold && tb.FontWeight != FontWeights.SemiBold)
-                        {
-                            tb.Foreground = infoBrush;
-                        }
-                    }
-                }
-            }
+            // Le journal a un fond noir FIXE, donc les logs INFO restent toujours blancs
+            // Les autres couleurs (rouge erreur, vert succes, etc.) ne changent pas
+            // Cette methode ne fait plus rien car le fond est fixe
         }
         
         private void StartBlinkAnimation(TextBlock textBlock)
@@ -185,6 +169,11 @@ namespace XnrgyEngineeringAutomationTools
         {
             _isDarkTheme = !_isDarkTheme;
             
+            // Sauvegarder le theme et notifier les sous-formulaires
+            CurrentThemeIsDark = _isDarkTheme;
+            UserPreferencesManager.SaveTheme(_isDarkTheme);
+            ThemeChanged?.Invoke(_isDarkTheme);
+            
             var whiteBrush = Brushes.White;
             var darkBgBrush = new SolidColorBrush(Color.FromRgb(37, 37, 54));
             var lightBgBrush = new SolidColorBrush(Color.FromRgb(250, 250, 250));
@@ -207,7 +196,7 @@ namespace XnrgyEngineeringAutomationTools
                 // Theme SOMBRE
                 MainWindowRoot.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46));
                 ConnectionBorder.Background = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F - FIXE
-                LogBorder.Background = new SolidColorBrush(Color.FromRgb(18, 18, 28));
+                LogBorder.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - FIXE NOIR
                 LogBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 StatusBorder.Background = new SolidColorBrush(Color.FromRgb(37, 37, 54));
@@ -227,10 +216,10 @@ namespace XnrgyEngineeringAutomationTools
                 StatusText.Foreground = whiteBrush;
                 CopyrightText.Foreground = new SolidColorBrush(Color.FromRgb(200, 200, 200));
                 
-                // Status indicators
-                VaultStatusBorder.Background = statusDarkBg;
+                // Status indicators Vault/Inventor - FIXE NOIR
+                VaultStatusBorder.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - FIXE NOIR
                 VaultStatusText.Foreground = whiteBrush;
-                InventorStatusBorder.Background = statusDarkBg;
+                InventorStatusBorder.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - FIXE NOIR
                 InventorLabel.Foreground = whiteBrush;
                 InventorStatusText.Foreground = whiteBrush;
                 
@@ -267,8 +256,8 @@ namespace XnrgyEngineeringAutomationTools
                 ThemeToggleButton.Foreground = whiteBrush;
                 ThemeToggleButton.Content = "☀️ Theme Clair";
                 
-                // Bouton Update - vert
-                UpdateButton.Background = new SolidColorBrush(Color.FromRgb(16, 124, 16));
+                // Bouton Update - violet
+                UpdateButton.Background = new SolidColorBrush(Color.FromRgb(124, 58, 237)); // #7C3AED
                 UpdateButton.Foreground = whiteBrush;
                 
                 AddLog("Theme sombre active", "INFO");
@@ -278,7 +267,7 @@ namespace XnrgyEngineeringAutomationTools
                 // Theme CLAIR - Couleurs élégantes
                 MainWindowRoot.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250)); // Bleu-gris très clair
                 ConnectionBorder.Background = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F - FIXE
-                LogBorder.Background = new SolidColorBrush(Color.FromRgb(252, 253, 255)); // Blanc bleuté
+                LogBorder.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - FIXE NOIR
                 LogBorder.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 LogHeaderBorder.Background = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 StatusBorder.Background = new SolidColorBrush(Color.FromRgb(235, 240, 248)); // Bleu très pâle
@@ -298,12 +287,12 @@ namespace XnrgyEngineeringAutomationTools
                 StatusText.Foreground = darkTextBrush;
                 CopyrightText.Foreground = new SolidColorBrush(Color.FromRgb(40, 40, 40));
                 
-                // Status indicators - fond bleu très pâle
-                VaultStatusBorder.Background = new SolidColorBrush(Color.FromRgb(235, 242, 252));
-                VaultStatusText.Foreground = darkTextBrush;
-                InventorStatusBorder.Background = new SolidColorBrush(Color.FromRgb(235, 242, 252));
-                InventorLabel.Foreground = darkTextBrush;
-                InventorStatusText.Foreground = darkTextBrush;
+                // Status indicators Vault/Inventor - FIXE NOIR meme en theme clair (texte blanc)
+                VaultStatusBorder.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - FIXE NOIR
+                VaultStatusText.Foreground = whiteBrush;
+                InventorStatusBorder.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - FIXE NOIR
+                InventorLabel.Foreground = whiteBrush;
+                InventorStatusText.Foreground = whiteBrush;
                 
                 // Journal header - reste BLANC sur barre bleu marine (meme en theme clair)
                 LogHeaderText.Foreground = whiteBrush;
@@ -339,8 +328,8 @@ namespace XnrgyEngineeringAutomationTools
                 ThemeToggleButton.Foreground = darkTextBrush;
                 ThemeToggleButton.Content = "🌙 Theme Sombre";
                 
-                // Bouton Update - vert brillant
-                UpdateButton.Background = new SolidColorBrush(Color.FromRgb(16, 185, 16));
+                // Bouton Update - violet
+                UpdateButton.Background = new SolidColorBrush(Color.FromRgb(124, 58, 237)); // #7C3AED
                 UpdateButton.Foreground = Brushes.White;
                 
                 AddLog("Theme clair active", "INFO");
@@ -353,12 +342,33 @@ namespace XnrgyEngineeringAutomationTools
             UpdateConnectionStatus();
         }
 
+        /// <summary>
+        /// Applique le theme actuel (appele au demarrage et lors du changement)
+        /// </summary>
+        private void ApplyCurrentTheme()
+        {
+            // Simuler un clic sur le bouton theme pour appliquer les couleurs
+            // mais sans changer le theme (on le remet apres)
+            bool currentTheme = _isDarkTheme;
+            _isDarkTheme = !_isDarkTheme; // Inverser temporairement
+            ThemeToggleButton_Click(this, new RoutedEventArgs()); // Cela remet le bon theme
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             AddLog("===============================================================", "INFO");
             AddLog("XNRGY ENGINEERING AUTOMATION TOOLS v1.0", "START");
             AddLog("Developpe par Mohammed Amine Elgalai - XNRGY Climate Systems", "INFO");
             AddLog("===============================================================", "INFO");
+            
+            // Appliquer le theme sauvegarde au demarrage
+            if (!_isDarkTheme)
+            {
+                // Si le theme sauvegarde est clair, on doit l'appliquer
+                // (par defaut l'UI est en mode sombre)
+                _isDarkTheme = true; // Forcer sombre d'abord
+                ThemeToggleButton_Click(this, new RoutedEventArgs()); // Passer en clair
+            }
             
             // Lancer la checklist de démarrage
             Dispatcher.BeginInvoke(new Action(async () => await RunStartupChecklist()), 
@@ -908,14 +918,18 @@ namespace XnrgyEngineeringAutomationTools
             if (_isVaultConnected && _vaultService.IsConnected)
             {
                 VaultIndicator.Fill = _greenBrush;
-                VaultStatusText.Text = $"🗄️ Vault : {_vaultService.VaultName}  /  👤 Utilisateur : {_vaultService.UserName}  /  📡 Statut : Connecte";
+                RunVaultName.Text = $" Vault : {_vaultService.VaultName}  /  ";
+                RunUserName.Text = $" Utilisateur : {_vaultService.UserName}  /  ";
+                RunStatus.Text = " Statut : Connecte";
                 ConnectButton.Content = "Deconnecter";
                 ConnectButton.Background = greenBtnBrush;  // Vert brillant quand connecté
             }
             else
             {
                 VaultIndicator.Fill = _redBrush;
-                VaultStatusText.Text = "🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte";
+                RunVaultName.Text = " Vault : --  /  ";
+                RunUserName.Text = " Utilisateur : --  /  ";
+                RunStatus.Text = " Statut : Deconnecte";
                 ConnectButton.Content = "Connecter";
                 ConnectButton.Background = redBtnBrush;    // Rouge clair quand déconnecté
             }

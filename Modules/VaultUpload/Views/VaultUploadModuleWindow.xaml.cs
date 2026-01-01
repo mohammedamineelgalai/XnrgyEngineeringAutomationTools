@@ -79,6 +79,38 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             _vaultService = vaultService;
             
             DgFiles.ItemsSource = AllFiles;
+            
+            // S'abonner aux changements de theme
+            MainWindow.ThemeChanged += OnThemeChanged;
+            this.Closed += (s, e) => MainWindow.ThemeChanged -= OnThemeChanged;
+            
+            // Appliquer le theme actuel au demarrage
+            ApplyTheme(MainWindow.CurrentThemeIsDark);
+        }
+
+        /// <summary>
+        /// Gestionnaire de changement de theme depuis MainWindow
+        /// </summary>
+        private void OnThemeChanged(bool isDarkTheme)
+        {
+            Dispatcher.Invoke(() => ApplyTheme(isDarkTheme));
+        }
+
+        /// <summary>
+        /// Applique le theme a cette fenetre
+        /// </summary>
+        private void ApplyTheme(bool isDarkTheme)
+        {
+            if (isDarkTheme)
+            {
+                // Theme SOMBRE
+                this.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46)); // #1E1E2E
+            }
+            else
+            {
+                // Theme CLAIR
+                this.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250)); // Bleu-gris tres clair
+            }
         }
 
         // ====================================================================
@@ -93,7 +125,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             {
                 _isVaultConnected = true;
                 VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(16, 124, 16)); // Vert
-                TxtVaultStatus.Text = $"🗄️ Vault : {_vaultService.VaultName}  /  👤 Utilisateur : {_vaultService.UserName}  /  📡 Statut : Connecte";
+                RunVaultName.Text = $" Vault : {_vaultService.VaultName}  /  ";
+                RunUserName.Text = $" Utilisateur : {_vaultService.UserName}  /  ";
+                RunStatus.Text = " Statut : Connecte";
                 Log($"[+] Connexion Vault active: {_vaultService.UserName}@{_vaultService.ServerName}/{_vaultService.VaultName}", LogLevel.SUCCESS);
                 
                 // Charger categories
@@ -103,7 +137,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             {
                 _isVaultConnected = false;
                 VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(232, 17, 35)); // Rouge
-                TxtVaultStatus.Text = "🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte";
+                RunVaultName.Text = " Vault : --  /  ";
+                RunUserName.Text = " Utilisateur : --  /  ";
+                RunStatus.Text = " Statut : Deconnecte";
                 Log("[!] Vault non connecte - Upload impossible", LogLevel.WARNING);
             }
         }

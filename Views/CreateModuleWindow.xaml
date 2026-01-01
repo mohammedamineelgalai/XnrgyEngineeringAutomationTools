@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Créer Module - Pack &amp; Go / Copy Design v1.0.0 - Released on 2025-12-25 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Creer Module - Pack and Go / Copy Design - v1.0.0 - Released on 2025-12-31 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="900" Width="1400"
         MinHeight="700" MinWidth="1100"
         WindowStartupLocation="CenterOwner"
@@ -457,7 +457,7 @@
                 </StackPanel>
 
                 <!-- Centre: Statistiques -->
-                <Border Grid.Column="1" Background="#2D2D44" CornerRadius="6" Padding="15,4" Margin="20,0" HorizontalAlignment="Center" VerticalAlignment="Center"
+                <Border x:Name="StatisticsBorder" Grid.Column="1" Background="#1A1A28" CornerRadius="6" Padding="15,4" Margin="20,0" HorizontalAlignment="Center" VerticalAlignment="Center"
                         BorderBrush="#404060" BorderThickness="1">
                     <StackPanel VerticalAlignment="Center">
                         <!-- Titre -->
@@ -470,15 +470,15 @@
                             </StackPanel>
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtStatsInventor" Text="0" Foreground="#FFD700" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📐 Inventor" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📐 Inventor" Foreground="#FFD700" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtStatsOther" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📄 Autres" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📄 Autres" Foreground="#FFB74D" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="✅ Selection" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock Text="✅ Selection" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
@@ -491,7 +491,9 @@
                             BorderBrush="#404060" BorderThickness="1">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtVaultStatus" Text="🗄️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte" Foreground="White" FontWeight="SemiBold" FontSize="12"/>
+                            <TextBlock x:Name="TxtVaultStatus" FontWeight="SemiBold" FontSize="12">
+                                <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/><Run Text="👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/><Run Text="📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
                     <!-- Boutons -->
@@ -510,7 +512,7 @@
             </Grid>
         </Border>
         <!-- SECTION INPUTS - En-tête avec propriétés (compacte) -->
-        <Border Grid.Row="1" Background="#1E1E2E" Padding="15,8">
+        <Border x:Name="InputsSectionBorder" Grid.Row="1" Background="#1E1E2E" Padding="15,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -785,7 +787,7 @@
                 </GroupBox>
 
                 <!-- Statistiques -->
-                <Border Background="Transparent" CornerRadius="8" BorderBrush="#404060" BorderThickness="2" Margin="0,10,0,10">
+                <Border x:Name="LeftStatsPanel" Background="#1A1A28" CornerRadius="8" BorderBrush="#404060" BorderThickness="2" Margin="0,10,0,10">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -940,8 +942,8 @@
         </Grid>
 
         <!-- FOOTER - Boutons d'action (compact) -->
-        <Border Grid.Row="3" Background="#2D2D44" CornerRadius="8" Margin="20,10,20,10" Padding="15,10"
-                BorderBrush="#2A4A6F" BorderThickness="2">
+        <Border Grid.Row="3" Background="#2A4A6F" CornerRadius="8" Margin="20,10,20,10" Padding="15,10"
+                BorderBrush="#3A5A7F" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -951,7 +953,7 @@
                 <!-- Barre de progression avec texte de statut intégré -->
                 <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" 
                         Height="36" Margin="0,0,15,0" ClipToBounds="True"
-                        BorderBrush="#2A4A6F" BorderThickness="1">
+                        BorderBrush="#404060" BorderThickness="1">
                     <Grid>
                         <!-- Barre de progression verte (fond) -->
                         <Border x:Name="ProgressBarFill" Background="#28A745" 

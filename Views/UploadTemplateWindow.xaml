@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Upload Template vers Vault - v1.0.0 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Upload Template vers Vault - v1.0.0 - Released on 2025-12-31 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="800" Width="1200"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterOwner"
@@ -317,14 +317,14 @@
             <Setter Property="HeadersVisibility" Value="Column"/>
         </Style>
 
-        <!-- Style Header DataGrid - fond bleu XNRGY avec texte blanc gras -->
+        <!-- Style Header DataGrid - fond bleu marine XNRGY avec texte blanc gras -->
         <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Background" Value="#2A4A6F"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
             <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="BorderBrush" Value="#005A9E"/>
+            <Setter Property="BorderBrush" Value="#3A5A7F"/>
             <Setter Property="BorderThickness" Value="0,0,1,0"/>
         </Style>
 
@@ -369,7 +369,7 @@
     </Window.Resources>
 
     <!-- ========== CONTENU PRINCIPAL ========== -->
-    <Grid x:Name="MainGrid" Background="{DynamicResource DarkBg}">
+    <Grid x:Name="MainGrid" Background="#1E1E2E">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>      <!-- Header -->
             <RowDefinition Height="Auto"/>      <!-- Configuration + Stats -->
@@ -414,42 +414,44 @@
                             </StackPanel>
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtSelectedFiles" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
-                                <TextBlock Text="✅ Selectionnes" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock Text="✅ Selectionnes" FontSize="11" Foreground="#90EE90" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtUploaded" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📤 Uploades" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock Text="📤 Uploades" FontSize="11" Foreground="#90EE90" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtSkipped" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FFD700" HorizontalAlignment="Center"/>
-                                <TextBlock Text="⏭️ Ignores" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock Text="⏭️ Ignores" FontSize="11" Foreground="#FFD700" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtFailed" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
-                                <TextBlock Text="❌ Echecs" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                                <TextBlock Text="❌ Echecs" FontSize="11" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <!-- Statut connexion (identique VaultUploadModule) -->
-                <Border Grid.Column="2" Background="#2D2D44" CornerRadius="4" Padding="12,8"
-                        BorderBrush="#404060" BorderThickness="1">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Ellipse x:Name="StatusIndicator" Width="10" Height="10" Fill="#E81123" VerticalAlignment="Center"/>
-                        <TextBlock x:Name="StatusText" Text="�️ Vault : --  /  👤 Utilisateur : --  /  📡 Statut : Deconnecte" Foreground="White" FontWeight="SemiBold" FontSize="12" 
-                                   VerticalAlignment="Center" Margin="8,0,0,0"/>
+                <Border Grid.Column="2" Background="#2D2D44" CornerRadius="4" Padding="10,6"
+                        BorderBrush="#404060" BorderThickness="1" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <Ellipse x:Name="StatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="StatusText" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center">
+                            <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/><Run Text="👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/><Run Text="📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
+                        </TextBlock>
                     </StackPanel>
                 </Border>
             </Grid>
         </Border>
 
         <!-- ========== SECTION CONFIGURATION ========== -->
-        <Border Grid.Row="1" Background="{DynamicResource DarkBg2}" Padding="15,10">
+        <Border Grid.Row="1" Background="#2A4A6F" CornerRadius="6" Padding="15,10" Margin="10,8,10,0"
+                BorderBrush="White" BorderThickness="1">
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Dossier Source + Parcourir + Destination Vault + Scanner -->
@@ -462,19 +464,19 @@
                             Margin="10,0,0,0" Height="32" Click="BtnBrowse_Click"/>
                     
                     <!-- Destination Vault -->
-                    <TextBlock Text="Destination Vault:" FontSize="12" Foreground="{DynamicResource TextMuted}" 
+                    <TextBlock Text="Destination Vault:" FontSize="12" Foreground="#B8D4E8" 
                                VerticalAlignment="Center" Margin="20,0,5,0"/>
                     <TextBlock x:Name="TxtVaultPath" Text="→ $/" FontSize="12" FontWeight="SemiBold"
-                               Foreground="{StaticResource XnrgyBlue}" VerticalAlignment="Center"/>
+                               Foreground="#FFD700" VerticalAlignment="Center"/>
                     
                     <!-- Bouton Scanner -->
                     <Button x:Name="BtnScan" Content="🔍 Scanner" Style="{StaticResource PrimaryButton}" 
                             Click="BtnScan_Click" Height="32" Margin="20,0,0,0"/>
                 </StackPanel>
 
-                <!-- Options d'Upload - GroupBox horizontal a droite -->
-                <Border Grid.Column="1" Background="#1A1A28" CornerRadius="6" Padding="10,6" 
-                        BorderBrush="{StaticResource XnrgyBlue}" BorderThickness="1" 
+                <!-- Options d'Upload - a droite -->
+                <Border Grid.Column="1" Background="#1E3A5F" CornerRadius="6" Padding="10,6" 
+                        BorderBrush="#3A5A7F" BorderThickness="1" 
                         HorizontalAlignment="Right" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="⚙️ Options:" FontSize="12" FontWeight="Bold" Foreground="White" 
@@ -560,8 +562,8 @@
         </GroupBox>
 
         <!-- ========== BARRE DE PROGRESSION + BOUTONS ========== -->
-        <Border Grid.Row="3" Background="#2D2D44" CornerRadius="8" Padding="15,10" Margin="10,5,10,5"
-                BorderBrush="#2A4A6F" BorderThickness="2">
+        <Border Grid.Row="3" Background="#2A4A6F" CornerRadius="8" Padding="15,10" Margin="10,5,10,5"
+                BorderBrush="#3A5A7F" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -570,7 +572,7 @@
 
                 <!-- Barre de progression style Creer Module (rectangulaire avec texte) -->
                 <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" Height="40" ClipToBounds="True" Margin="0,0,15,0"
-                        BorderBrush="#2A4A6F" BorderThickness="1">
+                        BorderBrush="#404060" BorderThickness="1">
                     <Grid>
                         <!-- Fond de progression (rempli par le code) -->
                         <Border x:Name="ProgressBarFill" Background="#28A745" CornerRadius="6" 
