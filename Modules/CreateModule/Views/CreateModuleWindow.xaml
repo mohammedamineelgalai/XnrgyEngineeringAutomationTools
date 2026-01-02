@@ -1008,7 +1008,7 @@
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
                                    Margin="220,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#00D4FF" BlurRadius="8" ShadowDepth="0" Opacity="0.7"/>
+                                <DropShadowEffect Color="#00D4FF" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
                             </TextBlock.Effect>
                         </TextBlock>
                         
@@ -1019,16 +1019,20 @@
                                    VerticalAlignment="Center" HorizontalAlignment="Right"
                                    Margin="0,0,80,0">
                             <TextBlock.Effect>
-                                <DropShadowEffect Color="#FFD700" BlurRadius="8" ShadowDepth="0" Opacity="0.7"/>
+                                <DropShadowEffect Color="#FFD700" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
                             </TextBlock.Effect>
                         </TextBlock>
                         
                         <!-- Pourcentage à droite -->
                         <TextBlock x:Name="TxtProgressPercent" 
                                    Text="" 
-                                   Foreground="#AAA" FontSize="11"
+                                   Foreground="#FFD700" FontSize="11" FontWeight="SemiBold"
                                    VerticalAlignment="Center" HorizontalAlignment="Right"
-                                   Margin="0,0,12,0"/>
+                                   Margin="0,0,12,0">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#FFD700" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                     </Grid>
                 </Border>
 
