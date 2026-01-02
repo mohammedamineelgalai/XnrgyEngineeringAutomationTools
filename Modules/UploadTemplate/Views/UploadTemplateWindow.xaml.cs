@@ -90,6 +90,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
         private int _failedFiles = 0;
         private int _foldersCreated = 0;
         private DateTime _startTime;
+        private TimeSpan _pausedTime = TimeSpan.Zero;
+        private DateTime _pauseStartTime;
         private bool _createFoldersAutomatically = true;
 
         // ====================================================================
@@ -452,6 +454,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
             _foldersCreated = 0;
             _folderCache.Clear();
             _startTime = DateTime.Now;
+            _pausedTime = TimeSpan.Zero;
             _createFoldersAutomatically = ChkCreateFolders.IsChecked == true;
             _uploadComment = TxtComment.Text.Trim(); // Recuperer le commentaire
 
@@ -511,8 +514,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
                     double remaining = (totalSelected - counter) / Math.Max(rate, 1);
 
                     UpdateProgress(
-                        $"[{counter}/{totalSelected}] {fileName}",
-                        progress);
+                        $"{counter}/{totalSelected} fichiers",
+                        progress,
+                        "",
+                        "",
+                        fileName);
 
                     // Sauvegarder les compteurs avant l'upload pour detecter les changements
                     int uploadedBefore = _uploadedFiles;
@@ -534,13 +540,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
                     Dispatcher.Invoke(() =>
                     {
                         if (_uploadedFiles > uploadedBefore)
-                            fileItem.Status = "[+] Uploade";
+                            fileItem.Status = "✅ Uploade";
                         else if (_skippedFiles > skippedBefore)
-                            fileItem.Status = "[~] Ignore (existe)";
+                            fileItem.Status = "⏸️ Ignore (existe)";
                         else if (_failedFiles > failedBefore)
-                            fileItem.Status = "[-] Echec";
+                            fileItem.Status = "❌ Echec";
                         else
-                            fileItem.Status = "[?] Inconnu";
+                            fileItem.Status = "❓ Inconnu";
                             
                         TxtUploaded.Text = _uploadedFiles.ToString("N0");
                         TxtSkipped.Text = _skippedFiles.ToString("N0");
@@ -620,6 +626,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
             {
                 // Reprendre
                 _isPaused = false;
+                if (_pauseStartTime != default(DateTime))
+                {
+                    _pausedTime += DateTime.Now - _pauseStartTime;
+                }
                 _pauseEvent.Set();
                 BtnPause.Content = "⏸️ PAUSE";
                 Log("[>] Upload repris", LogLevel.INFO);
@@ -940,11 +950,33 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
             });
         }
 
-        private void UpdateProgress(string status, double percent, string speed = "", string remaining = "")
+        private void UpdateProgress(string status, double percent, string speed = "", string remaining = "", string currentFile = "")
         {
             Dispatcher.Invoke(() =>
             {
                 TxtProgressStatus.Text = status;
+                
+                // Afficher le fichier actuellement en traitement
+                if (!string.IsNullOrEmpty(currentFile))
+                {
+                    TxtCurrentFile.Text = currentFile;
+                }
+                
+                // Calcul du temps écoulé et estimé
+                TimeSpan elapsed = DateTime.Now - _startTime - _pausedTime;
+                TimeSpan? estimatedTotal = null;
+                if (percent > 0 && percent < 100)
+                {
+                    double estimatedSeconds = elapsed.TotalSeconds * 100 / percent;
+                    estimatedTotal = TimeSpan.FromSeconds(estimatedSeconds);
+                }
+                
+                // Formatage du temps
+                string elapsedStr = FormatTimeSpan(elapsed);
+                string timeStr = estimatedTotal.HasValue 
+                    ? $"{elapsedStr} / {FormatTimeSpan(estimatedTotal.Value)}"
+                    : elapsedStr;
+                TxtProgressTime.Text = timeStr;
                 
                 // Si percent < 0, garder le pourcentage actuel (utilisé pour pause)
                 if (percent >= 0)
@@ -960,6 +992,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
                     }
                 }
             });
+        }
+        
+        private string FormatTimeSpan(TimeSpan ts)
+        {
+            if (ts.TotalHours >= 1)
+                return $"{(int)ts.TotalHours}h {ts.Minutes:D2}m {ts.Seconds:D2}s";
+            else if (ts.TotalMinutes >= 1)
+                return $"{ts.Minutes}m {ts.Seconds:D2}s";
+            else
+                return $"{ts.Seconds}s";
         }
 
         // ====================================================================
@@ -1081,13 +1123,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
                         matchState = file.Status == "En attente";
                         break;
                     case "Uploade":
-                        matchState = file.Status?.Contains("Uploade") == true || file.Status?.Contains("[+]") == true;
+                        matchState = file.Status?.Contains("Uploade") == true || file.Status?.Contains("[+]") == true || file.Status?.Contains("✅") == true;
                         break;
                     case "Ignore":
                         matchState = file.Status?.Contains("Ignore") == true || file.Status?.Contains("Existe") == true;
                         break;
                     case "Erreur":
-                        matchState = file.Status?.Contains("Erreur") == true || file.Status?.Contains("[-]") == true;
+                        matchState = file.Status?.Contains("Erreur") == true || file.Status?.Contains("[-]") == true || file.Status?.Contains("❌") == true;
                         break;
                 }
 

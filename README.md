@@ -491,6 +491,22 @@ bin\Release\Logs\VaultSDK_POC_YYYYMMDD_HHMMSS.log
 - `[#]` = Liste/Propriétés
 - `[?]` = Vérification
 
+**Emojis dans les interfaces (XAML) :**
+- ✅ = Succès/Sélection
+- ❌ = Erreur/Annulation
+- ⚠️ = Avertissement
+- ℹ️ = Information
+- ❓ = Question
+- 🔄 = Statut/Refresh
+- 📄 = Fichier
+- 📐 = Extension
+- 📊 = Taille
+- 📁 = Chemin/Dossier
+- ⏸️ = Pause/Ignoré
+
+**Emojis INTERDITS (ne pas utiliser) :**
+😊 🙂 😄 😁 😆 😂 🤣 🥲 😅 😍 🥰 😢 😭 😔 😒 😠 😡 😎 🥳 🤗 🤔 🙄 😴 📢 📣 🗣️ 🧠 🤖 🔥 💯 ⭐ ✨ 🌟 🎉 🎊 👍 👎 👏 🤝 ✌️ 🙌 ❤️ 🧡 💛 💚 💙 💜 🖤 💞 💓 💗 💕 💖 💻 🖥️ 📱 📷 🎧 🕹️ 🍎 🍌 🍕 🍔 🍟 🍿 🍣 🍩 🍪 🍫 ⏰ 🌧️ ☀️ ⛅ 🌙 📍
+
 ---
 
 ## Dépendances NuGet
@@ -604,6 +620,564 @@ bin\Release\Logs\VaultSDK_POC_YYYYMMDD_HHMMSS.log
 - Outil console pour upload massif (6152 fichiers uploadés vers PROD_XNGRY)
 - Situé dans `Tools/VaultBulkUploader/`
 
+### v0.9.0 (15 Décembre 2025)
+
+- Release initiale beta
+- Dashboard principal avec boutons modules
+- Connexion Vault centralisée
+- Thèmes sombre/clair
+
+---
+
+## Documentation
+
+- **README.md** - Ce fichier (documentation utilisateur)
+- **ARCHITECTURE.md** - Structure projet et plan de migration
+- **.github/instructions/XnrgyEngineeringAutomationTools.instructions.md** - Instructions pour Copilot
+
+---
+
+## Auteur
+
+**Mohammed Amine Elgalai**  
+Engineering Automation Developer  
+XNRGY Climate Systems ULC  
+Email: mohammedamine.elgalai@xnrgy.com
+
+---
+
+## Licence
+
+Propriétaire - XNRGY Climate Systems ULC (c) 2025-2026
+
+---
+
+**Dernière mise à jour**: 02 Janvier 2026 - v1.0.0 (Release actuelle)
+
+---
+
+## Services Principaux - Détails Techniques
+
+### VaultSDKService.cs (~3000 lignes)
+
+**Méthodes principales :**
+
+#### Connexion et Authentification
+- `Connect(string server, string vaultName, string username, string password)` : Connexion Vault avec gestion d'erreurs
+- `Disconnect()` : Déconnexion propre avec libération ressources
+- `IsConnected` : Propriété booléenne pour vérifier l'état de connexion
+- `Reconnect()` : Reconnexion automatique en cas de perte de connexion
+
+#### Gestion des Propriétés
+- `LoadPropertyDefinitions()` : Chargement de toutes les Property Definitions au démarrage
+- `GetPropertyDefinitionId(string propertyName)` : Récupération ID d'une propriété par nom
+- `UpdateFileProperties(long fileId, Dictionary<string, object> properties)` : Application propriétés UDP
+- `GetFileProperties(long fileId)` : Lecture propriétés d'un fichier
+- **Propriétés XNRGY** : Project (ID=112), Reference (ID=121), Module (ID=122)
+
+#### Gestion des Catégories
+- `GetAvailableCategories()` : Liste toutes les catégories Vault disponibles
+- `GetCategoryIdByName(string categoryName)` : Récupération ID catégorie
+- `UpdateFileCategories(long fileId, long categoryId)` : Assignation catégorie à un fichier
+- **Mapping automatique** : Catégorie → Lifecycle Definition (Engineering → Flexible Release Process)
+
+#### Gestion du Lifecycle
+- `GetAvailableLifecycleDefinitions()` : Liste toutes les Lifecycle Definitions
+- `GetLifecycleDefinitionIdByCategory(string categoryName)` : Mapping catégorie → lifecycle
+- `GetWorkInProgressStateId(long lifecycleDefinitionId)` : Récupération état "Work In Progress"
+- `UpdateFileLifeCycleDefinitions(long fileId, long lifecycleDefinitionId, long lifecycleStateId)` : Assignation lifecycle (via reflection pour compatibilité SDK)
+
+#### Gestion des Révisions
+- `UpdateFileRevisionNumbers(long fileId, string revision)` : Assignation numéro de révision
+- Support des formats de révision standards (A, B, C, 1, 2, 3, etc.)
+
+#### Upload de Fichiers
+- `UploadFile(string filePath, string vaultFolderPath, ...)` : Upload fichier avec propriétés complètes
+- **Workflow complet** :
+  1. Vérification existence fichier dans Vault
+  2. CheckOut si fichier existe (nécessaire pour UpdateFileProperties)
+  3. Upload via `FileManager.AddFile` (nouveaux fichiers) ou `FileManager.CheckoutFile` (existants)
+  4. Application propriétés UDP via `UpdateFileProperties`
+  5. **Synchronisation Vault → iProperties** via `IExplorerUtil.UpdateFileProperties` (fichiers Inventor uniquement)
+  6. Assignation catégorie, lifecycle, révision
+  7. CheckIn si fichier existait
+  8. GET final pour mettre à jour le statut dans Vault Client
+
+#### Synchronisation Vault → iProperties (Inventor)
+- **IExplorerUtil** : Chargement lazy via `ExplorerLoader.LoadExplorerUtil`
+- **Writeback automatique** : Les propriétés UDP Vault sont synchronisées vers les iProperties Inventor
+- **Prérequis** : Writeback activé dans Vault (`GetEnableItemPropertyWritebackToFiles` doit retourner `true`)
+- **Avantage** : Pas besoin d'ouvrir Inventor pour modifier les iProperties, Vault le fait automatiquement
+
+#### Gestion des Erreurs Vault
+- **Erreur 1003** : Job Processor actif (normal pour nouveaux fichiers) → Retour immédiat
+- **Erreur 1013** : Fichier verrouillé → CheckOut automatique puis retry
+- **Erreur 1136** : Fichier déjà existe → CheckOut puis UpdateFileProperties
+- **Erreur 1001** : Permission insuffisante → Log et skip
+- **Retry automatique** : 3 tentatives avec délai exponentiel
+
+#### Opérations sur Dossiers
+- `GetFolderAsync(string vaultFolderPath)` : Téléchargement dossier complet (GET)
+- `CreateFolder(string parentPath, string folderName)` : Création dossier
+- `FolderExists(string vaultFolderPath)` : Vérification existence dossier
+- **Update Workspace** : Synchronisation automatique de 5 dossiers au démarrage
+
+### InventorService.cs
+
+**Fonctionnalités :**
+- **Connexion COM** : Détection instance Inventor active ou démarrage invisible
+- **Throttling intelligent** : Minimum 2 secondes entre tentatives de connexion
+- **Vérification fenêtre** : Attente que `MainWindowHandle != IntPtr.Zero` avant connexion
+- **Méthodes multiples** : `Marshal.GetActiveObject` puis P/Invoke `GetActiveObject` en fallback
+- **Logs silencieux** : COMException 0x800401E3 (ROT non prêt) loggée en DEBUG uniquement
+- **Compteur échecs** : Log périodique toutes les 5 tentatives pour éviter spam
+- **Timer reconnexion** : Tentative automatique toutes les 3 secondes si Inventor non connecté
+
+**Méthodes principales :**
+- `TryConnect()` : Tentative connexion avec throttling
+- `TryConnectViaMarshall()` : Méthode 1 - Marshal.GetActiveObject
+- `TryConnectViaPInvoke()` : Méthode 2 - P/Invoke GetActiveObject
+- `IsConnected` : Propriété booléenne
+- `GetApplication()` : Récupération instance Inventor.Application
+
+### InventorCopyDesignService.cs (~2700 lignes)
+
+**Workflow Copy Design complet :**
+
+1. **Préparation** :
+   - Switch vers projet source (IPJ)
+   - Ouverture Top Assembly (Module_.iam) en mode invisible
+   - Application iProperties sur le template (Project, Reference, Module)
+
+2. **Collecte références** :
+   - Scan bottom-up de toutes les références (IPT, IAM, IDW)
+   - Détection fichiers Library vs Module
+   - Identification fichiers orphelins (non-référencés)
+
+3. **Copy Design natif** :
+   - `SaveAs` pour chaque fichier (IPT → IAM → Top Assembly)
+   - Préservation liens Library (IPT_Typical_Drawing)
+   - Copie fichiers Module avec références mises à jour
+
+4. **Traitement dessins (.idw)** :
+   - Mise à jour références via `PutLogicalFileNameUsingFull`
+   - Correction chemins relatifs
+   - **Composants suppressed** : Références mises à jour même si supprimés (v1.1)
+
+5. **Fichiers orphelins** :
+   - Copie des 1059 fichiers non-référencés
+   - Préservation structure dossiers
+
+6. **Fichiers non-Inventor** :
+   - Copie Excel, PDF, Word, etc. (option "Inclure fichiers non-Inventor")
+
+7. **Finalisation** :
+   - Renommage fichier .ipj
+   - Switch vers nouveau projet
+   - Application iProperties finales
+   - Paramètres Inventor (Design View "Default", Workfeatures cachés)
+   - Vue ISO + Zoom All + Update All + Save All
+   - Module reste ouvert pour le dessinateur
+
+**Méthodes principales :**
+- `ExecuteRealPackAndGoAsync(...)` : Méthode principale orchestrant tout le workflow
+- `CollectAllReferences(...)` : Collecte récursive des références
+- `CopyFileWithReferences(...)` : Copie fichier avec mise à jour références
+- `UpdateDrawingReferences(...)` : Mise à jour références dans les dessins
+- `ApplyIProperties(...)` : Application iProperties via InventorPropertyService
+
+### Services de Propriétés (5 implémentations)
+
+#### 1. InventorPropertyService.cs
+- **Méthode** : Inventor COM API (`Application.Documents.Open`)
+- **Performance** : 3-15 secondes par fichier
+- **Usage** : Modification iProperties AVANT upload vers Vault
+- **Fonctionnalités** :
+  - `SetIProperties(filePath, projectNumber, reference, module)` : Propriétés de base
+  - `SetAllModuleProperties(...)` : Toutes propriétés XNRGY (Project, Reference, Module, Initiale_du_Dessinateur, Initiale_du_Co_Dessinateur, Creation_Date, Numero_de_Projet)
+  - `SetOrCreateProperty(...)` : Création propriété si n'existe pas
+- **Mode invisible** : Documents ouverts sans fenêtre visible
+- **Auto-close** : Fermeture automatique après modification
+
+#### 2. ApprenticePropertyService.cs
+- **Méthode** : Autodesk Inventor Apprentice API
+- **Performance** : ~1-2 secondes par fichier
+- **Usage** : Lecture iProperties SANS ouvrir Inventor
+- **Avantage** : Pas besoin d'Inventor installé (Apprentice suffit)
+
+#### 3. OlePropertyService.cs
+- **Méthode** : OpenMCDF (NuGet package)
+- **Performance** : ~100-200ms par fichier
+- **Usage** : Lecture propriétés OLE Compound Documents
+- **Limitation** : Lecture seule, pas de modification
+
+#### 4. NativeOlePropertyService.cs (~700 lignes)
+- **Méthode** : Windows API native (P/Invoke ole32.dll)
+- **Performance** : ~50-100ms par fichier (LE PLUS RAPIDE)
+- **Usage** : Modification propriétés OLE haute performance
+- **Fonctionnalités** :
+  - `StgOpenStorageEx` : Ouverture fichier OLE
+  - `IPropertySetStorage` : Accès Property Sets
+  - `IPropertyStorage` : Lecture/écriture propriétés
+  - Support FMTID_UserDefinedProperties (GUID standard OLE)
+- **Avantage** : 10-30x plus rapide que Inventor COM API
+
+#### 5. WindowsPropertyService.cs
+- **Méthode** : Windows Shell API
+- **Performance** : ~200-500ms par fichier
+- **Usage** : Lecture propriétés Windows standard (Title, Author, Subject, etc.)
+- **Limitation** : Propriétés Windows uniquement, pas iProperties Inventor
+
+### VaultSettingsService.cs
+
+**Fonctionnalités :**
+- **Chiffrement AES-256** : Tous les fichiers de configuration sont chiffrés
+- **Synchronisation Vault** : Téléchargement automatique au démarrage depuis `$/Engineering/Inventor_Standards/Automation_Standard/Configuration_Files/XnrgyEngineeringAutomationToolsApp/`
+- **Accès restreint** : Vérification rôle "Administrator" ou groupe "Admin_Designer"
+- **Déploiement multi-sites** : Saint-Hubert QC + Arizona US (50+ utilisateurs)
+- **Cache local** : Fichiers chiffrés stockés localement pour accès hors ligne
+
+**Méthodes principales :**
+- `LoadSettingsFromVault()` : Téléchargement depuis Vault
+- `SaveSettingsToVault(settings)` : Upload vers Vault (Admin uniquement)
+- `LoadSettingsFromLocal()` : Chargement depuis cache local
+- `EncryptSettings(settings)` : Chiffrement AES-256
+- `DecryptSettings(encryptedData)` : Déchiffrement
+
+### UserPreferencesManager.cs
+
+**Gestion préférences utilisateur :**
+- **Persistance locale** : Fichier JSON chiffré dans `AppData\Local\XnrgyEngineeringAutomationTools\`
+- **Préférences stockées** :
+  - `IsDarkTheme` : Thème sombre/clair (défaut: sombre)
+  - `IsMaximized` : Fenêtre maximisée au démarrage
+  - `AutoConnectVault` : Connexion automatique Vault (défaut: true)
+  - `AutoConnectInventor` : Connexion automatique Inventor (défaut: true)
+  - `ShowStartupChecklist` : Afficher checklist au démarrage
+  - `AppVersion` : Version application
+  - `LastUser` : Dernier utilisateur connecté
+
+**Méthodes principales :**
+- `Load()` : Chargement préférences
+- `Save(preferences)` : Sauvegarde préférences
+- `SaveTheme(isDarkTheme)` : Sauvegarde thème uniquement
+- `LoadTheme()` : Chargement thème uniquement
+- `Reset()` : Réinitialisation aux valeurs par défaut
+
+### CredentialsManager.cs
+
+**Gestion credentials chiffrées :**
+- **Chiffrement AES-256** : Mots de passe stockés chiffrés
+- **Emplacement** : `AppData\Local\XnrgyEngineeringAutomationTools\credentials.encrypted`
+- **Sécurité** : Clé dérivée depuis machine ID + user SID
+
+**Méthodes principales :**
+- `SaveCredentials(server, vault, username, password)` : Sauvegarde chiffrée
+- `LoadCredentials()` : Chargement et déchiffrement
+- `ClearCredentials()` : Suppression credentials
+
+### Logger.cs
+
+**Système de logging NLog :**
+- **Format** : `[YYYY-MM-DD HH:MM:SS.mmm] [LEVEL] Message`
+- **Niveaux** : TRACE, DEBUG, INFO, WARN, ERROR, FATAL
+- **Fichiers** : Rotation quotidienne dans `bin\Release\Logs\`
+- **Encodage** : UTF-8 pour support caractères spéciaux
+- **Icônes textuelles** : `[+]`, `[-]`, `[!]`, `[>]`, `[i]`, `[~]`, `[#]`, `[?]`
+
+**Méthodes principales :**
+- `Log(string message, LogLevel level)` : Log message
+- `LogException(string context, Exception ex, LogLevel level)` : Log exception avec stack trace
+
+### JournalColorService.cs
+
+**Couleurs uniformes pour journaux UI :**
+- **Palette standard XNRGY** :
+  - SUCCESS : #00FF7F (vert SpringGreen brillant)
+  - ERROR : #FF4444 (rouge vif)
+  - WARNING : #FFD700 (jaune or brillant)
+  - INFO : #FFFFFF (blanc pur)
+  - DEBUG : #00FFFF (cyan brillant)
+  - TIMESTAMP : #888888 (gris moyen)
+- **Brushes pré-créés** : Performance optimisée (singleton)
+- **Méthodes utilitaires** :
+  - `GetBrushForLevel(LogLevel)` : Brush selon niveau
+  - `GetColorForLevel(LogLevel)` : Couleur selon niveau
+  - `GetHexColorForLevel(LogLevel)` : Code hex selon niveau
+  - `GetPrefixForLevel(LogLevel)` : Préfixe standard (`[+]`, `[-]`, etc.)
+
+### ThemeHelper.cs
+
+**Gestion thèmes sombre/clair :**
+- **Couleurs thème sombre** :
+  - Background : #1E1E2E
+  - Panel : #252536
+  - Input : #2D2D44
+  - Border : #404060
+- **Couleurs thème clair** :
+  - Background : #F5F7FA
+  - Panel : #FCFDFF
+  - Input : #F0F5FC
+  - Border : #C8D2E1
+- **Couleurs fixes** (ne changent pas) :
+  - Bleu Marine : #2A4A6F (headers GroupBox)
+  - StatusBar : #1A1A28 (journal, panneaux stats)
+- **Méthodes utilitaires** :
+  - `ApplyThemeToWindow(Window)` : Application thème à une fenêtre
+  - `ApplyThemeToGroupBox(GroupBox)` : Application thème à un GroupBox
+  - `ApplyThemeToTextBox(TextBox)` : Application thème à un TextBox
+  - `ApplyThemeToDataGrid(DataGrid)` : Application thème à un DataGrid
+
+### SettingsService.cs
+
+**Gestion paramètres application :**
+- **Fichier** : `modulesettings.json` dans le répertoire de l'application
+- **Format** : JSON avec camelCase
+- **Structure** : `ModuleSettings` contient `CreateModuleSettings`
+- **Cache** : Singleton avec lock thread-safe
+- **Méthodes principales** :
+  - `Load()` : Chargement depuis fichier
+  - `Save(settings)` : Sauvegarde vers fichier
+  - `Reload()` : Rechargement depuis fichier
+  - `ResetToDefaults()` : Réinitialisation valeurs par défaut
+
+## Modèles de Données
+
+### VaultUploadFileItem.cs
+- **Propriétés** :
+  - `FileName`, `FilePath`, `FileExtension`
+  - `ProjectNumber`, `Reference`, `Module`
+  - `IsSelected` (bool)
+  - `Status` (string)
+  - `CategoryId`, `LifecycleDefinitionId`, `LifecycleStateId`
+  - `Revision`
+- **Usage** : Item pour DataGrid dans UploadModuleWindow
+
+### CreateModuleRequest.cs
+- **Propriétés** :
+  - `SourceType` (Template ou ExistingProject)
+  - `TemplatePath`, `ExistingProjectPath`
+  - `DestinationPath`
+  - `ProjectNumber`, `Reference`, `Module`
+  - `FullProjectNumber` (25001REF1M1)
+- **Usage** : Paramètres pour Copy Design
+
+### CreateModuleSettings.cs
+- **Propriétés** :
+  - `DefaultTemplatePath`
+  - `DefaultDestinationPath`
+  - `DefaultProjectNumber`
+  - `IncludeNonInventorFiles` (bool)
+  - `RenameOptions` (Rechercher/Remplacer, Préfixe/Suffixe)
+- **Usage** : Paramètres sauvegardés pour Créer Module
+
+## Fenêtres et Interfaces
+
+### MainWindow.xaml(.cs)
+**Dashboard principal (hub) :**
+- **Fonctionnalités** :
+  - Connexion Vault/Inventor centralisée
+  - Boutons modules (Upload Module, Créer Module, Upload Template, Checklist HVAC, DXF Verifier, Update Workspace)
+  - Journal des opérations avec couleurs uniformes
+  - Panneaux statistiques (fond noir fixe)
+  - Thème sombre/clair avec propagation automatique
+  - Barre de statut avec informations connexion
+- **Méthodes principales** :
+  - `ConnectVault_Click()` : Connexion Vault
+  - `ConnectInventor_Click()` : Connexion Inventor
+  - `OpenUploadModule_Click()` : Ouverture Upload Module
+  - `OpenCreateModule_Click()` : Ouverture Créer Module
+  - `ApplyTheme(bool isDark)` : Application thème à toutes les sous-fenêtres
+  - `UpdateWorkspace_Click()` : Synchronisation dossiers Vault
+
+### UploadModuleWindow.xaml(.cs) (~1200 lignes)
+**Module upload Vault :**
+- **Fonctionnalités** :
+  - Scan automatique modules engineering
+  - Extraction propriétés depuis chemin (Project/Ref/Module)
+  - Deux DataGrids séparés (Inventor/Non-Inventor)
+  - Sélection multiple avec checkboxes
+  - Filtres (recherche texte, extension, statut)
+  - Barre de progression avec glow brillant (#00FF7F)
+  - Journal des opérations avec couleurs
+  - Contrôles Pause/Stop/Annuler
+  - Statistiques (total, sélectionnés, uploadés, erreurs)
+- **Workflow upload** :
+  1. Scan dossier sélectionné
+  2. Extraction propriétés depuis chemin
+  3. Séparation Inventor/Non-Inventor
+  4. Upload batch avec gestion erreurs
+  5. Application propriétés UDP
+  6. Synchronisation Vault → iProperties (Inventor)
+  7. Assignation catégorie, lifecycle, révision
+- **Méthodes principales** :
+  - `SelectModule_Click()` : Sélection dossier module
+  - `ScanModule_Click()` : Scan automatique
+  - `UploadSelected_Click()` : Upload fichiers sélectionnés
+  - `UpdateProgress(int current, int total)` : Mise à jour barre progression
+  - `UpdateStatistics()` : Mise à jour statistiques
+
+### CreateModuleWindow.xaml(.cs) (~1800 lignes)
+**Module Copy Design :**
+- **Fonctionnalités** :
+  - Sélection source (Template ou Projet Existant)
+  - Champs Project/Reference/Module avec validation
+  - Prévisualisation fichiers avant copie
+  - DataGrid avec fichiers et références
+  - Barre de progression avec glow brillant
+  - Journal détaillé des opérations
+  - Boutons Preview/Cancel/Create Module
+  - Fenêtre réglages (CreateModuleSettingsWindow)
+- **Workflow Copy Design** : Voir section InventorCopyDesignService
+- **Méthodes principales** :
+  - `SelectTemplate_Click()` : Sélection template
+  - `SelectExistingProject_Click()` : Sélection projet existant
+  - `Preview_Click()` : Prévisualisation fichiers
+  - `CreateModule_Click()` : Démarrage Copy Design
+  - `UpdateProgress(int current, int total, string message)` : Mise à jour progression
+
+### UploadTemplateWindow.xaml(.cs) (~1100 lignes)
+**Module upload templates (Admin) :**
+- **Fonctionnalités** :
+  - Vérification rôle administrateur
+  - Scan templates depuis Library
+  - Filtres (recherche, extension, statut)
+  - Sélection multiple
+  - Upload batch vers Vault
+  - Journal et barre de progression
+- **Méthodes principales** :
+  - `ScanTemplates_Click()` : Scan templates
+  - `UploadSelected_Click()` : Upload sélectionnés
+  - `ApplyFilters()` : Application filtres
+
+### CreateModuleSettingsWindow.xaml(.cs)
+**Fenêtre réglages Créer Module :**
+- **Fonctionnalités** :
+  - Configuration chemins templates
+  - Liste initiales designers (26 + "Autre...")
+  - Options renommage (Rechercher/Remplacer, Préfixe/Suffixe)
+  - Checkbox "Inclure fichiers non-Inventor"
+  - Styles uniformisés avec effets glow
+  - Titres GroupBox orange (#FF8C00)
+- **Méthodes principales** :
+  - `SaveSettings_Click()` : Sauvegarde paramètres
+  - `LoadSettings()` : Chargement paramètres
+
+### ChecklistHVACWindow.xaml(.cs)
+**Module validation HVAC :**
+- **Fonctionnalités** :
+  - Checklist interactive avec critères XNRGY
+  - Validation modules AHU
+  - Stockage validations dans Vault
+  - Interface WebView2 pour affichage HTML
+
+### LoginWindow.xaml(.cs)
+**Fenêtre connexion Vault :**
+- **Fonctionnalités** :
+  - Champs serveur, vault, utilisateur, mot de passe
+  - Checkbox "Se souvenir" (CredentialsManager)
+  - Validation connexion
+  - Styles uniformisés
+
+### ModuleSelectionWindow.xaml(.cs)
+**Fenêtre sélection module :**
+- **Fonctionnalités** :
+  - Liste modules disponibles
+  - Description chaque module
+  - Navigation vers module sélectionné
+
+### PreviewWindow.xaml(.cs)
+**Fenêtre prévisualisation :**
+- **Fonctionnalités** :
+  - Affichage liste fichiers
+  - Informations détaillées (chemin, taille, type)
+  - Bouton fermer
+
+### XnrgyMessageBox.xaml(.cs)
+**MessageBox moderne XNRGY :**
+- **Types** : Info, Success, Warning, Error, Question
+- **Boutons** : OK, OKCancel, YesNo, YesNoCancel
+- **Styles** : Thème XNRGY avec icônes colorées
+- **Méthodes statiques** :
+  - `Show(message, title, type, buttons, owner)`
+  - `ShowSuccess(message, title, owner)`
+  - `ShowError(message, title, owner)`
+  - `ShowInfo(message, title, owner)`
+  - `ShowWarning(message, title, owner)`
+  - `Confirm(message, title, owner)` : Retourne bool
+
+## Gestion d'Erreurs et Retry
+
+### Stratégies de Retry
+- **Vault Upload** : 3 tentatives avec délai exponentiel (1s, 2s, 4s)
+- **Inventor COM** : Timer reconnexion toutes les 3 secondes avec throttling (min 2s)
+- **Vault Settings** : Retry automatique en cas d'échec synchronisation
+
+### Gestion Erreurs Vault
+- **1003** : Job Processor actif → Retour immédiat (normal)
+- **1013** : Fichier verrouillé → CheckOut automatique puis retry
+- **1136** : Fichier existe → CheckOut puis UpdateFileProperties
+- **1001** : Permission insuffisante → Log et skip
+- **Timeout** : 30 secondes par défaut
+
+### Gestion Erreurs Inventor
+- **COMException 0x800401E3** : ROT non prêt → Log DEBUG silencieux, retry automatique
+- **Fenêtre non prête** : Attente `MainWindowHandle != IntPtr.Zero`
+- **Instance non trouvée** : Démarrage instance invisible
+
+## Structure Shared/
+
+### Composants Partagés
+
+Le dossier `Shared/` contient tous les composants réutilisables entre modules :
+
+#### Views/
+- **LoginWindow.xaml(.cs)** : Fenêtre connexion Vault réutilisable
+- **ModuleSelectionWindow.xaml(.cs)** : Sélection module avec navigation
+- **PreviewWindow.xaml(.cs)** : Prévisualisation fichiers/listes
+- **XnrgyMessageBox.xaml(.cs)** : MessageBox moderne avec thème XNRGY
+
+#### Models/ (vide actuellement)
+- Réservé pour modèles de données partagés
+
+#### Services/ (vide actuellement)
+- Réservé pour services partagés entre modules
+
+## Outils et Scripts
+
+### build-and-run.ps1
+**Script PowerShell compilation automatique :**
+- **Détection MSBuild** : VS 2022 Enterprise/Professional/Community
+- **Compilation Release/Debug** : Mode configurable
+- **Arrêt instances** : `taskkill /F` automatique
+- **Lancement automatique** : Après compilation réussie
+- **Options** :
+  - `-BuildOnly` : Compilation sans lancer
+  - `-Debug` : Mode Debug
+  - `-Clean` : Clean + Build
+  - `-KillOnly` : Tuer instances uniquement
+
+### build-and-run.bat
+**Wrapper batch pour PowerShell :**
+- Appelle `build-and-run.ps1` avec paramètres
+
+### Scripts PowerShell (Scripts/)
+- **CleanInventor2023Registry.ps1** : Nettoyage registre Inventor 2023
+- **Prepare-TemplateFiles.ps1** : Préparation fichiers templates
+- **Upload-ToVaultProd.ps1** : Upload vers Vault Production
+
+### Tools/VaultBulkUploader/
+**Outil console upload massif :**
+- **Usage** : Upload batch de milliers de fichiers
+- **Performance** : 6152 fichiers uploadés vers PROD_XNGRY
+- **Fonctionnalités** :
+  - Scan récursif dossiers
+  - Upload parallèle avec gestion erreurs
+  - Journal détaillé
+  - Statistiques finales
+
+## Versions en Développement (Non publiées)
+
 ### v1.0.1 (01 Janvier 2026) - Organisation Structure (Développement)
 
 **[+] Organisation professionnelle:**
@@ -667,44 +1241,6 @@ bin\Release\Logs\VaultSDK_POC_YYYYMMDD_HHMMSS.log
 - Inventor COM 2026.2
 - Update Workspace au démarrage
 
-### v0.9.0 (15 Décembre 2025)
-
-- Release initiale beta
-- Dashboard principal avec boutons modules
-- Connexion Vault centralisée
-- Thèmes sombre/clair
-
----
-
-## Documentation
-
-- **README.md** - Ce fichier (documentation utilisateur)
-- **ARCHITECTURE.md** - Structure projet et plan de migration
-- **.github/instructions/XnrgyEngineeringAutomationTools.instructions.md** - Instructions pour Copilot
-
----
-
-## Auteur
-
-**Mohammed Amine Elgalai**  
-Engineering Automation Developer  
-XNRGY Climate Systems ULC  
-Email: mohammedamine.elgalai@xnrgy.com
-
----
-
-## Licence
-
-Propriétaire - XNRGY Climate Systems ULC (c) 2025-2026
-
----
-
-**Dernière mise à jour**: 02 Janvier 2026 - v1.0.0 (Release actuelle)
-
----
-
-## Versions en Développement (Non publiées)
-
 ### v1.1.0 (En développement) - Améliorations UI/UX
 
 **[+] Uniformisation Interface:**
@@ -720,3 +1256,4 @@ Propriétaire - XNRGY Climate Systems ULC (c) 2025-2026
 - Bordures GroupBox changées de White à #4A7FBF
 - VerticalContentAlignment="Center" sur tous les boutons
 - ProgressBar hauteur réduite à 34px pour alignement
+- Effets glow brillants sur toutes les barres de progression (#00FF7F, BlurRadius=20, Opacity=0.85)

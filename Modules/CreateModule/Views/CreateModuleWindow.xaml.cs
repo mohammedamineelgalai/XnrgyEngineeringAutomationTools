@@ -30,6 +30,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         // Service Vault pour vérification admin (optionnel)
         private readonly VaultSdkService? _vaultService;
         private bool _isVaultAdmin = false;
+        
+        // Suivi du temps pour la progression
+        private DateTime _startTime;
+        private TimeSpan _pausedTime = TimeSpan.Zero;
+        private DateTime _pauseStartTime;
 
         // Liste des initiales dessinateurs XNRGY (mise à jour 2025-12-30)
         private readonly List<string> _designerInitials = new List<string>
@@ -208,7 +213,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         /// <summary>
         /// Met à jour la barre de progression avec animation
         /// </summary>
-        private void UpdateProgress(int percent, string statusText, bool isError = false)
+        private void UpdateProgress(int percent, string statusText, bool isError = false, string currentFile = "")
         {
             Dispatcher.Invoke(() =>
             {
@@ -245,10 +250,42 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     ProgressBarFill.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#007ACC"));
                 }
 
+                // Afficher le fichier actuellement en traitement
+                if (!string.IsNullOrEmpty(currentFile))
+                {
+                    TxtCurrentFile.Text = currentFile;
+                }
+                
+                // Calcul du temps écoulé et estimé
+                TimeSpan elapsed = DateTime.Now - _startTime - _pausedTime;
+                TimeSpan? estimatedTotal = null;
+                if (percent > 0 && percent < 100)
+                {
+                    double estimatedSeconds = elapsed.TotalSeconds * 100 / percent;
+                    estimatedTotal = TimeSpan.FromSeconds(estimatedSeconds);
+                }
+                
+                // Formatage du temps
+                string elapsedStr = FormatTimeSpan(elapsed);
+                string timeStr = estimatedTotal.HasValue 
+                    ? $"{elapsedStr} / {FormatTimeSpan(estimatedTotal.Value)}"
+                    : elapsedStr;
+                TxtProgressTime.Text = timeStr;
+
                 // Mise à jour du texte
                 TxtStatus.Text = statusText;
                 TxtProgressPercent.Text = percent > 0 ? $"{percent}%" : "";
             });
+        }
+        
+        private string FormatTimeSpan(TimeSpan ts)
+        {
+            if (ts.TotalHours >= 1)
+                return $"{(int)ts.TotalHours}h {ts.Minutes:D2}m {ts.Seconds:D2}s";
+            else if (ts.TotalMinutes >= 1)
+                return $"{ts.Minutes}m {ts.Seconds:D2}s";
+            else
+                return $"{ts.Seconds}s";
         }
 
         /// <summary>
@@ -299,7 +336,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     TxtSourcePath.Text = _defaultTemplatePath;
                     LoadFilesFromPath(_defaultTemplatePath);
                     AddLog($"Template chargé: {_defaultTemplatePath}", "SUCCESS");
-                    TxtStatus.Text = "[+] Template Xnrgy_Module chargé automatiquement";
+                    TxtStatus.Text = "✅ Template Xnrgy_Module chargé automatiquement";
                 }
                 else
                 {
@@ -726,7 +763,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             
             if (!Directory.Exists(_projectsBasePath))
             {
-                TxtStatus.Text = "[!] Dossier Projects non trouve";
+                TxtStatus.Text = "⚠️ Dossier Projects non trouve";
                 return;
             }
 
@@ -758,11 +795,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     }
                 }
                 
-                TxtStatus.Text = $"[+] {CmbProjects.Items.Count} modules trouves";
+                TxtStatus.Text = $"✅ {CmbProjects.Items.Count} modules trouves";
             }
             catch (Exception ex)
             {
-                TxtStatus.Text = $"[!] Erreur chargement projets: {ex.Message}";
+                TxtStatus.Text = $"⚠️ Erreur chargement projets: {ex.Message}";
             }
         }
 
@@ -847,7 +884,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
                 if (string.IsNullOrEmpty(sourcePath) || !Directory.Exists(sourcePath))
                 {
-                    if (TxtStatus != null) TxtStatus.Text = "[!] Chemin source invalide";
+                    if (TxtStatus != null) TxtStatus.Text = "⚠️ Chemin source invalide";
                     return;
                 }
 
@@ -1343,6 +1380,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 BtnCreateModule.IsEnabled = false;
                 BtnCancel.IsEnabled = false;
                 BtnPreview.IsEnabled = false;
+                _startTime = DateTime.Now;
+                _pausedTime = TimeSpan.Zero;
                 UpdateProgress(0, "Initialisation du Copy Design...");
                 AddLog("Début de la création du module...", "START");
 
@@ -1373,7 +1412,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     // Callback pour la progression
                     (percent, statusText) =>
                     {
-                        UpdateProgress(percent, statusText);
+                        // Extraire le nom du fichier du statusText si présent
+                        string currentFile = "";
+                        if (statusText.Contains(":"))
+                        {
+                            var parts = statusText.Split(':');
+                            if (parts.Length > 1)
+                            {
+                                currentFile = parts[parts.Length - 1].Trim();
+                            }
+                        }
+                        UpdateProgress(percent, statusText, false, currentFile);
                     }))
                 {
                     // Initialiser la connexion à Inventor

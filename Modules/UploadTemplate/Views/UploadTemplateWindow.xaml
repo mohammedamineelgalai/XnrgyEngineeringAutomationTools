@@ -455,7 +455,7 @@
                             </StackPanel>
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtSelectedFiles" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
-                                <TextBlock Text="✅ Selectionnes" FontSize="11" Foreground="#90EE90" HorizontalAlignment="Center"/>
+                                <TextBlock Text="✓ Selectionnes" FontSize="11" Foreground="#90EE90" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtUploaded" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
@@ -467,7 +467,7 @@
                             </StackPanel>
                             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <TextBlock x:Name="TxtFailed" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
-                                <TextBlock Text="❌ Echecs" FontSize="11" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
+                                <TextBlock Text="✗ Echecs" FontSize="11" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
@@ -549,9 +549,9 @@
 
                 <!-- Controles: Boutons selection + Recherche + Filtres -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8" VerticalAlignment="Center">
-                    <Button Content="✅ Tout selectionner" Style="{StaticResource SuccessButton}" 
+                    <Button Content="✓ Tout selectionner" Style="{StaticResource SuccessButton}" 
                             Click="SelectAll_Click" Height="38" MinWidth="150" Padding="12,8" VerticalContentAlignment="Center" FontSize="12"/>
-                    <Button Content="❌ Tout deselectionner" Style="{StaticResource DangerButton}" 
+                    <Button Content="✗ Tout deselectionner" Style="{StaticResource DangerButton}" 
                             Click="DeselectAll_Click" Margin="6,0,0,0" Height="38" MinWidth="160" Padding="12,8" VerticalContentAlignment="Center" FontSize="12"/>
                     
                     <!-- Recherche -->
@@ -590,7 +590,7 @@
                           BorderBrush="{DynamicResource BorderColor}" BorderThickness="2"
                           MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
                     <DataGrid.Columns>
-                        <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
+                        <DataGridCheckBoxColumn Header="✓" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
                         <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
                         <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileExtension}" Width="70" IsReadOnly="True"/>
                         <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="80" IsReadOnly="True"/>
@@ -635,7 +635,29 @@
                         <!-- Texte de statut (fichier en cours) -->
                         <TextBlock x:Name="TxtProgressStatus" Text="Pret" Foreground="White" FontSize="12" FontWeight="SemiBold"
                                    VerticalAlignment="Center" HorizontalAlignment="Left" Margin="12,0,0,0" 
-                                   TextTrimming="CharacterEllipsis" MaxWidth="500"/>
+                                   TextTrimming="CharacterEllipsis" MaxWidth="200"/>
+                        
+                        <!-- Fichier actuellement en traitement -->
+                        <TextBlock x:Name="TxtCurrentFile" 
+                                   Text="" 
+                                   Foreground="#00D4FF" FontSize="11" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"
+                                   Margin="220,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#00D4FF" BlurRadius="8" ShadowDepth="0" Opacity="0.7"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
+                        
+                        <!-- Temps écoulé / Temps total estimé à droite -->
+                        <TextBlock x:Name="TxtProgressTime" 
+                                   Text="" 
+                                   Foreground="#FFD700" FontSize="11" FontWeight="SemiBold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Right"
+                                   Margin="0,0,80,0">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#FFD700" BlurRadius="8" ShadowDepth="0" Opacity="0.7"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                         
                         <!-- Pourcentage a droite -->
                         <TextBlock x:Name="TxtProgressPercent" Text="" Foreground="#AAA" FontSize="11"
@@ -657,7 +679,7 @@
                             Style="{StaticResource WarningButton}" Height="34" MinWidth="95" FontSize="13"
                             Click="BtnStop_Click" IsEnabled="False" Margin="0,0,8,0" Padding="10,5" VerticalContentAlignment="Center"/>
                     
-                    <Button x:Name="BtnCancel" Content="❌ FERMER" 
+                    <Button x:Name="BtnCancel" Content="✗ FERMER" 
                             Style="{StaticResource DangerButton}" Height="34" MinWidth="115" FontSize="13"
                             Click="BtnCancel_Click" Padding="10,5" VerticalContentAlignment="Center"/>
                 </StackPanel>

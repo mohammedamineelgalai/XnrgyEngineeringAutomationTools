@@ -58,6 +58,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
         private CancellationTokenSource? _cancellationTokenSource;
         private int _uploadedCount = 0;
         private int _failedCount = 0;
+        private DateTime _startTime;
+        private TimeSpan _pausedTime = TimeSpan.Zero;
+        private DateTime _pauseStartTime;
 
         // ====================================================================
         // Extensions a exclure
@@ -728,13 +731,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                     source = source.Where(f => f.Status == "En attente");
                     break;
                 case "Uploade":
-                    source = source.Where(f => f.Status?.Contains("Uploade") == true || f.Status?.Contains("[+]") == true);
+                    source = source.Where(f => f.Status?.Contains("Uploade") == true || f.Status?.Contains("[+]") == true || f.Status?.Contains("✅") == true);
                     break;
                 case "Ignore":
                     source = source.Where(f => f.Status?.Contains("Ignore") == true || f.Status?.Contains("Existe") == true);
                     break;
                 case "Erreur":
-                    source = source.Where(f => f.Status?.Contains("Erreur") == true || f.Status?.Contains("[-]") == true);
+                    source = source.Where(f => f.Status?.Contains("Erreur") == true || f.Status?.Contains("[-]") == true || f.Status?.Contains("❌") == true);
                     break;
             }
 
@@ -787,6 +790,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
             _uploadedCount = 0;
             _failedCount = 0;
             _cancellationTokenSource = new CancellationTokenSource();
+            _startTime = DateTime.Now;
+            _pausedTime = TimeSpan.Zero;
 
             // Capturer le commentaire AVANT le Task.Run (sur le thread UI)
             string baseComment = TxtComment.Text;
@@ -832,20 +837,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
 
                         if (success)
                         {
-                            file.Status = "[+] Uploade";
+                            file.Status = "✅ Uploade";
                             _uploadedCount++;
                             Log($"[+] {file.FileName}", LogLevel.SUCCESS);
                         }
                         else
                         {
-                            file.Status = "[-] Echec";
+                            file.Status = "❌ Echec";
                             _failedCount++;
                             Log($"[-] Echec: {file.FileName}", LogLevel.ERROR);
                         }
                     }
                     catch (Exception ex)
                     {
-                        file.Status = $"[-] Erreur: {ex.Message}";
+                        file.Status = $"❌ Erreur: {ex.Message}";
                         _failedCount++;
                         Log($"[-] Erreur {file.FileName}: {ex.Message}", LogLevel.ERROR);
                     }
@@ -932,6 +937,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
         {
             _isPaused = !_isPaused;
             BtnPause.Content = _isPaused ? "[>] REPRENDRE" : "[~] PAUSE";
+            if (_isPaused)
+            {
+                _pauseStartTime = DateTime.Now;
+            }
+            else
+            {
+                if (_pauseStartTime != default(DateTime))
+                {
+                    _pausedTime += DateTime.Now - _pauseStartTime;
+                }
+            }
             Log(_isPaused ? "[~] Upload en pause" : "[>] Upload repris", LogLevel.INFO);
         }
 
@@ -985,9 +1001,36 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                     ProgressBarFill.Width = fillWidth;
                 }
                 
-                TxtProgress.Text = $"{percent}% - {current}/{total} - {fileName}";
+                // Calcul du temps écoulé et estimé
+                TimeSpan elapsed = DateTime.Now - _startTime - _pausedTime;
+                TimeSpan? estimatedTotal = null;
+                if (current > 0 && percent > 0)
+                {
+                    double estimatedSeconds = elapsed.TotalSeconds * total / current;
+                    estimatedTotal = TimeSpan.FromSeconds(estimatedSeconds);
+                }
+                
+                // Formatage du temps
+                string elapsedStr = FormatTimeSpan(elapsed);
+                string timeStr = estimatedTotal.HasValue 
+                    ? $"{elapsedStr} / {FormatTimeSpan(estimatedTotal.Value)}"
+                    : elapsedStr;
+                
+                TxtProgress.Text = $"{percent}% - {current}/{total} fichiers";
+                TxtCurrentFile.Text = fileName;
+                TxtProgressTime.Text = timeStr;
                 TxtProgressPercent.Text = $"{percent}%";
             });
+        }
+        
+        private string FormatTimeSpan(TimeSpan ts)
+        {
+            if (ts.TotalHours >= 1)
+                return $"{(int)ts.TotalHours}h {ts.Minutes:D2}m {ts.Seconds:D2}s";
+            else if (ts.TotalMinutes >= 1)
+                return $"{ts.Minutes}m {ts.Seconds:D2}s";
+            else
+                return $"{ts.Seconds}s";
         }
 
         private void UpdateStatistics()
