@@ -12,8 +12,8 @@
         Width="420">
     
     <Border Background="#1E1E1E" 
-            BorderBrush="#0078D4" 
-            BorderThickness="1" 
+            BorderBrush="#4A7FBF" 
+            BorderThickness="2" 
             CornerRadius="8">
         <Grid>
             <Grid.RowDefinitions>
@@ -106,7 +106,7 @@
                 <!-- Message -->
                 <TextBlock Grid.Column="1" 
                            x:Name="MessageText"
-                           Foreground="#CCCCCC"
+                           Foreground="White"
                            FontSize="13"
                            TextWrapping="Wrap"
                            VerticalAlignment="Center"

@@ -2,7 +2,7 @@
 #  XNRGY Engineering Automation Tools - BUILD & RUN SCRIPT
 #  Version: 1.0.0
 #  Author: Mohammed Amine Elgalai - XNRGY Climate Systems ULC
-#  Date: 2026-01-01
+#  Date: 2026-01-02
 #
 #  Usage:
 #    .\build-and-run.ps1              # Build Release + Run

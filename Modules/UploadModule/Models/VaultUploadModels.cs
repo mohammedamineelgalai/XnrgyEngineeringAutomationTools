@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Models
+namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Models
 {
     /// <summary>
     /// Categorie Vault pour classification des fichiers

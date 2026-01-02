@@ -1,64 +1,161 @@
 <Window x:Class="XnrgyEngineeringAutomationTools.Modules.CreateModule.Views.CreateModuleSettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Reglages - Creer Module (Admin) - v1.0.0 - Released on 2025-12-31 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Reglages - Creer Module (Admin) - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="700" Width="800"
         WindowStartupLocation="CenterOwner"
         Background="#1E1E2E"
         ResizeMode="CanResizeWithGrip">
 
     <Window.Resources>
-        <!-- Styles réutilisés -->
-        <Style x:Key="SettingsLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#CCCCCC"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Margin" Value="0,0,0,4"/>
-        </Style>
-        
-        <Style x:Key="SettingsTextBox" TargetType="TextBox">
-            <Setter Property="Background" Value="#2D2D3D"/>
-            <Setter Property="Foreground" Value="White"/>
+        <!-- Couleurs XNRGY -->
+        <SolidColorBrush x:Key="XnrgyBlue" Color="#0078D4"/>
+        <SolidColorBrush x:Key="XnrgyGreen" Color="#107C10"/>
+        <SolidColorBrush x:Key="XnrgyOrange" Color="#FF8C00"/>
+        <SolidColorBrush x:Key="XnrgyRed" Color="#E81123"/>
+        <SolidColorBrush x:Key="DarkBg" Color="#1E1E2E"/>
+        <SolidColorBrush x:Key="DarkBg2" Color="#252536"/>
+        <SolidColorBrush x:Key="DarkBg3" Color="#2D2D44"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#4A7FBF"/>
+        <SolidColorBrush x:Key="TextLight" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#888888"/>
+
+        <!-- Style TextBox moderne (identique au parent) -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#2D2D44"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="BorderBrush" Value="#4A7FBF"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="CaretBrush" Value="White"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="2"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#0078D4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
-        
-        <Style x:Key="SettingsGroupBox" TargetType="GroupBox">
+
+        <!-- Style Label (identique au parent) -->
+        <Style x:Key="ModernLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <!-- Style GroupBox moderne (identique au parent) -->
+        <Style x:Key="ModernGroupBox" TargetType="GroupBox">
+            <Setter Property="Background" Value="#252536"/>
             <Setter Property="BorderBrush" Value="#4A7FBF"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="Foreground" Value="#FF8C00"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GroupBox">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="8,8,0,0" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2,2,2,0" Padding="15,10">
+                                <ContentPresenter ContentSource="Header"/>
+                            </Border>
+                            <Border Grid.Row="1" Background="{TemplateBinding Background}" 
+                                    CornerRadius="0,0,8,8" BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="2,0,2,2" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
+
+        <!-- Alias pour compatibilité -->
+        <Style x:Key="SettingsLabel" TargetType="TextBlock" BasedOn="{StaticResource ModernLabel}"/>
+        <Style x:Key="SettingsTextBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}"/>
+        <Style x:Key="SettingsGroupBox" TargetType="GroupBox" BasedOn="{StaticResource ModernGroupBox}"/>
         
         <Style x:Key="ActionButton" TargetType="Button">
             <Setter Property="Background" Value="#0078D4"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,10"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="20,10"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#1084D8"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" 
+                                BorderBrush="#4A7FBF" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1E90FF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#00D4FF" BlurRadius="30" ShadowDepth="0" Opacity="0.9"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
+                                <Setter Property="Foreground" Value="#666"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         
         <Style x:Key="SecondaryButton" TargetType="Button">
-            <Setter Property="Background" Value="#4A7FBF"/>
+            <Setter Property="Background" Value="#2D2D44"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Padding" Value="20,10"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="20,10"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#505080"/>
-                </Trigger>
-            </Style.Triggers>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" 
+                                BorderBrush="#4A7FBF" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2A5A8F"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#00D4FF" BlurRadius="28" ShadowDepth="0" Opacity="0.85"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#555555"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
     </Window.Resources>
 
@@ -70,12 +167,12 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Background="#252536" Padding="15">
+        <Border Grid.Row="0" Background="#2A4A6F" Padding="15" BorderBrush="#4A7FBF" BorderThickness="0,0,0,2">
             <StackPanel>
                 <TextBlock Text="⚙️ Réglages du Module 'Créer Module'" 
-                           FontSize="18" FontWeight="Bold" Foreground="#FF8C00"/>
+                           FontSize="18" FontWeight="Bold" Foreground="White"/>
                 <TextBlock Text="Configuration des paramètres standards - Modifications réservées aux administrateurs Vault" 
-                           FontSize="11" Foreground="#888888" Margin="0,5,0,0"/>
+                           FontSize="11" Foreground="#B8D4E8" Margin="0,5,0,0"/>
             </StackPanel>
         </Border>
 
@@ -86,7 +183,7 @@
                 <!-- Initiales Dessinateurs -->
                 <GroupBox Style="{StaticResource SettingsGroupBox}">
                     <GroupBox.Header>
-                        <TextBlock Text="👥 Initiales des Dessinateurs" FontWeight="Bold"/>
+                        <TextBlock Text="👥 Initiales des Dessinateurs" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <StackPanel>
                         <TextBlock Style="{StaticResource SettingsLabel}" 
@@ -103,7 +200,7 @@
                 <!-- Chemins -->
                 <GroupBox Style="{StaticResource SettingsGroupBox}">
                     <GroupBox.Header>
-                        <TextBlock Text="📁 Chemins et Dossiers" FontWeight="Bold"/>
+                        <TextBlock Text="📁 Chemins et Dossiers" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <Grid>
                         <Grid.RowDefinitions>
@@ -151,7 +248,7 @@
                 <!-- Fichiers Template -->
                 <GroupBox Style="{StaticResource SettingsGroupBox}">
                     <GroupBox.Header>
-                        <TextBlock Text="📄 Fichiers Template" FontWeight="Bold"/>
+                        <TextBlock Text="📄 Fichiers Template" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <Grid>
                         <Grid.RowDefinitions>
@@ -190,7 +287,7 @@
                 <!-- Extensions -->
                 <GroupBox Style="{StaticResource SettingsGroupBox}">
                     <GroupBox.Header>
-                        <TextBlock Text="📋 Extensions de Fichiers" FontWeight="Bold"/>
+                        <TextBlock Text="📋 Extensions de Fichiers" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -215,7 +312,7 @@
                 <!-- Dossiers Exclus et Library -->
                 <GroupBox Style="{StaticResource SettingsGroupBox}">
                     <GroupBox.Header>
-                        <TextBlock Text="🚫 Exclusions et Library" FontWeight="Bold"/>
+                        <TextBlock Text="🚫 Exclusions et Library" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -240,7 +337,7 @@
                 <!-- iProperties -->
                 <GroupBox Style="{StaticResource SettingsGroupBox}">
                     <GroupBox.Header>
-                        <TextBlock Text="🏷️ Noms des iProperties" FontWeight="Bold"/>
+                        <TextBlock Text="🏷️ Noms des iProperties" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <Grid>
                         <Grid.RowDefinitions>

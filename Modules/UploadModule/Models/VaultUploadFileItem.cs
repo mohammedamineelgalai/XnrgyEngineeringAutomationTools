@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Models
+namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Models
 {
     /// <summary>
     /// Represente un fichier a uploader vers Vault

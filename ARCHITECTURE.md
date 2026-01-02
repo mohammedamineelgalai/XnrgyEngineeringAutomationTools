@@ -2,7 +2,7 @@
 
 > **Document technique** - Structure du projet et plan d'organisation
 > 
-> **Version**: 1.0.0 | **Date**: 2026-01-01
+> **Version**: 1.0.0 | **Date**: 2026-01-02
 > **Auteur**: Mohammed Amine Elgalai - XNRGY Climate Systems ULC
 
 ---
@@ -314,9 +314,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
 
 | Date | Version | Modification |
 |------|---------|--------------|
-| 2026-01-01 | 1.0.0 | Documentation initiale |
-| 2026-01-01 | 1.0.0 | Creation Temp&Test avec fichiers de test deplaces |
-| 2026-01-01 | 1.0.0 | Creation dossiers modules vides (UploadTemplate, CreateModule, ChecklistHVAC, Shared) |
+| 2026-01-02 | 1.0.0 | Documentation initiale |
+| 2026-01-02 | 1.0.0 | Creation Temp&Test avec fichiers de test deplaces |
+| 2026-01-02 | 1.0.0 | Creation dossiers modules vides (UploadTemplate, CreateModule, ChecklistHVAC, Shared) |
 
 ---
 

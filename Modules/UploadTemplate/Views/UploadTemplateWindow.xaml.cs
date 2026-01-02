@@ -957,7 +957,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
                         double maxWidth = parentGrid.ActualWidth > 0 ? parentGrid.ActualWidth : 400;
                         double fillWidth = (percent / 100.0) * maxWidth;
                         ProgressBarFill.Width = fillWidth;
-                        ProgressBarShine.Width = fillWidth;
                     }
                 }
             });

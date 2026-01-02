@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Upload Template vers Vault - v1.0.0 - Released on 2025-12-31 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Upload Template vers Vault - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="800" Width="1200"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterOwner"
@@ -32,7 +32,7 @@
         <Style x:Key="ModernTextBox" TargetType="TextBox">
             <Setter Property="Background" Value="{DynamicResource DarkBg3}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextLight}"/>
-            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
@@ -66,7 +66,7 @@
             <Setter Property="Margin" Value="0,0,0,5"/>
         </Style>
 
-        <!-- ========== STYLE BOUTON PRINCIPAL (identique VaultUploadModule) ========== -->
+        <!-- ========== STYLE BOUTON PRINCIPAL - Glow Brillant ========== -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource XnrgyBlue}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -74,17 +74,25 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="15,8"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#005A9E"/>
+                                <Setter TargetName="border" Property="Background" Value="#1E90FF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#00D4FF" BlurRadius="30" ShadowDepth="0" Opacity="0.9"/>
+                                    </Setter.Value>
+                                </Setter>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
@@ -96,12 +104,12 @@
             </Setter>
         </Style>
 
-        <!-- ========== STYLE BOUTON SECONDAIRE (identique VaultUploadModule) ========== -->
+        <!-- ========== STYLE BOUTON SECONDAIRE - Glow Brillant ========== -->
         <Style x:Key="SecondaryButton" TargetType="Button">
             <Setter Property="Background" Value="{DynamicResource DarkBg3}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextLight}"/>
-            <Setter Property="BorderBrush" Value="White"/>
-            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
+            <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="12,6"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -109,27 +117,33 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#2A5A8F"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#00D4FF" BlurRadius="28" ShadowDepth="0" Opacity="0.85"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#555555"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#3D3D55"/>
-                </Trigger>
-                <Trigger Property="IsEnabled" Value="False">
-                    <Setter Property="Foreground" Value="#555555"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
-        <!-- ========== STYLE BOUTON SUCCES (identique VaultUploadModule) ========== -->
+        <!-- ========== STYLE BOUTON SUCCES - Glow Brillant ========== -->
         <Style x:Key="SuccessButton" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource XnrgyGreen}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -137,17 +151,25 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="15,8"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#0D5C0D"/>
+                                <Setter TargetName="border" Property="Background" Value="#32CD32"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00FF7F"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#00FF7F" BlurRadius="30" ShadowDepth="0" Opacity="0.9"/>
+                                    </Setter.Value>
+                                </Setter>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
@@ -159,7 +181,7 @@
             </Setter>
         </Style>
 
-        <!-- ========== STYLE BOUTON WARNING (identique VaultUploadModule) ========== -->
+        <!-- ========== STYLE BOUTON WARNING - Glow Brillant ========== -->
         <Style x:Key="WarningButton" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource XnrgyOrange}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -167,17 +189,25 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="15,8"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#C44E09"/>
+                                <Setter TargetName="border" Property="Background" Value="#FFA500"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FFD700"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#FFD700" BlurRadius="28" ShadowDepth="0" Opacity="0.85"/>
+                                    </Setter.Value>
+                                </Setter>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
@@ -189,7 +219,7 @@
             </Setter>
         </Style>
 
-        <!-- ========== STYLE BOUTON DANGER (identique VaultUploadModule) ========== -->
+        <!-- ========== STYLE BOUTON DANGER - Glow Brillant ========== -->
         <Style x:Key="DangerButton" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource XnrgyRed}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -197,17 +227,25 @@
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Padding" Value="15,8"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#A72B2E"/>
+                                <Setter TargetName="border" Property="Background" Value="#FF4444"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FF6B6B"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#FF6B6B" BlurRadius="25" ShadowDepth="0" Opacity="0.8"/>
+                                    </Setter.Value>
+                                </Setter>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
@@ -222,7 +260,7 @@
         <!-- ========== STYLE GROUPBOX ========== -->
         <Style x:Key="ModernGroupBox" TargetType="GroupBox">
             <Setter Property="Background" Value="{DynamicResource DarkBg2}"/>
-            <Setter Property="BorderBrush" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="12"/>
             <Setter Property="Margin" Value="0,0,0,10"/>
@@ -405,7 +443,7 @@
 
                 <!-- Centre: Statistiques -->
                 <Border Grid.Column="1" Background="#2D2D44" CornerRadius="6" Padding="15,4" Margin="20,0" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        BorderBrush="#4A7FBF" BorderThickness="1">
+                        BorderBrush="#4A7FBF" BorderThickness="2">
                     <StackPanel VerticalAlignment="Center">
                         <!-- Titre -->
                         <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
@@ -437,7 +475,7 @@
 
                 <!-- Statut connexion (identique VaultUploadModule) -->
                 <Border Grid.Column="2" Background="#2D2D44" CornerRadius="4" Padding="10,6"
-                        BorderBrush="#4A7FBF" BorderThickness="1" VerticalAlignment="Center">
+                        BorderBrush="#4A7FBF" BorderThickness="2" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <Ellipse x:Name="StatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock x:Name="StatusText" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center">
@@ -450,7 +488,7 @@
 
         <!-- ========== SECTION CONFIGURATION ========== -->
         <Border Grid.Row="1" Background="#2A4A6F" CornerRadius="6" Padding="15,10" Margin="10,8,10,5"
-                BorderBrush="#4A7FBF" BorderThickness="1">
+                BorderBrush="#4A7FBF" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -461,10 +499,10 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="📁 Dossier Source:" FontSize="13" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <TextBox x:Name="TxtLocalPath" Style="{StaticResource ModernTextBox}" 
-                             Text="C:\Vault" Width="350" Height="32"/>
+                             Text="C:\Vault" Width="350" Height="34" VerticalContentAlignment="Center"/>
                     <Button x:Name="BtnBrowse" Content="📂 Parcourir" Style="{StaticResource SecondaryButton}" 
-                            Background="#0891B2" Foreground="White"
-                            Margin="10,0,0,0" Height="32" Click="BtnBrowse_Click"/>
+                            Background="#0891B2" Foreground="White" FontSize="13"
+                            Margin="10,0,0,0" Height="34" Click="BtnBrowse_Click" Padding="10,5" VerticalContentAlignment="Center"/>
                     
                     <!-- Destination Vault -->
                     <TextBlock Text="Destination Vault:" FontSize="12" Foreground="#B8D4E8" 
@@ -474,12 +512,13 @@
                     
                     <!-- Bouton Scanner -->
                     <Button x:Name="BtnScan" Content="🔍 Scanner" Style="{StaticResource PrimaryButton}" 
-                            Click="BtnScan_Click" Height="32" Margin="20,0,0,0"/>
+                            FontSize="13"
+                            Click="BtnScan_Click" Height="34" Margin="20,0,0,0" Padding="12,5" VerticalContentAlignment="Center"/>
                 </StackPanel>
 
                 <!-- Options d'Upload - a droite -->
                 <Border Grid.Column="1" Background="#1E3A5F" CornerRadius="6" Padding="10,6" 
-                        BorderBrush="#4A7FBF" BorderThickness="1" 
+                        BorderBrush="#4A7FBF" BorderThickness="2" 
                         HorizontalAlignment="Right" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="⚙️ Options:" FontSize="12" FontWeight="Bold" Foreground="White" 
@@ -509,29 +548,27 @@
                 </Grid.RowDefinitions>
 
                 <!-- Controles: Boutons selection + Recherche + Filtres -->
-                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
-                    <Button Content="✅ Tout selectionner" Style="{StaticResource SecondaryButton}" 
-                            Background="#059669" Foreground="White"
-                            Click="SelectAll_Click" Height="30"/>
-                    <Button Content="❌ Tout deselectionner" Style="{StaticResource SecondaryButton}" 
-                            Background="#DC2626" Foreground="White"
-                            Click="DeselectAll_Click" Margin="6,0,0,0" Height="30"/>
+                <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8" VerticalAlignment="Center">
+                    <Button Content="✅ Tout selectionner" Style="{StaticResource SuccessButton}" 
+                            Click="SelectAll_Click" Height="38" MinWidth="150" Padding="12,8" VerticalContentAlignment="Center" FontSize="12"/>
+                    <Button Content="❌ Tout deselectionner" Style="{StaticResource DangerButton}" 
+                            Click="DeselectAll_Click" Margin="6,0,0,0" Height="38" MinWidth="160" Padding="12,8" VerticalContentAlignment="Center" FontSize="12"/>
                     
                     <!-- Recherche -->
                     <TextBlock Text="🔍" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="14" Foreground="White"/>
-                    <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Width="200" Height="30" 
-                             TextChanged="TxtSearch_TextChanged" ToolTip="Rechercher par nom"/>
+                    <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Width="200" Height="32" 
+                             TextChanged="TxtSearch_TextChanged" ToolTip="Rechercher par nom" VerticalContentAlignment="Center"/>
                     
                     <!-- Filtre Extension (chargé dynamiquement) -->
                     <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                    <ComboBox x:Name="CmbExtension" Width="100" Height="30" VerticalContentAlignment="Center"
+                    <ComboBox x:Name="CmbExtension" Width="100" Height="32" VerticalContentAlignment="Center"
                               SelectionChanged="CmbExtension_SelectionChanged">
                         <ComboBoxItem Content="Tous" IsSelected="True"/>
                     </ComboBox>
                     
                     <!-- Filtre Statut -->
                     <TextBlock Text="🔄 Statut:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                    <ComboBox x:Name="CmbState" Width="120" Height="30" VerticalContentAlignment="Center"
+                    <ComboBox x:Name="CmbState" Width="120" Height="32" VerticalContentAlignment="Center"
                               SelectionChanged="CmbState_SelectionChanged">
                         <ComboBoxItem Content="Tous" IsSelected="True"/>
                         <ComboBoxItem Content="En attente"/>
@@ -550,7 +587,7 @@
                           GridLinesVisibility="Horizontal"
                           AlternatingRowBackground="{DynamicResource DarkBg3}"
                           RowHeight="32" SelectionMode="Single" SelectionUnit="FullRow"
-                          BorderBrush="{DynamicResource BorderColor}" BorderThickness="1"
+                          BorderBrush="{DynamicResource BorderColor}" BorderThickness="2"
                           MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
@@ -584,22 +621,15 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Barre de progression style Creer Module (rectangulaire avec texte) -->
-                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" Height="40" ClipToBounds="True" Margin="0,0,15,0"
-                        BorderBrush="#4A7FBF" BorderThickness="1">
+                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" Height="34" ClipToBounds="True" Margin="0,0,15,0"
+                        BorderBrush="#4A7FBF" BorderThickness="2">
                     <Grid>
                         <!-- Fond de progression (rempli par le code) -->
                         <Border x:Name="ProgressBarFill" Background="#28A745" CornerRadius="6" 
-                                HorizontalAlignment="Left" Width="0"/>
-                        
-                        <!-- Effet brillant -->
-                        <Border x:Name="ProgressBarShine" CornerRadius="6" HorizontalAlignment="Left" Width="0">
-                            <Border.Background>
-                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                    <GradientStop Color="#40FFFFFF" Offset="0"/>
-                                    <GradientStop Color="#10FFFFFF" Offset="0.5"/>
-                                    <GradientStop Color="Transparent" Offset="1"/>
-                                </LinearGradientBrush>
-                            </Border.Background>
+                                HorizontalAlignment="Left" Width="0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00FF7F" BlurRadius="20" ShadowDepth="0" Opacity="0.85"/>
+                            </Border.Effect>
                         </Border>
                         
                         <!-- Texte de statut (fichier en cours) -->
@@ -608,35 +638,35 @@
                                    TextTrimming="CharacterEllipsis" MaxWidth="500"/>
                         
                         <!-- Pourcentage a droite -->
-                        <TextBlock x:Name="TxtProgressPercent" Text="" Foreground="#AAA" FontSize="12" FontWeight="Bold"
+                        <TextBlock x:Name="TxtProgressPercent" Text="" Foreground="#AAA" FontSize="11"
                                    VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0"/>
                     </Grid>
                 </Border>
 
                 <!-- Boutons d'action a droite (identique VaultUploadModule) -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="BtnStartUpload" Content="▶️ UPLOAD" 
-                            Style="{StaticResource SuccessButton}" Height="32" Width="110"
-                            Click="BtnStartUpload_Click" IsEnabled="False" Margin="0,0,8,0"/>
+                            Style="{StaticResource SuccessButton}" Height="34" MinWidth="115" FontSize="13"
+                            Click="BtnStartUpload_Click" IsEnabled="False" Margin="0,0,8,0" Padding="12,5" VerticalContentAlignment="Center"/>
                     
                     <Button x:Name="BtnPause" Content="⏸️ PAUSE" 
-                            Style="{StaticResource WarningButton}" Height="32" Width="100"
-                            Click="BtnPause_Click" IsEnabled="False" Margin="0,0,8,0"/>
+                            Style="{StaticResource WarningButton}" Height="34" MinWidth="105" FontSize="13"
+                            Click="BtnPause_Click" IsEnabled="False" Margin="0,0,8,0" Padding="10,5" VerticalContentAlignment="Center"/>
                     
                     <Button x:Name="BtnStop" Content="⏹️ STOP" 
-                            Style="{StaticResource WarningButton}" Height="32" Width="90"
-                            Click="BtnStop_Click" IsEnabled="False" Margin="0,0,8,0"/>
+                            Style="{StaticResource WarningButton}" Height="34" MinWidth="95" FontSize="13"
+                            Click="BtnStop_Click" IsEnabled="False" Margin="0,0,8,0" Padding="10,5" VerticalContentAlignment="Center"/>
                     
                     <Button x:Name="BtnCancel" Content="❌ FERMER" 
-                            Style="{StaticResource DangerButton}" Height="32" Width="110"
-                            Click="BtnCancel_Click"/>
+                            Style="{StaticResource DangerButton}" Height="34" MinWidth="115" FontSize="13"
+                            Click="BtnCancel_Click" Padding="10,5" VerticalContentAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- ========== JOURNAL ========== -->
         <Border Grid.Row="5" Background="{DynamicResource DarkBg2}" BorderBrush="#4A7FBF" 
-                BorderThickness="1" CornerRadius="6" Margin="10,5,10,8">
+                BorderThickness="2" CornerRadius="6" Margin="10,5,10,8">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -650,7 +680,7 @@
                                    Foreground="White"/>
                         <Button x:Name="BtnClearLog" Content="🗑️ Effacer" HorizontalAlignment="Right" 
                                 Background="#DC2626" Foreground="White" FontWeight="Bold"
-                                BorderBrush="#DC2626" BorderThickness="1"
+                                BorderBrush="#DC2626" BorderThickness="2"
                                 Padding="8,2" Click="BtnClearLog_Click" Cursor="Hand"/>
                     </Grid>
                 </Border>

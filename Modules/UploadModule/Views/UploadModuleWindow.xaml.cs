@@ -14,25 +14,25 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using XnrgyEngineeringAutomationTools.Models;
-using XnrgyEngineeringAutomationTools.Modules.VaultUpload.Models;
+using XnrgyEngineeringAutomationTools.Modules.UploadModule.Models;
 using XnrgyEngineeringAutomationTools.Services;
-using XnrgyEngineeringAutomationTools.Views;
 using XnrgyEngineeringAutomationTools.Shared.Views;
 
-namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
+namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
 {
     /// <summary>
     /// Upload Module vers Vault - Module integre dans XNRGY Engineering Automation Tools
     /// Auteur: Mohammed Amine Elgalai - XNRGY Climate Systems ULC
     /// Version: 1.0.0 - Decembre 2025
     /// </summary>
-    public partial class VaultUploadModuleWindow : Window
+    public partial class UploadModuleWindow : Window
     {
         // ====================================================================
         // Services et connexion
         // ====================================================================
         private readonly VaultSdkService? _vaultService;
         private bool _isVaultConnected = false;
+
 
         // ====================================================================
         // Collections de fichiers
@@ -74,7 +74,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
         // ====================================================================
         // Constructeur
         // ====================================================================
-        public VaultUploadModuleWindow(VaultSdkService? vaultService)
+        public UploadModuleWindow(VaultSdkService? vaultService)
         {
             InitializeComponent();
             _vaultService = vaultService;
@@ -976,8 +976,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.VaultUpload.Views
             Dispatcher.Invoke(() =>
             {
                 int percent = total > 0 ? (current * 100 / total) : 0;
-                ProgressBar.Value = percent;
+                
+                // Mise à jour de la barre de progression (Border au lieu de ProgressBar)
+                if (ProgressBarFill.Parent is Grid parentGrid)
+                {
+                    double maxWidth = parentGrid.ActualWidth > 0 ? parentGrid.ActualWidth : 400;
+                    double fillWidth = (percent / 100.0) * maxWidth;
+                    ProgressBarFill.Width = fillWidth;
+                }
+                
                 TxtProgress.Text = $"{percent}% - {current}/{total} - {fileName}";
+                TxtProgressPercent.Text = $"{percent}%";
             });
         }
 

@@ -201,8 +201,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <!-- ========== MODULE: VAULT UPLOAD ========== -->
-    <Page Include="Modules\VaultUpload\Views\VaultUploadModuleWindow.xaml">
+    <!-- ========== MODULE: UPLOAD MODULE ========== -->
+    <Page Include="Modules\UploadModule\Views\UploadModuleWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -222,11 +222,6 @@
     </Page>
     <!-- ========== MODULE: CHECKLIST HVAC ========== -->
     <Page Include="Modules\ChecklistHVAC\Views\ChecklistHVACWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <!-- ========== LEGACY VIEWS (kept for compatibility) ========== -->
-    <Page Include="Views\VaultUploadWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -261,12 +256,12 @@
       <DependentUpon>XnrgyMessageBox.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <!-- ========== CODE-BEHIND: MODULE VAULT UPLOAD ========== -->
-    <Compile Include="Modules\VaultUpload\Views\VaultUploadModuleWindow.xaml.cs">
-      <DependentUpon>VaultUploadModuleWindow.xaml</DependentUpon>
+    <!-- ========== CODE-BEHIND: MODULE UPLOAD MODULE ========== -->
+    <Compile Include="Modules\UploadModule\Views\UploadModuleWindow.xaml.cs">
+      <DependentUpon>UploadModuleWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Modules\VaultUpload\Models\*.cs" />
+    <Compile Include="Modules\UploadModule\Models\*.cs" />
     <!-- ========== CODE-BEHIND: MODULE CREATE MODULE ========== -->
     <Compile Include="Modules\CreateModule\Views\CreateModuleWindow.xaml.cs">
       <DependentUpon>CreateModuleWindow.xaml</DependentUpon>
@@ -286,11 +281,6 @@
     <!-- ========== CODE-BEHIND: MODULE CHECKLIST HVAC ========== -->
     <Compile Include="Modules\ChecklistHVAC\Views\ChecklistHVACWindow.xaml.cs">
       <DependentUpon>ChecklistHVACWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <!-- ========== LEGACY CODE-BEHIND ========== -->
-    <Compile Include="Views\VaultUploadWindow.xaml.cs">
-      <DependentUpon>VaultUploadWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <!-- ========== CORE CODE ========== -->

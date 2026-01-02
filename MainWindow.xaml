@@ -1,7 +1,7 @@
 <Window x:Class="XnrgyEngineeringAutomationTools.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="XNRGY Engineering Automation Tools - v1.0.0 - Released on 2025-12-31 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="XNRGY Engineering Automation Tools - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="850" Width="1300"
         MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterScreen"
@@ -22,6 +22,7 @@
         <SolidColorBrush x:Key="TextLight" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="TextMuted" Color="#888888"/>
         
+        <!-- ModuleButton - Glow Brillant -->
         <Style x:Key="ModuleButton" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource ButtonBg}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -33,7 +34,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
                                 CornerRadius="6" 
                                 BorderBrush="#4A7FBF" 
                                 BorderThickness="2"
@@ -42,10 +43,16 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="{StaticResource ButtonHover}"/>
+                                <Setter TargetName="border" Property="Background" Value="#2A5A8F"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#00D4FF" BlurRadius="28" ShadowDepth="0" Opacity="0.85"/>
+                                    </Setter.Value>
+                                </Setter>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="{StaticResource XnrgyBlue}"/>
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyBlue}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -53,6 +60,7 @@
             </Setter>
         </Style>
         
+        <!-- ActionButton - Glow Brillant -->
         <Style x:Key="ActionButton" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource XnrgyBlue}"/>
             <Setter Property="Foreground" Value="White"/>
@@ -65,7 +73,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
+                        <Border x:Name="border" Background="{TemplateBinding Background}" 
                                 CornerRadius="6" 
                                 BorderBrush="#4A7FBF"
                                 BorderThickness="2"
@@ -74,7 +82,13 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#1E8FE8"/>
+                                <Setter TargetName="border" Property="Background" Value="#1E90FF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#00D4FF" BlurRadius="30" ShadowDepth="0" Opacity="0.9"/>
+                                    </Setter.Value>
+                                </Setter>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -153,9 +167,9 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="15,5">
             <StackPanel>
                 <!-- GroupBox: Vault & Inventor -->
-                <GroupBox x:Name="GroupBox1" Margin="0,0,0,12" Padding="12" Background="#252536" BorderBrush="#4A7FBF" BorderThickness="2">
+                <GroupBox x:Name="GroupBox1" Style="{StaticResource XnrgyGroupBox}" Margin="0,0,0,12">
                     <GroupBox.Header>
-                        <TextBlock x:Name="GroupBox1Header" Text="&#x1F527; Vault &amp; Inventor Tools" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock x:Name="GroupBox1Header" Text="🔧 Vault &amp; Inventor Tools" FontSize="16" FontWeight="Bold" Foreground="White"/>
                     </GroupBox.Header>
                     <WrapPanel>
                         <!-- Créer Module & Équipement (anciennement Pack & Go) -->
@@ -212,9 +226,9 @@
                 </GroupBox>
                 
                 <!-- GroupBox: Verification & Quality -->
-                <GroupBox x:Name="GroupBox2" Margin="0,0,0,12" Padding="12" Background="#252536" BorderBrush="#4A7FBF" BorderThickness="2">
+                <GroupBox x:Name="GroupBox2" Style="{StaticResource XnrgyGroupBox}" Margin="0,0,0,12">
                     <GroupBox.Header>
-                        <TextBlock x:Name="GroupBox2Header" Text="&#x2705; Verification &amp; Quality" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock x:Name="GroupBox2Header" Text="✅ Verification &amp; Quality" FontSize="16" FontWeight="Bold" Foreground="White"/>
                     </GroupBox.Header>
                     <WrapPanel>
                         <!-- Checklist HVAC -->
@@ -292,7 +306,7 @@
         <Border x:Name="StatusBorder" Grid.Row="3" Background="#252536" Padding="15,12" Margin="0,10,0,0">
             <Grid>
                 <TextBlock x:Name="StatusText" Text="Pret" Foreground="White" FontSize="14" FontWeight="Bold"/>
-                <TextBlock x:Name="CopyrightText" Text="XNRGY Engineering Automation Tools - v1.0.0 - Released on 2025-12-31 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+                <TextBlock x:Name="CopyrightText" Text="XNRGY Engineering Automation Tools - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
                            Foreground="White" FontSize="12" FontWeight="Bold" HorizontalAlignment="Right"/>
             </Grid>
         </Border>

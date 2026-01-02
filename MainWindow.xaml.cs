@@ -284,9 +284,9 @@ namespace XnrgyEngineeringAutomationTools
                 GroupBox1.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 GroupBox2.BorderBrush = new SolidColorBrush(Color.FromRgb(42, 74, 111)); // Bleu marine #2A4A6F
                 
-                // Titres GroupBox - NOIR sur fond clair
-                GroupBox1Header.Foreground = darkTextBrush;
-                GroupBox2Header.Foreground = darkTextBrush;
+                // Titres GroupBox - BLANC sur fond bleu marine (header reste bleu marine meme en theme clair)
+                GroupBox1Header.Foreground = whiteBrush;
+                GroupBox2Header.Foreground = whiteBrush;
                 
                 // Textes - noir foncé
                 TitleText.Foreground = whiteBrush; // Reste blanc sur fond bleu
@@ -1026,7 +1026,7 @@ namespace XnrgyEngineeringAutomationTools
             try
             {
                 // Ouvrir le module integre (plus besoin de l'exe externe)
-                var uploadWindow = new Modules.VaultUpload.Views.VaultUploadModuleWindow(_isVaultConnected ? _vaultService : null);
+                var uploadWindow = new Modules.UploadModule.Views.UploadModuleWindow(_isVaultConnected ? _vaultService : null);
                 uploadWindow.Owner = this;
                 
                 AddLog("Fenetre Upload Module ouverte", "INFO");
