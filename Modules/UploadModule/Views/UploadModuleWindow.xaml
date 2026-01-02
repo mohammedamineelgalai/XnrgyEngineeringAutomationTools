@@ -564,35 +564,23 @@
                         <!-- Fichier actuellement en traitement -->
                         <TextBlock x:Name="TxtCurrentFile" 
                                    Text="" 
-                                   Foreground="#00D4FF" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#00D4FF" FontSize="12" FontWeight="SemiBold"
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
-                                   Margin="320,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#00D4FF" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
+                                   Margin="320,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
                         
                         <!-- Temps écoulé / Temps total estimé à droite -->
                         <TextBlock x:Name="TxtProgressTime" 
                                    Text="" 
-                                   Foreground="#FFD700" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#FFD700" FontSize="12" FontWeight="SemiBold"
                                    VerticalAlignment="Center" HorizontalAlignment="Right"
-                                   Margin="0,0,80,0">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#FFD700" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
+                                   Margin="0,0,80,0"/>
                         
                         <!-- Pourcentage à droite -->
                         <TextBlock x:Name="TxtProgressPercent" 
                                    Text="" 
-                                   Foreground="#FFD700" FontSize="11" FontWeight="SemiBold"
+                                   Foreground="#FFD700" FontSize="12" FontWeight="SemiBold"
                                    VerticalAlignment="Center" HorizontalAlignment="Right"
-                                   Margin="0,0,12,0">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#FFD700" BlurRadius="4" ShadowDepth="0" Opacity="0.8"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
+                                   Margin="0,0,12,0"/>
                     </Grid>
                 </Border>
 
