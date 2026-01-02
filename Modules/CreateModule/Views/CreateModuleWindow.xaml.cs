@@ -73,7 +73,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             
             // Attendre que la fenêtre soit chargée pour initialiser les contrôles
             this.Loaded += CreateModuleWindow_Loaded;
-            this.Closed += (s, e) => MainWindow.ThemeChanged -= OnThemeChanged;
+            this.Closed += (s, e) =>
+            {
+                MainWindow.ThemeChanged -= OnThemeChanged;
+                // Nettoyer le dossier temporaire Vault si présent
+                CleanupTempVaultFolder();
+            };
         }
 
         /// <summary>
@@ -91,7 +96,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         {
             // Elements avec fond noir FIXE (ne changent jamais)
             StatisticsBorder.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - Header stats
-            LeftStatsPanel.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - Panel gauche stats
             
             if (isDarkTheme)
             {
@@ -234,21 +238,52 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
                     ProgressBarFill.BeginAnimation(WidthProperty, widthAnimation);
                     ProgressBarShine.BeginAnimation(WidthProperty, widthAnimation);
+                    ProgressBarGlow?.BeginAnimation(WidthProperty, widthAnimation);
                 }
 
-                // Couleur de la barre selon l'état
+                // Gradient brillant et cristallisé selon l'état
+                LinearGradientBrush gradientBrush;
                 if (isError)
                 {
-                    ProgressBarFill.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#DC3545"));
+                    // Rouge brillant pour erreur
+                    gradientBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new System.Windows.Point(0, 0),
+                        EndPoint = new System.Windows.Point(1, 0)
+                    };
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FF4444"), 0));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FF6B6B"), 0.5));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FF4444"), 1));
                 }
                 else if (percent >= 100)
                 {
-                    ProgressBarFill.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#28A745"));
+                    // Vert néon brillant pour succès
+                    gradientBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new System.Windows.Point(0, 0),
+                        EndPoint = new System.Windows.Point(1, 0)
+                    };
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FF88"), 0));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 0.3));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFCC"), 0.5));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 0.7));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FF88"), 1));
                 }
                 else
                 {
-                    ProgressBarFill.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#007ACC"));
+                    // Cyan/bleu électrique brillant pour progression
+                    gradientBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new System.Windows.Point(0, 0),
+                        EndPoint = new System.Windows.Point(1, 0)
+                    };
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 0));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00D4FF"), 0.3));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00BFFF"), 0.5));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00D4FF"), 0.7));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 1));
                 }
+                ProgressBarFill.Background = gradientBrush;
 
                 // Afficher le fichier actuellement en traitement
                 if (!string.IsNullOrEmpty(currentFile))
@@ -275,7 +310,129 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 // Mise à jour du texte
                 TxtStatus.Text = statusText;
                 TxtProgressPercent.Text = percent > 0 ? $"{percent}%" : "";
+
+                // Changer dynamiquement la couleur des textes selon si la barre les couvre
+                UpdateTextColorsForProgress(percent, container?.ActualWidth ?? 400);
             });
+        }
+
+        private void UpdateTextColorsForProgress(int percent, double containerWidth)
+        {
+            if (containerWidth <= 0) return;
+
+            double progressWidth = (percent / 100.0) * containerWidth;
+            
+            // Position approximative des textes (en pixels depuis la gauche)
+            double statusTextPosition = 12; // Margin left de TxtStatus
+            double currentFilePosition = 220; // Margin left de TxtCurrentFile
+            double timeTextPosition = containerWidth - 80; // À droite
+            double percentTextPosition = containerWidth - 50; // À droite
+
+            // Couleur pour texte non couvert (clair sur fond sombre)
+            var uncoveredColor = new SolidColorBrush(Colors.White);
+            var uncoveredFileColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00D4FF"));
+            var uncoveredTimeColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
+
+            // Couleur pour texte couvert (sombre avec ombre pour contraste sur fond brillant)
+            var coveredColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#001122")); // Noir profond
+            var coveredFileColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#003344")); // Bleu foncé
+            var coveredTimeColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#332200")); // Or foncé
+
+            // TxtStatus
+            if (progressWidth > statusTextPosition + 50) // Si la barre couvre le texte (avec marge)
+            {
+                TxtStatus.Foreground = coveredColor;
+                TxtStatus.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+            }
+            else
+            {
+                TxtStatus.Foreground = uncoveredColor;
+                TxtStatus.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+            }
+
+            // TxtCurrentFile
+            if (progressWidth > currentFilePosition + 50)
+            {
+                TxtCurrentFile.Foreground = coveredFileColor;
+                TxtCurrentFile.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+            }
+            else
+            {
+                TxtCurrentFile.Foreground = uncoveredFileColor;
+                TxtCurrentFile.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+            }
+
+            // TxtProgressTime
+            if (progressWidth > timeTextPosition - 100) // À droite, donc on vérifie si la barre approche
+            {
+                TxtProgressTime.Foreground = coveredTimeColor;
+                TxtProgressTime.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+            }
+            else
+            {
+                TxtProgressTime.Foreground = uncoveredTimeColor;
+                TxtProgressTime.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+            }
+
+            // TxtProgressPercent
+            if (progressWidth > percentTextPosition - 50)
+            {
+                TxtProgressPercent.Foreground = coveredTimeColor;
+                TxtProgressPercent.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+            }
+            else
+            {
+                TxtProgressPercent.Foreground = uncoveredTimeColor;
+                TxtProgressPercent.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+            }
         }
         
         private string FormatTimeSpan(TimeSpan ts)
@@ -297,7 +454,21 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             {
                 ProgressBarFill.Width = 0;
                 ProgressBarShine.Width = 0;
-                ProgressBarFill.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#007ACC"));
+                ProgressBarGlow.Width = 0;
+                
+                // Gradient par défaut (cyan/bleu électrique brillant)
+                var defaultGradient = new LinearGradientBrush
+                {
+                    StartPoint = new System.Windows.Point(0, 0),
+                    EndPoint = new System.Windows.Point(1, 0)
+                };
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 0));
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00D4FF"), 0.3));
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00BFFF"), 0.5));
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00D4FF"), 0.7));
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 1));
+                ProgressBarFill.Background = defaultGradient;
+                
                 TxtStatus.Text = "Prêt - Remplissez les informations du projet";
                 TxtProgressPercent.Text = "";
             });
@@ -598,6 +769,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         {
             UpdateDestinationPreview();
             UpdateFullProjectNumber();
+            UpdateRenamePreviews();
             ValidateForm();
         }
 
@@ -712,7 +884,24 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             var reference = CmbReference?.SelectedItem?.ToString() ?? "01";
             var module = CmbModule?.SelectedItem?.ToString() ?? "01";
 
-            TxtFullProjectNumber.Text = $"{project}{reference}{module}";
+            // Mettre à jour les propriétés du request (FullProjectNumber sera calculé automatiquement)
+            _request.Project = TxtProject?.Text?.Trim() ?? "";
+            _request.Reference = reference;
+            _request.Module = module;
+
+            // Afficher le numéro complet calculé
+            var fullNumber = _request.FullProjectNumber;
+            TxtFullProjectNumber.Text = fullNumber;
+            
+            // Renommer automatiquement les fichiers Excel si le numéro de projet est défini
+            if (!string.IsNullOrEmpty(fullNumber) && _files.Count > 0)
+            {
+                RenameSpecialExcelFiles();
+                DgFiles?.Items.Refresh();
+            }
+            
+            // Mettre à jour les prévisualisations
+            UpdateRenamePreviews();
         }
 
         #endregion
@@ -721,8 +910,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
         private void SourceOption_Changed(object sender, RoutedEventArgs e)
         {
-            if (RbFromTemplate == null || RbFromExisting == null) return;
-            if (PnlProjectSelector == null) return;
+            if (RbFromTemplate == null || RbFromExisting == null || RbFromVault == null) return;
+            if (PnlProjectSelector == null || PnlVaultProjectSelector == null) return;
 
             if (RbFromTemplate.IsChecked == true)
             {
@@ -730,6 +919,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 TxtSourcePath.Text = _defaultTemplatePath;
                 TxtSourcePath.IsReadOnly = true;
                 PnlProjectSelector.Visibility = Visibility.Collapsed;
+                PnlVaultProjectSelector.Visibility = Visibility.Collapsed;
                 TxtStatus.Text = "Mode: Création depuis Template";
                 
                 // Charger le template automatiquement
@@ -738,16 +928,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     LoadFilesFromPath(_defaultTemplatePath);
                 }
             }
-            else
+            else if (RbFromExisting.IsChecked == true)
             {
                 _request.Source = CreateModuleSource.FromExistingProject;
                 TxtSourcePath.Text = "";
                 TxtSourcePath.IsReadOnly = true;
                 PnlProjectSelector.Visibility = Visibility.Visible;
+                PnlVaultProjectSelector.Visibility = Visibility.Collapsed;
                 TxtStatus.Text = "Mode: Création depuis Projet Existant - Sélectionnez un projet";
                 
                 // Charger la liste des projets
                 LoadProjectsList();
+            }
+            else if (RbFromVault.IsChecked == true)
+            {
+                _request.Source = CreateModuleSource.FromVault;
+                TxtSourcePath.Text = "";
+                TxtSourcePath.IsReadOnly = true;
+                PnlProjectSelector.Visibility = Visibility.Collapsed;
+                PnlVaultProjectSelector.Visibility = Visibility.Visible;
+                TxtStatus.Text = "Mode: Création depuis Vault - Sélectionnez un projet";
+                
+                // Charger la liste des projets Vault
+                LoadVaultProjectsList();
             }
 
             _files.Clear();
@@ -818,6 +1021,130 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             LoadProjectsList();
         }
 
+        /// <summary>
+        /// Classe pour représenter un projet Vault
+        /// </summary>
+        private class VaultProject
+        {
+            public string Project { get; set; } = string.Empty;
+            public string Reference { get; set; } = string.Empty;
+            public string Module { get; set; } = string.Empty;
+            public string VaultPath { get; set; } = string.Empty;
+            public string DisplayName => $"{Project} / {Reference} / {Module}";
+        }
+
+        private string? _tempVaultDownloadPath = null;
+
+        private void LoadVaultProjectsList()
+        {
+            if (CmbVaultProjects == null) return;
+            
+            CmbVaultProjects.Items.Clear();
+            
+            if (_vaultService == null || !_vaultService.IsConnected)
+            {
+                TxtStatus.Text = "⚠️ Non connecté à Vault";
+                return;
+            }
+
+            try
+            {
+                TxtStatus.Text = "Chargement des projets depuis Vault...";
+                
+                var vaultProjects = new List<VaultProject>();
+                var projectsBasePath = "$/Engineering/Projects";
+                
+                var connection = _vaultService.Connection;
+                if (connection == null)
+                {
+                    TxtStatus.Text = "⚠️ Connexion Vault non disponible";
+                    return;
+                }
+
+                // Obtenir le dossier racine Projects
+                var projectsFolder = connection.WebServiceManager.DocumentService.GetFolderByPath(projectsBasePath);
+                if (projectsFolder == null)
+                {
+                    TxtStatus.Text = "⚠️ Dossier Projects non trouvé dans Vault";
+                    return;
+                }
+
+                // Obtenir tous les sous-dossiers (Projets)
+                var projectFolders = connection.WebServiceManager.DocumentService.GetFoldersByParentId(projectsFolder.Id, false);
+                if (projectFolders == null)
+                {
+                    TxtStatus.Text = "✅ Aucun projet trouvé";
+                    return;
+                }
+
+                foreach (var projectFolder in projectFolders)
+                {
+                    var projectName = projectFolder.Name;
+                    
+                    // Obtenir les sous-dossiers REF
+                    var refFolders = connection.WebServiceManager.DocumentService.GetFoldersByParentId(projectFolder.Id, false);
+                    if (refFolders == null) continue;
+                    
+                    foreach (var refFolder in refFolders)
+                    {
+                        var refName = refFolder.Name;
+                        if (!refName.StartsWith("REF", StringComparison.OrdinalIgnoreCase)) continue;
+                        
+                        // Obtenir les sous-dossiers M (Modules)
+                        var moduleFolders = connection.WebServiceManager.DocumentService.GetFoldersByParentId(refFolder.Id, false);
+                        if (moduleFolders == null) continue;
+                        
+                        foreach (var moduleFolder in moduleFolders)
+                        {
+                            var moduleName = moduleFolder.Name;
+                            if (!moduleName.StartsWith("M", StringComparison.OrdinalIgnoreCase)) continue;
+                            
+                            var vaultPath = $"{projectsBasePath}/{projectName}/{refName}/{moduleName}";
+                            vaultProjects.Add(new VaultProject
+                            {
+                                Project = projectName,
+                                Reference = refName,
+                                Module = moduleName,
+                                VaultPath = vaultPath
+                            });
+                        }
+                    }
+                }
+                
+                // Trier par projet, référence, module
+                vaultProjects = vaultProjects.OrderBy(p => p.Project)
+                                             .ThenBy(p => p.Reference)
+                                             .ThenBy(p => p.Module)
+                                             .ToList();
+                
+                foreach (var project in vaultProjects)
+                {
+                    CmbVaultProjects.Items.Add(project);
+                }
+                
+                TxtStatus.Text = $"✅ {CmbVaultProjects.Items.Count} projets Vault trouvés";
+            }
+            catch (Exception ex)
+            {
+                TxtStatus.Text = $"⚠️ Erreur chargement projets Vault: {ex.Message}";
+                AddLog($"Erreur chargement projets Vault: {ex.Message}", "ERROR");
+            }
+        }
+
+        private void CmbVaultProjects_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CmbVaultProjects?.SelectedItem is VaultProject project)
+            {
+                TxtSourcePath.Text = $"Vault: {project.VaultPath}";
+                _request.SourceExistingProjectPath = project.VaultPath;
+            }
+        }
+
+        private void BtnRefreshVaultProjects_Click(object sender, RoutedEventArgs e)
+        {
+            LoadVaultProjectsList();
+        }
+
         private void BtnBrowseSource_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new System.Windows.Forms.FolderBrowserDialog
@@ -867,9 +1194,192 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
         #region Event Handlers - Load Files
 
-        private void BtnLoadFiles_Click(object sender, RoutedEventArgs e)
+        private async void BtnLoadFiles_Click(object sender, RoutedEventArgs e)
         {
-            LoadFilesFromPath(TxtSourcePath?.Text);
+            if (_request.Source == CreateModuleSource.FromVault)
+            {
+                // Télécharger depuis Vault vers un dossier temporaire
+                await LoadFilesFromVault();
+            }
+            else
+            {
+                LoadFilesFromPath(TxtSourcePath?.Text);
+            }
+        }
+
+        private async Task LoadFilesFromVault()
+        {
+            if (CmbVaultProjects?.SelectedItem is not VaultProject project)
+            {
+                TxtStatus.Text = "⚠️ Veuillez sélectionner un projet Vault";
+                return;
+            }
+
+            if (_vaultService == null || !_vaultService.IsConnected)
+            {
+                TxtStatus.Text = "⚠️ Non connecté à Vault";
+                return;
+            }
+
+            try
+            {
+                TxtStatus.Text = "Téléchargement depuis Vault...";
+                BtnLoadFiles.IsEnabled = false;
+
+                // Créer un dossier temporaire pour le téléchargement
+                var tempPath = Path.Combine(Path.GetTempPath(), $"VaultDownload_{Guid.NewGuid():N}");
+                Directory.CreateDirectory(tempPath);
+
+                _tempVaultDownloadPath = tempPath;
+
+                var connection = _vaultService.Connection;
+                if (connection == null)
+                {
+                    TxtStatus.Text = "⚠️ Connexion Vault perdue";
+                    BtnLoadFiles.IsEnabled = true;
+                    return;
+                }
+
+                // Obtenir le dossier Vault
+                var vaultFolder = connection.WebServiceManager.DocumentService.GetFolderByPath(project.VaultPath);
+                if (vaultFolder == null)
+                {
+                    TxtStatus.Text = "⚠️ Dossier Vault non trouvé";
+                    BtnLoadFiles.IsEnabled = true;
+                    return;
+                }
+
+                // Obtenir tous les fichiers du dossier (récursif)
+                var files = connection.WebServiceManager.DocumentService.GetLatestFilesByFolderId(vaultFolder.Id, true);
+                
+                if (files == null || files.Length == 0)
+                {
+                    TxtStatus.Text = "⚠️ Aucun fichier trouvé dans le projet Vault";
+                    BtnLoadFiles.IsEnabled = true;
+                    return;
+                }
+
+                // Télécharger les fichiers vers le dossier temporaire en utilisant le service Vault
+                // Utiliser GetFolderAsync qui gère déjà le téléchargement
+                var success = await _vaultService.GetFolderAsync(project.VaultPath);
+                
+                if (!success)
+                {
+                    TxtStatus.Text = "⚠️ Erreur lors du téléchargement depuis Vault";
+                    BtnLoadFiles.IsEnabled = true;
+                    return;
+                }
+
+                // Les fichiers sont téléchargés dans le working folder
+                // Récupérer le working folder et copier les fichiers
+                try
+                {
+                    var workingFolderObj = connection.WorkingFoldersManager.GetWorkingFolder("$");
+                    if (workingFolderObj != null && !string.IsNullOrEmpty(workingFolderObj.FullPath))
+                    {
+                        var workingFolder = workingFolderObj.FullPath;
+                        var relativePath = project.VaultPath.TrimStart('$', '/').Replace("/", "\\");
+                        var localFolder = Path.Combine(workingFolder, relativePath);
+                        
+                        if (Directory.Exists(localFolder))
+                        {
+                            CopyDirectory(localFolder, tempPath);
+                        }
+                        else
+                        {
+                            // Essayer de trouver les fichiers dans le working folder racine
+                            var filesInWorkingFolder = Directory.GetFiles(workingFolder, "*.*", SearchOption.AllDirectories)
+                                .Where(f => files.Any(vf => Path.GetFileName(f).Equals(vf.Name, StringComparison.OrdinalIgnoreCase)));
+                            
+                            foreach (var file in filesInWorkingFolder)
+                            {
+                                var fileName = Path.GetFileName(file);
+                                var destFile = Path.Combine(tempPath, fileName);
+                                var destDir = Path.GetDirectoryName(destFile);
+                                if (!string.IsNullOrEmpty(destDir))
+                                {
+                                    Directory.CreateDirectory(destDir);
+                                }
+                                File.Copy(file, destFile, true);
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"Erreur lors de la copie des fichiers: {ex.Message}", "WARNING");
+                }
+                
+                // Vérifier si des fichiers ont été copiés
+                if (Directory.GetFiles(tempPath, "*.*", SearchOption.AllDirectories).Length == 0)
+                {
+                    TxtStatus.Text = "⚠️ Aucun fichier téléchargé";
+                    BtnLoadFiles.IsEnabled = true;
+                    return;
+                }
+
+                // Charger les fichiers depuis le dossier temporaire
+                LoadFilesFromPath(tempPath);
+                
+                TxtStatus.Text = $"✅ {_files.Count} fichiers téléchargés depuis Vault";
+            }
+            catch (Exception ex)
+            {
+                TxtStatus.Text = $"⚠️ Erreur: {ex.Message}";
+                AddLog($"Erreur téléchargement Vault: {ex.Message}", "ERROR");
+                
+                // Nettoyer le dossier temporaire en cas d'erreur
+                try
+                {
+                    if (_tempVaultDownloadPath != null && Directory.Exists(_tempVaultDownloadPath))
+                    {
+                        Directory.Delete(_tempVaultDownloadPath, true);
+                    }
+                }
+                catch { }
+                _tempVaultDownloadPath = null;
+            }
+            finally
+            {
+                BtnLoadFiles.IsEnabled = true;
+            }
+        }
+
+        private void CopyDirectory(string sourceDir, string destDir)
+        {
+            Directory.CreateDirectory(destDir);
+
+            foreach (var file in Directory.GetFiles(sourceDir))
+            {
+                var fileName = Path.GetFileName(file);
+                var destFile = Path.Combine(destDir, fileName);
+                File.Copy(file, destFile, true);
+            }
+
+            foreach (var dir in Directory.GetDirectories(sourceDir))
+            {
+                var dirName = Path.GetFileName(dir);
+                var destSubDir = Path.Combine(destDir, dirName);
+                CopyDirectory(dir, destSubDir);
+            }
+        }
+
+        private void CleanupTempVaultFolder()
+        {
+            if (_tempVaultDownloadPath != null && Directory.Exists(_tempVaultDownloadPath))
+            {
+                try
+                {
+                    AddLog($"Nettoyage du dossier temporaire: {_tempVaultDownloadPath}", "INFO");
+                    Directory.Delete(_tempVaultDownloadPath, true);
+                    _tempVaultDownloadPath = null;
+                    AddLog("✓ Dossier temporaire supprimé", "SUCCESS");
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"⚠ Impossible de supprimer le dossier temporaire: {ex.Message}", "WARNING");
+                }
+            }
         }
 
         /// <summary>
@@ -1029,8 +1539,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 UpdateFileTypeFilter();
                 UpdateStatusFilter();
 
+                // Renommer automatiquement les fichiers Excel spécifiques si le numéro de projet est défini
+                if (!string.IsNullOrEmpty(_request.FullProjectNumber))
+                {
+                    RenameSpecialExcelFiles();
+                }
+
                 UpdateStatistics();
                 UpdateFileCount();
+                UpdateRenamePreviews();
                 AddLog($"{_files.Count} fichiers chargés depuis {Path.GetFileName(sourcePath)}", "SUCCESS");
                 if (TxtStatus != null) TxtStatus.Text = $"✓ {_files.Count} fichiers chargés depuis {Path.GetFileName(sourcePath)}";
                 ValidateForm();
@@ -1061,10 +1578,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 var prefix = TxtPrefix?.Text ?? "";
                 var suffix = TxtSuffix?.Text ?? "";
                 
+                // Nouvelles options de renommage
+                bool applyProjectPrefix = ChkApplyProjectPrefix?.IsChecked == true;
+                string fixedSuffix = "";
+                if (CmbFixedSuffix?.SelectedItem is ComboBoxItem fixedSuffixItem && 
+                    fixedSuffixItem.Content?.ToString() != "Aucun" && 
+                    fixedSuffixItem.Content?.ToString() != "Autre...")
+                {
+                    fixedSuffix = fixedSuffixItem.Content.ToString();
+                }
+                bool applyIncrementalSuffix = ChkApplyIncrementalSuffix?.IsChecked == true;
+                
                 // Si la checkbox n'est pas cochée, ne renommer que les fichiers Inventor
                 bool includeNonInventor = ChkIncludeNonInventor?.IsChecked == true;
 
-                foreach (var file in _files.Where(f => f.IsSelected))
+                // Compteur pour suffixe incrémentatif
+                int incrementalCounter = 1;
+
+                // Liste des fichiers sélectionnés pour traitement
+                var selectedFiles = _files.Where(f => f.IsSelected).ToList();
+
+                foreach (var file in selectedFiles)
                 {
                     // Skip fichiers non-Inventor si checkbox non cochée
                     if (!includeNonInventor && !file.IsInventorFile)
@@ -1073,15 +1607,48 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     }
                     
                     // STRATÉGIE DE RENOMMAGE:
-                    // 1. Rechercher/Remplacer → S'applique sur NewFileName (cumulatif)
-                    // 2. Préfixe/Suffixe → S'applique sur OriginalFileName (pas de doublons)
-                    
-                    var newName = file.NewFileName; // Partir du résultat actuel
+                    // 1. Partir du nom original
+                    var baseName = Path.GetFileNameWithoutExtension(file.OriginalFileName);
+                    var ext = Path.GetExtension(file.OriginalFileName);
+                    var newName = file.OriginalFileName;
 
-                    // Appliquer rechercher/remplacer sur NewFileName (cumulatif)
+                    // 2. Appliquer préfixe numéro projet si activé
+                    if (applyProjectPrefix && !string.IsNullOrEmpty(_request.FullProjectNumber))
+                    {
+                        baseName = $"{_request.FullProjectNumber}_{baseName}";
+                    }
+
+                    // 3. Appliquer préfixe manuel
+                    if (!string.IsNullOrEmpty(prefix))
+                    {
+                        baseName = $"{prefix}{baseName}";
+                    }
+
+                    // 4. Appliquer suffixe manuel
+                    if (!string.IsNullOrEmpty(suffix))
+                    {
+                        baseName = $"{baseName}{suffix}";
+                    }
+
+                    // 5. Appliquer suffixe fixe (liste déroulante)
+                    if (!string.IsNullOrEmpty(fixedSuffix))
+                    {
+                        baseName = $"{baseName}{fixedSuffix}";
+                    }
+
+                    // 6. Appliquer suffixe incrémentatif
+                    if (applyIncrementalSuffix)
+                    {
+                        baseName = $"{baseName}_{incrementalCounter:D2}";
+                        incrementalCounter++;
+                    }
+
+                    // 7. Reconstruire le nom avec extension
+                    newName = $"{baseName}{ext}";
+
+                    // 8. Appliquer rechercher/remplacer (après tous les préfixes/suffixes)
                     if (!string.IsNullOrEmpty(search))
                     {
-                        // .NET Framework compatible replace
                         var index = newName.IndexOf(search, StringComparison.OrdinalIgnoreCase);
                         while (index >= 0)
                         {
@@ -1090,30 +1657,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                         }
                     }
 
-                    // Appliquer préfixe/suffixe sur OriginalFileName pour éviter doublons
-                    // Ex: Si prefix="NEW_" déjà appliqué, on ne veut pas "NEW_NEW_fichier.ipt"
-                    if (!string.IsNullOrEmpty(prefix) || !string.IsNullOrEmpty(suffix))
-                    {
-                        // Reconstruire depuis OriginalFileName avec préfixe/suffixe actuels
-                        var baseName = Path.GetFileNameWithoutExtension(file.OriginalFileName);
-                        var ext = Path.GetExtension(file.OriginalFileName);
-                        var withPrefixSuffix = $"{prefix}{baseName}{suffix}{ext}";
-                        
-                        // Appliquer aussi le rechercher/remplacer si présent
-                        if (!string.IsNullOrEmpty(search))
-                        {
-                            var index = withPrefixSuffix.IndexOf(search, StringComparison.OrdinalIgnoreCase);
-                            while (index >= 0)
-                            {
-                                withPrefixSuffix = withPrefixSuffix.Substring(0, index) + replace + withPrefixSuffix.Substring(index + search.Length);
-                                index = withPrefixSuffix.IndexOf(search, index + replace.Length, StringComparison.OrdinalIgnoreCase);
-                            }
-                        }
-                        newName = withPrefixSuffix;
-                    }
-
                     file.NewFileName = newName;
                 }
+
+                // Renommage automatique des fichiers Excel spécifiques
+                RenameSpecialExcelFiles();
 
                 // Toujours renommer le Top Assembly et IPJ avec le numéro de projet
                 bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
@@ -1140,12 +1688,53 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     mainIpj.NewFileName = $"{_request.FullProjectNumber}.ipj";
                 }
 
+                // Rafraîchir l'affichage
+                DgFiles?.Items.Refresh();
+
                 AddLog("Renommage appliqué aux fichiers sélectionnés", "SUCCESS");
                 TxtStatus.Text = "✓ Renommage appliqué";
             }
             catch (Exception ex)
             {
                 AddLog($"Erreur lors du renommage: {ex.Message}", "ERROR");
+            }
+        }
+
+        /// <summary>
+        /// Renomme automatiquement les fichiers Excel spécifiques avec le numéro de projet
+        /// Recherche les fichiers: XXXXXXXXX_Décompte de DXF_DXF Count.xlsx et XXXXXXXXX_Liste de vérification_Check List.xlsm
+        /// </summary>
+        private void RenameSpecialExcelFiles()
+        {
+            if (string.IsNullOrEmpty(_request.FullProjectNumber)) return;
+
+            // Noms des fichiers Excel à renommer automatiquement (sans le préfixe XXXXXXXXX_)
+            var excelFileSuffixes = new[]
+            {
+                "_Décompte de DXF_DXF Count.xlsx",
+                "_Liste de vérification_Check List.xlsm"
+            };
+
+            foreach (var file in _files)
+            {
+                var fileName = file.OriginalFileName;
+                
+                // Vérifier si le fichier correspond à un des patterns Excel
+                foreach (var suffix in excelFileSuffixes)
+                {
+                    // Chercher les fichiers qui se terminent par le suffixe (peu importe le préfixe)
+                    if (fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Vérifier si le fichier commence déjà par le numéro de projet
+                        if (!file.NewFileName.StartsWith(_request.FullProjectNumber, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Renommer avec le numéro de projet
+                            file.NewFileName = $"{_request.FullProjectNumber}{suffix}";
+                            AddLog($"Fichier Excel renommé automatiquement: {file.OriginalFileName} → {file.NewFileName}", "INFO");
+                        }
+                        break; // Un seul suffixe peut correspondre
+                    }
+                }
             }
         }
 
@@ -1160,8 +1749,163 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             TxtReplace.Text = "";
             TxtPrefix.Text = "";
             TxtSuffix.Text = "";
+            ChkApplyProjectPrefix.IsChecked = false;
+            CmbFixedSuffix.SelectedIndex = 0;
+            ChkApplyIncrementalSuffix.IsChecked = false;
 
             TxtStatus.Text = "✓ Noms réinitialisés";
+        }
+
+        private void ChkApplyProjectPrefix_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdateRenamePreviews();
+        }
+
+        private void ChkApplyIncrementalSuffix_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdateRenamePreviews();
+        }
+
+        private void CmbFixedSuffix_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Gérer l'option "Autre..." pour saisie personnalisée
+            if (CmbFixedSuffix?.SelectedItem is ComboBoxItem item && item.Content?.ToString() == "Autre...")
+            {
+                string customValue = ShowCustomSuffixDialog();
+                if (!string.IsNullOrWhiteSpace(customValue))
+                {
+                    // S'assurer que le suffixe commence par _
+                    if (!customValue.StartsWith("_"))
+                    {
+                        customValue = "_" + customValue;
+                    }
+                    
+                    // Ajouter la valeur custom avant "Autre..." si elle n'existe pas déjà
+                    if (!CmbFixedSuffix.Items.Cast<ComboBoxItem>().Any(i => i.Content?.ToString() == customValue))
+                    {
+                        int autreIndex = CmbFixedSuffix.Items.Cast<ComboBoxItem>()
+                            .ToList()
+                            .FindIndex(i => i.Content?.ToString() == "Autre...");
+                        if (autreIndex >= 0)
+                        {
+                            var newItem = new ComboBoxItem { Content = customValue };
+                            CmbFixedSuffix.Items.Insert(autreIndex, newItem);
+                        }
+                    }
+                    CmbFixedSuffix.SelectedItem = CmbFixedSuffix.Items.Cast<ComboBoxItem>()
+                        .FirstOrDefault(i => i.Content?.ToString() == customValue);
+                }
+                else
+                {
+                    // Annulé - revenir à "Aucun"
+                    CmbFixedSuffix.SelectedIndex = 0;
+                }
+            }
+        }
+
+        private string ShowCustomSuffixDialog()
+        {
+            // Créer une fenêtre de dialogue simple
+            var dialog = new Window
+            {
+                Title = "Suffixe personnalisé",
+                Width = 350,
+                Height = 180,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize,
+                Background = new SolidColorBrush(Color.FromRgb(30, 30, 45)),
+                WindowStyle = WindowStyle.ToolWindow
+            };
+
+            var stack = new StackPanel { Margin = new Thickness(20) };
+
+            var label = new TextBlock
+            {
+                Text = "Entrez le suffixe personnalisé (ex: _11, _A, _TEST):",
+                Foreground = new SolidColorBrush(Colors.White),
+                FontSize = 13,
+                Margin = new Thickness(0, 0, 0, 15),
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            var textBox = new TextBox
+            {
+                FontSize = 14,
+                Padding = new Thickness(8),
+                Margin = new Thickness(0, 0, 0, 15),
+                Background = new SolidColorBrush(Color.FromRgb(45, 45, 60)),
+                Foreground = new SolidColorBrush(Colors.White),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(74, 127, 191)),
+                BorderThickness = new Thickness(2)
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 80,
+                Height = 35,
+                Margin = new Thickness(0, 0, 10, 0),
+                Background = new SolidColorBrush(Color.FromRgb(74, 127, 191)),
+                Foreground = new SolidColorBrush(Colors.White),
+                FontSize = 13,
+                FontWeight = FontWeights.Bold
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Annuler",
+                Width = 80,
+                Height = 35,
+                Background = new SolidColorBrush(Color.FromRgb(100, 100, 100)),
+                Foreground = new SolidColorBrush(Colors.White),
+                FontSize = 13
+            };
+
+            string result = null;
+
+            okButton.Click += (s, args) =>
+            {
+                result = textBox.Text?.Trim();
+                dialog.DialogResult = true;
+                dialog.Close();
+            };
+
+            cancelButton.Click += (s, args) =>
+            {
+                dialog.DialogResult = false;
+                dialog.Close();
+            };
+
+            textBox.KeyDown += (s, args) =>
+            {
+                if (args.Key == System.Windows.Input.Key.Enter)
+                {
+                    result = textBox.Text?.Trim();
+                    dialog.DialogResult = true;
+                    dialog.Close();
+                }
+            };
+
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            stack.Children.Add(label);
+            stack.Children.Add(textBox);
+            stack.Children.Add(buttonPanel);
+
+            dialog.Content = stack;
+            textBox.Focus();
+
+            dialog.ShowDialog();
+
+            return result;
         }
 
         #endregion
@@ -1231,7 +1975,67 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         private void ChkIncludeNonInventor_Changed(object sender, RoutedEventArgs e)
         {
             // La checkbox contrôle le renommage, pas le filtrage
-            // Rien à faire ici - le renommage vérifie la checkbox au moment de l'application
+            UpdateRenamePreviews();
+        }
+
+        private void UpdateRenamePreviews()
+        {
+            // Prévisualisation pour "Inclure fichiers non-Inventor"
+            if (TxtPreviewInclude != null)
+            {
+                if (ChkIncludeNonInventor?.IsChecked == true)
+                {
+                    var nonInventorCount = _files?.Count(f => !f.OriginalFileName.EndsWith(".ipt", StringComparison.OrdinalIgnoreCase) &&
+                                                              !f.OriginalFileName.EndsWith(".iam", StringComparison.OrdinalIgnoreCase) &&
+                                                              !f.OriginalFileName.EndsWith(".idw", StringComparison.OrdinalIgnoreCase) &&
+                                                              !f.OriginalFileName.EndsWith(".dwg", StringComparison.OrdinalIgnoreCase)) ?? 0;
+                    TxtPreviewInclude.Text = nonInventorCount > 0 ? $"({nonInventorCount} fichiers)" : "";
+                }
+                else
+                {
+                    TxtPreviewInclude.Text = "";
+                }
+            }
+
+            // Prévisualisation pour "Préfixe Numéro Projet"
+            if (TxtPreviewPrefix != null)
+            {
+                if (ChkApplyProjectPrefix?.IsChecked == true && !string.IsNullOrEmpty(_request?.FullProjectNumber))
+                {
+                    var exampleName = _files?.FirstOrDefault()?.OriginalFileName ?? "fichier.exemple";
+                    var preview = $"{_request.FullProjectNumber}_{exampleName}";
+                    if (preview.Length > 30) preview = preview.Substring(0, 27) + "...";
+                    TxtPreviewPrefix.Text = $"→ {preview}";
+                }
+                else
+                {
+                    TxtPreviewPrefix.Text = "";
+                }
+            }
+
+            // Prévisualisation pour "Suffixe incrémentatif"
+            if (TxtPreviewIncremental != null)
+            {
+                if (ChkApplyIncrementalSuffix?.IsChecked == true)
+                {
+                    var selectedCount = _files?.Count(f => f.IsSelected) ?? 0;
+                    if (selectedCount > 0)
+                    {
+                        var exampleName = _files?.FirstOrDefault(f => f.IsSelected)?.OriginalFileName ?? "fichier.exemple";
+                        var nameWithoutExt = Path.GetFileNameWithoutExtension(exampleName);
+                        var ext = Path.GetExtension(exampleName);
+                        TxtPreviewIncremental.Text = $"→ {nameWithoutExt}_01{ext} ... ({selectedCount} fichiers)";
+                    }
+                    else
+                    {
+                        TxtPreviewIncremental.Text = "(aucun fichier sélectionné)";
+                    }
+                }
+                else
+                {
+                    TxtPreviewIncremental.Text = "";
+                }
+            }
         }
 
         private void ApplyFilters()
@@ -1457,6 +2261,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                         
                         // Attendre un peu pour que l'utilisateur voie le message de succès
                         await Task.Delay(1500);
+                        
+                        // Supprimer le dossier temporaire Vault si présent
+                        CleanupTempVaultFolder();
+                        
                         DialogResult = true;
                     }
                     else
@@ -1464,6 +2272,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                         UpdateProgress(0, $"✗ Erreur: {result.ErrorMessage}", isError: true);
                         AddLog($"ERREUR: {result.ErrorMessage}", "ERROR");
                         AddLog("ACTION", "⚠ Vérifiez les paramètres et réessayez");
+                        
+                        // Supprimer le dossier temporaire Vault même en cas d'erreur
+                        CleanupTempVaultFolder();
                     }
                 }
             }
@@ -1472,6 +2283,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 AddLog($"ERREUR CRITIQUE: {ex.Message}", "ERROR");
                 UpdateProgress(0, $"✗ Erreur critique: {ex.Message}", isError: true);
                 AddLog("ACTION", "⚠ Une erreur inattendue s'est produite. Vérifiez Inventor et réessayez.");
+                
+                // Supprimer le dossier temporaire Vault en cas d'erreur
+                CleanupTempVaultFolder();
             }
             finally
             {
@@ -1580,21 +2394,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
         private void UpdateStatistics()
         {
-            if (TxtCountIam == null) return;
+            // Les statistiques dans le panneau gauche ont été supprimées
+            // On garde juste les statistiques dans l'en-tête
 
             var iamCount = _files.Count(f => f.FileType == "IAM");
             var iptCount = _files.Count(f => f.FileType == "IPT");
             var idwCount = _files.Count(f => f.FileType == "IDW");
-            var otherCount = _files.Count(f => f.FileType != "IAM" && f.FileType != "IPT" && f.FileType != "IDW");
             var inventorCount = iamCount + iptCount + idwCount;
+            var otherCount = _files.Count(f => f.FileType != "IAM" && f.FileType != "IPT" && f.FileType != "IDW");
             var selectedCount = _files.Count(f => f.IsSelected);
-
-            // Statistiques dans le panneau gauche (existantes)
-            TxtCountIam.Text = iamCount.ToString();
-            TxtCountIpt.Text = iptCount.ToString();
-            TxtCountIdw.Text = idwCount.ToString();
-            if (TxtCountOther != null) TxtCountOther.Text = otherCount.ToString();
-            TxtCountTotal.Text = _files.Count.ToString();
 
             // Statistiques dans l'en-tête (nouvelles)
             if (TxtStatsTotal != null) TxtStatsTotal.Text = _files.Count.ToString();
@@ -1808,6 +2616,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             
             // Rafraîchir l'affichage
             DgFiles?.Items.Refresh();
+            UpdateRenamePreviews();
         }
 
         #endregion

@@ -283,6 +283,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Models
             if (Source == CreateModuleSource.FromExistingProject && string.IsNullOrWhiteSpace(SourceExistingProjectPath))
                 return (false, "Le chemin du projet existant est requis");
 
+            if (Source == CreateModuleSource.FromVault && string.IsNullOrWhiteSpace(SourceExistingProjectPath))
+                return (false, "Le projet Vault doit être sélectionné");
+
             return (true, string.Empty);
         }
 
@@ -300,9 +303,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Models
         FromTemplate,
         
         /// <summary>
-        /// Créer depuis un projet existant
+        /// Créer depuis un projet existant (local)
         /// </summary>
-        FromExistingProject
+        FromExistingProject,
+        
+        /// <summary>
+        /// Créer depuis un projet Vault (téléchargé temporairement)
+        /// </summary>
+        FromVault
     }
 
     /// <summary>

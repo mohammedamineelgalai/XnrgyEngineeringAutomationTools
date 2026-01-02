@@ -777,7 +777,7 @@ Propriétaire - XNRGY Climate Systems ULC (c) 2025-2026
    - Application iProperties finales
    - Paramètres Inventor (Design View "Default", Workfeatures cachés)
    - Vue ISO + Zoom All + Update All + Save All
-   - Module reste ouvert pour le dessinateur
+- Module reste ouvert pour le dessinateur
 
 **Méthodes principales :**
 - `ExecuteRealPackAndGoAsync(...)` : Méthode principale orchestrant tout le workflow

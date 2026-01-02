@@ -375,11 +375,12 @@
         <!-- Style ComboBox moderne (thème noir) -->
         <Style x:Key="ModernComboBox" TargetType="ComboBox">
             <Setter Property="Background" Value="#2D2D44"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="10,8"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
@@ -429,8 +430,10 @@
         <!-- Style ComboBoxItem moderne -->
         <Style TargetType="ComboBoxItem">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
@@ -531,7 +534,7 @@
                 </StackPanel>
             </Grid>
         </Border>
-        <!-- SECTION INPUTS - En-tête avec propriétés (compacte) -->
+        <!-- SECTION INPUTS - En-tête avec propriétés et options de renommage -->
         <Border x:Name="InputsSectionBorder" Grid.Row="1" Background="#1E1E2E" Padding="15,8">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -540,142 +543,254 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Colonne gauche: Infos Projet -->
+                <!-- Colonne gauche: Informations Projet + Paramètres/iProperties fusionnés -->
                 <GroupBox Grid.Column="0" Style="{StaticResource ModernGroupBox}" Margin="0,0,10,0" Padding="10">
                     <GroupBox.Header>
-                        <TextBlock Text="📁 Informations Projet" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
+                        <TextBlock Text="📁 Informations Projet / ⚙️ Paramètres et iProperties" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <!-- Informations Projet -->
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <!-- Project Number -->
-                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,5">
-                            <TextBlock Text="Numéro de Projet *" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <TextBox x:Name="TxtProject" Style="{StaticResource ModernTextBox}" 
-                                     MaxLength="6" TextChanged="ProjectInfo_TextChanged" Padding="8,5"
-                                     ToolTip="Ex: 12345 - Numéro du projet"/>
-                        </StackPanel>
+                            <!-- Project Number -->
+                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,3">
+                                <TextBlock Text="Numéro de Projet *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <TextBox x:Name="TxtProject" Style="{StaticResource ModernTextBox}" 
+                                         MaxLength="6" TextChanged="ProjectInfo_TextChanged" Padding="8,5"
+                                         FontSize="12" FontWeight="Bold" Foreground="White"
+                                         ToolTip="Ex: 12345 - Numéro du projet"/>
+                            </StackPanel>
 
-                        <!-- Reference - ComboBox 01 à 50 -->
-                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,5">
-                            <TextBlock Text="Référence *" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <ComboBox x:Name="CmbReference" Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="CmbReference_SelectionChanged"
-                                      ToolTip="Sélectionner la référence (01-50)"/>
-                        </StackPanel>
+                            <!-- Reference - ComboBox 01 à 50 -->
+                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,3">
+                                <TextBlock Text="Référence *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <ComboBox x:Name="CmbReference" Style="{StaticResource ModernComboBox}"
+                                          SelectionChanged="CmbReference_SelectionChanged"
+                                          ToolTip="Sélectionner la référence (01-50)"/>
+                            </StackPanel>
 
-                        <!-- Module - ComboBox 01 à 50 -->
-                        <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,5">
-                            <TextBlock Text="Module *" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <ComboBox x:Name="CmbModule" Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="CmbModule_SelectionChanged"
-                                      ToolTip="Sélectionner le module (01-50)"/>
-                        </StackPanel>
+                            <!-- Module - ComboBox 01 à 50 -->
+                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,3">
+                                <TextBlock Text="Module *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <ComboBox x:Name="CmbModule" Style="{StaticResource ModernComboBox}"
+                                          SelectionChanged="CmbModule_SelectionChanged"
+                                          ToolTip="Sélectionner le module (01-50)"/>
+                            </StackPanel>
 
-                        <!-- Full Project Number (Calculé) -->
-                        <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,3,0,5">
-                            <TextBlock Text="Numéro Projet Complet (Auto)" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <Border Background="#1A1A28" CornerRadius="4" Padding="8,5" BorderBrush="#4A7FBF" BorderThickness="2">
-                                <TextBlock x:Name="TxtFullProjectNumber" Text="000000000" FontSize="16" 
-                                           FontWeight="Bold" Foreground="#0078D4" FontFamily="Consolas"/>
-                            </Border>
-                        </StackPanel>
-
-                        <!-- Destination Path (Calculé) -->
-                        <StackPanel Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3">
-                            <TextBlock Text="Chemin de Destination (Auto)" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Border Grid.Column="0" Background="#1A1A28" CornerRadius="4,0,0,4" Padding="8,5" 
-                                        BorderBrush="#4A7FBF" BorderThickness="1,1,0,1">
-                                    <TextBlock x:Name="TxtDestinationPath" Text="C:\Vault\Engineering\Projects\..." 
-                                               FontSize="11" Foreground="White" FontFamily="Consolas" TextTrimming="CharacterEllipsis"/>
+                            <!-- Full Project Number (Calculé) -->
+                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,3,8,3">
+                                <TextBlock Text="Numéro Projet Complet (Auto)" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <Border Background="#1A1A28" CornerRadius="4" Padding="8,5" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock x:Name="TxtFullProjectNumber" Text="000000000" FontSize="16" 
+                                               FontWeight="Bold" Foreground="#0078D4" FontFamily="Consolas"/>
                                 </Border>
-                                <Button Grid.Column="1" x:Name="BtnBrowseDestination" Content="📂" 
-                                        Style="{StaticResource SecondaryButton}" Padding="8,5"
-                                        Click="BtnBrowseDestination_Click" ToolTip="Parcourir..."/>
-                            </Grid>
-                        </StackPanel>
-                    </Grid>
+                            </StackPanel>
+
+                            <!-- Destination Path (Calculé) -->
+                            <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,3,0,3">
+                                <TextBlock Text="Chemin de Destination (Auto)" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Column="0" Background="#1A1A28" CornerRadius="4,0,0,4" Padding="8,5" 
+                                            BorderBrush="#4A7FBF" BorderThickness="2,2,0,2">
+                                        <TextBlock x:Name="TxtDestinationPath" Text="C:\Vault\Engineering\Projects\..." 
+                                                   FontSize="11" FontWeight="Bold" Foreground="#0078D4" FontFamily="Consolas" 
+                                                   TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
+                                    </Border>
+                                    <Button Grid.Column="1" x:Name="BtnBrowseDestination" Content="📂" 
+                                            Style="{StaticResource SecondaryButton}" Padding="8,5"
+                                            Click="BtnBrowseDestination_Click" ToolTip="Parcourir..."/>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                        
+                        <!-- Paramètres / iProperties -->
+                        <Grid Margin="0,5,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Initiale Dessinateur - ComboBox avec liste prédéfinie -->
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="Initiales Dessinateur *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <ComboBox x:Name="CmbInitialeDessinateur" Style="{StaticResource ModernComboBox}"
+                                          SelectionChanged="CmbInitialeDessinateur_SelectionChanged"
+                                          ToolTip="Sélectionner les initiales du dessinateur principal"/>
+                            </StackPanel>
+
+                            <!-- Initiale Co-Dessinateur - ComboBox avec liste prédéfinie -->
+                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                <TextBlock Text="Initiales Co-Dessinateur" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <ComboBox x:Name="CmbInitialeCoDessinateur" Style="{StaticResource ModernComboBox}"
+                                          SelectionChanged="CmbInitialeCoDessinateur_SelectionChanged"
+                                          ToolTip="Sélectionner les initiales du co-dessinateur (optionnel)"/>
+                            </StackPanel>
+
+                            <!-- Job Title (requis) -->
+                            <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                <TextBlock Text="Job Title *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <TextBox x:Name="TxtJobTitle" Style="{StaticResource ModernTextBox}" Padding="8,5"
+                                         MaxLength="100" TextChanged="TxtJobTitle_TextChanged"
+                                         FontSize="12" FontWeight="Bold" Foreground="White"
+                                         ToolTip="Titre du projet pour pages de couverture PDF (requis)"/>
+                            </StackPanel>
+
+                            <!-- Date de Création avec DatePicker stylé -->
+                            <StackPanel Grid.Column="3">
+                                <TextBlock Text="Date de Création" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <DatePicker x:Name="DpCreationDate" 
+                                            Style="{StaticResource ModernDatePicker}"
+                                            SelectedDateFormat="Short"
+                                            ToolTip="Cliquez sur le calendrier pour changer la date"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
                 </GroupBox>
 
                 <!-- Séparateur vertical -->
                 <Border Grid.Column="1" Width="1" Background="#2A4A6F" Margin="5,0"/>
 
-                <!-- Colonne droite: Propriétés Custom -->
+                <!-- Colonne droite: Options de Renommage -->
                 <GroupBox Grid.Column="2" Style="{StaticResource ModernGroupBox}" Margin="10,0,0,0" Padding="10">
                     <GroupBox.Header>
-                        <TextBlock Text="⚙️ Paramètres / iProperties" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
+                        <TextBlock Text="✏️ Options de Renommage des Fichiers" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Initiale Dessinateur - ComboBox avec liste prédéfinie -->
-                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,5">
-                            <TextBlock Text="Initiales Dessinateur *" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <ComboBox x:Name="CmbInitialeDessinateur" Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="CmbInitialeDessinateur_SelectionChanged"
-                                      ToolTip="Sélectionner les initiales du dessinateur principal"/>
+                        <!-- Rechercher / Remplacer -->
+                        <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,3">
+                            <TextBlock Text="Rechercher:" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Padding="8,5" FontSize="12" FontWeight="Bold" Foreground="White"
+                                     TextChanged="RenameOptions_Changed" ToolTip="Texte à rechercher dans les noms"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,3">
+                            <TextBlock Text="Remplacer par:" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <TextBox x:Name="TxtReplace" Style="{StaticResource ModernTextBox}" Padding="8,5" FontSize="12" FontWeight="Bold" Foreground="White"
+                                     TextChanged="RenameOptions_Changed" ToolTip="Texte de remplacement"/>
                         </StackPanel>
 
-                        <!-- Initiale Co-Dessinateur - ComboBox avec liste prédéfinie -->
-                        <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,5">
-                            <TextBlock Text="Initiales Co-Dessinateur" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <ComboBox x:Name="CmbInitialeCoDessinateur" Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="CmbInitialeCoDessinateur_SelectionChanged"
-                                      ToolTip="Sélectionner les initiales du co-dessinateur (optionnel)"/>
+                        <!-- Espace vide pour la colonne 2 ligne 0 -->
+                        <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,3"/>
+
+                        <!-- Préfixe / Suffixe / Suffixe fixe alignés -->
+                        <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,3,8,0">
+                            <TextBlock Text="Préfixe:" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <TextBox x:Name="TxtPrefix" Style="{StaticResource ModernTextBox}" Padding="8,5" FontSize="12" FontWeight="Bold" Foreground="White"
+                                     TextChanged="RenameOptions_Changed" ToolTip="Préfixe à ajouter"/>
+                        </StackPanel>
+                        
+                        <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,3,8,0">
+                            <TextBlock Text="Suffixe:" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <TextBox x:Name="TxtSuffix" Style="{StaticResource ModernTextBox}" Padding="8,5" FontSize="12" FontWeight="Bold" Foreground="White"
+                                     TextChanged="RenameOptions_Changed" ToolTip="Suffixe à ajouter"/>
                         </StackPanel>
 
-                        <!-- Date de Création avec DatePicker stylé -->
-                        <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,8,5">
-                            <TextBlock Text="Date de Création" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <DatePicker x:Name="DpCreationDate" 
-                                        Style="{StaticResource ModernDatePicker}"
-                                        SelectedDateFormat="Short"
-                                        ToolTip="Cliquez sur le calendrier pour changer la date"/>
+                        <StackPanel Grid.Row="1" Grid.Column="2" Margin="0,3,0,0">
+                            <TextBlock Text="Suffixe fixe:" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <ComboBox x:Name="CmbFixedSuffix" Style="{StaticResource ModernComboBox}"
+                                      SelectionChanged="CmbFixedSuffix_SelectionChanged"
+                                      ToolTip="Sélectionner un suffixe fixe à appliquer">
+                                <ComboBoxItem Content="Aucun" IsSelected="True"/>
+                                <ComboBoxItem Content="_01"/>
+                                <ComboBoxItem Content="_02"/>
+                                <ComboBoxItem Content="_03"/>
+                                <ComboBoxItem Content="_04"/>
+                                <ComboBoxItem Content="_05"/>
+                                <ComboBoxItem Content="_06"/>
+                                <ComboBoxItem Content="_07"/>
+                                <ComboBoxItem Content="_08"/>
+                                <ComboBoxItem Content="_09"/>
+                                <ComboBoxItem Content="_10"/>
+                                <ComboBoxItem Content="Autre..."/>
+                            </ComboBox>
                         </StackPanel>
 
-                        <!-- Job Title (requis) -->
-                        <StackPanel Grid.Row="0" Grid.Column="3" Margin="0,0,0,5">
-                            <TextBlock Text="Job Title *" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <TextBox x:Name="TxtJobTitle" Style="{StaticResource ModernTextBox}" Padding="8,5"
-                                     MaxLength="100" TextChanged="TxtJobTitle_TextChanged"
-                                     ToolTip="Titre du projet pour pages de couverture PDF (requis)"/>
-                        </StackPanel>
-
-                        <!-- Info sur les liens paramètres - version complète -->
-                        <Border Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="4" 
-                                Background="#1A2A1A" CornerRadius="4" Padding="8,6" Margin="0,5,0,0">
-                            <StackPanel>
-                                <TextBlock Text="ℹ️ Ces propriétés seront appliquées aux fichiers:" 
-                                           Foreground="#80C080" FontSize="11" FontWeight="SemiBold"/>
-                                <TextBlock Text="• iProperties Custom: Initiale_du_Dessinateur, Initiale_du_Co_Dessinateur, Creation_Date, Job_Title" 
-                                           Foreground="#60A060" FontSize="10" Margin="8,2,0,0"/>
-                                <TextBlock Text="• Paramètres Top Assy: Initiale_du_Dessinateur_Form, Initiale_du_Co_Dessinateur_Form, Creation_Date_Form" 
-                                           Foreground="#60A060" FontSize="10" Margin="8,2,0,0"/>
+                        <!-- Checkboxes alignées avec les boutons + Boutons d'action -->
+                        <Grid Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,5,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <!-- Checkbox 1: Inclure les Fichiers Non Inventor -->
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <CheckBox x:Name="ChkIncludeNonInventor" 
+                                          Foreground="White" FontSize="12" FontWeight="Bold"
+                                          IsChecked="False"
+                                          Checked="ChkIncludeNonInventor_Changed"
+                                          Unchecked="ChkIncludeNonInventor_Changed">
+                                    <TextBlock Text="Inclure les Fichiers Non Inventor" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                                </CheckBox>
+                                <TextBlock x:Name="TxtPreviewInclude" Text="" Foreground="#90EE90" FontSize="11" Margin="20,2,0,0" FontStyle="Italic" TextWrapping="Wrap"/>
                             </StackPanel>
-                        </Border>
+                            
+                            <!-- Checkbox 2: Préfixe Numéro Projet -->
+                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
+                                <CheckBox x:Name="ChkApplyProjectPrefix" 
+                                          Foreground="White" FontSize="12" FontWeight="Bold"
+                                          IsChecked="False"
+                                          Checked="ChkApplyProjectPrefix_Changed"
+                                          Unchecked="ChkApplyProjectPrefix_Changed"
+                                          ToolTip="Ajoute le numéro projet complet (XXXXXXXXX_) comme préfixe à tous les fichiers">
+                                    <TextBlock Text="✅ Préfixe Numéro Projet" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                                </CheckBox>
+                                <TextBlock x:Name="TxtPreviewPrefix" Text="" Foreground="#90EE90" FontSize="11" Margin="20,2,0,0" FontStyle="Italic" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            
+                            <!-- Checkbox 3: Suffixe incrémentatif -->
+                            <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                                <CheckBox x:Name="ChkApplyIncrementalSuffix" 
+                                          Foreground="White" FontSize="12" FontWeight="Bold"
+                                          IsChecked="False"
+                                          Checked="ChkApplyIncrementalSuffix_Changed"
+                                          Unchecked="ChkApplyIncrementalSuffix_Changed"
+                                          ToolTip="Applique un suffixe incrémentatif à tous les fichiers sélectionnés">
+                                    <TextBlock Text="✅ Suffixe incrémentatif" Foreground="White" FontSize="12" FontWeight="Bold"/>
+                                </CheckBox>
+                                <TextBlock x:Name="TxtPreviewIncremental" Text="" Foreground="#90EE90" FontSize="11" Margin="20,2,0,0" FontStyle="Italic" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            
+                            <!-- Boutons d'action - Reset à gauche, Appliquer à droite -->
+                            <StackPanel Grid.Column="3" Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Button x:Name="BtnResetNames" Content="↺ Reset" 
+                                        Style="{StaticResource SecondaryButton}" 
+                                        Padding="10,8" FontSize="12" FontWeight="Bold" Height="38" Margin="0,0,8,0"
+                                        Click="BtnResetNames_Click"/>
+                                <Button x:Name="BtnApplyRename" Content="✓ Appliquer" 
+                                        Style="{StaticResource PrimaryButton}" 
+                                        Padding="10,8" FontSize="12" FontWeight="Bold" Height="38"
+                                        Click="BtnApplyRename_Click"/>
+                            </StackPanel>
+                        </Grid>
                     </Grid>
                 </GroupBox>
             </Grid>
@@ -710,7 +825,15 @@
                                      Checked="SourceOption_Changed" Margin="0,8,0,0">
                             <StackPanel>
                                 <TextBlock Text="📂 Créer depuis Projet Existant" FontWeight="Bold" Foreground="White" FontSize="13"/>
-                                <TextBlock Text="Sélectionner un projet Vault" FontSize="12" Foreground="White" Margin="0,2,0,0"/>
+                                <TextBlock Text="Projet Local C:" FontSize="12" Foreground="White" Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </RadioButton>
+
+                        <RadioButton x:Name="RbFromVault" Style="{StaticResource ModernRadioButton}" 
+                                     Checked="SourceOption_Changed" Margin="0,8,0,0">
+                            <StackPanel>
+                                <TextBlock Text="☁️ Sélectionner depuis Vault" FontWeight="Bold" Foreground="White" FontSize="13"/>
+                                <TextBlock Text="Télécharger depuis Vault ($/Engineering/Projects)" FontSize="12" Foreground="White" Margin="0,2,0,0"/>
                             </StackPanel>
                         </RadioButton>
 
@@ -724,6 +847,19 @@
                                     Style="{StaticResource SecondaryButton}" Margin="0,8,0,0" 
                                     Padding="12,8" FontSize="11"
                                     Click="BtnRefreshProjects_Click"/>
+                        </StackPanel>
+
+                        <!-- Sélecteur de projet Vault (visible uniquement si RbFromVault) -->
+                        <StackPanel x:Name="PnlVaultProjectSelector" Visibility="Collapsed" Margin="0,10,0,0">
+                            <TextBlock Text="Sélectionner Projet Vault:" Style="{StaticResource ModernLabel}" FontSize="12"/>
+                            <ComboBox x:Name="CmbVaultProjects" Height="36" FontSize="12"
+                                      Style="{StaticResource ModernComboBox}"
+                                      SelectionChanged="CmbVaultProjects_SelectionChanged"
+                                      DisplayMemberPath="DisplayName"/>
+                            <Button x:Name="BtnRefreshVaultProjects" Content="🔄 Actualiser les Projets Vault" 
+                                    Style="{StaticResource SecondaryButton}" Margin="0,8,0,0" 
+                                    Padding="12,8" FontSize="11"
+                                    Click="BtnRefreshVaultProjects_Click"/>
                         </StackPanel>
 
                         <!-- Chemin source -->
@@ -750,108 +886,6 @@
                                 Click="BtnLoadFiles_Click"/>
                     </StackPanel>
                 </GroupBox>
-
-                <!-- Options de renommage -->
-                <GroupBox Style="{StaticResource ModernGroupBox}" Margin="0,10,0,0">
-                    <GroupBox.Header>
-                        <TextBlock Text="✏️ Renommage des Fichiers" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
-                    </GroupBox.Header>
-                    <StackPanel>
-                        <!-- Rechercher / Remplacer -->
-                        <TextBlock Text="Rechercher:" Style="{StaticResource ModernLabel}" FontSize="12"/>
-                        <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Padding="8,6" FontSize="12"
-                                 TextChanged="RenameOptions_Changed" ToolTip="Texte à rechercher dans les noms"/>
-                        
-                        <TextBlock Text="Remplacer par:" Style="{StaticResource ModernLabel}" FontSize="12" Margin="0,8,0,5"/>
-                        <TextBox x:Name="TxtReplace" Style="{StaticResource ModernTextBox}" Padding="8,6" FontSize="12"
-                                 TextChanged="RenameOptions_Changed" ToolTip="Texte de remplacement"/>
-
-                        <!-- Préfixe / Suffixe -->
-                        <Grid Margin="0,8,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0" Margin="0,0,5,0">
-                                <TextBlock Text="Préfixe:" Style="{StaticResource ModernLabel}" FontSize="12"/>
-                                <TextBox x:Name="TxtPrefix" Style="{StaticResource ModernTextBox}" Padding="8,6" FontSize="12"
-                                         TextChanged="RenameOptions_Changed"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1" Margin="5,0,0,0">
-                                <TextBlock Text="Suffixe:" Style="{StaticResource ModernLabel}" FontSize="12"/>
-                                <TextBox x:Name="TxtSuffix" Style="{StaticResource ModernTextBox}" Padding="8,6" FontSize="12"
-                                         TextChanged="RenameOptions_Changed"/>
-                            </StackPanel>
-                        </Grid>
-
-                        <!-- Checkbox pour inclure fichiers non-Inventor -->
-                        <CheckBox x:Name="ChkIncludeNonInventor" 
-                                  Content="Inclure fichiers non-Inventor" 
-                                  Foreground="White" FontSize="12" Margin="0,10,0,5"
-                                  IsChecked="False"
-                                  Checked="ChkIncludeNonInventor_Changed"
-                                  Unchecked="ChkIncludeNonInventor_Changed"/>
-
-                        <!-- Boutons d'action - bien visibles -->
-                        <StackPanel Orientation="Horizontal" Margin="0,12,0,5">
-                            <Button x:Name="BtnApplyRename" Content="✓ Appliquer" 
-                                    Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" 
-                                    Padding="15,8" FontSize="12"
-                                    Click="BtnApplyRename_Click"/>
-                            <Button x:Name="BtnResetNames" Content="↺ Reset" 
-                                    Style="{StaticResource SecondaryButton}" 
-                                    Padding="15,8" FontSize="12"
-                                    Click="BtnResetNames_Click"/>
-                        </StackPanel>
-                    </StackPanel>
-                </GroupBox>
-
-                <!-- Statistiques -->
-                <Border x:Name="LeftStatsPanel" Background="#1A1A28" CornerRadius="8" BorderBrush="#4A7FBF" BorderThickness="2" Margin="0,10,0,10">
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                        </Grid.RowDefinitions>
-                        
-                        <!-- Titre avec fond bleu marine -->
-                        <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8">
-                            <TextBlock Text="📊 Statistiques" FontSize="13" FontWeight="Bold" Foreground="White"/>
-                        </Border>
-                        
-                        <!-- Contenu sans fond -->
-                        <Border Grid.Row="1" Padding="12,8">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Fichiers IAM:" Foreground="White" FontSize="11"/>
-                                <TextBlock x:Name="TxtCountIam" Grid.Row="0" Grid.Column="1" Text="0" Foreground="#FF8C00" FontWeight="Bold" FontSize="11"/>
-
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="Fichiers IPT:" Foreground="White" FontSize="11"/>
-                                <TextBlock x:Name="TxtCountIpt" Grid.Row="1" Grid.Column="1" Text="0" Foreground="#107C10" FontWeight="Bold" FontSize="11"/>
-
-                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Fichiers IDW:" Foreground="White" FontSize="11"/>
-                                <TextBlock x:Name="TxtCountIdw" Grid.Row="2" Grid.Column="1" Text="0" Foreground="#0078D4" FontWeight="Bold" FontSize="11"/>
-
-                                <TextBlock Grid.Row="3" Grid.Column="0" Text="Autres fichiers:" Foreground="White" FontSize="11"/>
-                                <TextBlock x:Name="TxtCountOther" Grid.Row="3" Grid.Column="1" Text="0" Foreground="#888" FontWeight="Bold" FontSize="11"/>
-
-                                <TextBlock Grid.Row="4" Grid.Column="0" Text="Total:" Foreground="White" FontWeight="Bold" Margin="0,5,0,0" FontSize="11"/>
-                                <TextBlock x:Name="TxtCountTotal" Grid.Row="4" Grid.Column="1" Text="0" Foreground="White" FontWeight="Bold" Margin="0,5,0,0" FontSize="11"/>
-                            </Grid>
-                        </Border>
-                    </Grid>
-                </Border>
                 </StackPanel>
             </ScrollViewer>
 
@@ -975,51 +1009,91 @@
                         Height="34" Margin="0,0,15,0" ClipToBounds="True"
                         BorderBrush="#4A7FBF" BorderThickness="2">
                     <Grid>
-                        <!-- Barre de progression verte (fond) -->
-                        <Border x:Name="ProgressBarFill" Background="#28A745" 
-                                CornerRadius="6" HorizontalAlignment="Left" Width="0">
+                        <!-- Barre de progression avec gradient brillant et cristallisé -->
+                        <Border x:Name="ProgressBarFill" CornerRadius="6" HorizontalAlignment="Left" Width="0">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#00FFAA" Offset="0"/>
+                                    <GradientStop Color="#00D4FF" Offset="0.3"/>
+                                    <GradientStop Color="#00BFFF" Offset="0.5"/>
+                                    <GradientStop Color="#00D4FF" Offset="0.7"/>
+                                    <GradientStop Color="#00FFAA" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Border.Background>
                             <Border.Effect>
-                                <DropShadowEffect Color="#00FF7F" BlurRadius="20" ShadowDepth="0" Opacity="0.85"/>
+                                <DropShadowEffect Color="#00FFFF" BlurRadius="25" ShadowDepth="0" Opacity="1.0"/>
                             </Border.Effect>
                         </Border>
                         
-                        <!-- Effet de brillance animée sur la progression -->
+                        <!-- Effet de brillance cristallisée animée sur la progression -->
                         <Border x:Name="ProgressBarShine" CornerRadius="6" HorizontalAlignment="Left" Width="0">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                     <GradientStop Color="Transparent" Offset="0"/>
-                                    <GradientStop Color="#40FFFFFF" Offset="0.5"/>
+                                    <GradientStop Color="#80FFFFFF" Offset="0.3"/>
+                                    <GradientStop Color="#B0FFFFFF" Offset="0.5"/>
+                                    <GradientStop Color="#80FFFFFF" Offset="0.7"/>
                                     <GradientStop Color="Transparent" Offset="1"/>
                                 </LinearGradientBrush>
+                            </Border.Background>
+                            <Border.Effect>
+                                <DropShadowEffect Color="#FFFFFF" BlurRadius="10" ShadowDepth="0" Opacity="0.6"/>
+                            </Border.Effect>
+                        </Border>
+                        
+                        <!-- Couche de lueur supplémentaire pour effet cristallin -->
+                        <Border x:Name="ProgressBarGlow" CornerRadius="6" HorizontalAlignment="Left" Width="0" Opacity="0.7">
+                            <Border.Background>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#CC00FFFF" Offset="0"/>
+                                    <GradientStop Color="#6600BFFF" Offset="0.5"/>
+                                    <GradientStop Color="Transparent" Offset="1"/>
+                                </RadialGradientBrush>
                             </Border.Background>
                         </Border>
                         
                         <!-- Texte de statut centré verticalement -->
                         <TextBlock x:Name="TxtStatus" 
                                    Text="Prêt - Remplissez les informations du projet" 
-                                   Foreground="White" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="White" FontSize="12" FontWeight="Bold"
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
-                                   Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
+                                   Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                         
                         <!-- Fichier actuellement en traitement -->
                         <TextBlock x:Name="TxtCurrentFile" 
                                    Text="" 
-                                   Foreground="#00D4FF" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="#00D4FF" FontSize="12" FontWeight="Bold"
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
-                                   Margin="220,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
+                                   Margin="220,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                         
                         <!-- Temps écoulé / Temps total estimé à droite -->
                         <TextBlock x:Name="TxtProgressTime" 
                                    Text="" 
-                                   Foreground="#FFD700" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="#FFD700" FontSize="12" FontWeight="Bold"
                                    VerticalAlignment="Center" HorizontalAlignment="Right"
-                                   Margin="0,0,80,0"/>
+                                   Margin="0,0,80,0">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                         
                         <!-- Pourcentage à droite -->
                         <TextBlock x:Name="TxtProgressPercent" 
                                    Text="" 
-                                   Foreground="#FFD700" FontSize="12" FontWeight="SemiBold"
-                                   VerticalAlignment="Center" HorizontalAlignment="Right"
+                                   Foreground="#FFD700" FontSize="12" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Right">
+                            <TextBlock.Effect>
+                                <DropShadowEffect Color="#000000" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
+                            </TextBlock.Effect>
+                        </TextBlock>
                                    Margin="0,0,12,0"/>
                     </Grid>
                 </Border>

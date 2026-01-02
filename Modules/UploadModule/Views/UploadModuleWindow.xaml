@@ -261,6 +261,29 @@
             </Setter>
         </Style>
         
+        <!-- ========== TEXTBOX PATH (sans coupure de texte) ========== -->
+        <Style x:Key="PathTextBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" Padding="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#0078D4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
         <!-- ========== STYLE DATAGRID MODERNE ========== -->
         <Style TargetType="DataGrid">
             <Setter Property="Background" Value="#1E1E2E"/>
@@ -430,7 +453,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox x:Name="TxtProjectPath" Grid.Column="0" Style="{StaticResource ModernTextBox}" Height="34" FontSize="12" VerticalContentAlignment="Center"/>
+                <TextBox x:Name="TxtProjectPath" Grid.Column="0" Style="{StaticResource PathTextBox}" Height="34" FontSize="14" FontWeight="Bold" VerticalContentAlignment="Center" TextWrapping="Wrap" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" Foreground="#FFFFFF"/>
                 
                 <Button Grid.Column="1" Content="📋 Module" Style="{StaticResource SecondaryButton}" 
                         Background="#0078D4" Foreground="White" FontSize="13"
@@ -527,8 +550,8 @@
             <GroupBox.Header>
                 <TextBlock Text="📝 Commentaire Check-In" Foreground="White" FontWeight="Bold"/>
             </GroupBox.Header>
-            <TextBox x:Name="TxtComment" Style="{StaticResource ModernTextBox}" Height="36" 
-                     TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+            <TextBox x:Name="TxtComment" Style="{StaticResource ModernTextBox}" Height="Auto" MinHeight="36" 
+                     TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"
                      Text="[Auto] Check-in effectue par XNRGY Engineering Automation Tools - Module Upload Module"/>
         </GroupBox>
 

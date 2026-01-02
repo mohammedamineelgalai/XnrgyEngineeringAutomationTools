@@ -57,6 +57,36 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        
+        <!-- ========== TEXTBOX PATH (sans coupure de texte) ========== -->
+        <Style x:Key="PathTextBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}">
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="4">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="0" Padding="{TemplateBinding Padding}" VerticalScrollBarVisibility="Disabled" 
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="{StaticResource XnrgyBlue}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
         <!-- ========== STYLE LABEL ========== -->
         <Style x:Key="ModernLabel" TargetType="TextBlock">
@@ -498,8 +528,8 @@
                 <!-- Dossier Source + Parcourir + Destination Vault + Scanner -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="📁 Dossier Source:" FontSize="13" FontWeight="Bold" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                    <TextBox x:Name="TxtLocalPath" Style="{StaticResource ModernTextBox}" 
-                             Text="C:\Vault" Width="350" Height="34" VerticalContentAlignment="Center"/>
+                    <TextBox x:Name="TxtLocalPath" Style="{StaticResource PathTextBox}" 
+                             Text="C:\Vault" Width="350" Height="34"/>
                     <Button x:Name="BtnBrowse" Content="📂 Parcourir" Style="{StaticResource SecondaryButton}" 
                             Background="#0891B2" Foreground="White" FontSize="13"
                             Margin="10,0,0,0" Height="34" Click="BtnBrowse_Click" Padding="10,5" VerticalContentAlignment="Center"/>
@@ -606,8 +636,8 @@
             <GroupBox.Header>
                 <TextBlock Text="📝 Commentaire Check-In" Foreground="White" FontWeight="Bold"/>
             </GroupBox.Header>
-            <TextBox x:Name="TxtComment" Style="{StaticResource ModernTextBox}" Height="36" 
-                     TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Auto"
+            <TextBox x:Name="TxtComment" Style="{StaticResource ModernTextBox}" Height="Auto" MinHeight="36" 
+                     TextWrapping="Wrap" AcceptsReturn="True" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"
                      Text="[Auto] Upload effectue par XNRGY Engineering Automation Tools - Module Upload Template"/>
         </GroupBox>
 
