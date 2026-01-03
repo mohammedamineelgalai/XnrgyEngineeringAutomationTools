@@ -80,6 +80,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             // Utiliser le service Inventor du formulaire principal (héritage du statut)
             _inventorService = inventorService ?? new InventorService();
             
+            // [+] Forcer la reconnexion COM à chaque ouverture de Créer Module
+            // Évite les problèmes de connexion COM obsolète
+            _inventorService.ForceReconnect();
+            
             try
             {
                 InitializeComponent();
@@ -1272,61 +1276,88 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         {
             if (CmbVaultProjects?.SelectedItem is not VaultProject project)
             {
-                TxtStatus.Text = "⚠️ Veuillez sélectionner un projet Vault";
+                TxtStatus.Text = "[!] Veuillez selectionner un projet Vault";
                 return;
             }
 
             if (_vaultService == null || !_vaultService.IsConnected)
             {
-                TxtStatus.Text = "⚠️ Non connecté à Vault";
+                TxtStatus.Text = "[!] Non connecte a Vault";
                 return;
             }
 
             try
             {
-                TxtStatus.Text = "Téléchargement depuis Vault...";
+                // [+] RESET du timer au debut de l'operation
+                _startTime = DateTime.Now;
+                _pausedTime = TimeSpan.Zero;
+                
+                UpdateProgress(0, "Preparation du telechargement...");
+                AddLog("[>] Demarrage telechargement depuis Vault...", "START");
                 BtnLoadFiles.IsEnabled = false;
-
-                // Créer un dossier temporaire pour le téléchargement
-                var tempPath = Path.Combine(Path.GetTempPath(), $"VaultDownload_{Guid.NewGuid():N}");
-                Directory.CreateDirectory(tempPath);
-
-                _tempVaultDownloadPath = tempPath;
 
                 var connection = _vaultService.Connection;
                 if (connection == null)
                 {
-                    TxtStatus.Text = "⚠️ Connexion Vault perdue";
+                    TxtStatus.Text = "[!] Connexion Vault perdue";
                     BtnLoadFiles.IsEnabled = true;
                     return;
                 }
 
+                // Creer un dossier temporaire pour le telechargement
+                var tempPath = Path.Combine(Path.GetTempPath(), $"VaultDownload_{Guid.NewGuid():N}");
+                Directory.CreateDirectory(tempPath);
+                _tempVaultDownloadPath = tempPath;
+                AddLog($"[i] Dossier temporaire: {tempPath}", "DEBUG");
+
                 // Obtenir le dossier Vault
+                UpdateProgress(5, "Connexion au dossier Vault...");
                 var vaultFolder = connection.WebServiceManager.DocumentService.GetFolderByPath(project.VaultPath);
                 if (vaultFolder == null)
                 {
-                    TxtStatus.Text = "⚠️ Dossier Vault non trouvé";
+                    TxtStatus.Text = "[!] Dossier Vault non trouve";
+                    AddLog($"[-] Dossier Vault non trouve: {project.VaultPath}", "ERROR");
                     BtnLoadFiles.IsEnabled = true;
                     return;
                 }
+                AddLog($"[+] Dossier Vault trouve: {project.VaultPath}", "INFO");
 
-                // Obtenir tous les fichiers du dossier (récursif) - false = inclure les sous-dossiers
-                var files = connection.WebServiceManager.DocumentService.GetLatestFilesByFolderId(vaultFolder.Id, false);
+                // Obtenir TOUS les fichiers RECURSIVEMENT (dossier + sous-dossiers)
+                UpdateProgress(10, "Enumeration recursive des fichiers...");
+                AddLog($"[>] Enumeration recursive depuis: {project.VaultPath}", "INFO");
                 
-                if (files == null || files.Length == 0)
+                var allFiles = new List<ACW.File>();
+                var allFolders = new List<ACW.Folder>();
+                await Task.Run(() => GetAllFilesRecursive(connection, vaultFolder, allFiles, allFolders));
+                
+                AddLog($"[+] {allFolders.Count} dossiers trouves", "INFO");
+                foreach (var folder in allFolders.Take(10)) // Log les 10 premiers
                 {
-                    TxtStatus.Text = "⚠️ Aucun fichier trouvé dans le projet Vault";
+                    AddLog($"    [i] {folder.FullName}", "DEBUG");
+                }
+                if (allFolders.Count > 10)
+                {
+                    AddLog($"    ... et {allFolders.Count - 10} autres dossiers", "DEBUG");
+                }
+                
+                if (allFiles.Count == 0)
+                {
+                    TxtStatus.Text = "[!] Aucun fichier trouve dans le projet Vault";
+                    AddLog("[-] Aucun fichier trouve (meme recursivement)", "ERROR");
                     BtnLoadFiles.IsEnabled = true;
                     return;
                 }
-
-                AddLog($"📥 Téléchargement de {files.Length} fichiers depuis Vault (récursif)...", "INFO");
+                AddLog($"[+] {allFiles.Count} fichiers trouves au total (recursif)", "SUCCESS");
+                
+                // Convertir en array pour compatibilite
+                var files = allFiles.ToArray();
 
                 // Obtenir le working folder
                 var workingFolderObj = connection.WorkingFoldersManager.GetWorkingFolder("$");
                 if (workingFolderObj == null || string.IsNullOrEmpty(workingFolderObj.FullPath))
                 {
-                    TxtStatus.Text = "⚠️ Working folder non configuré";
+                    TxtStatus.Text = "[!] Working folder non configure";
+                    AddLog("[-] Working folder non configure dans Vault", "ERROR");
                     BtnLoadFiles.IsEnabled = true;
                     return;
                 }
@@ -1334,11 +1365,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 var workingFolder = workingFolderObj.FullPath;
                 var relativePath = project.VaultPath.TrimStart('$', '/').Replace("/", "\\");
                 var localFolder = Path.Combine(workingFolder, relativePath);
+                AddLog($"[i] Working folder: {workingFolder}", "DEBUG");
+                AddLog($"[i] Chemin local cible: {localFolder}", "DEBUG");
 
-                // Télécharger tous les fichiers avec AcquireFiles pour préserver la structure
+                // Preparer le telechargement batch
+                UpdateProgress(15, $"Preparation de {files.Length} fichiers...");
                 var downloadSettings = new VDF.Vault.Settings.AcquireFilesSettings(connection, false);
                 
                 int fileIndex = 0;
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                
                 foreach (var file in files)
                 {
                     try
@@ -1346,34 +1382,38 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                         var fileIteration = new VDF.Vault.Currency.Entities.FileIteration(connection, file);
                         downloadSettings.AddFileToAcquire(fileIteration, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
                         fileIndex++;
-                        
-                        if (fileIndex % 10 == 0)
-                        {
-                            UpdateProgress((int)((fileIndex * 50.0) / files.Length), $"Téléchargement... {fileIndex}/{files.Length}");
-                        }
                     }
                     catch (Exception fileEx)
                     {
-                        AddLog($"⚠️ Erreur préparation fichier {file.Name}: {fileEx.Message}", "WARNING");
+                        AddLog($"[!] Erreur preparation {file.Name}: {fileEx.Message}", "WARNING");
                     }
                 }
+                sw.Stop();
+                AddLog($"[+] {fileIndex} fichiers prepares en {sw.ElapsedMilliseconds}ms", "INFO");
 
-                // Télécharger tous les fichiers en une seule opération
-                UpdateProgress(50, "Téléchargement des fichiers depuis Vault...");
-                var downloadResult = connection.FileManager.AcquireFiles(downloadSettings);
+                // Telecharger tous les fichiers en UNE SEULE operation batch (comme Vault Client)
+                UpdateProgress(20, $"Telechargement batch de {fileIndex} fichiers...");
+                AddLog($"[>] Lancement telechargement batch...", "INFO");
+                
+                sw.Restart();
+                var downloadResult = await Task.Run(() => connection.FileManager.AcquireFiles(downloadSettings));
+                sw.Stop();
 
                 if (downloadResult?.FileResults == null || !downloadResult.FileResults.Any())
                 {
-                    TxtStatus.Text = "⚠️ Aucun fichier téléchargé";
+                    TxtStatus.Text = "[!] Aucun fichier telecharge";
+                    AddLog("[-] AcquireFiles n'a retourne aucun resultat", "ERROR");
                     BtnLoadFiles.IsEnabled = true;
                     return;
                 }
 
                 var fileResultsList = downloadResult.FileResults.ToList();
-                AddLog($"✅ {fileResultsList.Count} fichiers téléchargés dans le working folder", "SUCCESS");
+                int successCount = fileResultsList.Count(r => r.LocalPath?.FullPath != null && File.Exists(r.LocalPath.FullPath));
+                AddLog($"[+] {successCount}/{fileResultsList.Count} fichiers telecharges en {sw.ElapsedMilliseconds}ms ({sw.ElapsedMilliseconds / Math.Max(1, successCount)}ms/fichier)", "SUCCESS");
 
-                // Copier les fichiers du working folder vers le dossier temporaire en préservant la structure
-                UpdateProgress(75, "Copie des fichiers vers le dossier temporaire...");
+                // Copier vers le dossier temporaire
+                UpdateProgress(70, "Copie vers dossier temporaire...");
+                AddLog($"[>] Copie vers {tempPath}...", "INFO");
                 
                 if (Directory.Exists(localFolder))
                 {
@@ -1436,28 +1476,36 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                         }
                         catch (Exception copyEx)
                         {
-                            AddLog($"⚠️ Erreur copie {Path.GetFileName(localFilePath)}: {copyEx.Message}", "WARNING");
+                            AddLog($"[!] Erreur copie {Path.GetFileName(localFilePath)}: {copyEx.Message}", "WARNING");
                         }
                     }
                 }
                 
-                // Vérifier si des fichiers ont été copiés
-                if (Directory.GetFiles(tempPath, "*.*", SearchOption.AllDirectories).Length == 0)
+                // Verifier si des fichiers ont ete copies
+                var copiedFiles = Directory.GetFiles(tempPath, "*.*", SearchOption.AllDirectories);
+                if (copiedFiles.Length == 0)
                 {
-                    TxtStatus.Text = "⚠️ Aucun fichier téléchargé";
+                    TxtStatus.Text = "[!] Aucun fichier telecharge";
+                    AddLog("[-] Aucun fichier copie vers le dossier temporaire", "ERROR");
                     BtnLoadFiles.IsEnabled = true;
                     return;
                 }
+                
+                AddLog($"[+] {copiedFiles.Length} fichiers copies vers le dossier temporaire", "SUCCESS");
+                UpdateProgress(90, "Chargement de la liste des fichiers...");
 
                 // Charger les fichiers depuis le dossier temporaire
                 LoadFilesFromPath(tempPath);
                 
-                TxtStatus.Text = $"✅ {_files.Count} fichiers téléchargés depuis Vault";
+                UpdateProgress(100, $"[+] {_files.Count} fichiers charges depuis Vault");
+                AddLog($"[+] Telechargement Vault termine: {_files.Count} fichiers prets", "SUCCESS");
+                TxtStatus.Text = $"[+] {_files.Count} fichiers telecharges depuis Vault";
             }
             catch (Exception ex)
             {
-                TxtStatus.Text = $"⚠️ Erreur: {ex.Message}";
-                AddLog($"Erreur téléchargement Vault: {ex.Message}", "ERROR");
+                TxtStatus.Text = $"[-] Erreur: {ex.Message}";
+                AddLog($"[-] Erreur telechargement Vault: {ex.Message}", "ERROR");
+                AddLog($"    Stack: {ex.StackTrace?.Split('\n').FirstOrDefault()}", "DEBUG");
                 
                 // Nettoyer le dossier temporaire en cas d'erreur
                 try
@@ -1492,6 +1540,41 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 var dirName = Path.GetFileName(dir);
                 var destSubDir = Path.Combine(destDir, dirName);
                 CopyDirectory(dir, destSubDir);
+            }
+        }
+
+        /// <summary>
+        /// Obtient tous les fichiers recursivement depuis un dossier Vault
+        /// </summary>
+        private void GetAllFilesRecursive(VDF.Vault.Currency.Connections.Connection connection, ACW.Folder folder, List<ACW.File> allFiles, List<ACW.Folder> allFolders)
+        {
+            try
+            {
+                // Ajouter ce dossier a la liste
+                allFolders.Add(folder);
+                
+                // Obtenir les fichiers de ce dossier
+                var files = connection.WebServiceManager.DocumentService.GetLatestFilesByFolderId(folder.Id, false);
+                if (files != null && files.Length > 0)
+                {
+                    allFiles.AddRange(files);
+                }
+                
+                // Obtenir les sous-dossiers
+                var subFolders = connection.WebServiceManager.DocumentService.GetFoldersByParentId(folder.Id, false);
+                if (subFolders != null && subFolders.Length > 0)
+                {
+                    foreach (var subFolder in subFolders)
+                    {
+                        // Recursion dans chaque sous-dossier
+                        GetAllFilesRecursive(connection, subFolder, allFiles, allFolders);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log l'erreur mais continue avec les autres dossiers
+                System.Diagnostics.Debug.WriteLine($"[!] Erreur enumeration {folder.FullName}: {ex.Message}");
             }
         }
 

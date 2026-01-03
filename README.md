@@ -126,8 +126,8 @@ XnrgyEngineeringAutomationTools/
 │   └── XnrgyStyles.xaml             # 50+ styles partagés (couleurs, boutons, inputs)
 │
 ├── Resources/                       # Images et icônes
-│   ├── VaultAutomationTool.ico
-│   └── VaultAutomationTool.png
+│   ├── XnrgyEngineeringAutomationTools.ico
+│   └── XnrgyEngineeringAutomationTools.png
 │
 ├── Assets/                          # Assets visuels
 │   └── Icons/

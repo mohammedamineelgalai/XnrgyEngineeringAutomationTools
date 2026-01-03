@@ -321,8 +321,8 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Resources\VaultAutomationTool.ico" />
-    <Resource Include="Resources\VaultAutomationTool.png" />
+    <Resource Include="Resources\XnrgyEngineeringAutomationTools.ico" />
+    <Resource Include="Resources\XnrgyEngineeringAutomationTools.png" />
     <Resource Include="Assets\Icons\DXFVerifier.png" />
     <Resource Include="Resources\SmartTools.png" />
     <!-- Smart Tools Icons -->

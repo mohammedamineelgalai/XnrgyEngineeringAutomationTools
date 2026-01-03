@@ -1133,6 +1133,14 @@ namespace XnrgyEngineeringAutomationTools
             
             try
             {
+                // [+] Rafraîchir la connexion COM Inventor avant d'ouvrir le module
+                if (_isInventorConnected)
+                {
+                    AddLog("[>] Rafraichissement connexion Inventor...", "DEBUG");
+                    _inventorService.ForceReconnect();
+                    AddLog("[+] Connexion Inventor rafraichie", "DEBUG");
+                }
+                
                 // Passer les services Vault et Inventor pour héritage du statut de connexion
                 var createModuleWindow = new CreateModuleWindow(
                     _isVaultConnected ? _vaultService : null,
@@ -1171,6 +1179,14 @@ namespace XnrgyEngineeringAutomationTools
             
             try
             {
+                // [+] Rafraîchir la connexion COM Inventor avant d'ouvrir le module
+                if (_isInventorConnected)
+                {
+                    AddLog("[>] Rafraichissement connexion Inventor...", "DEBUG");
+                    _inventorService.ForceReconnect();
+                    AddLog("[+] Connexion Inventor rafraichie", "DEBUG");
+                }
+                
                 // Passer le service Vault et le callback de log pour affichage du statut de connexion
                 var smartToolsWindow = new SmartToolsWindow(_isVaultConnected ? _vaultService : null, AddLog);
                 smartToolsWindow.Owner = this;

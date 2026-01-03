@@ -12,58 +12,64 @@
         Background="#1E1E2E">
 
     <Window.Resources>
-        <!-- Couleurs XNRGY -->
-        <SolidColorBrush x:Key="XnrgyBlue" Color="#0078D4"/>
-        <SolidColorBrush x:Key="XnrgyGreen" Color="#107C10"/>
-        <SolidColorBrush x:Key="XnrgyOrange" Color="#FF8C00"/>
-        <SolidColorBrush x:Key="XnrgyRed" Color="#E81123"/>
-        <SolidColorBrush x:Key="DarkBg" Color="#1E1E2E"/>
-        <SolidColorBrush x:Key="DarkBg2" Color="#252536"/>
-        <SolidColorBrush x:Key="DarkBg3" Color="#2D2D44"/>
-        <SolidColorBrush x:Key="BorderColor" Color="#4A7FBF"/>
-        <SolidColorBrush x:Key="TextLight" Color="#E0E0E0"/>
-        <SolidColorBrush x:Key="TextMuted" Color="#888888"/>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/XnrgyStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Couleurs XNRGY -->
+            <SolidColorBrush x:Key="XnrgyBlue" Color="#0078D4"/>
+            <SolidColorBrush x:Key="XnrgyGreen" Color="#107C10"/>
+            <SolidColorBrush x:Key="XnrgyOrange" Color="#FF8C00"/>
+            <SolidColorBrush x:Key="XnrgyRed" Color="#E81123"/>
+            <SolidColorBrush x:Key="DarkBg" Color="#1E1E2E"/>
+            <SolidColorBrush x:Key="DarkBg2" Color="#252536"/>
+            <SolidColorBrush x:Key="DarkBg3" Color="#2D2D44"/>
+            <SolidColorBrush x:Key="BorderColor" Color="#4A7FBF"/>
+            <SolidColorBrush x:Key="TextLight" Color="#E0E0E0"/>
+            <SolidColorBrush x:Key="TextMuted" Color="#888888"/>
 
-        <!-- Couleur de fond pour les boutons -->
-        <SolidColorBrush x:Key="ButtonBg" Color="#252536"/>
-        
-        <!-- Style Bouton Smart Tools (identique à ModuleButton) -->
-        <Style x:Key="SmartToolButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource ButtonBg}"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Margin" Value="10"/>
-            <Setter Property="Padding" Value="10"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="border" Background="{TemplateBinding Background}" 
-                                CornerRadius="6" 
-                                BorderBrush="#4A7FBF" 
-                                BorderThickness="2"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#2A5A8F"/>
-                                <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
-                                <Setter TargetName="border" Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="#00D4FF" BlurRadius="28" ShadowDepth="0" Opacity="0.85"/>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyBlue}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+            <!-- Couleur de fond pour les boutons -->
+            <SolidColorBrush x:Key="ButtonBg" Color="#252536"/>
+            
+            <!-- Style Bouton Smart Tools (identique à ModuleButton) -->
+            <Style x:Key="SmartToolButton" TargetType="Button">
+                <Setter Property="Background" Value="{StaticResource ButtonBg}"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontSize" Value="12"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Margin" Value="10"/>
+                <Setter Property="Padding" Value="10"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    CornerRadius="6" 
+                                    BorderBrush="#4A7FBF" 
+                                    BorderThickness="2"
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#2A5A8F"/>
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
+                                    <Setter TargetName="border" Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="#00D4FF" BlurRadius="28" ShadowDepth="0" Opacity="0.85"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="{StaticResource XnrgyBlue}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
     </Window.Resources>
 
     <Grid>
@@ -122,216 +128,259 @@
             </Grid>
         </Border>
 
-        <!-- CONTENU PRINCIPAL - Grille de boutons style libre -->
+        <!-- CONTENU PRINCIPAL - Groupes intelligents -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <Grid Margin="20">
-                <WrapPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <!-- Smart Visibility -->
-                    <Button x:Name="BtnHideBox" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnHideBox_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/HideBox.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="HideBox V1.5" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Masquage intelligent" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+            <StackPanel Margin="20">
+                <!-- Groupe 1: 3D - Pièces et Assemblages (.IPT & .IAM) -->
+                <GroupBox Style="{StaticResource XnrgyGroupBox}" Margin="0,0,0,15">
+                    <GroupBox.Header>
+                        <StackPanel>
+                            <TextBlock Text="🔧 3D - Pièces et Assemblages (.IPT &amp; .IAM)" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Outils de modélisation 3D pour la création et la modification de pièces individuelles et d'assemblages" 
+                                       FontSize="11" Foreground="#B0B0B0" FontStyle="Italic" Margin="0,3,0,0"/>
                         </StackPanel>
-                    </Button>
+                    </GroupBox.Header>
+                    <WrapPanel>
+                        <!-- Smart Visibility -->
+                        <Button x:Name="BtnHideBox" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnHideBox_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/HideBox.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="HideBox V1.5" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Masquage intelligent" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnToggleRefVisibility" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnToggleRefVisibility_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ToggleRefVisibility.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Toggle Ref Visibility" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Visibilité références" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnToggleRefVisibility" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnToggleRefVisibility_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ToggleRefVisibility.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Toggle Ref Visibility" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Visibilité références" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnToggleSketchVisibility" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnToggleSketchVisibility_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ToggleSketchVisibility.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Toggle Sketch Visibility" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Visibilité esquisses" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnToggleSketchVisibility" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnToggleSketchVisibility_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ToggleSketchVisibility.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Toggle Sketch Visibility" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Visibilité esquisses" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <!-- Reports -->
-                    <Button x:Name="BtnConstraintReport" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnConstraintReport_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ConstraintReport.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Constraint Report" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Rapport contraintes" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <!-- Reports & Analysis -->
+                        <Button x:Name="BtnConstraintReport" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnConstraintReport_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ConstraintReport.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Constraint Report" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Rapport contraintes (.IAM)" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <!-- Properties -->
-                    <Button x:Name="BtnIPropertiesSummary" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnIPropertiesSummary_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/iPropertiesSummary.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="iProperties Summary" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Résumé propriétés" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <!-- Properties -->
+                        <Button x:Name="BtnIPropertiesSummary" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnIPropertiesSummary_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/iPropertiesSummary.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="iProperties Summary" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Résumé propriétés" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnIPropertyCustomBatch" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnIPropertyCustomBatch_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
-                                <TextBlock Text="📋" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="iProperty Custom Batch" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Modification batch" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnIPropertyCustomBatch" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnIPropertyCustomBatch_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock Text="📋" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="iProperty Custom Batch" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Modification batch" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <!-- Document -->
-                    <Button x:Name="BtnSafeClose" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnSafeClose_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/SafeClose.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="SafeClose V1.6" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Fermeture sécurisée" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <!-- Document Management -->
+                        <Button x:Name="BtnSafeClose" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnSafeClose_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/SafeClose.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="SafeClose V1.6" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Fermeture sécurisée" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnSmartSave" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnSmartSave_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/SmartSave.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="SmartSave V1.0" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Sauvegarde intelligente" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnSmartSave" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnSmartSave_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/SmartSave.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="SmartSave V1.0" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Sauvegarde intelligente" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnAutoSave" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnAutoSave_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/AutoSave.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="AutoSave" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Sauvegarde automatique" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnAutoSave" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnAutoSave_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/AutoSave.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="AutoSave" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Sauvegarde automatique" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnCheckSaveStatus" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnCheckSaveStatus_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/CheckSaveStatus.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Check Save Status" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Vérifier sauvegarde" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnCheckSaveStatus" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnCheckSaveStatus_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/CheckSaveStatus.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Check Save Status" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Vérifier sauvegarde" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <!-- Drawing -->
-                    <Button x:Name="BtnExportIAMToIPT" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnExportIAMToIPT_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ExportIAMToIPT.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Export IAM to IPT V1.1" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Export assemblage" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <!-- 3D Tools -->
+                        <Button x:Name="BtnInsertSpecificScrewInHoles" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnInsertSpecificScrewInHoles_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/InsertSpecificScrewInHoles.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Insert Screw in Holes" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Insertion vis dans trous" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnExportIDWtoShopPDF" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnExportIDWtoShopPDF_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ExportIDWtoShopPDF.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Export IDW to PDF V1.1" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Export dessins PDF" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnFixPromotedVaries" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnFixPromotedVaries_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock Text="🔧" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Fix Promoted Varies" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Corriger variables" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <!-- Utilities -->
-                    <Button x:Name="BtnFormCenteringUtility" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnFormCenteringUtility_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/FormCenteringUtility.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Form Centering" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Centrage formulaires" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnOpenSelectedComponent" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnOpenSelectedComponent_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock Text="📂" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Open Selected Component" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Ouvrir composant" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnILogicFormsCentred" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnILogicFormsCentred_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/iLogicFormsCentred.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="iLogic Forms Centred" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Centrage iLogic" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnReturnToFrontView" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnReturnToFrontView_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock Text="⬅️" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Return to Front View" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Retour vue de face" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnCollapseExpandAll" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnCollapseExpandAll_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/CollapseExpandAll.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Collapse/Expand All" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Réduire/Développer" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnHideBoxTemplateMultiOpening" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnHideBoxTemplateMultiOpening_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock Text="📦" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="HideBox Template Multi" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Masquer template multi" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnInsertSpecificScrewInHoles" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnInsertSpecificScrewInHoles_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/InsertSpecificScrewInHoles.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Insert Screw in Holes" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Insertion vis dans trous" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <!-- Assembly Specific Tools -->
+                        <Button x:Name="BtnExportIAMToIPT" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnExportIAMToIPT_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ExportIAMToIPT.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Export IAM to IPT V1.1" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Export assemblage (.IAM)" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnFixPromotedVaries" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnFixPromotedVaries_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
-                                <TextBlock Text="🔧" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Fix Promoted Varies" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Corriger variables" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnCollapseExpandAll" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnCollapseExpandAll_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/CollapseExpandAll.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Collapse/Expand All" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Réduire/Développer (.IAM)" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+                </GroupBox>
 
-                    <Button x:Name="Btn2DIsometricView" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="Btn2DIsometricView_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
-                                <TextBlock Text="📐" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="2D Isometric View" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Vue isométrique 2D" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                <!-- Groupe 2: 2D - Dessins Techniques (.IDW) -->
+                <GroupBox Style="{StaticResource XnrgyGroupBox}" Margin="0,0,0,15">
+                    <GroupBox.Header>
+                        <StackPanel>
+                            <TextBlock Text="📐 2D - Dessins Techniques (.IDW)" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Outils pour la création, la modification et l'export de dessins techniques et de documentation 2D" 
+                                       FontSize="11" Foreground="#B0B0B0" FontStyle="Italic" Margin="0,3,0,0"/>
                         </StackPanel>
-                    </Button>
+                    </GroupBox.Header>
+                    <WrapPanel>
+                        <Button x:Name="BtnExportIDWtoShopPDF" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnExportIDWtoShopPDF_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ExportIDWtoShopPDF.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Export IDW to PDF V1.1" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Export dessins PDF" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnOpenSelectedComponent" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnOpenSelectedComponent_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
-                                <TextBlock Text="📂" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Open Selected Component" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Ouvrir composant" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="Btn2DIsometricView" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="Btn2DIsometricView_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock Text="📐" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="2D Isometric View" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Vue isométrique 2D" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnReturnToFrontView" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnReturnToFrontView_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
-                                <TextBlock Text="⬅️" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Return to Front View" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Retour vue de face" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnUpdateCurrentSheet" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnUpdateCurrentSheet_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock Text="🔄" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Update Current Sheet" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Mettre à jour feuille" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <Button x:Name="BtnUpdateCurrentSheet" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnUpdateCurrentSheet_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
-                                <TextBlock Text="🔄" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="Update Current Sheet" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Mettre à jour feuille" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
+                        <Button x:Name="BtnReturnToFrontView_Drawing" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnReturnToFrontView_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock Text="⬅️" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock Text="Return to Front View" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Retour vue de face" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+                </GroupBox>
 
-                    <Button x:Name="BtnHideBoxTemplateMultiOpening" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnHideBoxTemplateMultiOpening_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#4A7FBF" BorderThickness="2">
-                                <TextBlock Text="📦" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <TextBlock Text="HideBox Template Multi" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Masquer template multi" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                <!-- Groupe 3: Utilitaires et Interface (Tous types) -->
+                <GroupBox Style="{StaticResource XnrgyGroupBox}" Margin="0,0,0,15">
+                    <GroupBox.Header>
+                        <StackPanel>
+                            <TextBlock Text="🛠️ Utilitaires et Interface (Tous types)" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Outils transversaux pour l'interface utilisateur, le centrage de formulaires et les informations système" 
+                                       FontSize="11" Foreground="#B0B0B0" FontStyle="Italic" Margin="0,3,0,0"/>
                         </StackPanel>
-                    </Button>
+                    </GroupBox.Header>
+                    <WrapPanel>
+                        <Button x:Name="BtnFormCenteringUtility" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnFormCenteringUtility_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/FormCenteringUtility.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Form Centering" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Centrage formulaires" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
 
-                    <!-- System -->
-                    <Button x:Name="BtnInfoCommand" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnInfoCommand_Click">
-                        <StackPanel HorizontalAlignment="Center">
-                            <Image Source="pack://application:,,,/Modules/SmartTools/Resources/InfoCommand.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                            <TextBlock Text="Info Command V1.7" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
-                            <TextBlock Text="Informations Smart Tools" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
-                        </StackPanel>
-                    </Button>
-                </WrapPanel>
-            </Grid>
+                        <Button x:Name="BtnILogicFormsCentred" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnILogicFormsCentred_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/iLogicFormsCentred.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="iLogic Forms Centred" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Centrage iLogic" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
+
+                        <Button x:Name="BtnInfoCommand" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnInfoCommand_Click">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Image Source="pack://application:,,,/Modules/SmartTools/Resources/InfoCommand.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
+                                <TextBlock Text="Info Command V1.7" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Informations Smart Tools" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
+                            </StackPanel>
+                        </Button>
+                    </WrapPanel>
+                </GroupBox>
+            </StackPanel>
         </ScrollViewer>
 
         <!-- ========== JOURNAL ========== -->

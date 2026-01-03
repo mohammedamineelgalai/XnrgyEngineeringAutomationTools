@@ -43,6 +43,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             InitializeComponent();
             _inventorService = new InventorService();
+            
+            // [+] Forcer la reconnexion COM à chaque ouverture de Smart Tools
+            // Évite les problèmes de connexion COM obsolète
+            _inventorService.ForceReconnect();
+            
             _smartToolsService = new SmartToolsService(_inventorService);
             _vaultService = vaultService;
             MainWindowLogCallback = mainLogCallback;

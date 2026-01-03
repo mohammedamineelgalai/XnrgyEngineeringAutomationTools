@@ -2317,7 +2317,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                                 dvr.Name.Equals("Défaut", StringComparison.OrdinalIgnoreCase))
                             {
                                 dvr.Activate();
-                                Log($"  ✓ Design View: {dvr.Name}", "DEBUG");
+                                Log($"  [+] Design View: {dvr.Name}", "DEBUG");
                                 break;
                             }
                         }
@@ -2328,93 +2328,231 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                     Log($"  Note: Design View: {ex.Message}", "DEBUG");
                 }
 
-                // 2. Désactiver l'affichage de tous les Workfeatures (All Work Features OFF)
+                // 2. Cacher TOUS les éléments de référence via ObjectVisibility (API globale)
+                // Ceci affecte le document ET tous les sous-assemblages d'un coup
+                try
+                {
+                    if (doc is AssemblyDocument asmDocVis)
+                    {
+                        // Plans de travail utilisateur
+                        asmDocVis.ObjectVisibility.UserWorkPlanes = false;
+                        // Axes de travail utilisateur  
+                        asmDocVis.ObjectVisibility.UserWorkAxes = false;
+                        // Points de travail utilisateur
+                        asmDocVis.ObjectVisibility.UserWorkPoints = false;
+                        // Plans d'origine
+                        asmDocVis.ObjectVisibility.OriginWorkPlanes = false;
+                        // Axes d'origine
+                        asmDocVis.ObjectVisibility.OriginWorkAxes = false;
+                        // Points d'origine
+                        asmDocVis.ObjectVisibility.OriginWorkPoints = false;
+                        // Esquisses 2D
+                        asmDocVis.ObjectVisibility.Sketches = false;
+                        // Esquisses 3D
+                        asmDocVis.ObjectVisibility.Sketches3D = false;
+                        
+                        Log("  [+] ObjectVisibility: References et esquisses cachees (global)", "DEBUG");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"  Note: ObjectVisibility: {ex.Message}", "DEBUG");
+                }
+
+                // 3. Parcours récursif pour cacher les plans d'origine dans tous les sous-composants
                 try
                 {
                     if (doc is AssemblyDocument asmDoc)
                     {
-                        // Désactiver les plans d'origine
-                        foreach (WorkPlane wp in asmDoc.ComponentDefinition.WorkPlanes)
-                        {
-                            try { wp.Visible = false; } catch { }
-                        }
-                        // Désactiver les axes d'origine
-                        foreach (WorkAxis wa in asmDoc.ComponentDefinition.WorkAxes)
-                        {
-                            try { wa.Visible = false; } catch { }
-                        }
-                        // Désactiver les points d'origine
-                        foreach (WorkPoint wpt in asmDoc.ComponentDefinition.WorkPoints)
-                        {
-                            try { wpt.Visible = false; } catch { }
-                        }
-                        
-                        // Désactiver l'Origin Folder (contient XY, XZ, YZ planes, X, Y, Z axes, Center Point)
-                        try
-                        {
-                            asmDoc.ComponentDefinition.WorkPlanes["XY Plane"].Visible = false;
-                            asmDoc.ComponentDefinition.WorkPlanes["XZ Plane"].Visible = false;
-                            asmDoc.ComponentDefinition.WorkPlanes["YZ Plane"].Visible = false;
-                        }
-                        catch { }
-                        
-                        try
-                        {
-                            asmDoc.ComponentDefinition.WorkAxes["X Axis"].Visible = false;
-                            asmDoc.ComponentDefinition.WorkAxes["Y Axis"].Visible = false;
-                            asmDoc.ComponentDefinition.WorkAxes["Z Axis"].Visible = false;
-                        }
-                        catch { }
-                        
-                        try
-                        {
-                            asmDoc.ComponentDefinition.WorkPoints["Center Point"].Visible = false;
-                        }
-                        catch { }
+                        HideAllReferencesRecursive(asmDoc);
+                        Log("  [+] References cachees dans tous les sous-assemblages", "DEBUG");
                     }
-                    Log("  ✓ Workfeatures cachés", "DEBUG");
                 }
                 catch (Exception ex)
                 {
-                    Log($"  Note: Masquage workfeatures: {ex.Message}", "DEBUG");
+                    Log($"  Note: Parcours recursif: {ex.Message}", "DEBUG");
                 }
 
-                // 3. Vue Isométrique (ISO)
+                // 4. Vue Isométrique via commande native
                 try
                 {
-                    View? activeView = _inventorApp?.ActiveView;
-                    if (activeView != null)
+                    if (_inventorApp != null)
                     {
-                        Camera camera = activeView.Camera;
-                        camera.ViewOrientationType = ViewOrientationTypeEnum.kIsoTopRightViewOrientation;
-                        camera.Apply();
-                        Log("  ✓ Vue ISO appliquée", "DEBUG");
+                        CommandManager cmdManager = _inventorApp.CommandManager;
+                        ControlDefinitions controlDefs = cmdManager.ControlDefinitions;
+                        ControlDefinition cmdIso = controlDefs["AppIsometricViewCmd"];
+                        cmdIso.Execute();
+                        Log("  [+] Vue ISO appliquee", "DEBUG");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log($"  Note: Vue ISO: {ex.Message}", "DEBUG");
+                    // Fallback: via Camera
+                    try
+                    {
+                        View? activeView = _inventorApp?.ActiveView;
+                        if (activeView != null)
+                        {
+                            Camera camera = activeView.Camera;
+                            camera.ViewOrientationType = ViewOrientationTypeEnum.kIsoTopRightViewOrientation;
+                            camera.Apply();
+                            Log("  [+] Vue ISO appliquee (fallback)", "DEBUG");
+                        }
+                    }
+                    catch
+                    {
+                        Log($"  Note: Vue ISO: {ex.Message}", "DEBUG");
+                    }
                 }
 
-                // 4. Zoom All (Fit)
+                // 5. Zoom All via commande native
                 try
                 {
-                    View? activeView = _inventorApp?.ActiveView;
-                    if (activeView != null)
+                    if (_inventorApp != null)
                     {
-                        activeView.Fit();
-                        Log("  ✓ Zoom All (Fit)", "DEBUG");
+                        CommandManager cmdManager = _inventorApp.CommandManager;
+                        ControlDefinitions controlDefs = cmdManager.ControlDefinitions;
+                        ControlDefinition cmdZoom = controlDefs["AppZoomAllCmd"];
+                        cmdZoom.Execute();
+                        Log("  [+] Zoom All", "DEBUG");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log($"  Note: Zoom All: {ex.Message}", "DEBUG");
+                    // Fallback: via View.Fit()
+                    try
+                    {
+                        View? activeView = _inventorApp?.ActiveView;
+                        activeView?.Fit();
+                        Log("  [+] Zoom All (Fit fallback)", "DEBUG");
+                    }
+                    catch
+                    {
+                        Log($"  Note: Zoom All: {ex.Message}", "DEBUG");
+                    }
                 }
             }
             catch (Exception ex)
             {
-                Log($"  Erreur préparation vue: {ex.Message}", "DEBUG");
+                Log($"  Erreur preparation vue: {ex.Message}", "DEBUG");
             }
+        }
+
+        /// <summary>
+        /// Cache récursivement tous les éléments de référence (plans, axes, points, esquisses)
+        /// dans l'assemblage et tous ses sous-assemblages
+        /// </summary>
+        private void HideAllReferencesRecursive(AssemblyDocument asmDoc)
+        {
+            try
+            {
+                var compDef = asmDoc.ComponentDefinition;
+                
+                // Cacher les WorkFeatures du document principal
+                HideWorkFeaturesInComponent(compDef);
+                
+                // Parcourir tous les sous-composants
+                foreach (ComponentOccurrence occ in compDef.Occurrences)
+                {
+                    try
+                    {
+                        HideReferencesInOccurrence(occ);
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Cache les WorkFeatures dans une ComponentDefinition
+        /// </summary>
+        private void HideWorkFeaturesInComponent(AssemblyComponentDefinition compDef)
+        {
+            try
+            {
+                // Plans de travail
+                foreach (WorkPlane wp in compDef.WorkPlanes)
+                {
+                    try { wp.Visible = false; } catch { }
+                }
+                // Axes de travail
+                foreach (WorkAxis wa in compDef.WorkAxes)
+                {
+                    try { wa.Visible = false; } catch { }
+                }
+                // Points de travail
+                foreach (WorkPoint wpt in compDef.WorkPoints)
+                {
+                    try { wpt.Visible = false; } catch { }
+                }
+                // Esquisses 2D (assemblages n'ont généralement pas d'esquisses)
+                try
+                {
+                    foreach (PlanarSketch sk in compDef.Sketches)
+                    {
+                        try { sk.Visible = false; } catch { }
+                    }
+                }
+                catch { }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Cache récursivement les références dans une occurrence et ses sous-occurrences
+        /// </summary>
+        private void HideReferencesInOccurrence(ComponentOccurrence occ)
+        {
+            try
+            {
+                Document occDoc = (Document)occ.Definition.Document;
+                string ext = System.IO.Path.GetExtension(occDoc.FullFileName).ToLowerInvariant();
+                
+                if (ext == ".iam")
+                {
+                    // Sous-assemblage: parcourir récursivement
+                    AssemblyDocument subAsm = (AssemblyDocument)occDoc;
+                    HideWorkFeaturesInComponent(subAsm.ComponentDefinition);
+                    
+                    foreach (ComponentOccurrence subOcc in subAsm.ComponentDefinition.Occurrences)
+                    {
+                        try
+                        {
+                            HideReferencesInOccurrence(subOcc);
+                        }
+                        catch { }
+                    }
+                }
+                else if (ext == ".ipt")
+                {
+                    // Pièce: cacher ses WorkFeatures
+                    PartDocument partDoc = (PartDocument)occDoc;
+                    var partDef = partDoc.ComponentDefinition;
+                    
+                    foreach (WorkPlane wp in partDef.WorkPlanes)
+                    {
+                        try { wp.Visible = false; } catch { }
+                    }
+                    foreach (WorkAxis wa in partDef.WorkAxes)
+                    {
+                        try { wa.Visible = false; } catch { }
+                    }
+                    foreach (WorkPoint wpt in partDef.WorkPoints)
+                    {
+                        try { wpt.Visible = false; } catch { }
+                    }
+                    foreach (PlanarSketch sk in partDef.Sketches)
+                    {
+                        try { sk.Visible = false; } catch { }
+                    }
+                    foreach (Sketch3D sk3d in partDef.Sketches3D)
+                    {
+                        try { sk3d.Visible = false; } catch { }
+                    }
+                }
+            }
+            catch { }
         }
 
         #endregion

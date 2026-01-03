@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("VaultAutomationTool")]
-[assembly: AssemblyDescription("Application WPF pour upload automatisé vers Autodesk Vault Professional 2026")]
+[assembly: AssemblyTitle("XNRGY Engineering Automation Tools")]
+[assembly: AssemblyDescription("Suite d'outils d'automatisation pour Vault et Inventor - XNRGY Climate Systems ULC")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("XNRGY Climate Systems ULC")]
-[assembly: AssemblyProduct("VaultAutomationTool - Smart Tools Amine")]
+[assembly: AssemblyProduct("XNRGY Engineering Automation Tools")]
 [assembly: AssemblyCopyright("Copyright © XNRGY Climate Systems ULC 2025")]
 [assembly: AssemblyTrademark("Smart Tools Amine")]
 [assembly: AssemblyCulture("")]

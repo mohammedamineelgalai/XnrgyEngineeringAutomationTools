@@ -131,6 +131,34 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             return activeDoc;
         }
 
+        /// <summary>
+        /// Exécute Vue Home + Zoom All silencieusement (sans log) pour ajuster la vue
+        /// </summary>
+        private void ExecuteIsoViewAndZoomAllSilent()
+        {
+            try
+            {
+                dynamic inventorApp = GetInventorApplication();
+                
+                // 1. Appliquer la vue isométrique (utilise ApplyIsometricView existant)
+                ApplyIsometricView(inventorApp);
+                
+                // 2. Zoom All
+                try
+                {
+                    dynamic cmdManager = inventorApp.CommandManager;
+                    dynamic controlDefs = cmdManager.ControlDefinitions;
+                    dynamic cmdZoom = controlDefs.Item("AppZoomAllCmd");
+                    cmdZoom.Execute();
+                }
+                catch { }
+            }
+            catch
+            {
+                // Ignorer silencieusement
+            }
+        }
+
         #region SmartHideBox - Masquage intelligent des composants
 
         /// <summary>
@@ -185,14 +213,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     }
 
                     // Mise à jour du document
-                    Log("Mise à jour du document...", "INFO");
                     doc.Update2(true);
-                    Log("HideBox exécuté avec succès", "SUCCESS");
+                    
+                    // Vue ISO + Zoom All silencieux
+                    ExecuteIsoViewAndZoomAllSilent();
+                    
+                    string action = (nombreCaches > nombreVisibles) ? "affiches" : "caches";
+                    Log($"[+] HideBox termine: {nombreTotalTraites} composants {action} - Vue ISO + Zoom All", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
-                    Log($"Erreur lors de l'exécution de HideBox: {ex.Message}", "ERROR");
-                    throw new Exception($"Erreur lors de l'exécution de HideBox: {ex.Message}", ex);
+                    Log($"Erreur lors de l'execution de HideBox: {ex.Message}", "ERROR");
+                    throw new Exception($"Erreur lors de l'execution de HideBox: {ex.Message}", ex);
                 }
             });
         }
@@ -541,11 +573,115 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
 
         #endregion
 
+        #region Helpers - Méthodes utilitaires pour accéder aux documents
+
+        /// <summary>
+        /// Obtient le document d'une occurrence de manière fiable pour une application externe
+        /// Essaie plusieurs méthodes pour accéder au document
+        /// </summary>
+        private dynamic? GetOccurrenceDocument(dynamic occ)
+        {
+            if (occ == null) return null;
+
+            // Méthode 1: Essayer occ.Definition.Document (si le document est déjà ouvert)
+            try
+            {
+                dynamic defDoc = occ.Definition.Document;
+                if (defDoc != null)
+                {
+                    // Vérifier que c'est un document valide
+                    try
+                    {
+                        var test = defDoc.DocumentType;
+                        return defDoc;
+                    }
+                    catch { }
+                }
+            }
+            catch { }
+
+            // Méthode 2: Essayer ReferencedDocumentDescriptor.ReferencedDocument
+            try
+            {
+                dynamic refDocDesc = occ.ReferencedDocumentDescriptor;
+                if (refDocDesc != null)
+                {
+                    dynamic refDoc = refDocDesc.ReferencedDocument;
+                    if (refDoc != null)
+                    {
+                        try
+                        {
+                            var test = refDoc.DocumentType;
+                            return refDoc;
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch { }
+
+            // Méthode 3: Essayer d'ouvrir le document depuis le chemin
+            try
+            {
+                dynamic inventorApp = GetInventorApplication();
+                string filePath = occ.ReferencedFileDescriptor.FullFileName;
+                if (!string.IsNullOrEmpty(filePath) && System.IO.File.Exists(filePath))
+                {
+                    // Vérifier si le document est déjà ouvert
+                    foreach (dynamic doc in inventorApp.Documents)
+                    {
+                        try
+                        {
+                            if (doc.FullFileName == filePath)
+                            {
+                                return doc;
+                            }
+                        }
+                        catch { }
+                    }
+
+                    // Ouvrir le document en lecture seule
+                    dynamic openedDoc = inventorApp.Documents.Open(filePath, false);
+                    if (openedDoc != null)
+                    {
+                        return openedDoc;
+                    }
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Obtient la définition d'un composant depuis une occurrence
+        /// Peut accéder directement aux workplanes/esquisses sans ouvrir le document
+        /// </summary>
+        private dynamic? GetOccurrenceDefinition(dynamic occ)
+        {
+            if (occ == null) return null;
+
+            try
+            {
+                dynamic definition = occ.Definition;
+                if (definition != null)
+                {
+                    return definition;
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
+        #endregion
+
         #region ToggleRefVisibility - Basculer visibilité des références
 
         /// <summary>
         /// Bascule la visibilité des éléments de référence (Plans, Axes, Points)
-        /// Code converti depuis Toggle_RefVisibility.Vb
+        /// Utilise doc.ObjectVisibility (API officielle Inventor 2011+)
+        /// Équivalent de: View > Object Visibility > All Work Features
         /// </summary>
         public async Task ExecuteToggleRefVisibilityAsync(Action<string, string>? logCallback = null)
         {
@@ -565,279 +701,499 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         throw new InvalidOperationException("Aucun document actif n'est ouvert.");
                     }
 
-                    // Vérifier le type de document de manière robuste
-                    // Utiliser la méthode robuste : vérifier les propriétés spécifiques
-                    bool isPartOrAssembly = false;
-                    string detectedType = "Inconnu";
-                    int docType = 0;
+                    // Vérifier le type de document via l'extension du fichier (méthode fiable avec dynamic)
+                    string fullFileName = doc.FullFileName;
+                    string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
                     
+                    bool isPart = extension == ".ipt";
+                    bool isAssembly = extension == ".iam";
+                    
+                    if (!isPart && !isAssembly)
+                    {
+                        Log("Ce script fonctionne uniquement sur des fichiers de type Piece ou Assemblage.", "WARNING");
+                        return;
+                    }
+                    
+                    string detectedType = isPart ? "Piece" : "Assemblage";
+                    Log($"Type de document detecte: {detectedType}", "INFO");
+
+                    // Déterminer l'état actuel (vérifier si quelque chose est visible)
+                    bool currentState = AreAnyRefVisible_Simplified(doc);
+                    bool newState = !currentState;
+                    
+                    Log($"Etat actuel: {(currentState ? "Visibles" : "Masquees")}. Nouvel etat: {(newState ? "Afficher" : "Masquer")}", "INFO");
+
+                    // ÉTAPE 1: ObjectVisibility pour les User Work Planes (API globale)
+                    // Cela affecte les User Work Planes dans TOUS les sous-assemblages automatiquement
                     try
                     {
-                        docType = doc.DocumentType;
+                        dynamic objVis = doc.ObjectVisibility;
                         
-                        // Vérifier si le document a ComponentDefinition (pièces et assemblages)
-                        dynamic componentDef = doc.ComponentDefinition;
-                        if (componentDef != null)
-                        {
-                            try
-                            {
-                                // Tester si c'est un assemblage (a Occurrences)
-                                dynamic occurrences = componentDef.Occurrences;
-                                if (occurrences != null)
-                                {
-                                    isPartOrAssembly = true;
-                                    detectedType = "Assemblage";
-                                }
-                            }
-                            catch
-                            {
-                                // Pas un assemblage, tester si c'est une pièce (a WorkPlanes)
-                                try
-                                {
-                                    dynamic workPlanes = componentDef.WorkPlanes;
-                                    if (workPlanes != null)
-                                    {
-                                        isPartOrAssembly = true;
-                                        detectedType = "Pièce";
-                                    }
-                                }
-                                catch
-                                {
-                                    // Ni assemblage ni pièce
-                                }
-                            }
-                        }
+                        Log($"Application ObjectVisibility pour User Work Features...", "INFO");
                         
-                        // Si la méthode robuste n'a pas fonctionné, utiliser DocumentType comme fallback
-                        if (!isPartOrAssembly)
-                        {
-                            const int kPartDocumentObject = 12288;
-                            const int kAssemblyDocumentObject = 12290;
-                            const int kDrawingDocumentObject = 12291;
-                            
-                            if (docType == kPartDocumentObject || docType == kAssemblyDocumentObject)
-                            {
-                                isPartOrAssembly = true;
-                                detectedType = docType == kPartDocumentObject ? "Pièce" : "Assemblage";
-                            }
-                            else if (docType == kDrawingDocumentObject)
-                            {
-                                detectedType = "Dessin";
-                            }
-                            else
-                            {
-                                detectedType = $"Type {docType}";
-                            }
-                        }
+                        // Basculer les User Work Features via ObjectVisibility
+                        try { objVis.UserWorkPlanes = newState; } catch { }
+                        try { objVis.UserWorkAxes = newState; } catch { }
+                        try { objVis.UserWorkPoints = newState; } catch { }
+                        
+                        Log($"[+] UserWorkPlanes={newState}, UserWorkAxes={newState}, UserWorkPoints={newState}", "INFO");
                     }
-                    catch (Exception ex)
+                    catch (Exception objVisEx)
                     {
-                        Log($"Erreur lors de la détection du type de document: {ex.Message}", "ERROR");
-                        throw;
+                        Log($"[!] ObjectVisibility.User* non disponible: {objVisEx.Message}", "WARNING");
                     }
 
-                    if (!isPartOrAssembly)
+                    // ÉTAPE 2: Méthode récursive individuelle pour les Origin Planes
+                    var stats = ToggleRefVisibility_Simplified(doc, newState);
+                    
+                    // Mise à jour de la vue
+                    try
                     {
-                        Log($"Ce script fonctionne uniquement sur des fichiers de type Pièce ou Assemblage. Type détecté: {detectedType} (DocumentType: {docType})", "WARNING");
-                        return; // Ne pas lever d'exception, juste logger et sortir
+                        dynamic activeView = inventorApp.ActiveView;
+                        if (activeView != null)
+                        {
+                            activeView.Update();
+                        }
                     }
+                    catch { }
                     
-                    Log($"Type de document détecté: {detectedType}", "INFO");
-
-                    Log("Analyse de l'état actuel des références...", "INFO");
-                    // Déterminer l'état actuel
-                    bool currentState = AreAnyRefVisible(doc);
+                    // Vue ISO + Zoom All silencieux
+                    ExecuteIsoViewAndZoomAllSilent();
                     
-                    Log($"État actuel: {(currentState ? "Visibles" : "Masquées")}. Basculement...", "INFO");
-                    // Basculer la visibilité
-                    ToggleRefVisibility(doc, !currentState);
-                    Log("Visibilité des références basculée avec succès", "SUCCESS");
+                    string action = newState ? "affichees" : "cachees";
+                    Log($"[+] References {action} - Vue ISO + Zoom All", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
-                    Log($"Erreur lors de l'exécution de ToggleRefVisibility: {ex.Message}", "ERROR");
-                    throw new Exception($"Erreur lors de l'exécution de ToggleRefVisibility: {ex.Message}", ex);
+                    Log($"Erreur lors de l'execution de ToggleRefVisibility: {ex.Message}", "ERROR");
+                    throw new Exception($"Erreur lors de l'execution de ToggleRefVisibility: {ex.Message}", ex);
                 }
             });
         }
 
-        private bool AreAnyRefVisible(dynamic doc)
+        /// <summary>
+        /// Structure pour les statistiques (comme dans le VB original)
+        /// </summary>
+        private struct RefStats
         {
-            try
-            {
-                int docType = doc.DocumentType;
-                const int kPartDocumentObject = 12288;
-                const int kAssemblyDocumentObject = 12290;
-
-                if (docType == kPartDocumentObject)
-                {
-                    dynamic partDef = doc.ComponentDefinition;
-                    
-                    // Vérifier WorkPlanes
-                    dynamic workPlanes = partDef.WorkPlanes;
-                    foreach (dynamic wp in workPlanes)
-                    {
-                        if (wp.Visible) return true;
-                    }
-                    
-                    // Vérifier WorkAxes
-                    dynamic workAxes = partDef.WorkAxes;
-                    foreach (dynamic wa in workAxes)
-                    {
-                        if (wa.Visible) return true;
-                    }
-                    
-                    // Vérifier WorkPoints
-                    dynamic workPoints = partDef.WorkPoints;
-                    foreach (dynamic wpt in workPoints)
-                    {
-                        if (wpt.Visible) return true;
-                    }
-                }
-                else if (docType == kAssemblyDocumentObject)
-                {
-                    dynamic asmDef = doc.ComponentDefinition;
-                    dynamic occurrences = asmDef.Occurrences;
-                    
-                    foreach (dynamic occ in occurrences)
-                    {
-                        if (!occ.Suppressed && occ.Visible)
-                        {
-                            try
-                            {
-                                dynamic defDoc = occ.Definition.Document;
-                                if (AreAnyRefVisible(defDoc))
-                                {
-                                    return true;
-                                }
-                            }
-                            catch
-                            {
-                                // Continuer
-                            }
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Erreur dans la détection de visibilité : {ex.Message}", 
-                    "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-
-            return false;
+            public int WorkPlanes;
+            public int WorkAxes;
+            public int WorkPoints;
+            public int DocumentsProcessed;
         }
 
-        private void ToggleRefVisibility(dynamic doc, bool visibleState)
+        /// <summary>
+        /// Vérifie si au moins une référence est visible (pattern SDK externe COM)
+        /// </summary>
+        private bool AreAnyRefVisible_Simplified(dynamic doc)
         {
             try
             {
-                // Détecter le type de manière robuste
-                bool isPart = false;
-                bool isAssembly = false;
+                // Utiliser l'extension du fichier pour déterminer le type (fiable avec dynamic)
+                string fullFileName = doc.FullFileName;
+                string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
+                bool isPart = extension == ".ipt";
+                bool isAssembly = extension == ".iam";
                 
-                try
-                {
-                    dynamic componentDef = doc.ComponentDefinition;
-                    if (componentDef != null)
-                    {
-                        try
-                        {
-                            dynamic occurrences = componentDef.Occurrences;
-                            if (occurrences != null)
-                            {
-                                isAssembly = true;
-                            }
-                        }
-                        catch
-                        {
-                            // Pas un assemblage, probablement une pièce
-                            isPart = true;
-                        }
-                    }
-                }
-                catch
-                {
-                    // Fallback sur DocumentType
-                    int docType = doc.DocumentType;
-                    const int kPartDocumentObject = 12288;
-                    const int kAssemblyDocumentObject = 12290;
-                    isPart = (docType == kPartDocumentObject);
-                    isAssembly = (docType == kAssemblyDocumentObject);
-                }
-
                 if (isPart)
                 {
+                    // C'est une pièce - vérifier les WorkPlanes/Axes/Points
                     dynamic partDef = doc.ComponentDefinition;
                     
-                    // WorkPlanes
-                    dynamic workPlanes = partDef.WorkPlanes;
-                    foreach (dynamic wp in workPlanes)
+                    try
                     {
-                        wp.Visible = visibleState;
+                        dynamic workPlanes = partDef.WorkPlanes;
+                        for (int i = 1; i <= workPlanes.Count; i++)
+                        {
+                            try { if (workPlanes[i].Visible) return true; } catch { }
+                        }
                     }
+                    catch { }
                     
-                    // WorkAxes
-                    dynamic workAxes = partDef.WorkAxes;
-                    foreach (dynamic wa in workAxes)
+                    try
                     {
-                        wa.Visible = visibleState;
+                        dynamic workAxes = partDef.WorkAxes;
+                        for (int i = 1; i <= workAxes.Count; i++)
+                        {
+                            try { if (workAxes[i].Visible) return true; } catch { }
+                        }
                     }
+                    catch { }
                     
-                    // WorkPoints
-                    dynamic workPoints = partDef.WorkPoints;
-                    foreach (dynamic wpt in workPoints)
+                    try
                     {
-                        wpt.Visible = visibleState;
+                        dynamic workPoints = partDef.WorkPoints;
+                        for (int i = 1; i <= workPoints.Count; i++)
+                        {
+                            try { if (workPoints[i].Visible) return true; } catch { }
+                        }
                     }
+                    catch { }
                 }
                 else if (isAssembly)
                 {
+                    // C'est un assemblage
                     dynamic asmDef = doc.ComponentDefinition;
                     
-                    // Éléments de référence du niveau d'assemblage
-                    dynamic workPlanes = asmDef.WorkPlanes;
-                    foreach (dynamic wp in workPlanes)
+                    // Vérifier au niveau de l'assemblage
+                    try
                     {
-                        wp.Visible = visibleState;
-                    }
-                    
-                    dynamic workAxes = asmDef.WorkAxes;
-                    foreach (dynamic wa in workAxes)
-                    {
-                        wa.Visible = visibleState;
-                    }
-                    
-                    dynamic workPoints = asmDef.WorkPoints;
-                    foreach (dynamic wpt in workPoints)
-                    {
-                        wpt.Visible = visibleState;
-                    }
-                    
-                    // Parcourir les occurrences
-                    dynamic occurrences = asmDef.Occurrences;
-                    foreach (dynamic occ in occurrences)
-                    {
-                        if (!occ.Suppressed && occ.Visible)
+                        dynamic workPlanes = asmDef.WorkPlanes;
+                        for (int i = 1; i <= workPlanes.Count; i++)
                         {
-                            try
-                            {
-                                dynamic defDoc = occ.Definition.Document;
-                                ToggleRefVisibility(defDoc, visibleState);
-                            }
-                            catch
-                            {
-                                // Continuer
-                            }
+                            try { if (workPlanes[i].Visible) return true; } catch { }
                         }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        dynamic workAxes = asmDef.WorkAxes;
+                        for (int i = 1; i <= workAxes.Count; i++)
+                        {
+                            try { if (workAxes[i].Visible) return true; } catch { }
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        dynamic workPoints = asmDef.WorkPoints;
+                        for (int i = 1; i <= workPoints.Count; i++)
+                        {
+                            try { if (workPoints[i].Visible) return true; } catch { }
+                        }
+                    }
+                    catch { }
+                    
+                    // PARCOURS RÉCURSIF - Pattern SDK externe COM
+                    // Utiliser index 1-based et SubOccurrences pour sous-assemblages
+                    if (AreAnyRefVisibleInOccurrences(asmDef.Occurrences))
+                    {
+                        return true;
                     }
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur dans le changement de visibilité : {ex.Message}", 
-                    "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                System.Diagnostics.Debug.WriteLine($"[!] Erreur AreAnyRefVisible_Simplified: {ex.Message}");
             }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// Vérifie récursivement les occurrences (pattern SDK externe COM avec SubOccurrences)
+        /// </summary>
+        private bool AreAnyRefVisibleInOccurrences(dynamic occurrences)
+        {
+            try
+            {
+                int count = occurrences.Count;
+                for (int i = 1; i <= count; i++)
+                {
+                    try
+                    {
+                        dynamic occ = occurrences[i];
+                        
+                        // Vérifier si l'occurrence n'est pas supprimée et est visible
+                        bool suppressed = false;
+                        bool visible = true;
+                        try { suppressed = occ.Suppressed; } catch { }
+                        try { visible = occ.Visible; } catch { }
+                        
+                        if (!suppressed && visible)
+                        {
+                            // Vérifier les éléments de référence dans la définition
+                            try
+                            {
+                                dynamic definition = occ.Definition;
+                                if (definition != null)
+                                {
+                                    // WorkPlanes
+                                    try
+                                    {
+                                        dynamic workPlanes = definition.WorkPlanes;
+                                        for (int j = 1; j <= workPlanes.Count; j++)
+                                        {
+                                            try { if (workPlanes[j].Visible) return true; } catch { }
+                                        }
+                                    }
+                                    catch { }
+                                    
+                                    // WorkAxes
+                                    try
+                                    {
+                                        dynamic workAxes = definition.WorkAxes;
+                                        for (int j = 1; j <= workAxes.Count; j++)
+                                        {
+                                            try { if (workAxes[j].Visible) return true; } catch { }
+                                        }
+                                    }
+                                    catch { }
+                                    
+                                    // WorkPoints
+                                    try
+                                    {
+                                        dynamic workPoints = definition.WorkPoints;
+                                        for (int j = 1; j <= workPoints.Count; j++)
+                                        {
+                                            try { if (workPoints[j].Visible) return true; } catch { }
+                                        }
+                                    }
+                                    catch { }
+                                }
+                            }
+                            catch { }
+                            
+                            // PATTERN SDK EXTERNE: Utiliser SubOccurrences pour sous-assemblages
+                            try
+                            {
+                                dynamic subOccurrences = occ.SubOccurrences;
+                                if (subOccurrences != null && subOccurrences.Count > 0)
+                                {
+                                    if (AreAnyRefVisibleInOccurrences(subOccurrences))
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[!] Erreur AreAnyRefVisibleInOccurrences: {ex.Message}");
+            }
+            
+            return false;
+        }
+
+        /// <summary>
+        /// Bascule la visibilité des références de manière récursive (pattern SDK externe COM)
+        /// </summary>
+        private RefStats ToggleRefVisibility_Simplified(dynamic doc, bool visibleState)
+        {
+            var stats = new RefStats();
+            
+            try
+            {
+                // Utiliser l'extension du fichier pour déterminer le type (fiable avec dynamic)
+                string fullFileName = doc.FullFileName;
+                string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
+                bool isPart = extension == ".ipt";
+                bool isAssembly = extension == ".iam";
+                
+                if (isPart)
+                {
+                    // C'est une pièce - traiter les WorkPlanes/Axes/Points
+                    dynamic partDef = doc.ComponentDefinition;
+                    
+                    // WorkPlanes - inclut Origin Planes ET User Work Planes
+                    try
+                    {
+                        dynamic workPlanes = partDef.WorkPlanes;
+                        int wpCount = workPlanes.Count;
+                        Log($"[DEBUG] Piece: {wpCount} WorkPlanes trouvés", "INFO");
+                        for (int i = 1; i <= wpCount; i++)
+                        {
+                            try 
+                            { 
+                                dynamic wp = workPlanes[i];
+                                string wpName = wp.Name;
+                                wp.Visible = visibleState; 
+                                stats.WorkPlanes++; 
+                                Log($"[DEBUG]   Plan '{wpName}' -> {visibleState}", "INFO");
+                            } 
+                            catch (Exception wpEx) 
+                            { 
+                                Log($"[DEBUG]   Erreur plan[{i}]: {wpEx.Message}", "WARNING");
+                            }
+                        }
+                    }
+                    catch (Exception ex) { Log($"[DEBUG] Erreur acces WorkPlanes: {ex.Message}", "WARNING"); }
+                    
+                    // WorkAxes - inclut Origin Axes ET User Work Axes
+                    try
+                    {
+                        dynamic workAxes = partDef.WorkAxes;
+                        int waCount = workAxes.Count;
+                        Log($"[DEBUG] Piece: {waCount} WorkAxes trouvés", "INFO");
+                        for (int i = 1; i <= waCount; i++)
+                        {
+                            try 
+                            { 
+                                dynamic wa = workAxes[i];
+                                wa.Visible = visibleState; 
+                                stats.WorkAxes++; 
+                            } 
+                            catch { }
+                        }
+                    }
+                    catch { }
+                    
+                    // WorkPoints - inclut Origin Point ET User Work Points
+                    try
+                    {
+                        dynamic workPoints = partDef.WorkPoints;
+                        int wptCount = workPoints.Count;
+                        Log($"[DEBUG] Piece: {wptCount} WorkPoints trouvés", "INFO");
+                        for (int i = 1; i <= wptCount; i++)
+                        {
+                            try 
+                            { 
+                                dynamic wpt = workPoints[i];
+                                wpt.Visible = visibleState; 
+                                stats.WorkPoints++; 
+                            } 
+                            catch { }
+                        }
+                    }
+                    catch { }
+                    
+                    stats.DocumentsProcessed = 1;
+                }
+                else if (isAssembly)
+                {
+                    // C'est un assemblage
+                    dynamic asmDef = doc.ComponentDefinition;
+                    string docName = doc.DisplayName;
+                    Log($"[DEBUG] Assemblage: {docName}", "INFO");
+                    
+                    // Éléments de référence au niveau de l'assemblage
+                    try
+                    {
+                        dynamic workPlanes = asmDef.WorkPlanes;
+                        int wpCount = workPlanes.Count;
+                        Log($"[DEBUG] Assemblage: {wpCount} WorkPlanes au niveau racine", "INFO");
+                        for (int i = 1; i <= wpCount; i++)
+                        {
+                            try 
+                            { 
+                                dynamic wp = workPlanes[i];
+                                string wpName = wp.Name;
+                                wp.Visible = visibleState; 
+                                stats.WorkPlanes++; 
+                                Log($"[DEBUG]   Plan '{wpName}' -> {visibleState}", "INFO");
+                            } 
+                            catch (Exception wpEx) 
+                            { 
+                                Log($"[DEBUG]   Erreur plan[{i}]: {wpEx.Message}", "WARNING");
+                            }
+                        }
+                    }
+                    catch (Exception ex) { Log($"[DEBUG] Erreur acces WorkPlanes asm: {ex.Message}", "WARNING"); }
+                    
+                    try
+                    {
+                        dynamic workAxes = asmDef.WorkAxes;
+                        int waCount = workAxes.Count;
+                        Log($"[DEBUG] Assemblage: {waCount} WorkAxes au niveau racine", "INFO");
+                        for (int i = 1; i <= waCount; i++)
+                        {
+                            try { workAxes[i].Visible = visibleState; stats.WorkAxes++; } catch { }
+                        }
+                    }
+                    catch { }
+                    
+                    try
+                    {
+                        dynamic workPoints = asmDef.WorkPoints;
+                        int wptCount = workPoints.Count;
+                        Log($"[DEBUG] Assemblage: {wptCount} WorkPoints au niveau racine", "INFO");
+                        for (int i = 1; i <= wptCount; i++)
+                        {
+                            try { workPoints[i].Visible = visibleState; stats.WorkPoints++; } catch { }
+                        }
+                    }
+                    catch { }
+                    
+                    stats.DocumentsProcessed = 1;
+                    
+                    // PARCOURS RÉCURSIF - Pattern SDK externe COM avec SubOccurrences
+                    Log($"[DEBUG] Debut parcours recursif des occurrences...", "INFO");
+                    var subStats = ToggleRefVisibilityInOccurrences(asmDef.Occurrences, visibleState);
+                    stats.WorkPlanes += subStats.WorkPlanes;
+                    stats.WorkAxes += subStats.WorkAxes;
+                    stats.WorkPoints += subStats.WorkPoints;
+                    stats.DocumentsProcessed += subStats.DocumentsProcessed;
+                    Log($"[DEBUG] Fin parcours recursif: {subStats.WorkPlanes}P, {subStats.WorkAxes}A, {subStats.WorkPoints}Pt dans {subStats.DocumentsProcessed} docs", "INFO");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Erreur dans ToggleRefVisibility_Simplified: {ex.Message}", "ERROR");
+            }
+            
+            return stats;
+        }
+        
+        /// <summary>
+        /// Bascule récursivement les occurrences (pattern identique au VB original Add-In)
+        /// Utilise occ.Definition.Document pour accéder au document réel et modifier les WorkPlanes
+        /// </summary>
+        private RefStats ToggleRefVisibilityInOccurrences(dynamic occurrences, bool visibleState)
+        {
+            var stats = new RefStats();
+            
+            try
+            {
+                int count = occurrences.Count;
+                Log($"Parcours de {count} occurrence(s)...", "INFO");
+                
+                for (int i = 1; i <= count; i++)
+                {
+                    try
+                    {
+                        dynamic occ = occurrences[i];
+                        
+                        // Vérifier si l'occurrence n'est pas supprimée et est visible
+                        bool suppressed = false;
+                        bool visible = true;
+                        string occName = "Inconnu";
+                        try { suppressed = occ.Suppressed; } catch { }
+                        try { visible = occ.Visible; } catch { }
+                        try { occName = occ.Name; } catch { }
+                        
+                        if (!suppressed && visible)
+                        {
+                            // PATTERN IDENTIQUE AU VB ORIGINAL:
+                            // Récupérer le document via occ.Definition.Document
+                            // puis appeler récursivement ToggleRefVisibility_Simplified sur ce document
+                            try
+                            {
+                                dynamic subDoc = occ.Definition.Document;
+                                if (subDoc != null)
+                                {
+                                    Log($"  [{i}] Traitement recursif document: {occName}", "INFO");
+                                    var subStats = ToggleRefVisibility_Simplified(subDoc, visibleState);
+                                    stats.WorkPlanes += subStats.WorkPlanes;
+                                    stats.WorkAxes += subStats.WorkAxes;
+                                    stats.WorkPoints += subStats.WorkPoints;
+                                    stats.DocumentsProcessed += subStats.DocumentsProcessed;
+                                }
+                            }
+                            catch (Exception docEx)
+                            {
+                                Log($"  [{i}] Erreur acces document {occName}: {docEx.Message}", "WARNING");
+                            }
+                        }
+                    }
+                    catch (Exception occEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[!] Erreur occurrence index {i}: {occEx.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Erreur dans ToggleRefVisibilityInOccurrences: {ex.Message}", "ERROR");
+            }
+            
+            return stats;
         }
 
         #endregion
@@ -846,7 +1202,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
 
         /// <summary>
         /// Active ou désactive la visibilité de toutes les esquisses (2D et 3D)
-        /// Code converti depuis Toggle_SketchVisibility.Vb
+        /// Utilise doc.ObjectVisibility (API officielle Inventor 2011+)
+        /// Équivalent de: View > Object Visibility > Sketches / Sketches3D
         /// </summary>
         public async Task ExecuteToggleSketchVisibilityAsync(Action<string, string>? logCallback = null)
         {
@@ -866,110 +1223,56 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         throw new InvalidOperationException("Aucun document actif n'est ouvert.");
                     }
 
-                    // Vérifier le type de document de manière robuste
-                    bool isPartOrAssembly = false;
-                    string detectedType = "Inconnu";
-                    int docType = 0;
+                    // Vérifier le type de document via l'extension du fichier (méthode fiable avec dynamic)
+                    string fullFileName = doc.FullFileName;
+                    string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
                     
-                    try
+                    bool isPart = extension == ".ipt";
+                    bool isAssembly = extension == ".iam";
+                    
+                    if (!isPart && !isAssembly)
                     {
-                        docType = doc.DocumentType;
-                        
-                        // Vérifier si le document a ComponentDefinition (pièces et assemblages)
-                        dynamic componentDef = doc.ComponentDefinition;
-                        if (componentDef != null)
-                        {
-                            try
-                            {
-                                // Tester si c'est un assemblage (a Occurrences)
-                                dynamic occurrences = componentDef.Occurrences;
-                                if (occurrences != null)
-                                {
-                                    isPartOrAssembly = true;
-                                    detectedType = "Assemblage";
-                                }
-                            }
-                            catch
-                            {
-                                // Pas un assemblage, tester si c'est une pièce (a WorkPlanes ou Sketches)
-                                try
-                                {
-                                    dynamic workPlanes = componentDef.WorkPlanes;
-                                    if (workPlanes != null)
-                                    {
-                                        isPartOrAssembly = true;
-                                        detectedType = "Pièce";
-                                    }
-                                }
-                                catch
-                                {
-                                    // Essayer avec Sketches
-                                    try
-                                    {
-                                        dynamic sketches = componentDef.Sketches;
-                                        if (sketches != null)
-                                        {
-                                            isPartOrAssembly = true;
-                                            detectedType = "Pièce";
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        // Ni assemblage ni pièce
-                                    }
-                                }
-                            }
-                        }
-                        
-                        // Si la méthode robuste n'a pas fonctionné, utiliser DocumentType comme fallback
-                        if (!isPartOrAssembly)
-                        {
-                            const int kPartDocumentObject = 12288;
-                            const int kAssemblyDocumentObject = 12290;
-                            const int kDrawingDocumentObject = 12291;
-                            
-                            if (docType == kPartDocumentObject || docType == kAssemblyDocumentObject)
-                            {
-                                isPartOrAssembly = true;
-                                detectedType = docType == kPartDocumentObject ? "Pièce" : "Assemblage";
-                            }
-                            else if (docType == kDrawingDocumentObject)
-                            {
-                                detectedType = "Dessin";
-                            }
-                            else
-                            {
-                                detectedType = $"Type {docType}";
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log($"Erreur lors de la détection du type de document: {ex.Message}", "ERROR");
-                        throw;
-                    }
-
-                    if (!isPartOrAssembly)
-                    {
-                        Log($"Ce script fonctionne uniquement sur des fichiers .ipt ou .iam. Type détecté: {detectedType} (DocumentType: {docType})", "WARNING");
+                        Log("Ce script fonctionne uniquement sur des fichiers .ipt ou .iam.", "WARNING");
                         return;
                     }
                     
-                    Log($"Type de document détecté: {detectedType}", "INFO");
+                    string detectedType = isPart ? "Piece" : "Assemblage";
+                    Log($"Type de document detecte: {detectedType}", "INFO");
 
-                    Log("Analyse des esquisses...", "INFO");
-                    var processor = new SketchVisibilityProcessor();
-                    processor.AnalyzeDocument(doc);
-                    Log($"Esquisses trouvées: {processor.TotalCount} (Visibles: {processor.VisibleCount}, Masquées: {processor.HiddenCount})", "INFO");
-                    processor.ToggleSketches(doc);
+                    // Déterminer l'état actuel (vérifier si quelque chose est visible)
+                    bool currentState = HasSketchVisible_Simplified(doc);
+                    bool newState = !currentState;
+                    
+                    Log($"Etat actuel: {(currentState ? "Certaines visibles" : "Toutes masquees")}. Nouvel etat: {(newState ? "Afficher" : "Masquer")}", "INFO");
+
+                    // ÉTAPE 1: ObjectVisibility pour les Sketches (API globale)
+                    try
+                    {
+                        dynamic objVis = doc.ObjectVisibility;
+                        try { objVis.Sketches = newState; } catch { }
+                        try { objVis.Sketches3D = newState; } catch { }
+                    }
+                    catch { }
+
+                    // ÉTAPE 2: Méthode récursive individuelle pour tous les documents
+                    ToggleSketches_Simplified(doc, newState);
                     
                     // Mise à jour de la vue
-                    dynamic activeView = inventorApp.ActiveView;
-                    if (activeView != null)
+                    try
                     {
-                        activeView.Update();
+                        dynamic activeView = inventorApp.ActiveView;
+                        if (activeView != null)
+                        {
+                            activeView.Update();
+                        }
                     }
-                    Log("Visibilité des esquisses basculée avec succès", "SUCCESS");
+                    catch { }
+                    
+                    // Vue ISO + Zoom All silencieux
+                    ExecuteIsoViewAndZoomAllSilent();
+                    
+                    string action = newState ? "affichees" : "cachees";
+                    Log($"[+] Esquisses {action} - Vue ISO + Zoom All", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
@@ -978,348 +1281,284 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             });
         }
 
-        private class SketchVisibilityProcessor
+        /// <summary>
+        /// Vérifie si au moins une esquisse est visible (pattern SDK externe COM)
+        /// </summary>
+        private bool HasSketchVisible_Simplified(dynamic doc)
         {
-            public int VisibleCount { get; set; } = 0;
-            public int HiddenCount { get; set; } = 0;
-            public int TotalCount { get; set; } = 0;
-            public bool TargetVisibility { get; set; } = true;
-
-            public void AnalyzeDocument(dynamic doc)
+            try
             {
+                // Utiliser l'extension du fichier pour déterminer le type (fiable avec dynamic)
+                string fullFileName = doc.FullFileName;
+                string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
+                bool isAssembly = extension == ".iam";
+                
+                dynamic def = doc.ComponentDefinition;
+                
+                // Vérifier les esquisses 2D du document courant (index 1-based)
                 try
                 {
-                    int docType = doc.DocumentType;
-                    const int kPartDocumentObject = 12288;
-                    const int kAssemblyDocumentObject = 12290;
-
-                    if (docType == kPartDocumentObject)
+                    dynamic sketches = def.Sketches;
+                    for (int i = 1; i <= sketches.Count; i++)
                     {
-                        AnalyzePart(doc.ComponentDefinition);
-                    }
-                    else if (docType == kAssemblyDocumentObject)
-                    {
-                        AnalyzeAssembly(doc);
-                    }
-
-                    TotalCount = VisibleCount + HiddenCount;
-
-                    if (TotalCount > 0)
-                    {
-                        TargetVisibility = (VisibleCount <= HiddenCount);
+                        try { if (sketches[i].Visible) return true; } catch { }
                     }
                 }
-                catch (Exception ex)
+                catch { }
+                
+                // Vérifier les esquisses 3D
+                try
                 {
-                    System.Diagnostics.Debug.WriteLine($"Erreur analyse document: {ex.Message}");
+                    dynamic sketches3D = def.Sketches3D;
+                    for (int i = 1; i <= sketches3D.Count; i++)
+                    {
+                        try { if (sketches3D[i].Visible) return true; } catch { }
+                    }
+                }
+                catch { }
+                
+                // Vérification récursive pour les assemblages (PATTERN SDK EXTERNE COM)
+                if (isAssembly)
+                {
+                    if (HasSketchVisibleInOccurrences(def.Occurrences))
+                    {
+                        return true;
+                    }
                 }
             }
-
-            private void AnalyzePart(dynamic partDef)
+            catch (Exception ex)
             {
-                try
+                System.Diagnostics.Debug.WriteLine($"[!] Erreur HasSketchVisible_Simplified: {ex.Message}");
+            }
+            
+            return false;
+        }
+        
+        /// <summary>
+        /// Vérifie récursivement les esquisses dans les occurrences (pattern SDK externe COM avec SubOccurrences)
+        /// </summary>
+        private bool HasSketchVisibleInOccurrences(dynamic occurrences)
+        {
+            try
+            {
+                int count = occurrences.Count;
+                for (int i = 1; i <= count; i++)
                 {
-                    // Esquisses 2D
-                    dynamic sketches = partDef.Sketches;
-                    foreach (dynamic sketch in sketches)
-                    {
-                        if (sketch.Visible)
-                        {
-                            VisibleCount++;
-                        }
-                        else
-                        {
-                            HiddenCount++;
-                        }
-                    }
-
-                    // Esquisses 3D
                     try
                     {
-                        dynamic sketches3D = partDef.Sketches3D;
-                        if (sketches3D != null)
+                        dynamic occ = occurrences[i];
+                        
+                        // Vérifier si l'occurrence n'est pas supprimée et est visible
+                        bool suppressed = false;
+                        bool visible = true;
+                        try { suppressed = occ.Suppressed; } catch { }
+                        try { visible = occ.Visible; } catch { }
+                        
+                        if (!suppressed && visible)
                         {
-                            foreach (dynamic sketch3d in sketches3D)
-                            {
-                                if (sketch3d.Visible)
-                                {
-                                    VisibleCount++;
-                                }
-                                else
-                                {
-                                    HiddenCount++;
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // Pas d'esquisses 3D
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erreur analyse pièce: {ex.Message}");
-                }
-            }
-
-            private void AnalyzeAssembly(dynamic doc)
-            {
-                try
-                {
-                    AnalyzePart(doc.ComponentDefinition);
-
-                    int docType = doc.DocumentType;
-                    const int kAssemblyDocumentObject = 12290;
-
-                    if (docType == kAssemblyDocumentObject)
-                    {
-                        dynamic asmDef = doc.ComponentDefinition;
-                        dynamic occurrences = asmDef.Occurrences;
-
-                        foreach (dynamic occ in occurrences)
-                        {
+                            // Vérifier les esquisses dans la définition
                             try
                             {
-                                AnalyzePart(occ.Definition);
-
-                                // Traitement récursif pour les sous-assemblages
-                                try
+                                dynamic definition = occ.Definition;
+                                if (definition != null)
                                 {
-                                    int defDocType = occ.DefinitionDocumentType;
-                                    if (defDocType == kAssemblyDocumentObject)
+                                    // Sketches 2D
+                                    try
                                     {
-                                        dynamic subOccurrences = occ.SubOccurrences;
-                                        if (subOccurrences != null && subOccurrences.Count > 0)
+                                        dynamic sketches = definition.Sketches;
+                                        for (int j = 1; j <= sketches.Count; j++)
                                         {
-                                            AnalyzeSubOccurrences(subOccurrences);
+                                            try { if (sketches[j].Visible) return true; } catch { }
                                         }
                                     }
-                                }
-                                catch
-                                {
-                                    // Pas de sous-occurrences
-                                }
-                            }
-                            catch
-                            {
-                                // Continuer
-                            }
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erreur analyse assemblage: {ex.Message}");
-                }
-            }
-
-            private void AnalyzeSubOccurrences(dynamic occurrences)
-            {
-                try
-                {
-                    foreach (dynamic occ in occurrences)
-                    {
-                        try
-                        {
-                            if (occ != null && occ.IsActive)
-                            {
-                                AnalyzePart(occ.Definition);
-
-                                const int kAssemblyDocumentObject = 12290;
-                                try
-                                {
-                                    int defDocType = occ.DefinitionDocumentType;
-                                    if (defDocType == kAssemblyDocumentObject)
+                                    catch { }
+                                    
+                                    // Sketches 3D
+                                    try
                                     {
-                                        dynamic subOccurrences = occ.SubOccurrences;
-                                        if (subOccurrences != null && subOccurrences.Count > 0)
+                                        dynamic sketches3D = definition.Sketches3D;
+                                        for (int j = 1; j <= sketches3D.Count; j++)
                                         {
-                                            AnalyzeSubOccurrences(subOccurrences);
+                                            try { if (sketches3D[j].Visible) return true; } catch { }
                                         }
                                     }
-                                }
-                                catch
-                                {
-                                    // Pas de sous-occurrences
+                                    catch { }
                                 }
                             }
+                            catch { }
+                            
+                            // PATTERN SDK EXTERNE: Utiliser SubOccurrences pour sous-assemblages
+                            try
+                            {
+                                dynamic subOccurrences = occ.SubOccurrences;
+                                if (subOccurrences != null && subOccurrences.Count > 0)
+                                {
+                                    if (HasSketchVisibleInOccurrences(subOccurrences))
+                                    {
+                                        return true;
+                                    }
+                                }
+                            }
+                            catch { }
                         }
-                        catch
-                        {
-                            // Continuer
-                        }
                     }
-                }
-                catch
-                {
-                    // Continuer
-                }
-            }
-
-            public void ToggleSketches(dynamic doc)
-            {
-                try
-                {
-                    int docType = doc.DocumentType;
-                    const int kPartDocumentObject = 12288;
-                    const int kAssemblyDocumentObject = 12290;
-
-                    if (docType == kPartDocumentObject)
-                    {
-                        ApplyVisibilityToPart(doc.ComponentDefinition, TargetVisibility);
-                    }
-                    else if (docType == kAssemblyDocumentObject)
-                    {
-                        ApplyVisibilityToAssembly(doc, TargetVisibility);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Erreur toggle esquisses: {ex.Message}");
+                    catch { }
                 }
             }
-
-            private void ApplyVisibilityToPart(dynamic partDef, bool newState)
+            catch (Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine($"[!] Erreur HasSketchVisibleInOccurrences: {ex.Message}");
+            }
+            
+            return false;
+        }
+
+        /// <summary>
+        /// Bascule la visibilité des esquisses de manière récursive (pattern SDK externe COM)
+        /// </summary>
+        private void ToggleSketches_Simplified(dynamic doc, bool visibleState)
+        {
+            try
+            {
+                // Utiliser l'extension du fichier pour déterminer le type (fiable avec dynamic)
+                string fullFileName = doc.FullFileName;
+                string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
+                bool isAssembly = extension == ".iam";
+                
+                dynamic def = doc.ComponentDefinition;
+                int sketchCount = 0;
+                
+                // Basculer les esquisses 2D du document courant (index 1-based)
                 try
                 {
-                    // Esquisses 2D
-                    dynamic sketches = partDef.Sketches;
-                    foreach (dynamic sketch in sketches)
+                    dynamic sketches = def.Sketches;
+                    for (int i = 1; i <= sketches.Count; i++)
                     {
-                        try
-                        {
-                            sketch.Visible = newState;
-                        }
-                        catch
-                        {
-                            // Continuer
-                        }
+                        try { sketches[i].Visible = visibleState; sketchCount++; } catch { }
                     }
-
-                    // Esquisses 3D
+                }
+                catch { }
+                
+                // Basculer les esquisses 3D
+                try
+                {
+                    dynamic sketches3D = def.Sketches3D;
+                    for (int i = 1; i <= sketches3D.Count; i++)
+                    {
+                        try { sketches3D[i].Visible = visibleState; sketchCount++; } catch { }
+                    }
+                }
+                catch { }
+                
+                if (sketchCount > 0)
+                {
+                    Log($"Document principal: {sketchCount} esquisse(s) traitee(s)", "INFO");
+                }
+                
+                // Traitement récursif pour les assemblages (PATTERN SDK EXTERNE COM)
+                if (isAssembly)
+                {
+                    ToggleSketchesInOccurrences(def.Occurrences, visibleState);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[!] Erreur ToggleSketches_Simplified: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// Bascule récursivement les esquisses dans les occurrences (pattern SDK externe COM avec SubOccurrences)
+        /// </summary>
+        private void ToggleSketchesInOccurrences(dynamic occurrences, bool visibleState)
+        {
+            try
+            {
+                int count = occurrences.Count;
+                
+                for (int i = 1; i <= count; i++)
+                {
                     try
                     {
-                        dynamic sketches3D = partDef.Sketches3D;
-                        if (sketches3D != null)
+                        dynamic occ = occurrences[i];
+                        
+                        // Vérifier si l'occurrence n'est pas supprimée et est visible
+                        bool suppressed = false;
+                        bool visible = true;
+                        string occName = "Inconnu";
+                        try { suppressed = occ.Suppressed; } catch { }
+                        try { visible = occ.Visible; } catch { }
+                        try { occName = occ.Name; } catch { }
+                        
+                        if (!suppressed && visible)
                         {
-                            foreach (dynamic sketch3d in sketches3D)
-                            {
-                                try
-                                {
-                                    sketch3d.Visible = newState;
-                                }
-                                catch
-                                {
-                                    // Continuer
-                                }
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        // Pas d'esquisses 3D
-                    }
-                }
-                catch
-                {
-                    // Continuer
-                }
-            }
-
-            private void ApplyVisibilityToAssembly(dynamic doc, bool newState)
-            {
-                try
-                {
-                    ApplyVisibilityToPart(doc.ComponentDefinition, newState);
-
-                    int docType = doc.DocumentType;
-                    const int kAssemblyDocumentObject = 12290;
-
-                    if (docType == kAssemblyDocumentObject)
-                    {
-                        dynamic asmDef = doc.ComponentDefinition;
-                        dynamic occurrences = asmDef.Occurrences;
-
-                        foreach (dynamic occ in occurrences)
-                        {
+                            int sketchCount = 0;
+                            
+                            // Traiter les esquisses dans la définition
                             try
                             {
-                                ApplyVisibilityToPart(occ.Definition, newState);
-
-                                // Traitement récursif
-                                try
+                                dynamic definition = occ.Definition;
+                                if (definition != null)
                                 {
-                                    int defDocType = occ.DefinitionDocumentType;
-                                    if (defDocType == kAssemblyDocumentObject)
+                                    // Sketches 2D
+                                    try
                                     {
-                                        dynamic subOccurrences = occ.SubOccurrences;
-                                        if (subOccurrences != null && subOccurrences.Count > 0)
+                                        dynamic sketches = definition.Sketches;
+                                        for (int j = 1; j <= sketches.Count; j++)
                                         {
-                                            ApplyVisibilityToSubOccurrences(subOccurrences, newState);
+                                            try { sketches[j].Visible = visibleState; sketchCount++; } catch { }
                                         }
                                     }
-                                }
-                                catch
-                                {
-                                    // Pas de sous-occurrences
+                                    catch { }
+                                    
+                                    // Sketches 3D
+                                    try
+                                    {
+                                        dynamic sketches3D = definition.Sketches3D;
+                                        for (int j = 1; j <= sketches3D.Count; j++)
+                                        {
+                                            try { sketches3D[j].Visible = visibleState; sketchCount++; } catch { }
+                                        }
+                                    }
+                                    catch { }
+                                    
+                                    if (sketchCount > 0)
+                                    {
+                                        Log($"  [{i}] {occName}: {sketchCount} esquisse(s)", "INFO");
+                                    }
                                 }
                             }
-                            catch
+                            catch (Exception defEx)
                             {
-                                // Continuer
+                                System.Diagnostics.Debug.WriteLine($"[!] Erreur definition {occName}: {defEx.Message}");
                             }
+                            
+                            // PATTERN SDK EXTERNE: Utiliser SubOccurrences pour sous-assemblages
+                            try
+                            {
+                                dynamic subOccurrences = occ.SubOccurrences;
+                                if (subOccurrences != null)
+                                {
+                                    int subCount = subOccurrences.Count;
+                                    if (subCount > 0)
+                                    {
+                                        Log($"  [{i}] {occName} est un sous-assemblage avec {subCount} sous-composants", "INFO");
+                                        ToggleSketchesInOccurrences(subOccurrences, visibleState);
+                                    }
+                                }
+                            }
+                            catch { }
                         }
                     }
-                }
-                catch
-                {
-                    // Continuer
+                    catch (Exception occEx)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[!] Erreur occurrence esquisse index {i}: {occEx.Message}");
+                    }
                 }
             }
-
-            private void ApplyVisibilityToSubOccurrences(dynamic occurrences, bool newState)
+            catch (Exception ex)
             {
-                try
-                {
-                    foreach (dynamic occ in occurrences)
-                    {
-                        try
-                        {
-                            if (occ != null && occ.IsActive)
-                            {
-                                ApplyVisibilityToPart(occ.Definition, newState);
-
-                                const int kAssemblyDocumentObject = 12290;
-                                try
-                                {
-                                    int defDocType = occ.DefinitionDocumentType;
-                                    if (defDocType == kAssemblyDocumentObject)
-                                    {
-                                        dynamic subOccurrences = occ.SubOccurrences;
-                                        if (subOccurrences != null && subOccurrences.Count > 0)
-                                        {
-                                            ApplyVisibilityToSubOccurrences(subOccurrences, newState);
-                                        }
-                                    }
-                                }
-                                catch
-                                {
-                                    // Pas de sous-occurrences
-                                }
-                            }
-                        }
-                        catch
-                        {
-                            // Continuer
-                        }
-                    }
-                }
-                catch
-                {
-                    // Continuer
-                }
+                Log($"Erreur dans ToggleSketchesInOccurrences: {ex.Message}", "ERROR");
             }
         }
 
@@ -2023,18 +2262,34 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 dynamic activeView = inventorApp.ActiveView;
                 if (activeView != null)
                 {
-                    dynamic cam = activeView.Camera;
-                    const int kIsoTopRightViewOrientation = 4;
-                    cam.ViewOrientationType = kIsoTopRightViewOrientation;
-                    cam.Perspective = false;
-                    cam.Fit();
-                    cam.Apply();
-                    activeView.Update();
+                    // Utiliser la commande native Inventor pour vue ISO
+                    try
+                    {
+                        dynamic cmdManager = inventorApp.CommandManager;
+                        dynamic controlDefs = cmdManager.ControlDefinitions;
+                        // "AppIsometricViewCmd" est la commande native pour vue ISO
+                        dynamic cmdIso = controlDefs.Item("AppIsometricViewCmd");
+                        cmdIso.Execute();
+                        // La commande gère tout (caméra + update) - ne rien faire après
+                        return;
+                    }
+                    catch
+                    {
+                        // Fallback: définir la caméra manuellement
+                        dynamic cam = activeView.Camera;
+                        cam.Eye = inventorApp.TransientGeometry.CreatePoint(1, 1, 1);
+                        cam.Target = inventorApp.TransientGeometry.CreatePoint(0, 0, 0);
+                        cam.UpVector = inventorApp.TransientGeometry.CreateUnitVector(0, 1, 0);
+                        cam.Perspective = false;
+                        cam.Fit();
+                        cam.Apply();
+                        activeView.Update();
+                    }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Continuer
+                System.Diagnostics.Debug.WriteLine($"[ApplyIsometricView] Erreur: {ex.Message}");
             }
         }
 
@@ -3665,7 +3920,10 @@ Date: 2026-01-02";
                         catch { }
                     }
 
-                    Log($"Box/Template/MultiOpening masqués: {maskedCount}", "SUCCESS");
+                    // Vue ISO + Zoom All silencieux
+                    ExecuteIsoViewAndZoomAllSilent();
+                    
+                    Log($"[+] Box/Template/MultiOpening: {maskedCount} caches - Vue ISO + Zoom All", "SUCCESS");
                 }
                 catch (Exception ex)
                 {

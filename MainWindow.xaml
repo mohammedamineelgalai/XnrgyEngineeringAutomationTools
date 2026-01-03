@@ -136,7 +136,7 @@
                 <!-- Titre avec Logo -->
                 <Viewbox Grid.Column="1" Stretch="Uniform" MaxWidth="800" MaxHeight="80" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                        <Image Source="/Resources/VaultAutomationTool.png" Width="64" Height="64" Margin="0,0,15,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <Image Source="/Resources/XnrgyEngineeringAutomationTools.png" Width="64" Height="64" Margin="0,0,15,0" RenderOptions.BitmapScalingMode="HighQuality"/>
                         <StackPanel VerticalAlignment="Center">
                             <TextBlock x:Name="TitleText" Text="XNRGY Engineering Automation Tools v1.0.0" 
                                        FontSize="22" FontWeight="Bold" Foreground="White"/>

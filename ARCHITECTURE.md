@@ -85,8 +85,8 @@ XnrgyEngineeringAutomationTools/
 |   |-- etc.
 |
 |-- Resources/                           # Images et icones
-|   |-- VaultAutomationTool.ico
-|   |-- VaultAutomationTool.png
+|   |-- XnrgyEngineeringAutomationTools.ico
+|   |-- XnrgyEngineeringAutomationTools.png
 |
 |-- Assets/                              # Assets visuels
 |   |-- Icons/
