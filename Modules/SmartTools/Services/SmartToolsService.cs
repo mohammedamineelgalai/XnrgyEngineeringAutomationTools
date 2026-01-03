@@ -1,20 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using XnrgyEngineeringAutomationTools.Services;
+using XnrgyEngineeringAutomationTools.Modules.SmartTools.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
 {
     /// <summary>
     /// Service pour exécuter les outils Smart Tools directement via COM Inventor
     /// Code converti depuis VB (règles iLogic) vers C#
+    /// By Mohammed Amine Elgalai - XNRGY Climate Systems ULC
     /// </summary>
     public class SmartToolsService
     {
         private readonly InventorService _inventorService;
         private Action<string, string>? _logCallback;
+        private Action<string, string>? _htmlPopupCallback;
+        private Func<string, string, ExportOptionsResult?>? _exportOptionsCallback;
 
         public SmartToolsService(InventorService inventorService)
         {
@@ -29,9 +34,33 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             _logCallback = callback;
         }
 
+        /// <summary>
+        /// Définit le callback pour afficher les popups HTML
+        /// </summary>
+        public void SetHtmlPopupCallback(Action<string, string>? callback)
+        {
+            _htmlPopupCallback = callback;
+        }
+
+        /// <summary>
+        /// Définit le callback pour afficher les options d'export
+        /// </summary>
+        public void SetExportOptionsCallback(Func<string, string, ExportOptionsResult?>? callback)
+        {
+            _exportOptionsCallback = callback;
+        }
+
         private void Log(string message, string level = "INFO")
         {
             _logCallback?.Invoke(message, level);
+        }
+
+        /// <summary>
+        /// Affiche une popup HTML
+        /// </summary>
+        private void ShowHtmlPopup(string title, string htmlContent)
+        {
+            _htmlPopupCallback?.Invoke(title, htmlContent);
         }
 
         /// <summary>
@@ -536,18 +565,84 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         throw new InvalidOperationException("Aucun document actif n'est ouvert.");
                     }
 
-                    // Vérifier le type de document
-                    int docType = doc.DocumentType;
-                    const int kPartDocumentObject = 12288;
-                    const int kAssemblyDocumentObject = 12290;
-                    const int kDrawingDocumentObject = 12291;
-
-                    if (docType != kPartDocumentObject && docType != kAssemblyDocumentObject)
+                    // Vérifier le type de document de manière robuste
+                    // Utiliser la méthode robuste : vérifier les propriétés spécifiques
+                    bool isPartOrAssembly = false;
+                    string detectedType = "Inconnu";
+                    int docType = 0;
+                    
+                    try
                     {
-                        string docTypeName = docType == kDrawingDocumentObject ? "Dessin" : "Autre";
-                        Log($"Ce script fonctionne uniquement sur des fichiers de type Pièce ou Assemblage. Type actuel: {docTypeName}", "WARNING");
-                        return; // Ne pas lever d'exception, juste logger
+                        docType = doc.DocumentType;
+                        
+                        // Vérifier si le document a ComponentDefinition (pièces et assemblages)
+                        dynamic componentDef = doc.ComponentDefinition;
+                        if (componentDef != null)
+                        {
+                            try
+                            {
+                                // Tester si c'est un assemblage (a Occurrences)
+                                dynamic occurrences = componentDef.Occurrences;
+                                if (occurrences != null)
+                                {
+                                    isPartOrAssembly = true;
+                                    detectedType = "Assemblage";
+                                }
+                            }
+                            catch
+                            {
+                                // Pas un assemblage, tester si c'est une pièce (a WorkPlanes)
+                                try
+                                {
+                                    dynamic workPlanes = componentDef.WorkPlanes;
+                                    if (workPlanes != null)
+                                    {
+                                        isPartOrAssembly = true;
+                                        detectedType = "Pièce";
+                                    }
+                                }
+                                catch
+                                {
+                                    // Ni assemblage ni pièce
+                                }
+                            }
+                        }
+                        
+                        // Si la méthode robuste n'a pas fonctionné, utiliser DocumentType comme fallback
+                        if (!isPartOrAssembly)
+                        {
+                            const int kPartDocumentObject = 12288;
+                            const int kAssemblyDocumentObject = 12290;
+                            const int kDrawingDocumentObject = 12291;
+                            
+                            if (docType == kPartDocumentObject || docType == kAssemblyDocumentObject)
+                            {
+                                isPartOrAssembly = true;
+                                detectedType = docType == kPartDocumentObject ? "Pièce" : "Assemblage";
+                            }
+                            else if (docType == kDrawingDocumentObject)
+                            {
+                                detectedType = "Dessin";
+                            }
+                            else
+                            {
+                                detectedType = $"Type {docType}";
+                            }
+                        }
                     }
+                    catch (Exception ex)
+                    {
+                        Log($"Erreur lors de la détection du type de document: {ex.Message}", "ERROR");
+                        throw;
+                    }
+
+                    if (!isPartOrAssembly)
+                    {
+                        Log($"Ce script fonctionne uniquement sur des fichiers de type Pièce ou Assemblage. Type détecté: {detectedType} (DocumentType: {docType})", "WARNING");
+                        return; // Ne pas lever d'exception, juste logger et sortir
+                    }
+                    
+                    Log($"Type de document détecté: {detectedType}", "INFO");
 
                     Log("Analyse de l'état actuel des références...", "INFO");
                     // Déterminer l'état actuel
@@ -637,11 +732,41 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         {
             try
             {
-                int docType = doc.DocumentType;
-                const int kPartDocumentObject = 12288;
-                const int kAssemblyDocumentObject = 12290;
+                // Détecter le type de manière robuste
+                bool isPart = false;
+                bool isAssembly = false;
+                
+                try
+                {
+                    dynamic componentDef = doc.ComponentDefinition;
+                    if (componentDef != null)
+                    {
+                        try
+                        {
+                            dynamic occurrences = componentDef.Occurrences;
+                            if (occurrences != null)
+                            {
+                                isAssembly = true;
+                            }
+                        }
+                        catch
+                        {
+                            // Pas un assemblage, probablement une pièce
+                            isPart = true;
+                        }
+                    }
+                }
+                catch
+                {
+                    // Fallback sur DocumentType
+                    int docType = doc.DocumentType;
+                    const int kPartDocumentObject = 12288;
+                    const int kAssemblyDocumentObject = 12290;
+                    isPart = (docType == kPartDocumentObject);
+                    isAssembly = (docType == kAssemblyDocumentObject);
+                }
 
-                if (docType == kPartDocumentObject)
+                if (isPart)
                 {
                     dynamic partDef = doc.ComponentDefinition;
                     
@@ -666,7 +791,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         wpt.Visible = visibleState;
                     }
                 }
-                else if (docType == kAssemblyDocumentObject)
+                else if (isAssembly)
                 {
                     dynamic asmDef = doc.ComponentDefinition;
                     
@@ -741,15 +866,96 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         throw new InvalidOperationException("Aucun document actif n'est ouvert.");
                     }
 
-                    int docType = doc.DocumentType;
-                    const int kPartDocumentObject = 12288;
-                    const int kAssemblyDocumentObject = 12290;
-
-                    if (docType != kPartDocumentObject && docType != kAssemblyDocumentObject)
+                    // Vérifier le type de document de manière robuste
+                    bool isPartOrAssembly = false;
+                    string detectedType = "Inconnu";
+                    int docType = 0;
+                    
+                    try
                     {
-                        Log("Ce script fonctionne uniquement sur des fichiers .ipt ou .iam.", "WARNING");
+                        docType = doc.DocumentType;
+                        
+                        // Vérifier si le document a ComponentDefinition (pièces et assemblages)
+                        dynamic componentDef = doc.ComponentDefinition;
+                        if (componentDef != null)
+                        {
+                            try
+                            {
+                                // Tester si c'est un assemblage (a Occurrences)
+                                dynamic occurrences = componentDef.Occurrences;
+                                if (occurrences != null)
+                                {
+                                    isPartOrAssembly = true;
+                                    detectedType = "Assemblage";
+                                }
+                            }
+                            catch
+                            {
+                                // Pas un assemblage, tester si c'est une pièce (a WorkPlanes ou Sketches)
+                                try
+                                {
+                                    dynamic workPlanes = componentDef.WorkPlanes;
+                                    if (workPlanes != null)
+                                    {
+                                        isPartOrAssembly = true;
+                                        detectedType = "Pièce";
+                                    }
+                                }
+                                catch
+                                {
+                                    // Essayer avec Sketches
+                                    try
+                                    {
+                                        dynamic sketches = componentDef.Sketches;
+                                        if (sketches != null)
+                                        {
+                                            isPartOrAssembly = true;
+                                            detectedType = "Pièce";
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        // Ni assemblage ni pièce
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Si la méthode robuste n'a pas fonctionné, utiliser DocumentType comme fallback
+                        if (!isPartOrAssembly)
+                        {
+                            const int kPartDocumentObject = 12288;
+                            const int kAssemblyDocumentObject = 12290;
+                            const int kDrawingDocumentObject = 12291;
+                            
+                            if (docType == kPartDocumentObject || docType == kAssemblyDocumentObject)
+                            {
+                                isPartOrAssembly = true;
+                                detectedType = docType == kPartDocumentObject ? "Pièce" : "Assemblage";
+                            }
+                            else if (docType == kDrawingDocumentObject)
+                            {
+                                detectedType = "Dessin";
+                            }
+                            else
+                            {
+                                detectedType = $"Type {docType}";
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"Erreur lors de la détection du type de document: {ex.Message}", "ERROR");
+                        throw;
+                    }
+
+                    if (!isPartOrAssembly)
+                    {
+                        Log($"Ce script fonctionne uniquement sur des fichiers .ipt ou .iam. Type détecté: {detectedType} (DocumentType: {docType})", "WARNING");
                         return;
                     }
+                    
+                    Log($"Type de document détecté: {detectedType}", "INFO");
 
                     Log("Analyse des esquisses...", "INFO");
                     var processor = new SketchVisibilityProcessor();
@@ -1932,6 +2138,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
 
             await Task.Run(() =>
             {
+                Log("Affichage des informations Smart Tools...", "INFO");
                 string info = @"Smart Tools - Outils d'automatisation Inventor v1.7
 
 Outils disponibles:

@@ -1171,12 +1171,12 @@ namespace XnrgyEngineeringAutomationTools
             
             try
             {
-                // Passer le service Vault pour affichage du statut de connexion
-                var smartToolsWindow = new SmartToolsWindow(_isVaultConnected ? _vaultService : null);
+                // Passer le service Vault et le callback de log pour affichage du statut de connexion
+                var smartToolsWindow = new SmartToolsWindow(_isVaultConnected ? _vaultService : null, AddLog);
                 smartToolsWindow.Owner = this;
                 smartToolsWindow.Show();
                 
-                AddLog("Smart Tools ouvert avec succès", "SUCCESS");
+                AddLog("Smart Tools ouvert avec succes", "SUCCESS");
             }
             catch (Exception ex)
             {

@@ -1,16 +1,19 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Documents;
 using XnrgyEngineeringAutomationTools.Modules.SmartTools.Services;
 using XnrgyEngineeringAutomationTools.Services;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
 {
     /// <summary>
     /// Fenêtre principale pour Smart Tools - Outils d'automatisation Inventor
     /// Migré depuis SmartToolsAmineAddin vers application externe
+    /// By Mohammed Amine Elgalai - XNRGY Climate Systems ULC
     /// </summary>
     public partial class SmartToolsWindow : Window
     {
@@ -18,11 +21,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         private readonly InventorService _inventorService;
         private readonly VaultSdkService? _vaultService;
         private System.Windows.Threading.DispatcherTimer? _inventorStatusTimer;
+        
+        /// <summary>
+        /// Callback pour propager les logs vers le journal principal de MainWindow
+        /// </summary>
+        public Action<string, string>? MainWindowLogCallback { get; set; }
 
         /// <summary>
         /// Constructeur par défaut (sans service Vault)
         /// </summary>
-        public SmartToolsWindow() : this(null)
+        public SmartToolsWindow() : this(null, null)
         {
         }
 
@@ -30,12 +38,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         /// Constructeur avec service Vault pour affichage du statut
         /// </summary>
         /// <param name="vaultService">Service Vault connecté (optionnel)</param>
-        public SmartToolsWindow(VaultSdkService? vaultService)
+        /// <param name="mainLogCallback">Callback pour propager les logs vers MainWindow (optionnel)</param>
+        public SmartToolsWindow(VaultSdkService? vaultService, Action<string, string>? mainLogCallback = null)
         {
             InitializeComponent();
             _inventorService = new InventorService();
             _smartToolsService = new SmartToolsService(_inventorService);
             _vaultService = vaultService;
+            MainWindowLogCallback = mainLogCallback;
+            
+            // Passer le callback pour les popups HTML au service
+            _smartToolsService.SetHtmlPopupCallback(ShowHtmlPopup);
+            _smartToolsService.SetExportOptionsCallback(ShowExportOptions);
             
             Loaded += SmartToolsWindow_Loaded;
             Closed += SmartToolsWindow_Closed;
@@ -136,9 +150,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Exécution de HideBox...", LogLevel.INFO);
                 await _smartToolsService.ExecuteHideBoxAsync((msg, level) => Log(msg, level));
-                Log("HideBox exécuté avec succès", LogLevel.SUCCESS);
+                // Tous les messages sont déjà loggés dans le service
             }
             catch (Exception ex)
             {
@@ -150,9 +163,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Basculage de la visibilité des références...", LogLevel.INFO);
                 await _smartToolsService.ExecuteToggleRefVisibilityAsync((msg, level) => Log(msg, level));
-                Log("Visibilité des références basculée avec succès", LogLevel.SUCCESS);
+                // Tous les messages (début, progression, succès, erreurs) sont déjà loggés dans le service
             }
             catch (Exception ex)
             {
@@ -164,9 +176,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Basculage de la visibilité des esquisses...", LogLevel.INFO);
                 await _smartToolsService.ExecuteToggleSketchVisibilityAsync((msg, level) => Log(msg, level));
-                Log("Visibilité des esquisses basculée avec succès", LogLevel.SUCCESS);
+                // Tous les messages sont déjà loggés dans le service
             }
             catch (Exception ex)
             {
@@ -178,9 +189,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Génération du rapport de contraintes...", LogLevel.INFO);
                 await _smartToolsService.ExecuteConstraintReportAsync((msg, level) => Log(msg, level));
-                Log("Rapport de contraintes généré avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -192,9 +201,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Génération du résumé des propriétés...", LogLevel.INFO);
                 await _smartToolsService.ExecuteIPropertiesSummaryAsync((msg, level) => Log(msg, level));
-                Log("Résumé des propriétés généré avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -206,9 +213,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Fermeture sécurisée en cours...", LogLevel.INFO);
                 await _smartToolsService.ExecuteSafeCloseAsync((msg, level) => Log(msg, level));
-                Log("Fermeture sécurisée effectuée avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -220,9 +225,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Sauvegarde intelligente en cours...", LogLevel.INFO);
                 await _smartToolsService.ExecuteSmartSaveAsync((msg, level) => Log(msg, level));
-                Log("Sauvegarde intelligente effectuée avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -234,9 +237,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Export IAM vers IPT en cours...", LogLevel.INFO);
                 await _smartToolsService.ExecuteExportIAMToIPTAsync((msg, level) => Log(msg, level));
-                Log("Export IAM vers IPT effectué avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -248,9 +249,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Export IDW vers PDF en cours...", LogLevel.INFO);
                 await _smartToolsService.ExecuteExportIDWtoShopPDFAsync((msg, level) => Log(msg, level));
-                Log("Export IDW vers PDF effectué avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -262,9 +261,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Centrage des formulaires en cours...", LogLevel.INFO);
                 await _smartToolsService.ExecuteFormCenteringUtilityAsync((msg, level) => Log(msg, level));
-                Log("Centrage des formulaires effectué avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -276,9 +273,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Centrage des formulaires iLogic en cours...", LogLevel.INFO);
                 await _smartToolsService.ExecuteILogicFormsCentredAsync((msg, level) => Log(msg, level));
-                Log("Centrage des formulaires iLogic effectué avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -290,9 +285,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Affichage des informations...", LogLevel.INFO);
-                await _smartToolsService.ExecuteInfoCommandAsync();
-                Log("Informations affichées avec succès", LogLevel.SUCCESS);
+                await _smartToolsService.ExecuteInfoCommandAsync((msg, level) => Log(msg, level));
             }
             catch (Exception ex)
             {
@@ -304,9 +297,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Activation de l'auto-sauvegarde...", LogLevel.INFO);
                 await _smartToolsService.ExecuteAutoSaveAsync((msg, level) => Log(msg, level));
-                Log("Auto-sauvegarde activée avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -318,9 +309,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Vérification du statut de sauvegarde...", LogLevel.INFO);
                 await _smartToolsService.ExecuteCheckSaveStatusAsync((msg, level) => Log(msg, level));
-                Log("Statut vérifié avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -332,9 +321,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Réduction/Développement de l'arborescence...", LogLevel.INFO);
                 await _smartToolsService.ExecuteCollapseExpandAllAsync((msg, level) => Log(msg, level));
-                Log("Arborescence mise à jour avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -346,9 +333,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Insertion de vis dans les trous...", LogLevel.INFO);
                 await _smartToolsService.ExecuteInsertSpecificScrewInHolesAsync((msg, level) => Log(msg, level));
-                Log("Vis insérées avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -360,9 +345,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Modification batch des propriétés...", LogLevel.INFO);
                 await _smartToolsService.ExecuteIPropertyCustomBatchAsync((msg, level) => Log(msg, level));
-                Log("Propriétés modifiées avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -374,9 +357,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Correction des variables promues...", LogLevel.INFO);
                 await _smartToolsService.ExecuteFixPromotedVariesAsync((msg, level) => Log(msg, level));
-                Log("Variables corrigées avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -388,9 +369,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Application de la vue isométrique 2D...", LogLevel.INFO);
                 await _smartToolsService.Execute2DIsometricViewAsync((msg, level) => Log(msg, level));
-                Log("Vue isométrique appliquée avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -402,9 +381,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Ouverture du composant sélectionné...", LogLevel.INFO);
                 await _smartToolsService.ExecuteOpenSelectedComponentAsync((msg, level) => Log(msg, level));
-                Log("Composant ouvert avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -416,9 +393,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Retour à la vue de face...", LogLevel.INFO);
                 await _smartToolsService.ExecuteReturnToFrontViewAsync((msg, level) => Log(msg, level));
-                Log("Vue de face appliquée avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -430,9 +405,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Mise à jour de la feuille actuelle...", LogLevel.INFO);
                 await _smartToolsService.ExecuteUpdateCurrentSheetAsync((msg, level) => Log(msg, level));
-                Log("Feuille mise à jour avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -444,9 +417,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                Log("Masquage des templates multi-opening...", LogLevel.INFO);
                 await _smartToolsService.ExecuteHideBoxTemplateMultiOpeningAsync((msg, level) => Log(msg, level));
-                Log("Templates masqués avec succès", LogLevel.SUCCESS);
             }
             catch (Exception ex)
             {
@@ -533,8 +504,61 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
                 
                 TxtLog.Document.Blocks.Add(paragraph);
                 TxtLog.ScrollToEnd();
+                
+                // Propager vers le journal principal de MainWindow si callback défini
+                MainWindowLogCallback?.Invoke($"[SmartTools] {message}", level);
             });
         }
+
+        /// <summary>
+        /// Callback pour afficher une popup HTML (iProperties, rapports, etc.)
+        /// </summary>
+        private void ShowHtmlPopup(string title, string htmlContent)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                HtmlPopupWindow.ShowHtml(title, htmlContent, this);
+            });
+        }
+
+        /// <summary>
+        /// Callback pour afficher la fenêtre d'options d'export IAM
+        /// </summary>
+        private ExportOptionsResult? ShowExportOptions(string sourceFileName, string sourcePath)
+        {
+            ExportOptionsResult? result = null;
+            Dispatcher.Invoke(() =>
+            {
+                var options = ExportOptionsWindow.ShowOptions(sourceFileName, sourcePath, this);
+                if (options != null)
+                {
+                    result = new ExportOptionsResult
+                    {
+                        Format = options.SelectedFormat,
+                        DestinationPath = options.DestinationPath,
+                        OutputFileName = options.OutputFileName,
+                        FullOutputPath = options.FullOutputPath,
+                        HideReferences = options.HideReferences,
+                        ActivateDefaultRepresentation = options.ActivateDefaultRepresentation,
+                        OpenAfterExport = options.OpenAfterExport
+                    };
+                }
+            });
+            return result;
+        }
+    }
+
+    /// <summary>
+    /// Résultat des options d'export
+    /// </summary>
+    public class ExportOptionsResult
+    {
+        public ExportFormat Format { get; set; }
+        public string DestinationPath { get; set; } = "";
+        public string OutputFileName { get; set; } = "";
+        public string FullOutputPath { get; set; } = "";
+        public bool HideReferences { get; set; }
+        public bool ActivateDefaultRepresentation { get; set; }
+        public bool OpenAfterExport { get; set; }
     }
 }
-

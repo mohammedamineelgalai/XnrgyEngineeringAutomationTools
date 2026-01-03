@@ -230,6 +230,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Modules\SmartTools\Views\HtmlPopupWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\SmartTools\Views\ExportOptionsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <!-- ========== STYLES ========== -->
     <Page Include="Styles\XnrgyStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -291,6 +299,14 @@
     <!-- ========== CODE-BEHIND: MODULE SMART TOOLS ========== -->
     <Compile Include="Modules\SmartTools\Views\SmartToolsWindow.xaml.cs">
       <DependentUpon>SmartToolsWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\SmartTools\Views\HtmlPopupWindow.xaml.cs">
+      <DependentUpon>HtmlPopupWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\SmartTools\Views\ExportOptionsWindow.xaml.cs">
+      <DependentUpon>ExportOptionsWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Modules\SmartTools\Services\*.cs" />

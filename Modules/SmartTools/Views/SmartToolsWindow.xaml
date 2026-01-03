@@ -70,7 +70,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="150"/>
         </Grid.RowDefinitions>
 
         <!-- HEADER -->
@@ -358,7 +358,7 @@
                 <!-- Contenu Journal avec couleurs -->
                 <RichTextBox x:Name="TxtLog" Grid.Row="1" Background="Transparent" 
                              BorderThickness="0" IsReadOnly="True" 
-                             FontFamily="Consolas" FontSize="12" Padding="10,5"
+                             FontFamily="Consolas" FontSize="14" Padding="10,5"
                              VerticalScrollBarVisibility="Auto"
                              Foreground="White">
                     <RichTextBox.Resources>
