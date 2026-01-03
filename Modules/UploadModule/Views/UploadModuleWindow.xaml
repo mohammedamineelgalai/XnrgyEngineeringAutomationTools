@@ -236,12 +236,14 @@
         <!-- ========== TEXTBOX MODERNE ========== -->
         <Style x:Key="ModernTextBox" TargetType="TextBox">
             <Setter Property="Background" Value="#2D2D44"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -249,7 +251,13 @@
                                 BorderBrush="{TemplateBinding BorderBrush}" 
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="6">
-                            <ScrollViewer x:Name="PART_ContentHost" Margin="2"/>
+                            <ScrollViewer x:Name="PART_ContentHost" 
+                                          Margin="0" 
+                                          VerticalContentAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          HorizontalContentAlignment="Left"
+                                          VerticalScrollBarVisibility="Disabled"
+                                          HorizontalScrollBarVisibility="Disabled"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsFocused" Value="True">
@@ -368,45 +376,49 @@
                 </Grid.ColumnDefinitions>
                 
                 <!-- Logo + Titre + Description -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#AEEA00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
-                        <TextBlock Text="&#x1F4E4;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="📤 Upload Module - Vault Check-In v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                            <Run Text="💡 Upload des fichiers Inventor et documents vers Autodesk Vault avec les proprietes XNRGY automatiques"/>
-                        </TextBlock>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Centre: Statistiques (agrandies) -->
-                <Border Grid.Column="1" Background="#1A1A28" CornerRadius="6" Padding="15,4" Margin="20,0" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        BorderBrush="#4A7FBF" BorderThickness="2">
-                    <StackPanel VerticalAlignment="Center">
-                        <!-- Titre -->
-                        <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <!-- Valeurs -->
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtStatsTotal" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📊 Total" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtStatsInventor" Text="0" Foreground="#FFD700" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📐 Inventor" Foreground="#FFD700" FontSize="11" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtStatsNonInventor" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📄 Autres" Foreground="#FFB74D" FontSize="11" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="✅ Selection" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
-                            </StackPanel>
+                <Viewbox Grid.Column="0" Stretch="Uniform" MaxWidth="600" MaxHeight="80" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="#AEEA00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
+                            <TextBlock Text="&#x1F4E4;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="📤 Upload Module - Vault Check-In v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                                <Run Text="💡 Upload des fichiers Inventor et documents vers Autodesk Vault avec les proprietes XNRGY automatiques"/>
+                            </TextBlock>
                         </StackPanel>
                     </StackPanel>
-                </Border>
+                </Viewbox>
+
+                <!-- Centre: Statistiques (agrandies) -->
+                <Viewbox Grid.Column="1" Stretch="Uniform" MaxWidth="500" MaxHeight="80" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0">
+                    <Border Background="#1A1A28" CornerRadius="6" Padding="15,4"
+                            BorderBrush="#4A7FBF" BorderThickness="2">
+                        <StackPanel VerticalAlignment="Center">
+                            <!-- Titre -->
+                            <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <!-- Valeurs -->
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsTotal" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="📊 Total" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsInventor" Text="0" Foreground="#FFD700" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="📐 Inventor" Foreground="#FFD700" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsNonInventor" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="📄 Autres" Foreground="#FFB74D" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="✅ Selection" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Viewbox>
 
                 <!-- Droite: Connexion Vault + Propriétés -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
@@ -453,7 +465,7 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <TextBox x:Name="TxtProjectPath" Grid.Column="0" Style="{StaticResource PathTextBox}" Height="34" FontSize="14" FontWeight="Bold" VerticalContentAlignment="Center" TextWrapping="Wrap" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled" Foreground="#FFFFFF"/>
+                <TextBox x:Name="TxtProjectPath" Grid.Column="0" Style="{StaticResource PathTextBox}" Height="34" VerticalContentAlignment="Center" TextWrapping="Wrap" VerticalScrollBarVisibility="Disabled" HorizontalScrollBarVisibility="Disabled"/>
                 
                 <Button Grid.Column="1" Content="📋 Module" Style="{StaticResource SecondaryButton}" 
                         Background="#0078D4" Foreground="White" FontSize="13"
@@ -491,7 +503,8 @@
                     <!-- Recherche -->
                     <TextBlock Text="🔍" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="14" Foreground="White"/>
                     <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Width="180" Height="32" 
-                             TextChanged="TxtSearch_TextChanged" ToolTip="Rechercher par nom" VerticalContentAlignment="Center"/>
+                             TextChanged="TxtSearch_TextChanged" ToolTip="Rechercher par nom" 
+                             VerticalContentAlignment="Center" VerticalAlignment="Center"/>
                     
                     <!-- Filtre Extension (chargé dynamiquement) -->
                     <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
@@ -536,7 +549,7 @@
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
                         <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileType}" Width="70" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileType}" Width="90" IsReadOnly="True"/>
                         <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="80" IsReadOnly="True"/>
                         <DataGridTextColumn Header="📁 Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
                         <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="150" IsReadOnly="True"/>

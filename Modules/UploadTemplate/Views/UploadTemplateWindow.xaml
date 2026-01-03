@@ -31,11 +31,12 @@
         <!-- ========== STYLE TEXTBOX (identique VaultUploadModule) ========== -->
         <Style x:Key="ModernTextBox" TargetType="TextBox">
             <Setter Property="Background" Value="{DynamicResource DarkBg3}"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextLight}"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="VerticalScrollBarVisibility" Value="Disabled"/>
             <Setter Property="Template">
@@ -459,49 +460,53 @@
                 </Grid.ColumnDefinitions>
                 
                 <!-- Logo + Titre + Description -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#9B59B6" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
-                        <TextBlock Text="&#x1F4E4;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="📤 Upload Template vers Vault v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                            <Run Text="💡 Upload massif de fichiers vers Vault Production avec structure automatique"/>
-                        </TextBlock>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Centre: Statistiques -->
-                <Border Grid.Column="1" Background="#2D2D44" CornerRadius="6" Padding="15,4" Margin="20,0" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        BorderBrush="#4A7FBF" BorderThickness="2">
-                    <StackPanel VerticalAlignment="Center">
-                        <!-- Titre -->
-                        <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <!-- Valeurs -->
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtTotalFiles" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📊 Total" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtSelectedFiles" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
-                                <TextBlock Text="✓ Selectionnes" FontSize="11" Foreground="#90EE90" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtUploaded" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📤 Uploades" FontSize="11" Foreground="#90EE90" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtSkipped" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FFD700" HorizontalAlignment="Center"/>
-                                <TextBlock Text="⏭️ Ignores" FontSize="11" Foreground="#FFD700" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtFailed" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
-                                <TextBlock Text="✗ Echecs" FontSize="11" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
-                            </StackPanel>
+                <Viewbox Grid.Column="0" Stretch="Uniform" MaxWidth="600" MaxHeight="80" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="#9B59B6" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
+                            <TextBlock Text="&#x1F4E4;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="📤 Upload Template vers Vault v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                                <Run Text="💡 Upload massif de fichiers vers Vault Production avec structure automatique"/>
+                            </TextBlock>
                         </StackPanel>
                     </StackPanel>
-                </Border>
+                </Viewbox>
+
+                <!-- Centre: Statistiques -->
+                <Viewbox Grid.Column="1" Stretch="Uniform" MaxWidth="600" MaxHeight="80" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0">
+                    <Border Background="#2D2D44" CornerRadius="6" Padding="15,4"
+                            BorderBrush="#4A7FBF" BorderThickness="2">
+                        <StackPanel VerticalAlignment="Center">
+                            <!-- Titre -->
+                            <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <!-- Valeurs -->
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtTotalFiles" Text="0" FontSize="22" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="📊 Total" FontSize="11" Foreground="White" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtSelectedFiles" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="✓ Selectionnes" FontSize="11" Foreground="#90EE90" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtUploaded" Text="0" FontSize="22" FontWeight="Bold" Foreground="#90EE90" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="📤 Uploades" FontSize="11" Foreground="#90EE90" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtSkipped" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FFD700" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="⏭️ Ignores" FontSize="11" Foreground="#FFD700" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtFailed" Text="0" FontSize="22" FontWeight="Bold" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="✗ Echecs" FontSize="11" Foreground="#FF6B6B" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Viewbox>
 
                 <!-- Statut connexion (identique VaultUploadModule) -->
                 <Border Grid.Column="2" Background="#2D2D44" CornerRadius="4" Padding="10,6"
@@ -622,7 +627,7 @@
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn Header="✓" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
                         <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileExtension}" Width="70" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileExtension}" Width="90" IsReadOnly="True"/>
                         <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="80" IsReadOnly="True"/>
                         <DataGridTextColumn Header="📁 Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
                         <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="120" IsReadOnly="True"/>

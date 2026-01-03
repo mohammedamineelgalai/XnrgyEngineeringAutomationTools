@@ -335,6 +335,21 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
             return null;
         }
+
+        /// <summary>
+        /// Obtient l'application Inventor (pour utilisation par d'autres services)
+        /// </summary>
+        public dynamic? GetInventorApplication()
+        {
+            if (!_isConnected || _inventorApp == null)
+            {
+                if (!TryConnect())
+                {
+                    return null;
+                }
+            }
+            return _inventorApp;
+        }
     }
 }
 

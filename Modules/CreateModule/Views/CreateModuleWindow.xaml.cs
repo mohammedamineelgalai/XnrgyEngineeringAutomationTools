@@ -8,6 +8,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using ACW = Autodesk.Connectivity.WebServices;
+using VDF = Autodesk.DataManagement.Client.Framework;
 using XnrgyEngineeringAutomationTools.Models;
 using XnrgyEngineeringAutomationTools.Services;
 using XnrgyEngineeringAutomationTools.Shared.Views;
@@ -31,6 +33,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         private readonly VaultSdkService? _vaultService;
         private bool _isVaultAdmin = false;
         
+        // Service Inventor pour vérification de connexion
+        private readonly InventorService _inventorService;
+        private System.Windows.Threading.DispatcherTimer? _inventorStatusTimer;
+        
         // Suivi du temps pour la progression
         private DateTime _startTime;
         private TimeSpan _pausedTime = TimeSpan.Zero;
@@ -47,7 +53,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         /// <summary>
         /// Constructeur par défaut (sans vérification admin)
         /// </summary>
-        public CreateModuleWindow() : this(null)
+        public CreateModuleWindow() : this(null, null)
         {
         }
 
@@ -55,15 +61,38 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         /// Constructeur avec service Vault pour vérification admin
         /// </summary>
         /// <param name="vaultService">Service Vault connecté (optionnel)</param>
-        public CreateModuleWindow(VaultSdkService? vaultService)
+        public CreateModuleWindow(VaultSdkService? vaultService) : this(vaultService, null)
+        {
+        }
+
+        /// <summary>
+        /// Constructeur avec services Vault et Inventor pour héritage du statut de connexion
+        /// </summary>
+        /// <param name="vaultService">Service Vault connecté (optionnel)</param>
+        /// <param name="inventorService">Service Inventor du formulaire principal (optionnel)</param>
+        public CreateModuleWindow(VaultSdkService? vaultService, InventorService? inventorService)
         {
             // IMPORTANT: Initialiser _request et _files AVANT InitializeComponent()
             // car les événements TextChanged du XAML sont déclenchés pendant l'initialisation
             _request = new CreateModuleRequest();
             _files = new ObservableCollection<FileRenameItem>();
             _vaultService = vaultService;
+            // Utiliser le service Inventor du formulaire principal (héritage du statut)
+            _inventorService = inventorService ?? new InventorService();
             
-            InitializeComponent();
+            try
+            {
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Erreur lors de l'initialisation de la fenêtre Créer Module:\n\n{ex.Message}\n\nDétails:\n{ex.StackTrace}",
+                    "Erreur d'initialisation",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+                throw;
+            }
             
             // S'abonner aux changements de theme
             MainWindow.ThemeChanged += OnThemeChanged;
@@ -76,6 +105,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             this.Closed += (s, e) =>
             {
                 MainWindow.ThemeChanged -= OnThemeChanged;
+                _inventorStatusTimer?.Stop();
                 // Nettoyer le dossier temporaire Vault si présent
                 CleanupTempVaultFolder();
             };
@@ -488,6 +518,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 // Vérifier si l'utilisateur est administrateur Vault
                 CheckVaultAdminPermissions();
                 
+                // Initialiser le statut Inventor
+                UpdateInventorStatus();
+                
+                // Timer pour mettre à jour le statut Inventor périodiquement
+                _inventorStatusTimer = new System.Windows.Threading.DispatcherTimer();
+                _inventorStatusTimer.Interval = TimeSpan.FromSeconds(3);
+                _inventorStatusTimer.Tick += (s, args) => UpdateInventorStatus();
+                _inventorStatusTimer.Start();
+                
                 // Initialiser les ComboBox Référence et Module (01-50)
                 InitializeReferenceModuleComboBoxes();
                 AddLog("ComboBox Référence/Module chargées (01-50)", "INFO");
@@ -584,6 +623,28 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     RunVaultName.Text = isConnected ? $" Vault : {vaultName}  /  " : " Vault : --  /  ";
                     RunUserName.Text = isConnected ? $" Utilisateur : {userName}  /  " : " Utilisateur : --  /  ";
                     RunStatus.Text = isConnected ? " Statut : Connecte" : " Statut : Deconnecte";
+                }
+            });
+        }
+
+        /// <summary>
+        /// Met à jour l'indicateur de connexion Inventor dans l'en-tête
+        /// </summary>
+        private void UpdateInventorStatus()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                bool isConnected = _inventorService.IsConnected;
+                
+                if (InventorStatusIndicator != null)
+                {
+                    InventorStatusIndicator.Fill = new SolidColorBrush(
+                        isConnected ? (Color)ColorConverter.ConvertFromString("#107C10") : (Color)ColorConverter.ConvertFromString("#E81123"));
+                }
+                
+                if (RunInventorStatus != null)
+                {
+                    RunInventorStatus.Text = isConnected ? " Inventor : Connecte" : " Inventor : Deconnecte";
                 }
             });
         }
@@ -1249,8 +1310,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     return;
                 }
 
-                // Obtenir tous les fichiers du dossier (récursif)
-                var files = connection.WebServiceManager.DocumentService.GetLatestFilesByFolderId(vaultFolder.Id, true);
+                // Obtenir tous les fichiers du dossier (récursif) - false = inclure les sous-dossiers
+                var files = connection.WebServiceManager.DocumentService.GetLatestFilesByFolderId(vaultFolder.Id, false);
                 
                 if (files == null || files.Length == 0)
                 {
@@ -1259,55 +1320,125 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     return;
                 }
 
-                // Télécharger les fichiers vers le dossier temporaire en utilisant le service Vault
-                // Utiliser GetFolderAsync qui gère déjà le téléchargement
-                var success = await _vaultService.GetFolderAsync(project.VaultPath);
-                
-                if (!success)
+                AddLog($"📥 Téléchargement de {files.Length} fichiers depuis Vault (récursif)...", "INFO");
+
+                // Obtenir le working folder
+                var workingFolderObj = connection.WorkingFoldersManager.GetWorkingFolder("$");
+                if (workingFolderObj == null || string.IsNullOrEmpty(workingFolderObj.FullPath))
                 {
-                    TxtStatus.Text = "⚠️ Erreur lors du téléchargement depuis Vault";
+                    TxtStatus.Text = "⚠️ Working folder non configuré";
                     BtnLoadFiles.IsEnabled = true;
                     return;
                 }
 
-                // Les fichiers sont téléchargés dans le working folder
-                // Récupérer le working folder et copier les fichiers
-                try
+                var workingFolder = workingFolderObj.FullPath;
+                var relativePath = project.VaultPath.TrimStart('$', '/').Replace("/", "\\");
+                var localFolder = Path.Combine(workingFolder, relativePath);
+
+                // Télécharger tous les fichiers avec AcquireFiles pour préserver la structure
+                var downloadSettings = new VDF.Vault.Settings.AcquireFilesSettings(connection, false);
+                
+                int fileIndex = 0;
+                foreach (var file in files)
                 {
-                    var workingFolderObj = connection.WorkingFoldersManager.GetWorkingFolder("$");
-                    if (workingFolderObj != null && !string.IsNullOrEmpty(workingFolderObj.FullPath))
+                    try
                     {
-                        var workingFolder = workingFolderObj.FullPath;
-                        var relativePath = project.VaultPath.TrimStart('$', '/').Replace("/", "\\");
-                        var localFolder = Path.Combine(workingFolder, relativePath);
+                        var fileIteration = new VDF.Vault.Currency.Entities.FileIteration(connection, file);
+                        downloadSettings.AddFileToAcquire(fileIteration, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+                        fileIndex++;
                         
-                        if (Directory.Exists(localFolder))
+                        if (fileIndex % 10 == 0)
                         {
-                            CopyDirectory(localFolder, tempPath);
+                            UpdateProgress((int)((fileIndex * 50.0) / files.Length), $"Téléchargement... {fileIndex}/{files.Length}");
+                        }
+                    }
+                    catch (Exception fileEx)
+                    {
+                        AddLog($"⚠️ Erreur préparation fichier {file.Name}: {fileEx.Message}", "WARNING");
+                    }
+                }
+
+                // Télécharger tous les fichiers en une seule opération
+                UpdateProgress(50, "Téléchargement des fichiers depuis Vault...");
+                var downloadResult = connection.FileManager.AcquireFiles(downloadSettings);
+
+                if (downloadResult?.FileResults == null || !downloadResult.FileResults.Any())
+                {
+                    TxtStatus.Text = "⚠️ Aucun fichier téléchargé";
+                    BtnLoadFiles.IsEnabled = true;
+                    return;
+                }
+
+                var fileResultsList = downloadResult.FileResults.ToList();
+                AddLog($"✅ {fileResultsList.Count} fichiers téléchargés dans le working folder", "SUCCESS");
+
+                // Copier les fichiers du working folder vers le dossier temporaire en préservant la structure
+                UpdateProgress(75, "Copie des fichiers vers le dossier temporaire...");
+                
+                if (Directory.Exists(localFolder))
+                {
+                    // Copier récursivement en préservant la structure complète
+                    CopyDirectory(localFolder, tempPath);
+                }
+                else
+                {
+                    // Si le dossier n'existe pas, utiliser les chemins Vault pour préserver la structure
+                    // Créer un dictionnaire pour mapper les fichiers par leur nom
+                    var fileMap = new Dictionary<string, ACW.File>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var file in files)
+                    {
+                        var fileName = file.Name;
+                        if (!fileMap.ContainsKey(fileName))
+                        {
+                            fileMap[fileName] = file;
+                        }
+                    }
+
+                    // Copier chaque fichier téléchargé en préservant sa structure de sous-dossiers
+                    // Vault télécharge les fichiers en préservant la structure dans le working folder
+                    foreach (var result in fileResultsList)
+                    {
+                        if (result?.LocalPath?.FullPath == null) continue;
+
+                        var localFilePath = result.LocalPath.FullPath;
+                        if (!File.Exists(localFilePath)) continue;
+
+                        // Calculer le chemin relatif depuis le working folder
+                        // Vault préserve la structure des dossiers lors du téléchargement
+                        string relativeFilePath;
+                        if (localFilePath.StartsWith(workingFolder, StringComparison.OrdinalIgnoreCase))
+                        {
+                            relativeFilePath = localFilePath.Substring(workingFolder.Length).TrimStart('\\', '/');
+                            
+                            // Si le chemin commence par le chemin relatif du projet, l'enlever
+                            var projectRelativePath = relativePath.TrimStart('\\', '/');
+                            if (!string.IsNullOrEmpty(projectRelativePath) && relativeFilePath.StartsWith(projectRelativePath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                relativeFilePath = relativeFilePath.Substring(projectRelativePath.Length).TrimStart('\\', '/');
+                            }
                         }
                         else
                         {
-                            // Essayer de trouver les fichiers dans le working folder racine
-                            var filesInWorkingFolder = Directory.GetFiles(workingFolder, "*.*", SearchOption.AllDirectories)
-                                .Where(f => files.Any(vf => Path.GetFileName(f).Equals(vf.Name, StringComparison.OrdinalIgnoreCase)));
-                            
-                            foreach (var file in filesInWorkingFolder)
-                            {
-                                var fileName = Path.GetFileName(file);
-                                var destFile = Path.Combine(tempPath, fileName);
-                                var destDir = Path.GetDirectoryName(destFile);
-                                if (!string.IsNullOrEmpty(destDir))
-                                {
-                                    Directory.CreateDirectory(destDir);
-                                }
-                                File.Copy(file, destFile, true);
-                            }
+                            // Dernier recours: utiliser le nom du fichier
+                            relativeFilePath = Path.GetFileName(localFilePath);
+                        }
+
+                        var destFilePath = Path.Combine(tempPath, relativeFilePath);
+                        var destDir = Path.GetDirectoryName(destFilePath);
+                        if (!string.IsNullOrEmpty(destDir))
+                        {
+                            Directory.CreateDirectory(destDir);
+                        }
+
+                        try
+                        {
+                            File.Copy(localFilePath, destFilePath, true);
+                        }
+                        catch (Exception copyEx)
+                        {
+                            AddLog($"⚠️ Erreur copie {Path.GetFileName(localFilePath)}: {copyEx.Message}", "WARNING");
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    AddLog($"Erreur lors de la copie des fichiers: {ex.Message}", "WARNING");
                 }
                 
                 // Vérifier si des fichiers ont été copiés
@@ -1606,47 +1737,66 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                         continue;
                     }
                     
-                    // STRATÉGIE DE RENOMMAGE:
-                    // 1. Partir du nom original
-                    var baseName = Path.GetFileNameWithoutExtension(file.OriginalFileName);
-                    var ext = Path.GetExtension(file.OriginalFileName);
-                    var newName = file.OriginalFileName;
+                    // STRATÉGIE DE RENOMMAGE CUMULATIVE:
+                    // 1. Partir du nom actuel (NewFileName) ou original si pas encore modifié
+                    var currentName = file.NewFileName != file.OriginalFileName 
+                        ? file.NewFileName 
+                        : file.OriginalFileName;
+                    
+                    var baseName = Path.GetFileNameWithoutExtension(currentName);
+                    var ext = Path.GetExtension(currentName);
+                    var newName = currentName;
 
-                    // 2. Appliquer préfixe numéro projet si activé
+                    // 2. Appliquer préfixe numéro projet si activé (vérifier qu'il n'est pas déjà présent)
                     if (applyProjectPrefix && !string.IsNullOrEmpty(_request.FullProjectNumber))
                     {
-                        baseName = $"{_request.FullProjectNumber}_{baseName}";
+                        var projectPrefix = $"{_request.FullProjectNumber}_";
+                        if (!baseName.StartsWith(projectPrefix, StringComparison.OrdinalIgnoreCase))
+                        {
+                            baseName = $"{projectPrefix}{baseName}";
+                        }
                     }
 
-                    // 3. Appliquer préfixe manuel
-                    if (!string.IsNullOrEmpty(prefix))
+                    // 3. Appliquer préfixe manuel (vérifier qu'il n'est pas déjà présent)
+                    if (!string.IsNullOrEmpty(prefix) && !baseName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
                     {
                         baseName = $"{prefix}{baseName}";
                     }
 
-                    // 4. Appliquer suffixe manuel
-                    if (!string.IsNullOrEmpty(suffix))
+                    // 4. Appliquer suffixe manuel (vérifier qu'il n'est pas déjà présent)
+                    if (!string.IsNullOrEmpty(suffix) && !baseName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
                     {
                         baseName = $"{baseName}{suffix}";
                     }
 
-                    // 5. Appliquer suffixe fixe (liste déroulante)
-                    if (!string.IsNullOrEmpty(fixedSuffix))
+                    // 5. Appliquer suffixe fixe (liste déroulante) - vérifier qu'il n'est pas déjà présent
+                    if (!string.IsNullOrEmpty(fixedSuffix) && !baseName.EndsWith(fixedSuffix, StringComparison.OrdinalIgnoreCase))
                     {
                         baseName = $"{baseName}{fixedSuffix}";
                     }
 
-                    // 6. Appliquer suffixe incrémentatif
+                    // 6. Appliquer suffixe incrémentatif (toujours ajouter car il est unique)
                     if (applyIncrementalSuffix)
                     {
-                        baseName = $"{baseName}_{incrementalCounter:D2}";
-                        incrementalCounter++;
+                        // Vérifier si un suffixe incrémentatif existe déjà (format _XX où XX est un nombre)
+                        var incrementalPattern = new System.Text.RegularExpressions.Regex(@"_\d{2}$");
+                        if (!incrementalPattern.IsMatch(baseName))
+                        {
+                            baseName = $"{baseName}_{incrementalCounter:D2}";
+                            incrementalCounter++;
+                        }
+                        else
+                        {
+                            // Remplacer le suffixe incrémentatif existant
+                            baseName = incrementalPattern.Replace(baseName, $"_{incrementalCounter:D2}");
+                            incrementalCounter++;
+                        }
                     }
 
                     // 7. Reconstruire le nom avec extension
                     newName = $"{baseName}{ext}";
 
-                    // 8. Appliquer rechercher/remplacer (après tous les préfixes/suffixes)
+                    // 8. Appliquer rechercher/remplacer (sur le nom complet)
                     if (!string.IsNullOrEmpty(search))
                     {
                         var index = newName.IndexOf(search, StringComparison.OrdinalIgnoreCase);
@@ -2621,3 +2771,4 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
         #endregion
     }}
+

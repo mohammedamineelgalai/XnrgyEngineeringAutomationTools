@@ -134,16 +134,18 @@
                 </StackPanel>
 
                 <!-- Titre avec Logo -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Image Source="/Resources/VaultAutomationTool.png" Width="64" Height="64" Margin="0,0,15,0" RenderOptions.BitmapScalingMode="HighQuality"/>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock x:Name="TitleText" Text="XNRGY Engineering Automation Tools v1.0.0" 
-                                   FontSize="22" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                            <Run Text="💡 Suite d'outils d'automatisation pour Vault et Inventor"/>
-                        </TextBlock>
+                <Viewbox Grid.Column="1" Stretch="Uniform" MaxWidth="800" MaxHeight="80" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Source="/Resources/VaultAutomationTool.png" Width="64" Height="64" Margin="0,0,15,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock x:Name="TitleText" Text="XNRGY Engineering Automation Tools v1.0.0" 
+                                       FontSize="22" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                                <Run Text="💡 Suite d'outils d'automatisation pour Vault et Inventor"/>
+                            </TextBlock>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Viewbox>
 
                 <!-- Boutons connexion -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -195,9 +197,7 @@
                         <!-- Smart Tools -->
                         <Button x:Name="BtnSmartTools" Style="{StaticResource ModuleButton}" Click="OpenSmartTools_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
-                                <Border Background="#00BCD4" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
-                                    <TextBlock Text="&#x26A1;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
+                                <Image Source="Resources/SmartTools.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 <TextBlock x:Name="BtnSmartToolsTitle" Text="Smart Tools" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="BtnSmartToolsDesc" Text="Outils Inventor" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
@@ -244,9 +244,7 @@
                         <!-- DXF/CSV vs PDF Verifier -->
                         <Button x:Name="BtnDXFVerifier" Style="{StaticResource ModuleButton}" Click="OpenDXFVerifier_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
-                                <Border Background="Transparent" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15" BorderBrush="#5C6BC0" BorderThickness="2">
-                                    <Image Source="Assets/Icons/DXFVerifier.png" Width="70" Height="70" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
+                                <Image Source="Assets/Icons/DXFVerifier.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
                                 <TextBlock x:Name="BtnDXFVerifierTitle" Text="DXF/CSV vs PDF" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="BtnDXFVerifierDesc" Text="Verification Fichiers" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>

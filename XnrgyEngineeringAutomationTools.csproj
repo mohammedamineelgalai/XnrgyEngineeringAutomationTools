@@ -225,6 +225,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <!-- ========== MODULE: SMART TOOLS ========== -->
+    <Page Include="Modules\SmartTools\Views\SmartToolsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <!-- ========== STYLES ========== -->
     <Page Include="Styles\XnrgyStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -283,6 +288,12 @@
       <DependentUpon>ChecklistHVACWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <!-- ========== CODE-BEHIND: MODULE SMART TOOLS ========== -->
+    <Compile Include="Modules\SmartTools\Views\SmartToolsWindow.xaml.cs">
+      <DependentUpon>SmartToolsWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\SmartTools\Services\*.cs" />
     <!-- ========== CORE CODE ========== -->
     <Compile Include="ViewModels\*.cs" />
     <Compile Include="Models\*.cs" />
@@ -297,6 +308,64 @@
     <Resource Include="Resources\VaultAutomationTool.ico" />
     <Resource Include="Resources\VaultAutomationTool.png" />
     <Resource Include="Assets\Icons\DXFVerifier.png" />
+    <Resource Include="Resources\SmartTools.png" />
+    <!-- Smart Tools Icons -->
+    <Resource Include="Assets\Icons\SmartTools\ActivationCommand16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ActivationCommand32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\AutoSave.dark.large.png" />
+    <Resource Include="Assets\Icons\SmartTools\CheckSaveStatus.dark.large.png" />
+    <Resource Include="Assets\Icons\SmartTools\CollapseExpandAll.dark.large.png" />
+    <Resource Include="Assets\Icons\SmartTools\ConstraintReport16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ConstraintReport32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ExportIAMToIPT16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ExportIAMToIPT32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ExportIDWtoShopPDF.dark.large.png" />
+    <Resource Include="Assets\Icons\SmartTools\ExportIDWtoShopPDF16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ExportIDWtoShopPDF32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\FormCenteringUtility16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\FormCenteringUtility32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\HideBox16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\HideBox32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\iLogicFormsCentred.dark.large.png" />
+    <Resource Include="Assets\Icons\SmartTools\iLogicFormsCentred16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\iLogicFormsCentred32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\InfoCommand16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\InfoCommand32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\InsertSpecificScrewInHoles.dark.large.png" />
+    <Resource Include="Assets\Icons\SmartTools\iPropertiesSummary16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\iPropertiesSummary32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\SafeClose.dark.large.png" />
+    <Resource Include="Assets\Icons\SmartTools\SafeClose16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\SafeClose32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\SmartHideBox.dark.large.png" />
+    <Resource Include="Assets\Icons\SmartTools\SmartSave.dark.large.png" />
+    <Resource Include="Assets\Icons\SmartTools\SmartSave16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\SmartSave32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\SmartToolsAmineAddin.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ToggleRefVisibility16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ToggleRefVisibility32.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ToggleSketchVisibility16.ico" />
+    <Resource Include="Assets\Icons\SmartTools\ToggleSketchVisibility32.ico" />
+    <!-- Smart Tools Modern PNG Icons -->
+    <Resource Include="Modules\SmartTools\Resources\ActivationCommand.png" />
+    <Resource Include="Modules\SmartTools\Resources\AutoSave.png" />
+    <Resource Include="Modules\SmartTools\Resources\CheckSaveStatus.png" />
+    <Resource Include="Modules\SmartTools\Resources\CollapseExpandAll.png" />
+    <Resource Include="Modules\SmartTools\Resources\ConstraintReport.png" />
+    <Resource Include="Modules\SmartTools\Resources\DeleteSelectedComponentAndFile.png" />
+    <Resource Include="Modules\SmartTools\Resources\ExportIAMToIPT.png" />
+    <Resource Include="Modules\SmartTools\Resources\ExportIDWtoShopPDF.png" />
+    <Resource Include="Modules\SmartTools\Resources\FormCenteringUtility.png" />
+    <Resource Include="Modules\SmartTools\Resources\HideBox.png" />
+    <Resource Include="Modules\SmartTools\Resources\iLogicFormsCentred.png" />
+    <Resource Include="Modules\SmartTools\Resources\InfoCommand.png" />
+    <Resource Include="Modules\SmartTools\Resources\InsertSpecificScrewInHoles.png" />
+    <Resource Include="Modules\SmartTools\Resources\iPropertiesSummary.png" />
+    <Resource Include="Modules\SmartTools\Resources\RenameSelectedComponentAndFile.png" />
+    <Resource Include="Modules\SmartTools\Resources\SafeClose.png" />
+    <Resource Include="Modules\SmartTools\Resources\SmartSave.png" />
+    <Resource Include="Modules\SmartTools\Resources\ToggleRefVisibility.png" />
+    <Resource Include="Modules\SmartTools\Resources\ToggleSketchVisibility.png" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="appsettings.json">

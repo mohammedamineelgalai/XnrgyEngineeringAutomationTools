@@ -27,11 +27,12 @@
         <!-- Style TextBox moderne -->
         <Style x:Key="ModernTextBox" TargetType="TextBox">
             <Setter Property="Background" Value="#2D2D44"/>
-            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="BorderThickness" Value="2"/>
             <Setter Property="Padding" Value="10,8"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -282,8 +283,9 @@
             <Setter Property="Foreground" Value="#E0E0E0"/>
             <Setter Property="BorderBrush" Value="#4A7FBF"/>
             <Setter Property="BorderThickness" Value="2"/>
-            <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="DatePicker">
@@ -301,6 +303,8 @@
                                                    Background="Transparent"
                                                    Foreground="White"
                                                    BorderThickness="0"
+                                                   FontSize="12"
+                                                   FontWeight="Bold"
                                                    VerticalAlignment="Center"
                                                    Margin="4,0"/>
                                 <!-- Bouton calendrier avec icône visible (blanc) -->
@@ -351,7 +355,8 @@
                                          Background="Transparent"
                                          Foreground="White"
                                          BorderThickness="0"
-                                         FontSize="13"
+                                         FontSize="12"
+                                         FontWeight="Bold"
                                          VerticalContentAlignment="Center"
                                          IsReadOnly="{TemplateBinding IsReadOnly}"/>
                             </Border>
@@ -465,58 +470,77 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Background="#FF8C00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
-                        <TextBlock Text="&#x1F4E6;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="📦 Creer Module - Pack &amp; Go / Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                            <Run Text="💡 Copie complete de modules Inventor avec renommage automatique"/>
-                        </TextBlock>
-                    </StackPanel>
-                </StackPanel>
-
-                <!-- Centre: Statistiques -->
-                <Border x:Name="StatisticsBorder" Grid.Column="1" Background="#1A1A28" CornerRadius="6" Padding="15,4" Margin="20,0" HorizontalAlignment="Center" VerticalAlignment="Center"
-                        BorderBrush="#4A7FBF" BorderThickness="2">
-                    <StackPanel VerticalAlignment="Center">
-                        <!-- Titre -->
-                        <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
-                        <!-- Valeurs -->
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtStatsTotal" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📊 Total" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtStatsInventor" Text="0" Foreground="#FFD700" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📐 Inventor" Foreground="#FFD700" FontSize="11" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtStatsOther" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="📄 Autres" Foreground="#FFB74D" FontSize="11" HorizontalAlignment="Center"/>
-                            </StackPanel>
-                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="✅ Selection" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
-                            </StackPanel>
+                <Viewbox Grid.Column="0" Stretch="Uniform" MaxWidth="600" MaxHeight="80" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Background="#FF8C00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
+                            <TextBlock Text="&#x1F4E6;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="📦 Creer Module - Pack &amp; Go / Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
+                                <Run Text="💡 Copie complete de modules Inventor avec renommage automatique"/>
+                            </TextBlock>
                         </StackPanel>
                     </StackPanel>
-                </Border>
+                </Viewbox>
+
+                <!-- Centre: Statistiques -->
+                <Viewbox Grid.Column="1" Stretch="Uniform" MaxWidth="500" MaxHeight="80" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0">
+                    <Border x:Name="StatisticsBorder" Background="#1A1A28" CornerRadius="6" Padding="15,4"
+                            BorderBrush="#4A7FBF" BorderThickness="2">
+                        <StackPanel VerticalAlignment="Center">
+                            <!-- Titre -->
+                            <TextBlock Text="📈 Statistiques" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,4"/>
+                            <!-- Valeurs -->
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsTotal" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="📊 Total" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsInventor" Text="0" Foreground="#FFD700" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="📐 Inventor" Foreground="#FFD700" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsOther" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="📄 Autres" Foreground="#FFB74D" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="✅ Selection" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Viewbox>
 
                 <!-- Droite: Statut connexion + Boutons -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                    <!-- Statut Connexion Vault (style identique VaultUploadModule) -->
-                    <Border Background="#2D2D44" CornerRadius="4" Padding="10,6" Margin="0,0,0,6"
-                            BorderBrush="#4A7FBF" BorderThickness="2">
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtVaultStatus" FontWeight="SemiBold" FontSize="12">
-                                <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/><Run Text="👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/><Run Text="📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
-                            </TextBlock>
-                        </StackPanel>
-                    </Border>
+                    <!-- Statut Connexion Vault et Inventor (côte à côte) -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,6">
+                        <!-- Statut Connexion Vault (style identique VaultUploadModule) -->
+                        <Border Background="#2D2D44" CornerRadius="4" Padding="10,6" Margin="0,0,8,0"
+                                BorderBrush="#4A7FBF" BorderThickness="2">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtVaultStatus" FontWeight="SemiBold" FontSize="12">
+                                    <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/><Run Text="👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/><Run Text="📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                        <!-- Statut Connexion Inventor (plus petit et dynamique) -->
+                        <Viewbox Stretch="Uniform" MaxWidth="200" MaxHeight="30" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <Border Background="#2D2D44" CornerRadius="4" Padding="8,4"
+                                    BorderBrush="#4A7FBF" BorderThickness="2">
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse x:Name="InventorStatusIndicator" Width="8" Height="8" Fill="#E81123" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="TxtInventorStatus" FontWeight="SemiBold" FontSize="10">
+                                        <Run Text="⚙️" Foreground="#FFB74D"/><Run x:Name="RunInventorStatus" Text=" Inventor : Deconnecte" Foreground="White"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Border>
+                        </Viewbox>
+                    </StackPanel>
                     <!-- Boutons -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                         <TextBlock x:Name="TxtDestinationPreview" Text="Destination: Non definie" 
@@ -565,8 +589,7 @@
                             <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,3">
                                 <TextBlock Text="Numéro de Projet *" Style="{StaticResource ModernLabel}" FontSize="11"/>
                                 <TextBox x:Name="TxtProject" Style="{StaticResource ModernTextBox}" 
-                                         MaxLength="6" TextChanged="ProjectInfo_TextChanged" Padding="8,5"
-                                         FontSize="12" FontWeight="Bold" Foreground="White"
+                                         MaxLength="6" TextChanged="ProjectInfo_TextChanged" Padding="10,8"
                                          ToolTip="Ex: 12345 - Numéro du projet"/>
                             </StackPanel>
 
@@ -589,9 +612,9 @@
                             <!-- Full Project Number (Calculé) -->
                             <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,3,8,3">
                                 <TextBlock Text="Numéro Projet Complet (Auto)" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                                <Border Background="#1A1A28" CornerRadius="4" Padding="8,5" BorderBrush="#4A7FBF" BorderThickness="2">
-                                    <TextBlock x:Name="TxtFullProjectNumber" Text="000000000" FontSize="16" 
-                                               FontWeight="Bold" Foreground="#0078D4" FontFamily="Consolas"/>
+                                <Border Background="#1A1A28" CornerRadius="4" Padding="10,8" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock x:Name="TxtFullProjectNumber" Text="000000000" FontSize="12" 
+                                               FontWeight="Bold" Foreground="White" FontFamily="Consolas"/>
                                 </Border>
                             </StackPanel>
 
@@ -603,10 +626,10 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Background="#1A1A28" CornerRadius="4,0,0,4" Padding="8,5" 
+                                    <Border Grid.Column="0" Background="#1A1A28" CornerRadius="4,0,0,4" Padding="10,8" 
                                             BorderBrush="#4A7FBF" BorderThickness="2,2,0,2">
                                         <TextBlock x:Name="TxtDestinationPath" Text="C:\Vault\Engineering\Projects\..." 
-                                                   FontSize="11" FontWeight="Bold" Foreground="#0078D4" FontFamily="Consolas" 
+                                                   FontSize="12" FontWeight="Bold" Foreground="White" FontFamily="Consolas" 
                                                    TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
                                     </Border>
                                     <Button Grid.Column="1" x:Name="BtnBrowseDestination" Content="📂" 
@@ -644,9 +667,8 @@
                             <!-- Job Title (requis) -->
                             <StackPanel Grid.Column="2" Margin="0,0,8,0">
                                 <TextBlock Text="Job Title *" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                                <TextBox x:Name="TxtJobTitle" Style="{StaticResource ModernTextBox}" Padding="8,5"
+                                <TextBox x:Name="TxtJobTitle" Style="{StaticResource ModernTextBox}" Padding="10,8"
                                          MaxLength="100" TextChanged="TxtJobTitle_TextChanged"
-                                         FontSize="12" FontWeight="Bold" Foreground="White"
                                          ToolTip="Titre du projet pour pages de couverture PDF (requis)"/>
                             </StackPanel>
 
@@ -686,13 +708,13 @@
                         <!-- Rechercher / Remplacer -->
                         <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,3">
                             <TextBlock Text="Rechercher:" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Padding="8,5" FontSize="12" FontWeight="Bold" Foreground="White"
+                                <TextBox x:Name="TxtSearch" Style="{StaticResource ModernTextBox}" Padding="10,8"
                                      TextChanged="RenameOptions_Changed" ToolTip="Texte à rechercher dans les noms"/>
                         </StackPanel>
                         
                         <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,3">
                             <TextBlock Text="Remplacer par:" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <TextBox x:Name="TxtReplace" Style="{StaticResource ModernTextBox}" Padding="8,5" FontSize="12" FontWeight="Bold" Foreground="White"
+                            <TextBox x:Name="TxtReplace" Style="{StaticResource ModernTextBox}" Padding="10,8"
                                      TextChanged="RenameOptions_Changed" ToolTip="Texte de remplacement"/>
                         </StackPanel>
 
@@ -702,13 +724,13 @@
                         <!-- Préfixe / Suffixe / Suffixe fixe alignés -->
                         <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,3,8,0">
                             <TextBlock Text="Préfixe:" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <TextBox x:Name="TxtPrefix" Style="{StaticResource ModernTextBox}" Padding="8,5" FontSize="12" FontWeight="Bold" Foreground="White"
+                            <TextBox x:Name="TxtPrefix" Style="{StaticResource ModernTextBox}" Padding="10,8"
                                      TextChanged="RenameOptions_Changed" ToolTip="Préfixe à ajouter"/>
                         </StackPanel>
                         
                         <StackPanel Grid.Row="1" Grid.Column="1" Margin="0,3,8,0">
                             <TextBlock Text="Suffixe:" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                            <TextBox x:Name="TxtSuffix" Style="{StaticResource ModernTextBox}" Padding="8,5" FontSize="12" FontWeight="Bold" Foreground="White"
+                            <TextBox x:Name="TxtSuffix" Style="{StaticResource ModernTextBox}" Padding="10,8"
                                      TextChanged="RenameOptions_Changed" ToolTip="Suffixe à ajouter"/>
                         </StackPanel>
 
@@ -871,7 +893,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox x:Name="TxtSourcePath" Grid.Column="0" Style="{StaticResource ModernTextBox}"
-                                         Text="C:\Vault\Engineering\Library\Xnrgy_Module" FontSize="10" IsReadOnly="True"
+                                         Text="C:\Vault\Engineering\Library\Xnrgy_Module" IsReadOnly="True"
                                          Padding="8,6"/>
                                 <Button x:Name="BtnBrowseSource" Grid.Column="1" Content="📂" 
                                         Style="{StaticResource SecondaryButton}" Padding="10,6" Margin="5,0,0,0"
@@ -1094,7 +1116,6 @@
                                 <DropShadowEffect Color="#000000" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
                             </TextBlock.Effect>
                         </TextBlock>
-                                   Margin="0,0,12,0"/>
                     </Grid>
                 </Border>
 

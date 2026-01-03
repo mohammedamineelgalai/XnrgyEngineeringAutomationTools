@@ -13,6 +13,7 @@ using XnrgyEngineeringAutomationTools.Shared.Views;
 using XnrgyEngineeringAutomationTools.Modules.CreateModule.Views;
 using XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views;
 using XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views;
+using XnrgyEngineeringAutomationTools.Modules.SmartTools.Views;
 
 namespace XnrgyEngineeringAutomationTools
 {
@@ -1132,8 +1133,10 @@ namespace XnrgyEngineeringAutomationTools
             
             try
             {
-                // Passer le service Vault pour vérification des permissions admin
-                var createModuleWindow = new CreateModuleWindow(_isVaultConnected ? _vaultService : null);
+                // Passer les services Vault et Inventor pour héritage du statut de connexion
+                var createModuleWindow = new CreateModuleWindow(
+                    _isVaultConnected ? _vaultService : null,
+                    _isInventorConnected ? _inventorService : null);
                 createModuleWindow.Owner = this;
                 
                 AddLog("Fenêtre Créer Module ouverte", "INFO");
@@ -1163,13 +1166,24 @@ namespace XnrgyEngineeringAutomationTools
 
         private void OpenSmartTools_Click(object sender, RoutedEventArgs e)
         {
-            AddLog("Smart Tools - Module en developpement", "WARN");
-            AddLog("Fonctionnalites prevues (depuis SmartToolsAmineAddin):", "INFO");
-            AddLog("  - Creation IPT automatique", "INFO");
-            AddLog("  - Export STEP batch", "INFO");
-            AddLog("  - Generation PDF", "INFO");
-            AddLog("  - iLogic Forms integres", "INFO");
-            StatusText.Text = "Smart Tools - En developpement";
+            AddLog("Ouverture de Smart Tools...", "START");
+            StatusText.Text = "Smart Tools...";
+            
+            try
+            {
+                // Passer le service Vault pour affichage du statut de connexion
+                var smartToolsWindow = new SmartToolsWindow(_isVaultConnected ? _vaultService : null);
+                smartToolsWindow.Owner = this;
+                smartToolsWindow.Show();
+                
+                AddLog("Smart Tools ouvert avec succès", "SUCCESS");
+            }
+            catch (Exception ex)
+            {
+                AddLog($"Erreur lors de l'ouverture de Smart Tools: {ex.Message}", "ERROR");
+                MessageBox.Show($"Erreur lors de l'ouverture de Smart Tools:\n{ex.Message}", 
+                    "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
         
         private void OpenBuildModule_Click(object sender, RoutedEventArgs e)
