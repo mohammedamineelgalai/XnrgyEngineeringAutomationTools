@@ -188,7 +188,20 @@
                         <Button x:Name="BtnPlaceEquipment" Style="{StaticResource ModuleButton}" Click="OpenPlaceEquipment_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
                                 <Border Background="#5B5FC7" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
-                                    <TextBlock Text="&#x2699;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="*"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="🪭" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="1" Text="💨" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="0" Text="🌀" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="1" Grid.Column="1" Text="❄️" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Grid>
                                 </Border>
                                 <TextBlock x:Name="BtnPlaceEquipmentTitle" Text="Place Equipment" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="BtnPlaceEquipmentDesc" Text="Placer équipement dans module" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>

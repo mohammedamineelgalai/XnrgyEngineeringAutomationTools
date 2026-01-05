@@ -271,7 +271,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     };
 
                     ProgressBarFill.BeginAnimation(WidthProperty, widthAnimation);
-                    // ProgressBarShine et ProgressBarGlow ont été supprimés - effet simplifié
+                    
+                    // Changer la couleur des textes temps/pourcentage quand la barre les couvre
+                    UpdateTimeTextColors(percent, maxWidth);
                 }
 
                 // Gradient brillant et cristallisé selon l'état
@@ -319,10 +321,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 ProgressBarFill.Background = gradientBrush;
 
                 // Afficher le fichier actuellement en traitement
-                if (!string.IsNullOrEmpty(currentFile))
-                {
-                    TxtCurrentFile.Text = currentFile;
-                }
+                TxtCurrentFile.Text = currentFile ?? "";
                 
                 // Calcul du temps écoulé et estimé
                 TimeSpan elapsed = DateTime.Now - _startTime - _pausedTime;
@@ -338,150 +337,48 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 string estimatedStr = estimatedTotal.HasValue 
                     ? FormatTimeSpan(estimatedTotal.Value)
                     : "00:00";
+                    
                 TxtProgressTimeElapsed.Text = elapsedStr;
                 TxtProgressTimeEstimated.Text = estimatedStr;
 
-                // Mise à jour du texte
+                // Mise à jour du texte de statut
                 TxtStatus.Text = statusText;
+                
+                // Mise a jour du pourcentage
                 TxtProgressPercent.Text = percent > 0 ? $"{percent}%" : "";
-
-                // Changer dynamiquement la couleur des textes selon si la barre les couvre
-                UpdateTextColorsForProgress(percent, container?.ActualWidth ?? 400);
             });
         }
 
-        private void UpdateTextColorsForProgress(int percent, double containerWidth)
+        /// <summary>
+        /// Change la couleur des textes temps/pourcentage quand la barre les couvre (simple changement sans zigzag)
+        /// </summary>
+        private void UpdateTimeTextColors(int percent, double containerWidth)
         {
-            if (containerWidth <= 0) return;
-
-            double progressWidth = (percent / 100.0) * containerWidth;
+            // Les textes temps sont a droite, donc on change leur couleur quand la barre atteint ~70%
+            var darkColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A1A28"));
+            var yellowColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
+            var grayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"));
+            var darkGrayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
             
-            // Position approximative des textes (en pixels depuis la gauche)
-            double statusTextPosition = 12; // Margin left de TxtStatus
-            double currentFilePosition = 220; // Margin left de TxtCurrentFile
-            double timeTextPosition = containerWidth - 80; // À droite
-            double percentTextPosition = containerWidth - 50; // À droite
-
-            // Couleur pour texte non couvert (clair sur fond sombre)
-            var uncoveredColor = new SolidColorBrush(Colors.White);
-            var uncoveredFileColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00D4FF"));
-            var uncoveredTimeColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
-
-            // Couleur pour texte couvert (sombre avec ombre pour contraste sur fond brillant)
-            var coveredColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#001122")); // Noir profond
-            var coveredFileColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#003344")); // Bleu foncé
-            var coveredTimeColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#332200")); // Or foncé
-
-            // TxtStatus
-            if (progressWidth > statusTextPosition + 50) // Si la barre couvre le texte (avec marge)
+            if (percent >= 70)
             {
-                TxtStatus.Foreground = coveredColor;
-                TxtStatus.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
+                // Texte sombre sur barre verte/cyan
+                TxtTimeLabel.Foreground = darkColor;
+                TxtProgressTimeElapsed.Foreground = darkColor;
+                TxtEstimatedLabel.Foreground = darkColor;
+                TxtProgressTimeEstimated.Foreground = darkColor;
+                TxtSeparator.Foreground = darkGrayColor;
+                TxtProgressPercent.Foreground = darkColor;
             }
             else
             {
-                TxtStatus.Foreground = uncoveredColor;
-                TxtStatus.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
-            }
-
-            // TxtCurrentFile
-            if (progressWidth > currentFilePosition + 50)
-            {
-                TxtCurrentFile.Foreground = coveredFileColor;
-                TxtCurrentFile.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
-            }
-            else
-            {
-                TxtCurrentFile.Foreground = uncoveredFileColor;
-                TxtCurrentFile.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
-            }
-
-            // TxtProgressTimeElapsed et TxtProgressTimeEstimated (dans StackPanel à droite)
-            if (progressWidth > timeTextPosition - 100) // À droite, donc on vérifie si la barre approche
-            {
-                TxtProgressTimeElapsed.Foreground = coveredTimeColor;
-                TxtProgressTimeEstimated.Foreground = coveredTimeColor;
-                TxtProgressTimeElapsed.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
-                TxtProgressTimeEstimated.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
-            }
-            else
-            {
-                TxtProgressTimeElapsed.Foreground = uncoveredTimeColor;
-                TxtProgressTimeEstimated.Foreground = uncoveredTimeColor;
-                TxtProgressTimeElapsed.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
-                TxtProgressTimeEstimated.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
-            }
-
-            // TxtProgressPercent
-            if (progressWidth > percentTextPosition - 50)
-            {
-                TxtProgressPercent.Foreground = coveredTimeColor;
-                TxtProgressPercent.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
-            }
-            else
-            {
-                TxtProgressPercent.Foreground = uncoveredTimeColor;
-                TxtProgressPercent.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
+                // Texte jaune sur fond sombre
+                TxtTimeLabel.Foreground = yellowColor;
+                TxtProgressTimeElapsed.Foreground = yellowColor;
+                TxtEstimatedLabel.Foreground = yellowColor;
+                TxtProgressTimeEstimated.Foreground = yellowColor;
+                TxtSeparator.Foreground = grayColor;
+                TxtProgressPercent.Foreground = yellowColor;
             }
         }
         
@@ -503,7 +400,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             Dispatcher.Invoke(() =>
             {
                 ProgressBarFill.Width = 0;
-                // ProgressBarShine et ProgressBarGlow ont été supprimés - effet simplifié
                 
                 // Gradient par défaut (cyan/bleu électrique brillant)
                 var defaultGradient = new LinearGradientBrush
@@ -520,6 +416,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 
                 TxtStatus.Text = "Prêt - Remplissez les informations du projet";
                 TxtProgressPercent.Text = "";
+                TxtProgressTimeElapsed.Text = "00:00";
+                TxtProgressTimeEstimated.Text = "00:00";
+                TxtCurrentFile.Text = "";
+                
+                // Remettre les couleurs par defaut (jaune)
+                var yellowColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
+                var grayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"));
+                TxtTimeLabel.Foreground = yellowColor;
+                TxtProgressTimeElapsed.Foreground = yellowColor;
+                TxtEstimatedLabel.Foreground = yellowColor;
+                TxtProgressTimeEstimated.Foreground = yellowColor;
+                TxtSeparator.Foreground = grayColor;
+                TxtProgressPercent.Foreground = yellowColor;
             });
         }
 
@@ -1602,11 +1511,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     AddLog($"Nettoyage du dossier temporaire: {_tempVaultDownloadPath}", "INFO");
                     Directory.Delete(_tempVaultDownloadPath, true);
                     _tempVaultDownloadPath = null;
-                    AddLog("✓ Dossier temporaire supprimé", "SUCCESS");
+                    AddLog("[+] Dossier temporaire supprime", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
-                    AddLog($"⚠ Impossible de supprimer le dossier temporaire: {ex.Message}", "WARNING");
+                    AddLog($"[!] Impossible de supprimer le dossier temporaire: {ex.Message}", "WARNING");
                 }
             }
         }
@@ -2517,9 +2426,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     }
                     else
                     {
-                        UpdateProgress(0, $"✗ Erreur: {result.ErrorMessage}", isError: true);
+                        UpdateProgress(0, $"[-] Erreur: {result.ErrorMessage}", isError: true);
                         AddLog($"ERREUR: {result.ErrorMessage}", "ERROR");
-                        AddLog("ACTION", "⚠ Vérifiez les paramètres et réessayez");
+                        AddLog("ACTION", "[!] Verifiez les parametres et reessayez");
                         
                         // Supprimer le dossier temporaire Vault même en cas d'erreur
                         CleanupTempVaultFolder();
@@ -2529,8 +2438,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             catch (Exception ex)
             {
                 AddLog($"ERREUR CRITIQUE: {ex.Message}", "ERROR");
-                UpdateProgress(0, $"✗ Erreur critique: {ex.Message}", isError: true);
-                AddLog("ACTION", "⚠ Une erreur inattendue s'est produite. Vérifiez Inventor et réessayez.");
+                UpdateProgress(0, $"[-] Erreur critique: {ex.Message}", isError: true);
+                AddLog("ACTION", "[!] Une erreur inattendue s'est produite. Verifiez Inventor et reessayez.");
                 
                 // Supprimer le dossier temporaire Vault en cas d'erreur
                 CleanupTempVaultFolder();
@@ -2669,11 +2578,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             // Afficher message READY ou ACTION selon la validation
             if (validation.IsValid)
             {
-                AddLog("READY", "✓ Prêt pour la création du module");
+                AddLog("READY", "[+] Pret pour la creation du module");
             }
             else if (!string.IsNullOrEmpty(validation.ErrorMessage))
             {
-                AddLog("ACTION", $"⚠ {validation.ErrorMessage}");
+                AddLog("ACTION", $"[!] {validation.ErrorMessage}");
             }
         }
 

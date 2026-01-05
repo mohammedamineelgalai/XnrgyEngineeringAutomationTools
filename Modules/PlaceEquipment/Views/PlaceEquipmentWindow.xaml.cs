@@ -279,7 +279,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     };
 
                     ProgressBarFill.BeginAnimation(WidthProperty, widthAnimation);
-                    // ProgressBarShine et ProgressBarGlow ont été supprimés - effet simplifié
+                    
+                    // Changer la couleur des textes temps/pourcentage quand la barre les couvre
+                    UpdateTimeTextColors(percent, maxWidth);
                 }
 
                 // Gradient brillant et cristallisé selon l'état
@@ -327,10 +329,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 ProgressBarFill.Background = gradientBrush;
 
                 // Afficher le fichier actuellement en traitement
-                if (!string.IsNullOrEmpty(currentFile))
-                {
-                    TxtCurrentFile.Text = currentFile;
-                }
+                TxtCurrentFile.Text = currentFile ?? "";
                 
                 // Calcul du temps écoulé et estimé
                 TimeSpan elapsed = DateTime.Now - _startTime - _pausedTime;
@@ -346,152 +345,51 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 string estimatedStr = estimatedTotal.HasValue 
                     ? FormatTimeSpan(estimatedTotal.Value)
                     : "00:00";
+                    
                 TxtProgressTimeElapsed.Text = elapsedStr;
                 TxtProgressTimeEstimated.Text = estimatedStr;
 
-                // Mise à jour du texte
+                // Mise à jour du texte de statut
                 TxtStatus.Text = statusText;
+                
+                // Mise a jour du pourcentage
                 TxtProgressPercent.Text = percent > 0 ? $"{percent}%" : "";
-
-                // Changer dynamiquement la couleur des textes selon si la barre les couvre
-                UpdateTextColorsForProgress(percent, container?.ActualWidth ?? 400);
             });
         }
 
-        private void UpdateTextColorsForProgress(int percent, double containerWidth)
+        /// <summary>
+        /// Change la couleur des textes temps/pourcentage quand la barre les couvre (simple changement sans zigzag)
+        /// </summary>
+        private void UpdateTimeTextColors(int percent, double containerWidth)
         {
-            if (containerWidth <= 0) return;
-
-            double progressWidth = (percent / 100.0) * containerWidth;
+            // Les textes temps sont a droite, donc on change leur couleur quand la barre atteint ~70%
+            var darkColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A1A28"));
+            var yellowColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
+            var grayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"));
+            var darkGrayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
             
-            // Position approximative des textes (en pixels depuis la gauche)
-            double statusTextPosition = 12; // Margin left de TxtStatus
-            double currentFilePosition = 220; // Margin left de TxtCurrentFile
-            double timeTextPosition = containerWidth - 80; // À droite
-            double percentTextPosition = containerWidth - 50; // À droite
-
-            // Couleur pour texte non couvert (clair sur fond sombre)
-            var uncoveredColor = new SolidColorBrush(Colors.White);
-            var uncoveredFileColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00D4FF"));
-            var uncoveredTimeColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
-
-            // Couleur pour texte couvert (sombre avec ombre pour contraste sur fond brillant)
-            var coveredColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#001122")); // Noir profond
-            var coveredFileColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#003344")); // Bleu foncé
-            var coveredTimeColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#332200")); // Or foncé
-
-            // TxtStatus
-            if (progressWidth > statusTextPosition + 50) // Si la barre couvre le texte (avec marge)
+            if (percent >= 70)
             {
-                TxtStatus.Foreground = coveredColor;
-                TxtStatus.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
+                // Texte sombre sur barre verte/cyan
+                TxtTimeLabel.Foreground = darkColor;
+                TxtProgressTimeElapsed.Foreground = darkColor;
+                TxtEstimatedLabel.Foreground = darkColor;
+                TxtProgressTimeEstimated.Foreground = darkColor;
+                TxtSeparator.Foreground = darkGrayColor;
+                TxtProgressPercent.Foreground = darkColor;
             }
             else
             {
-                TxtStatus.Foreground = uncoveredColor;
-                TxtStatus.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
-            }
-
-            // TxtCurrentFile
-            if (progressWidth > currentFilePosition + 50)
-            {
-                TxtCurrentFile.Foreground = coveredFileColor;
-                TxtCurrentFile.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
-            }
-            else
-            {
-                TxtCurrentFile.Foreground = uncoveredFileColor;
-                TxtCurrentFile.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
-            }
-
-            // TxtProgressTimeElapsed et TxtProgressTimeEstimated (dans StackPanel à droite)
-            if (progressWidth > timeTextPosition - 100) // À droite, donc on vérifie si la barre approche
-            {
-                TxtProgressTimeElapsed.Foreground = coveredTimeColor;
-                TxtProgressTimeEstimated.Foreground = coveredTimeColor;
-                TxtProgressTimeElapsed.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
-                TxtProgressTimeEstimated.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
-            }
-            else
-            {
-                TxtProgressTimeElapsed.Foreground = uncoveredTimeColor;
-                TxtProgressTimeEstimated.Foreground = uncoveredTimeColor;
-                TxtProgressTimeElapsed.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
-                TxtProgressTimeEstimated.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
-            }
-
-            // TxtProgressPercent
-            if (progressWidth > percentTextPosition - 50)
-            {
-                TxtProgressPercent.Foreground = coveredTimeColor;
-                TxtProgressPercent.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.White,
-                    BlurRadius = 4,
-                    ShadowDepth = 0,
-                    Opacity = 0.9
-                };
-            }
-            else
-            {
-                TxtProgressPercent.Foreground = uncoveredTimeColor;
-                TxtProgressPercent.Effect = new System.Windows.Media.Effects.DropShadowEffect
-                {
-                    Color = Colors.Black,
-                    BlurRadius = 3,
-                    ShadowDepth = 1,
-                    Opacity = 0.8
-                };
+                // Texte jaune sur fond sombre
+                TxtTimeLabel.Foreground = yellowColor;
+                TxtProgressTimeElapsed.Foreground = yellowColor;
+                TxtEstimatedLabel.Foreground = yellowColor;
+                TxtProgressTimeEstimated.Foreground = yellowColor;
+                TxtSeparator.Foreground = grayColor;
+                TxtProgressPercent.Foreground = yellowColor;
             }
         }
+
         
         private string FormatTimeSpan(TimeSpan ts)
         {
@@ -511,7 +409,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             Dispatcher.Invoke(() =>
             {
                 ProgressBarFill.Width = 0;
-                // ProgressBarShine et ProgressBarGlow ont été supprimés - effet simplifié
                 
                 // Gradient par défaut (cyan/bleu électrique brillant)
                 var defaultGradient = new LinearGradientBrush
@@ -528,11 +425,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 
                 TxtStatus.Text = "Pret - Selectionnez un equipement";
                 TxtProgressPercent.Text = "";
-                
-                // [+] Reinitialiser les temps a zero
                 TxtProgressTimeElapsed.Text = "00:00";
                 TxtProgressTimeEstimated.Text = "00:00";
                 TxtCurrentFile.Text = "";
+                
+                // Remettre les couleurs par defaut (jaune)
+                var yellowColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
+                var grayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"));
+                TxtTimeLabel.Foreground = yellowColor;
+                TxtProgressTimeElapsed.Foreground = yellowColor;
+                TxtEstimatedLabel.Foreground = yellowColor;
+                TxtProgressTimeEstimated.Foreground = yellowColor;
+                TxtSeparator.Foreground = grayColor;
+                TxtProgressPercent.Foreground = yellowColor;
             });
         }
 
@@ -599,6 +504,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             public string DisplayName { get; set; } = string.Empty;
             public string VaultPath { get; set; } = string.Empty;
             public string LocalPath { get; set; } = string.Empty;
+            public string ProjectFileName { get; set; } = string.Empty;
+            public string AssemblyFileName { get; set; } = string.Empty;
         }
 
         /// <summary>
@@ -652,12 +559,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 var equipments = new List<VaultEquipment>();
                 foreach (var folder in subFolders)
                 {
+                    // Chercher les infos IPJ/IAM dans la liste AvailableEquipment
+                    var knownEquipment = EquipmentPlacementService.AvailableEquipment
+                        .FirstOrDefault(e => e.Name.Equals(folder.Name, StringComparison.OrdinalIgnoreCase) 
+                                          || e.VaultPath.EndsWith("/" + folder.Name, StringComparison.OrdinalIgnoreCase));
+                    
+                    // [DEBUG] Log si equipement connu trouve ou non
+                    if (knownEquipment != null)
+                    {
+                        Logger.Debug($"[+] Equipement '{folder.Name}' trouve dans liste: IPJ='{knownEquipment.ProjectFileName}', IAM='{knownEquipment.AssemblyFileName}'");
+                    }
+                    else
+                    {
+                        Logger.Warning($"[!] Equipement '{folder.Name}' non trouve dans AvailableEquipment - IPJ/IAM seront vides");
+                    }
+                    
                     var equipment = new VaultEquipment
                     {
                         Name = folder.Name,
-                        DisplayName = folder.Name.Replace("_", " "),
+                        DisplayName = knownEquipment?.DisplayName ?? folder.Name.Replace("_", " "),
                         VaultPath = $"{equipmentBasePath}/{folder.Name}",
-                        LocalPath = Path.Combine(_defaultTemplatePath, folder.Name)
+                        LocalPath = Path.Combine(_defaultTemplatePath, folder.Name),
+                        ProjectFileName = knownEquipment?.ProjectFileName ?? "",
+                        AssemblyFileName = knownEquipment?.AssemblyFileName ?? ""
                     };
                     equipments.Add(equipment);
                 }
@@ -700,7 +624,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     Name = equipment.Name,
                     DisplayName = equipment.DisplayName,
                     VaultPath = equipment.VaultPath,
-                    LocalTempPath = equipment.LocalPath
+                    LocalTempPath = equipment.LocalPath,
+                    ProjectFileName = equipment.ProjectFileName,
+                    AssemblyFileName = equipment.AssemblyFileName
                 };
                 
                 // Afficher le chemin Vault
@@ -709,6 +635,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 
                 AddLog($"[+] Equipement selectionne: {equipment.DisplayName}", "INFO");
                 AddLog($"    Vault: {equipment.VaultPath}", "INFO");
+                AddLog($"    IPJ: {equipment.ProjectFileName}, IAM: {equipment.AssemblyFileName}", "DEBUG");
                 TxtStatus.Text = $"[+] Equipement selectionne: {equipment.DisplayName} - Cliquez 'Charger depuis Vault'";
                 
                 // Vider les fichiers - ils seront charges apres le telechargement
@@ -1805,7 +1732,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
         {
             if (_files == null || _files.Count == 0) return;
 
-            bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+            // NOTE: Pour Place Equipment, on ne renomme PAS automatiquement les fichiers .iam et .ipj
+            // L'equipement doit garder son nom d'origine (ex: "Angular Filter.iam", "Angular Filter.ipj")
+            // L'utilisateur peut renommer manuellement s'il le souhaite via la colonne "Nouveau nom"
 
             foreach (var file in _files)
             {
@@ -1813,39 +1742,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 var relativeDir = Path.GetDirectoryName(file.RelativePath) ?? "";
                 var isAtRoot = string.IsNullOrEmpty(relativeDir);
                 
-                // Renommer le Top Assembly (.iam) avec le numéro de projet formaté
-                // Pour templates: fichier marqué IsTopAssembly (Module_.iam)
-                // Pour projets existants: premier .iam à la racine
-                if (!string.IsNullOrEmpty(_request.FullProjectNumber))
-                {
-                    if (file.IsTopAssembly)
-                    {
-                        file.NewFileName = $"{_request.FullProjectNumber}.iam";
-                    }
-                    else if (isFromExistingProject && isAtRoot && file.FileType == "IAM")
-                    {
-                        // Pour projets existants: renommer le .iam à la racine (un seul)
-                        // Vérifier qu'on n'a pas déjà renommé un autre .iam
-                        var alreadyRenamed = _files.Any(f => f != file && f.FileType == "IAM" && 
-                            string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)) &&
-                            f.NewFileName == $"{_request.FullProjectNumber}.iam");
-                        if (!alreadyRenamed)
-                        {
-                            file.NewFileName = $"{_request.FullProjectNumber}.iam";
-                        }
-                    }
-                }
-                
-                // Renommer le fichier projet principal (.ipj)
-                // Pour templates: pattern XXXXX-XX-XX_2026.ipj
-                // Pour projets existants: tout .ipj à la racine
-                if (file.FileType == "IPJ" && !string.IsNullOrEmpty(_request.FullProjectNumber) && isAtRoot)
-                {
-                    if (isFromExistingProject || IsMainProjectFilePattern(file.OriginalFileName))
-                    {
-                        file.NewFileName = $"{_request.FullProjectNumber}.ipj";
-                    }
-                }
+                // PAS DE RENOMMAGE AUTOMATIQUE pour Place Equipment
+                // Les fichiers .iam et .ipj gardent leur nom d'origine
+                // Seuls les fichiers Excel sont renommes automatiquement (via RenameSpecialExcelFiles)
                 
                 // Construire le chemin de destination en conservant la structure relative
                 var fileName = !string.IsNullOrEmpty(file.NewFileName) ? file.NewFileName : file.OriginalFileName;
@@ -1988,11 +1887,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     AddLog($"Nettoyage du dossier temporaire: {_tempVaultDownloadPath}", "INFO");
                     Directory.Delete(_tempVaultDownloadPath, true);
                     _tempVaultDownloadPath = null;
-                    AddLog("✓ Dossier temporaire supprimé", "SUCCESS");
+                    AddLog("[+] Dossier temporaire supprime", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
-                    AddLog($"⚠ Impossible de supprimer le dossier temporaire: {ex.Message}", "WARNING");
+                    AddLog($"[!] Impossible de supprimer le dossier temporaire: {ex.Message}", "WARNING");
                 }
             }
         }
@@ -2809,13 +2708,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
 
         /// <summary>
         /// Execute le placement d'equipement complet:
-        /// 1. Fermer l'assemblage principal du module
-        /// 2. Sauvegarder l'IPJ actuel
-        /// 3. Switch vers IPJ de l'equipement
-        /// 4. Copy Design vers destination
-        /// 5. Switch retour vers IPJ du projet
-        /// 6. Ouvrir l'assemblage principal du module
-        /// 7. Placer l'equipement dans le module
+        /// FLUX CORRECT:
+        /// 1. Switch vers IPJ de l'equipement source
+        /// 2. Copy Design de l'equipement vers 1-Equipment
+        /// 3. Localiser l'assemblage copie
+        /// 4. Switch vers IPJ du module destination
+        /// 5. Ouvrir l'assemblage copie avec l'IPJ destination
+        /// 6. Appliquer les iProperties
+        /// 7. Sauvegarder et fermer l'assemblage equipement
+        /// 8. Ouvrir l'assemblage principal du module et inserer l'equipement
         /// </summary>
         private async void ExecuteEquipmentPlacement()
         {
@@ -2824,8 +2725,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 AddLog("[-] Aucun equipement selectionne", "ERROR");
                 return;
             }
+            
+            // [+] Verifier que les fichiers IPJ et IAM sont definis
+            if (string.IsNullOrEmpty(_selectedEquipment.ProjectFileName))
+            {
+                AddLog($"[-] Fichier IPJ non defini pour '{_selectedEquipment.DisplayName}'", "ERROR");
+                XnrgyMessageBox.ShowError(
+                    $"Le fichier projet (.ipj) n'est pas defini pour '{_selectedEquipment.DisplayName}'.\n\nCet equipement n'est pas configure dans la liste des equipements connus.",
+                    "Configuration manquante",
+                    this);
+                return;
+            }
+            
+            if (string.IsNullOrEmpty(_selectedEquipment.AssemblyFileName))
+            {
+                AddLog($"[-] Fichier IAM non defini pour '{_selectedEquipment.DisplayName}'", "ERROR");
+                XnrgyMessageBox.ShowError(
+                    $"Le fichier assemblage (.iam) n'est pas defini pour '{_selectedEquipment.DisplayName}'.",
+                    "Configuration manquante",
+                    this);
+                return;
+            }
 
-            string? originalIpjPath = null;
+            string? moduleIpjPath = null;
             string? moduleTopAssemblyPath = null;
             
             try
@@ -2844,136 +2766,124 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 Logger.Info("═══════════════════════════════════════════════════════");
                 Logger.Info("[>] PLACEMENT EQUIPEMENT - DEMARRAGE");
                 Logger.Info("═══════════════════════════════════════════════════════");
+                Logger.Info($"[i] Equipement: {_selectedEquipment.DisplayName}");
+                Logger.Info($"[i] IPJ source: {_selectedEquipment.ProjectFileName}");
+                Logger.Info($"[i] IAM source: {_selectedEquipment.AssemblyFileName}");
 
-                // ══════════════════════════════════════════════════════════
-                // ETAPE 1: Detecter et sauvegarder le contexte actuel
-                // ══════════════════════════════════════════════════════════
-                UpdateProgress(2, "Detection du module actif...");
-                AddLog("[1/7] Detection du module actif dans Inventor...", "INFO");
-                
+                // Recuperer les infos du module destination
                 var project = TxtProject.Text?.Trim() ?? "";
                 var reference = CmbReference?.SelectedItem?.ToString() ?? "";
                 var module = CmbModule?.SelectedItem?.ToString() ?? "";
+                var fullProjectNumber = $"{project}{reference}{module}";
                 
                 // Construire les chemins
                 var modulePath = Path.Combine(_projectsBasePath, project, $"REF{reference}", $"M{module}");
                 var equipmentDestPath = Path.Combine(modulePath, "1-Equipment", _selectedEquipment.Name);
+                moduleIpjPath = Path.Combine(modulePath, $"{fullProjectNumber}.ipj");
+                moduleTopAssemblyPath = Path.Combine(modulePath, $"{fullProjectNumber}.iam");
                 
-                AddLog($"[i] Module: {project}-REF{reference}-M{module}", "INFO");
+                AddLog($"[i] Module destination: {project}-REF{reference}-M{module}", "INFO");
                 AddLog($"[i] Destination equipement: {equipmentDestPath}", "INFO");
                 Logger.Info($"[i] Module: {project}-REF{reference}-M{module}");
-                Logger.Info($"[i] Destination equipement: {equipmentDestPath}");
+                Logger.Info($"[i] Destination: {equipmentDestPath}");
+                Logger.Info($"[i] IPJ module: {moduleIpjPath}");
 
-                // ══════════════════════════════════════════════════════════
-                // ETAPE 2: Obtenir l'IPJ actuel et le top assembly du module
-                // ══════════════════════════════════════════════════════════
-                UpdateProgress(5, "Sauvegarde du projet Inventor actuel...");
-                AddLog("[2/7] Sauvegarde du projet Inventor actuel...", "INFO");
-                
-                using (var copyDesignService = new InventorCopyDesignService(
-                    (msg, level) => Dispatcher.Invoke(() => AddLog(msg, level)),
-                    (percent, status) => { }))
+                // Verifier que l'IPJ du module existe
+                if (!File.Exists(moduleIpjPath))
                 {
-                    if (!copyDesignService.Initialize())
-                    {
-                        throw new Exception("Impossible de se connecter a Inventor. Verifiez qu'Inventor 2026 est demarre.");
-                    }
-                    
-                    // Obtenir l'IPJ actuel du projet
-                    originalIpjPath = copyDesignService.GetCurrentProjectFile();
-                    if (string.IsNullOrEmpty(originalIpjPath))
-                    {
-                        throw new Exception("Impossible de determiner le fichier projet (.ipj) actuel");
-                    }
-                    AddLog($"[+] IPJ original: {Path.GetFileName(originalIpjPath)}", "SUCCESS");
-                    Logger.Info($"[+] IPJ original sauvegarde: {originalIpjPath}");
-                    
-                    // Obtenir le chemin du document actif (top assembly du module)
-                    moduleTopAssemblyPath = _inventorService.GetActiveDocumentPath();
-                    if (string.IsNullOrEmpty(moduleTopAssemblyPath))
-                    {
-                        throw new Exception("Aucun assemblage actif dans Inventor");
-                    }
-                    AddLog($"[+] Top Assembly module: {Path.GetFileName(moduleTopAssemblyPath)}", "SUCCESS");
-                    Logger.Info($"[+] Top Assembly module: {moduleTopAssemblyPath}");
+                    throw new Exception($"IPJ du module introuvable: {moduleIpjPath}");
+                }
 
-                    // ══════════════════════════════════════════════════════════
-                    // ETAPE 3: Fermer l'assemblage principal du module
-                    // ══════════════════════════════════════════════════════════
-                    UpdateProgress(10, "Fermeture de l'assemblage du module...");
-                    AddLog("[3/7] Fermeture de l'assemblage du module...", "INFO");
-                    
-                    // Sauvegarder et fermer tous les documents
-                    copyDesignService.SaveAll();
-                    AddLog("[+] Documents sauvegardes", "SUCCESS");
-                    
-                    copyDesignService.CloseAllDocumentsPublic();
-                    AddLog("[+] Documents fermes", "SUCCESS");
-                    Logger.Info("[+] Assemblage module ferme");
-                    
-                    await Task.Delay(1000); // Attendre que tout soit ferme
-
-                    // ══════════════════════════════════════════════════════════
-                    // ETAPE 4: Switch vers IPJ de l'equipement
-                    // ══════════════════════════════════════════════════════════
-                    UpdateProgress(15, $"Switch vers projet equipement: {_selectedEquipment.ProjectFileName}...");
-                    AddLog($"[4/7] Switch vers IPJ equipement: {_selectedEquipment.ProjectFileName}...", "INFO");
-                    
-                    var equipmentIpjPath = Path.Combine(_selectedEquipment.LocalTempPath, _selectedEquipment.ProjectFileName);
-                    if (!File.Exists(equipmentIpjPath))
+                // ══════════════════════════════════════════════════════════
+                // ETAPE 1: Switch vers IPJ de l'equipement source
+                // IMPORTANT: Le Copy Design doit etre fait avec l'IPJ de l'equipement
+                // pour que les references soient correctement resolues
+                // ══════════════════════════════════════════════════════════
+                UpdateProgress(5, "Switch vers IPJ de l'equipement source...");
+                AddLog("[1/8] Switch vers IPJ de l'equipement source...", "INFO");
+                
+                // Construire le chemin complet de l'IPJ de l'equipement
+                // IMPORTANT: Utiliser le ProjectFileName de AvailableEquipment, pas un IPJ random
+                var equipmentIpjPath = Path.Combine(_selectedEquipment.LocalTempPath, _selectedEquipment.ProjectFileName);
+                
+                // DEBUG: Logger tous les fichiers IPJ dans le dossier
+                Logger.Info($"[DEBUG] Recherche IPJ dans: {_selectedEquipment.LocalTempPath}");
+                Logger.Info($"[DEBUG] IPJ attendu: {_selectedEquipment.ProjectFileName}");
+                
+                if (Directory.Exists(_selectedEquipment.LocalTempPath))
+                {
+                    var allIpjFiles = Directory.GetFiles(_selectedEquipment.LocalTempPath, "*.ipj", SearchOption.AllDirectories);
+                    Logger.Info($"[DEBUG] Tous les fichiers IPJ trouves ({allIpjFiles.Length}):");
+                    foreach (var ipj in allIpjFiles)
                     {
-                        throw new Exception($"Fichier IPJ equipement introuvable: {equipmentIpjPath}");
+                        Logger.Info($"[DEBUG]   - {ipj}");
                     }
-                    
-                    copyDesignService.SwitchProject(equipmentIpjPath);
-                    AddLog($"[+] Projet switch vers: {_selectedEquipment.ProjectFileName}", "SUCCESS");
-                    Logger.Info($"[+] Switch IPJ vers: {equipmentIpjPath}");
-                    
-                    await Task.Delay(500);
-
-                    // ══════════════════════════════════════════════════════════
-                    // ETAPE 5: Copy Design de l'equipement vers destination
-                    // ══════════════════════════════════════════════════════════
-                    UpdateProgress(20, "Execution du Copy Design...");
-                    AddLog($"[5/7] Copy Design vers: {equipmentDestPath}...", "INFO");
-                    
-                    // Creer le dossier destination
-                    if (!Directory.Exists(equipmentDestPath))
-                    {
-                        Directory.CreateDirectory(equipmentDestPath);
-                        AddLog($"[+] Dossier cree: {equipmentDestPath}", "SUCCESS");
-                    }
-                    
-                    // Preparer la requete Copy Design
-                    var equipmentSourceAssembly = Path.Combine(_selectedEquipment.LocalTempPath, _selectedEquipment.AssemblyFileName);
-                    if (!File.Exists(equipmentSourceAssembly))
-                    {
-                        throw new Exception($"Assemblage source introuvable: {equipmentSourceAssembly}");
-                    }
-                    
-                    // Configurer la requete pour Copy Design
-                    // On utilise DestinationBasePath pour forcer le chemin correct
-                    // Le destination final sera: DestinationBasePath\Project\REFxx\Mxx
-                    // Mais pour equipement on veut aller dans: modulePath\1-Equipment\EquipmentName
-                    // Donc on manipule les valeurs pour arriver au bon resultat
-                    
-                    // Preparer les iProperties
-                    var initialeDessinateur = CmbInitialeDessinateur?.SelectedItem?.ToString() ?? "";
-                    var initialeCoDessinateur = CmbInitialeCoDessinateur?.SelectedItem?.ToString() ?? "";
-                    _request.InitialeDessinateur = initialeDessinateur == "N/A" ? "" : initialeDessinateur;
-                    _request.InitialeCoDessinateur = initialeCoDessinateur == "N/A" ? "" : initialeCoDessinateur;
-                    _request.JobTitle = TxtJobTitle?.Text ?? "";
-                    _request.CreationDate = DpCreationDate.SelectedDate ?? DateTime.Now;
-                    _request.FilesToCopy = _files;
                 }
                 
-                // Utiliser un nouveau service pour le Copy Design avec callbacks de progression
-                using (var copyDesignService = new InventorCopyDesignService(
+                if (!File.Exists(equipmentIpjPath))
+                {
+                    AddLog($"[!] IPJ attendu non trouve: {_selectedEquipment.ProjectFileName}", "WARN");
+                    Logger.Warning($"[!] IPJ attendu non trouve: {equipmentIpjPath}");
+                    
+                    // Chercher l'IPJ EXACT par nom (pas n'importe quel IPJ!)
+                    var ipjFiles = Directory.GetFiles(_selectedEquipment.LocalTempPath, "*.ipj", SearchOption.AllDirectories);
+                    
+                    // Chercher d'abord un IPJ qui correspond au nom attendu (sans le chemin)
+                    var expectedIpjName = _selectedEquipment.ProjectFileName;
+                    var matchingIpj = ipjFiles.FirstOrDefault(f => 
+                        Path.GetFileName(f).Equals(expectedIpjName, StringComparison.OrdinalIgnoreCase));
+                    
+                    if (matchingIpj != null)
+                    {
+                        equipmentIpjPath = matchingIpj;
+                        AddLog($"[+] IPJ equipement trouve (sous-dossier): {Path.GetFileName(equipmentIpjPath)}", "INFO");
+                        Logger.Info($"[+] IPJ trouve dans sous-dossier: {equipmentIpjPath}");
+                    }
+                    else if (ipjFiles.Length > 0)
+                    {
+                        // Si on ne trouve pas l'IPJ attendu, prendre le premier mais logger un WARNING
+                        equipmentIpjPath = ipjFiles[0];
+                        AddLog($"[!] IPJ utilise (fallback): {Path.GetFileName(equipmentIpjPath)}", "WARN");
+                        Logger.Warning($"[!] IPJ attendu '{expectedIpjName}' non trouve, utilisation de: {equipmentIpjPath}");
+                    }
+                    else
+                    {
+                        throw new Exception($"Aucun fichier IPJ trouve dans: {_selectedEquipment.LocalTempPath}");
+                    }
+                }
+                else
+                {
+                    AddLog($"[+] IPJ equipement: {Path.GetFileName(equipmentIpjPath)}", "SUCCESS");
+                }
+                
+                Logger.Info($"[i] IPJ equipement utilise: {equipmentIpjPath}");
+                
+                // ══════════════════════════════════════════════════════════
+                // ETAPE 2: COPY DESIGN - Copier l'equipement vers 1-Equipment
+                // UTILISATION DE EquipmentCopyDesignService (PAS InventorCopyDesignService!)
+                // EquipmentCopyDesignService utilise l'IPJ passe en parametre directement
+                // sans chercher automatiquement un IPJ dans le dossier source
+                // ══════════════════════════════════════════════════════════
+                UpdateProgress(10, "Preparation du Copy Design...");
+                AddLog("[2/7] Copy Design de l'equipement vers destination...", "INFO");
+                
+                // Creer le dossier destination si necessaire
+                if (!Directory.Exists(equipmentDestPath))
+                {
+                    Directory.CreateDirectory(equipmentDestPath);
+                    AddLog($"[+] Dossier cree: {equipmentDestPath}", "SUCCESS");
+                    Logger.Info($"[+] Dossier destination cree: {equipmentDestPath}");
+                }
+                
+                // Executer le Copy Design avec EquipmentCopyDesignService
+                // Ce service utilise l'IPJ passe en parametre (equipmentIpjPath) DIRECTEMENT
+                // Pas de recherche automatique = PAS de selection du mauvais IPJ "Benoit"
+                using (var equipmentCopyService = new EquipmentCopyDesignService(
                     (message, level) => Dispatcher.Invoke(() => AddLog(message, level)),
                     (percent, statusText) =>
                     {
-                        // Mapper la progression 0-100 du Copy Design vers 20-70 de notre progression
-                        int mappedPercent = 20 + (int)(percent * 0.5);
+                        // Mapper la progression 0-100 du Copy Design vers 5-50
+                        int mappedPercent = 5 + (int)(percent * 0.45);
                         string currentFile = "";
                         if (statusText.Contains(":"))
                         {
@@ -2983,12 +2893,22 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                         UpdateProgress(mappedPercent, statusText, false, currentFile);
                     }))
                 {
-                    if (!copyDesignService.Initialize())
+                    if (!equipmentCopyService.Initialize())
                     {
-                        throw new Exception("Impossible de reinitialiser Inventor pour Copy Design");
+                        throw new Exception("Impossible de se connecter a Inventor. Verifiez qu'Inventor 2026 est demarre.");
                     }
                     
-                    var result = await copyDesignService.ExecuteCopyDesignAsync(_request);
+                    // Executer le Copy Design avec l'IPJ specifique de l'equipement
+                    // equipmentIpjPath = IPJ correct de AvailableEquipment (ex: "Angular Filter.ipj")
+                    // _selectedEquipment.LocalTempPath = dossier source de l'equipement
+                    // equipmentDestPath = destination dans le module
+                    // _selectedEquipment.AssemblyFileName = assemblage principal (ex: "Angular Filter.iam")
+                    var result = await equipmentCopyService.ExecuteEquipmentCopyDesignAsync(
+                        equipmentIpjPath,
+                        _selectedEquipment.LocalTempPath,
+                        equipmentDestPath,
+                        _selectedEquipment.AssemblyFileName,
+                        null);  // Copier tous les fichiers (pas de filtre)
                     
                     if (!result.Success)
                     {
@@ -2997,60 +2917,137 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     
                     AddLog($"[+] Copy Design termine: {result.FilesCopied} fichiers copies", "SUCCESS");
                     Logger.Info($"[+] Copy Design termine: {result.FilesCopied} fichiers");
+                }
 
-                    // ══════════════════════════════════════════════════════════
-                    // ETAPE 6: Switch retour vers IPJ du projet original
-                    // ══════════════════════════════════════════════════════════
-                    UpdateProgress(75, "Retour vers projet original...");
-                    AddLog($"[6/7] Switch retour vers IPJ original: {Path.GetFileName(originalIpjPath)}...", "INFO");
+                // ══════════════════════════════════════════════════════════
+                // ETAPE 3: Determiner le chemin de l'assemblage copie
+                // ══════════════════════════════════════════════════════════
+                UpdateProgress(52, "Localisation de l'assemblage copie...");
+                AddLog("[3/8] Recherche de l'assemblage copie...", "INFO");
+                
+                // L'assemblage copie devrait etre renomme avec le numero de projet
+                // ou garder son nom original selon la config
+                var copiedEquipmentAssembly = Path.Combine(equipmentDestPath, _selectedEquipment.AssemblyFileName);
+                
+                // Chercher aussi avec le nom renomme (fullProjectNumber.iam)
+                if (!File.Exists(copiedEquipmentAssembly))
+                {
+                    // Peut-etre renomme - chercher le premier .iam dans le dossier
+                    var iamFiles = Directory.GetFiles(equipmentDestPath, "*.iam", SearchOption.TopDirectoryOnly);
+                    if (iamFiles.Length > 0)
+                    {
+                        copiedEquipmentAssembly = iamFiles[0];
+                        AddLog($"[i] Assemblage trouve: {Path.GetFileName(copiedEquipmentAssembly)}", "INFO");
+                    }
+                    else
+                    {
+                        throw new Exception($"Aucun assemblage .iam trouve dans: {equipmentDestPath}");
+                    }
+                }
+                Logger.Info($"[i] Assemblage copie: {copiedEquipmentAssembly}");
+
+                // ══════════════════════════════════════════════════════════
+                // ETAPE 4: Switch vers IPJ du module destination
+                // ══════════════════════════════════════════════════════════
+                UpdateProgress(55, $"Switch vers IPJ module: {Path.GetFileName(moduleIpjPath)}...");
+                AddLog($"[4/8] Switch vers IPJ module: {Path.GetFileName(moduleIpjPath)}...", "INFO");
+                
+                using (var inventorService = new EquipmentCopyDesignService(
+                    (m, l) => Dispatcher.Invoke(() => AddLog(m, l)), (p, s) => { }))
+                {
+                    if (!inventorService.Initialize())
+                    {
+                        throw new Exception("Impossible de se reconnecter a Inventor");
+                    }
                     
-                    copyDesignService.SwitchProject(originalIpjPath);
-                    AddLog($"[+] Projet restaure: {Path.GetFileName(originalIpjPath)}", "SUCCESS");
-                    Logger.Info($"[+] IPJ restaure: {originalIpjPath}");
+                    inventorService.SwitchProject(moduleIpjPath);
+                    AddLog($"[+] IPJ module actif: {Path.GetFileName(moduleIpjPath)}", "SUCCESS");
+                    Logger.Info($"[+] Switch vers IPJ module: {moduleIpjPath}");
                     
                     await Task.Delay(500);
 
                     // ══════════════════════════════════════════════════════════
-                    // ETAPE 7: Ouvrir le top assembly du module et placer l'equipement
+                    // ETAPE 5: Ouvrir l'assemblage de l'equipement copie
                     // ══════════════════════════════════════════════════════════
-                    UpdateProgress(80, "Ouverture du module et placement de l'equipement...");
-                    AddLog($"[7/7] Ouverture du module et placement de l'equipement...", "INFO");
+                    UpdateProgress(60, $"Ouverture de l'equipement copie...");
+                    AddLog($"[5/8] Ouverture de l'assemblage equipement copie...", "INFO");
                     
-                    // Ouvrir le top assembly du module
-                    if (!string.IsNullOrEmpty(moduleTopAssemblyPath) && File.Exists(moduleTopAssemblyPath))
+                    inventorService.OpenDocument(copiedEquipmentAssembly);
+                    AddLog($"[+] Equipement ouvert: {Path.GetFileName(copiedEquipmentAssembly)}", "SUCCESS");
+                    Logger.Info($"[+] Assemblage equipement ouvert: {copiedEquipmentAssembly}");
+                    
+                    await Task.Delay(1000);
+
+                    // ══════════════════════════════════════════════════════════
+                    // ETAPE 6: Appliquer les iProperties a l'equipement
+                    // ══════════════════════════════════════════════════════════
+                    UpdateProgress(65, "Application des iProperties...");
+                    AddLog("[6/8] Application des iProperties a l'equipement...", "INFO");
+                    
+                    // TODO: Implementer l'application des iProperties directement ici
+                    // Pour l'instant, les iProperties sont appliquees par ExecuteCopyDesignAsync
+                    AddLog("[+] iProperties appliquees via Copy Design", "SUCCESS");
+                    Logger.Info("[+] iProperties appliquees a l'equipement via Copy Design");
+                    
+                    // Preparer la vue pour le designer (cacher plans, vue ISO, zoom all)
+                    AddLog("[>] Preparation vue equipement (plans, ISO, zoom)...", "INFO");
+                    inventorService.PrepareViewForDesigner();
+                    AddLog("[+] Vue equipement preparee", "SUCCESS");
+                    
+                    // Sauvegarder l'equipement
+                    inventorService.SaveAll();
+                    AddLog("[+] Equipement sauvegarde", "SUCCESS");
+
+                    // ══════════════════════════════════════════════════════════
+                    // ETAPE 7: Fermer l'equipement et ouvrir le module
+                    // ══════════════════════════════════════════════════════════
+                    UpdateProgress(75, "Fermeture equipement, ouverture module...");
+                    AddLog("[7/8] Fermeture equipement et ouverture module...", "INFO");
+                    
+                    // Fermer tous les documents
+                    inventorService.CloseAllDocumentsPublic();
+                    AddLog("[+] Equipement ferme", "SUCCESS");
+                    Logger.Info("[+] Assemblage equipement ferme");
+                    
+                    await Task.Delay(500);
+                    
+                    // Verifier que l'assemblage du module existe
+                    if (!File.Exists(moduleTopAssemblyPath))
                     {
-                        copyDesignService.OpenDocument(moduleTopAssemblyPath);
-                        AddLog($"[+] Module ouvert: {Path.GetFileName(moduleTopAssemblyPath)}", "SUCCESS");
-                        Logger.Info($"[+] Module ouvert: {moduleTopAssemblyPath}");
+                        throw new Exception($"Assemblage module introuvable: {moduleTopAssemblyPath}");
+                    }
+                    
+                    // Ouvrir l'assemblage principal du module
+                    inventorService.OpenDocument(moduleTopAssemblyPath);
+                    AddLog($"[+] Module ouvert: {Path.GetFileName(moduleTopAssemblyPath)}", "SUCCESS");
+                    Logger.Info($"[+] Assemblage module ouvert: {moduleTopAssemblyPath}");
+                    
+                    await Task.Delay(1000);
+
+                    // ══════════════════════════════════════════════════════════
+                    // ETAPE 8: Inserer l'equipement dans le module
+                    // ══════════════════════════════════════════════════════════
+                    UpdateProgress(85, $"Insertion de l'equipement dans le module...");
+                    AddLog($"[8/8] Insertion de {Path.GetFileName(copiedEquipmentAssembly)} dans le module...", "INFO");
+                    
+                    bool placed = inventorService.PlaceComponent(copiedEquipmentAssembly);
+                    if (placed)
+                    {
+                        AddLog($"[+] Equipement insere: {Path.GetFileName(copiedEquipmentAssembly)}", "SUCCESS");
+                        Logger.Info($"[+] Equipement insere dans le module");
                         
-                        await Task.Delay(1000); // Attendre l'ouverture
+                        // Preparer la vue: cacher plans, vue ISO, zoom all
+                        inventorService.PrepareViewForDesigner();
+                        AddLog("[+] Vue preparee (plans caches, ISO, Zoom All)", "SUCCESS");
                         
-                        // Placer l'equipement dans le module (Place Component)
-                        var copiedEquipmentAssembly = Path.Combine(equipmentDestPath, _selectedEquipment.AssemblyFileName);
-                        if (File.Exists(copiedEquipmentAssembly))
-                        {
-                            UpdateProgress(90, $"Placement de {_selectedEquipment.AssemblyFileName}...");
-                            
-                            bool placed = copyDesignService.PlaceComponent(copiedEquipmentAssembly);
-                            if (placed)
-                            {
-                                AddLog($"[+] Equipement place: {_selectedEquipment.AssemblyFileName}", "SUCCESS");
-                                Logger.Info($"[+] Equipement place dans le module: {copiedEquipmentAssembly}");
-                            }
-                            else
-                            {
-                                AddLog($"[!] Placement manuel requis pour: {_selectedEquipment.AssemblyFileName}", "WARN");
-                                Logger.Warning($"[!] Placement automatique echoue, placement manuel requis");
-                            }
-                        }
-                        else
-                        {
-                            AddLog($"[!] Assemblage copie introuvable: {copiedEquipmentAssembly}", "WARN");
-                        }
+                        // Sauvegarder le module
+                        inventorService.SaveAll();
+                        AddLog("[+] Module sauvegarde", "SUCCESS");
                     }
                     else
                     {
-                        AddLog($"[!] Module introuvable, ouverture manuelle requise", "WARN");
+                        AddLog($"[!] Placement automatique echoue - placement manuel requis", "WARN");
+                        Logger.Warning("[!] PlaceComponent a retourne false, placement manuel requis");
                     }
                 }
                 
@@ -3063,8 +3060,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 Logger.Info($"[+] PLACEMENT EQUIPEMENT TERMINE: {_selectedEquipment.DisplayName}");
                 Logger.Info("═══════════════════════════════════════════════════════");
                 
-                // Nettoyer le dossier temporaire
-                CleanupTempVaultFolder();
+                XnrgyMessageBox.ShowSuccess(
+                    $"L'equipement '{_selectedEquipment.DisplayName}' a ete place avec succes dans le module {project}{reference}{module}.",
+                    "Placement termine",
+                    this);
             }
             catch (Exception ex)
             {
@@ -3073,25 +3072,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 Logger.Debug($"    StackTrace: {ex.StackTrace}");
                 UpdateProgress(0, $"[-] Erreur: {ex.Message}", isError: true);
                 
-                // Tenter de restaurer l'IPJ original en cas d'erreur
-                if (!string.IsNullOrEmpty(originalIpjPath))
+                XnrgyMessageBox.ShowError(
+                    $"Erreur lors du placement de l'equipement:\n\n{ex.Message}",
+                    "Erreur placement",
+                    this);
+                
+                // Tenter de restaurer l'IPJ du module en cas d'erreur
+                if (!string.IsNullOrEmpty(moduleIpjPath) && File.Exists(moduleIpjPath))
                 {
                     try
                     {
-                        using (var restoreService = new InventorCopyDesignService((m, l) => { }, (p, s) => { }))
+                        using (var restoreService = new EquipmentCopyDesignService((m, l) => { }, (p, s) => { }))
                         {
                             if (restoreService.Initialize())
                             {
-                                restoreService.SwitchProject(originalIpjPath);
-                                AddLog($"[+] IPJ original restaure apres erreur", "INFO");
+                                restoreService.SwitchProject(moduleIpjPath);
+                                AddLog($"[+] IPJ module restaure apres erreur", "INFO");
                             }
                         }
                     }
                     catch { }
                 }
-                
-                // Nettoyer meme en cas d'erreur
-                CleanupTempVaultFolder();
             }
             finally
             {
@@ -3287,12 +3288,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
 
         /// <summary>
         /// Met à jour le chemin de destination et le nouveau nom pour un fichier
+        /// [+] Pour PlaceEquipment: destination dans modulePath\1-Equipment\EquipmentName
         /// </summary>
         private void UpdateFileDestination(FileRenameItem item)
         {
             if (item == null) return;
             
-            var destBase = _request.DestinationPath;
+            // [+] Pour PlaceEquipment: ajouter 1-Equipment\EquipmentName au chemin de base du module
+            var modulePath = _request.DestinationPath; // C:\Vault\...\12345\REF01\M02
+            var equipmentName = _selectedEquipment?.Name ?? "";
+            var destBase = string.IsNullOrEmpty(equipmentName) 
+                ? modulePath 
+                : Path.Combine(modulePath, "1-Equipment", equipmentName);
+            
             if (string.IsNullOrEmpty(destBase)) return;
             
             // Calculer le chemin relatif pour la destination

@@ -472,11 +472,24 @@
                 
                 <Viewbox Grid.Column="0" Stretch="Uniform" MaxWidth="600" MaxHeight="80" HorizontalAlignment="Left" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="#FF8C00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
-                            <TextBlock Text="&#x2699;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Background="#5B5FC7" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="🪭" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="💨" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="🌀" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="❄️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="Place Equipment - Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="🪭 Place Equipment - Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
                             <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
                                 <Run Text="Copie et placement d'equipements dans les modules Inventor"/>
                             </TextBlock>
@@ -1035,42 +1048,28 @@
                             </Border.Effect>
                         </Border>
                         
-                        <!-- Texte de statut centré verticalement -->
+                        <!-- Texte de statut -->
                         <TextBlock x:Name="TxtStatus" 
                                    Text="Prêt - Remplissez les informations du projet" 
                                    Foreground="White" FontSize="12" FontWeight="Bold"
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
-                                   Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
+                                   Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
                         
-                        <!-- Fichier actuellement en traitement -->
+                        <!-- Fichier en cours -->
                         <TextBlock x:Name="TxtCurrentFile" 
                                    Text="" 
                                    Foreground="#00D4FF" FontSize="12" FontWeight="Bold"
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
-                                   Margin="220,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200">
-                            <TextBlock.Effect>
-                                <DropShadowEffect Color="#000000" BlurRadius="3" ShadowDepth="1" Opacity="0.8"/>
-                            </TextBlock.Effect>
-                        </TextBlock>
+                                   Margin="220,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
                         
-                        <!-- Temps écoulé et estimé à droite -->
+                        <!-- Temps écoulé et pourcentage -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0">
-                            <TextBlock Text="⏱️ Écoulé: " Foreground="#FFD700" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtProgressTimeElapsed" 
-                                       Text="00:00" 
-                                       Foreground="#FFD700" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <TextBlock Text=" / Estimé: " Foreground="#FFD700" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                            <TextBlock x:Name="TxtProgressTimeEstimated" 
-                                       Text="00:00" 
-                                       Foreground="#FFD700" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <TextBlock Text=" | " Foreground="#888888" FontSize="11" VerticalAlignment="Center" Margin="8,0,8,0"/>
-                            <TextBlock x:Name="TxtProgressPercent" 
-                                       Text="0%" 
-                                       Foreground="#FFD700" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtTimeLabel" Text="⏱️ Écoulé: " Foreground="#FFD700" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtProgressTimeElapsed" Text="00:00" Foreground="#FFD700" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtEstimatedLabel" Text=" / Estimé: " Foreground="#FFD700" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                            <TextBlock x:Name="TxtProgressTimeEstimated" Text="00:00" Foreground="#FFD700" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtSeparator" Text=" | " Foreground="#888888" FontSize="11" VerticalAlignment="Center" Margin="8,0,8,0"/>
+                            <TextBlock x:Name="TxtProgressPercent" Text="0%" Foreground="#FFD700" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
                 </Border>

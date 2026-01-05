@@ -71,7 +71,7 @@
         <!-- Header -->
         <Border Grid.Row="0" Background="#2A4A6F" Padding="16,12">
             <StackPanel>
-                <TextBlock Text="[>] Export IAM vers IPT/STEP" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="🔄 Export IAM vers IPT/STEP" FontSize="18" FontWeight="Bold" Foreground="White"/>
                 <TextBlock Text="Convertir un assemblage en fichier unique IPT (solides multiples) ou STEP" 
                            FontSize="12" Foreground="#FFB74D" Margin="0,4,0,0"/>
             </StackPanel>
@@ -109,7 +109,7 @@
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="TxtDestinationPath" Grid.Column="0" Style="{StaticResource DarkTextBox}"
                              Text="C:\Vault\Engineering\Projects\"/>
-                    <Button x:Name="BtnBrowse" Grid.Column="1" Content="[...] Parcourir" 
+                    <Button x:Name="BtnBrowse" Grid.Column="1" Content="📁 Parcourir" 
                             Style="{StaticResource ActionButton}" Margin="8,0,0,0"
                             Background="#FF8C00" Click="BtnBrowse_Click"/>
                 </Grid>
@@ -149,7 +149,7 @@
                 <Button x:Name="BtnCancel" Grid.Column="1" Content="Annuler" 
                         Style="{StaticResource ActionButton}" Background="#6B7280"
                         Width="100" Margin="0,0,12,0" Click="BtnCancel_Click"/>
-                <Button x:Name="BtnExport" Grid.Column="2" Content="[>] Exporter" 
+                <Button x:Name="BtnExport" Grid.Column="2" Content="🔄 Exporter" 
                         Style="{StaticResource ActionButton}" Background="#107C10"
                         Width="120" Click="BtnExport_Click"/>
             </Grid>

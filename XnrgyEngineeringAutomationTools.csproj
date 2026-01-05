@@ -306,6 +306,7 @@
     <Compile Include="Modules\PlaceEquipment\Models\EquipmentItem.cs" />
     <Compile Include="Modules\PlaceEquipment\Models\PlaceEquipmentRequest.cs" />
     <Compile Include="Modules\PlaceEquipment\Services\EquipmentPlacementService.cs" />
+    <Compile Include="Modules\PlaceEquipment\Services\EquipmentCopyDesignService.cs" />
     <!-- ========== CODE-BEHIND: MODULE UPLOAD TEMPLATE ========== -->
     <Compile Include="Modules\UploadTemplate\Views\UploadTemplateWindow.xaml.cs">
       <DependentUpon>UploadTemplateWindow.xaml</DependentUpon>

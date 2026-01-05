@@ -164,6 +164,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
         // ====================================================================
         private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            // [+] Initialiser _startTime pour eviter temps ecoule enorme au demarrage
+            _startTime = DateTime.Now;
+            _pausedTime = TimeSpan.Zero;
+            TxtProgressTimeElapsed.Text = "00:00";
+            TxtProgressTimeEstimated.Text = "00:00";
+            
             // Note: Logo remplace par emoji dans le header moderne
 
             // Afficher le statut de connexion (format identique MainWindow)

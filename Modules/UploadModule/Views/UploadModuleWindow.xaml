@@ -666,7 +666,7 @@
                              BorderThickness="0" FontFamily="Consolas" FontSize="14" Padding="10,5">
                     <FlowDocument>
                         <Paragraph>
-                            <Run Text="[i] Module Upload initialisé - Prêt" Foreground="#4FC3F7"/>
+                            <Run Text="ℹ️ Module Upload initialisé - Prêt" Foreground="#4FC3F7"/>
                         </Paragraph>
                     </FlowDocument>
                 </RichTextBox>
