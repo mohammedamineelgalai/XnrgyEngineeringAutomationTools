@@ -453,8 +453,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
             _failedFiles = 0;
             _foldersCreated = 0;
             _folderCache.Clear();
+            
+            // [+] RESET du timer au début de l'opération
             _startTime = DateTime.Now;
             _pausedTime = TimeSpan.Zero;
+            
+            // [+] Reinitialiser les affichages de temps a zero
+            TxtProgressTimeElapsed.Text = "00:00";
+            TxtProgressTimeEstimated.Text = "00:00";
+            TxtCurrentFile.Text = "";
+            TxtProgressPercent.Text = "";
+            ProgressBarFill.Width = 0;
+            
             _createFoldersAutomatically = ChkCreateFolders.IsChecked == true;
             _uploadComment = TxtComment.Text.Trim(); // Recuperer le commentaire
 
@@ -973,10 +983,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
                 
                 // Formatage du temps
                 string elapsedStr = FormatTimeSpan(elapsed);
-                string timeStr = estimatedTotal.HasValue 
-                    ? $"{elapsedStr} / {FormatTimeSpan(estimatedTotal.Value)}"
-                    : elapsedStr;
-                TxtProgressTime.Text = timeStr;
+                string estimatedStr = estimatedTotal.HasValue 
+                    ? FormatTimeSpan(estimatedTotal.Value)
+                    : "00:00";
+                TxtProgressTimeElapsed.Text = elapsedStr;
+                TxtProgressTimeEstimated.Text = estimatedStr;
                 
                 // Si percent < 0, garder le pourcentage actuel (utilisé pour pause)
                 if (percent >= 0)

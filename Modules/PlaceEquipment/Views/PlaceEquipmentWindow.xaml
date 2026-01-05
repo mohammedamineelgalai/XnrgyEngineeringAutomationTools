@@ -1,10 +1,10 @@
-<Window x:Class="XnrgyEngineeringAutomationTools.Modules.CreateModule.Views.CreateModuleWindow"
+<Window x:Class="XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views.PlaceEquipmentWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Creer Module - Pack and Go / Copy Design - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Place Equipment - Copy Design - v1.0.0 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="900" Width="1400"
         MinHeight="700" MinWidth="1100"
         WindowStartupLocation="CenterOwner"
@@ -473,12 +473,12 @@
                 <Viewbox Grid.Column="0" Stretch="Uniform" MaxWidth="600" MaxHeight="80" HorizontalAlignment="Left" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Background="#FF8C00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
-                            <TextBlock Text="&#x1F4E6;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <TextBlock Text="&#x2699;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="📦 Creer Module - Pack &amp; Go / Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Place Equipment - Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
                             <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                                <Run Text="💡 Copie complete de modules Inventor avec renommage automatique"/>
+                                <Run Text="Copie et placement d'equipements dans les modules Inventor"/>
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
@@ -558,7 +558,7 @@
                 </StackPanel>
             </Grid>
         </Border>
-        <!-- SECTION INPUTS - En-tête avec propriétés et options de renommage -->
+        <!-- SECTION INPUTS - En-tete avec proprietes et options de renommage -->
         <Border x:Name="InputsSectionBorder" Grid.Row="1" Background="#1E1E2E" Padding="15,8">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -567,73 +567,86 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Colonne gauche: Informations Projet + Paramètres/iProperties fusionnés -->
+                <!-- Colonne gauche: Detection Module + Informations Projet -->
                 <GroupBox Grid.Column="0" Style="{StaticResource ModernGroupBox}" Margin="0,0,10,0" Padding="10">
                     <GroupBox.Header>
-                        <TextBlock Text="📁 Informations Projet / ⚙️ Paramètres et iProperties" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
+                        <TextBlock Text="Module Detection / Informations Projet" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
                     </GroupBox.Header>
                     <StackPanel>
-                        <!-- Informations Projet -->
+                        <!-- Ligne 1: Project/Ref/Module + Bouton Detecter (meme ligne) -->
                         <Grid>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="110"/>
+                                <ColumnDefinition Width="85"/>
+                                <ColumnDefinition Width="85"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Project Number -->
-                            <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,8,3">
-                                <TextBlock Text="Numéro de Projet *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <StackPanel Grid.Column="0" Margin="0,0,6,0">
+                                <TextBlock Text="Projet *" Style="{StaticResource ModernLabel}" FontSize="10"/>
                                 <TextBox x:Name="TxtProject" Style="{StaticResource ModernTextBox}" 
-                                         MaxLength="6" TextChanged="ProjectInfo_TextChanged" Padding="10,8"
-                                         ToolTip="Ex: 12345 - Numéro du projet"/>
+                                         MaxLength="6" TextChanged="ProjectInfo_TextChanged" Padding="6,6"
+                                         ToolTip="Ex: 12345 - Numero du projet" FontSize="11"/>
                             </StackPanel>
 
-                            <!-- Reference - ComboBox 01 à 50 -->
-                            <StackPanel Grid.Row="0" Grid.Column="1" Margin="0,0,8,3">
-                                <TextBlock Text="Référence *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <!-- Reference - ComboBox 01 a 50 -->
+                            <StackPanel Grid.Column="1" Margin="0,0,6,0">
+                                <TextBlock Text="Ref *" Style="{StaticResource ModernLabel}" FontSize="10"/>
                                 <ComboBox x:Name="CmbReference" Style="{StaticResource ModernComboBox}"
                                           SelectionChanged="CmbReference_SelectionChanged"
-                                          ToolTip="Sélectionner la référence (01-50)"/>
+                                          ToolTip="Reference (01-50)" FontSize="11"/>
                             </StackPanel>
 
-                            <!-- Module - ComboBox 01 à 50 -->
-                            <StackPanel Grid.Row="0" Grid.Column="2" Margin="0,0,0,3">
-                                <TextBlock Text="Module *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <!-- Module - ComboBox 01 a 50 -->
+                            <StackPanel Grid.Column="2" Margin="0,0,6,0">
+                                <TextBlock Text="Module *" Style="{StaticResource ModernLabel}" FontSize="10"/>
                                 <ComboBox x:Name="CmbModule" Style="{StaticResource ModernComboBox}"
                                           SelectionChanged="CmbModule_SelectionChanged"
-                                          ToolTip="Sélectionner le module (01-50)"/>
+                                          ToolTip="Module (01-50)" FontSize="11"/>
                             </StackPanel>
 
-                            <!-- Full Project Number (Calculé) -->
-                            <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,3,8,3">
-                                <TextBlock Text="Numéro Projet Complet (Auto)" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                                <Border Background="#1A1A28" CornerRadius="4" Padding="10,8" BorderBrush="#4A7FBF" BorderThickness="2">
-                                    <TextBlock x:Name="TxtFullProjectNumber" Text="000000000" FontSize="12" 
+                            <!-- Bouton Detection Module Actif + Charger iProperties -->
+                            <Button x:Name="BtnDetectModule" Grid.Column="3"
+                                    Content="🔍 Detecter Module et Charger iProperties depuis Inventor" 
+                                    Style="{StaticResource PrimaryButton}"
+                                    Padding="15,8" FontSize="13" Margin="6,14,0,0"
+                                    Click="BtnDetectModule_Click"
+                                    ToolTip="Detecter le module actif dans Inventor et charger les iProperties (Initiales Dessinateur, Co-Dessinateur, Job Title, Date)"/>
+                        </Grid>
+                        
+                        <!-- Ligne 2: Full Project Number + Destination Path -->
+                        <Grid Margin="0,6,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Full Project Number (Calcule) -->
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="N° Complet (Auto)" Style="{StaticResource ModernLabel}" FontSize="10"/>
+                                <Border Background="#1A1A28" CornerRadius="4" Padding="8,6" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock x:Name="TxtFullProjectNumber" Text="000000000" FontSize="11" 
                                                FontWeight="Bold" Foreground="White" FontFamily="Consolas"/>
                                 </Border>
                             </StackPanel>
 
-                            <!-- Destination Path (Calculé) -->
-                            <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Margin="0,3,0,3">
-                                <TextBlock Text="Chemin de Destination (Auto)" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <!-- Destination Path (Calcule) -->
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="Destination (Auto)" Style="{StaticResource ModernLabel}" FontSize="10"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Background="#1A1A28" CornerRadius="4,0,0,4" Padding="10,8" 
+                                    <Border Grid.Column="0" Background="#1A1A28" CornerRadius="4,0,0,4" Padding="8,6" 
                                             BorderBrush="#4A7FBF" BorderThickness="2,2,0,2">
                                         <TextBlock x:Name="TxtDestinationPath" Text="C:\Vault\Engineering\Projects\..." 
-                                                   FontSize="12" FontWeight="Bold" Foreground="White" FontFamily="Consolas" 
+                                                   FontSize="10" FontWeight="Bold" Foreground="White" FontFamily="Consolas" 
                                                    TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
                                     </Border>
                                     <Button Grid.Column="1" x:Name="BtnBrowseDestination" Content="📂" 
-                                            Style="{StaticResource SecondaryButton}" Padding="8,5"
+                                            Style="{StaticResource SecondaryButton}" Padding="6,4"
                                             Click="BtnBrowseDestination_Click" ToolTip="Parcourir..."/>
                                 </Grid>
                             </StackPanel>
@@ -821,95 +834,79 @@
         <!-- SECTION PRINCIPALE - Options et Fichiers -->
         <Grid Grid.Row="2" Margin="15,8">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="340"/>
+                <ColumnDefinition Width="300"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Panneau gauche: Options de source et renommage avec Scroll -->
-            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Margin="0,0,15,0">
+            <!-- Panneau gauche: Source Equipement depuis Vault -->
+            <GroupBox Grid.Column="0" Style="{StaticResource ModernGroupBox}" Margin="0,0,15,0">
+                <GroupBox.Header>
+                    <TextBlock Text="Source Equipement (Vault)" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
+                </GroupBox.Header>
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel>
-                
-                <!-- Source du module -->
-                <GroupBox Style="{StaticResource ModernGroupBox}">
-                    <GroupBox.Header>
-                        <TextBlock Text="📥 Source du Module" FontSize="14" FontWeight="Bold" Foreground="#FF8C00"/>
-                    </GroupBox.Header>
-                    <StackPanel>
-                        <RadioButton x:Name="RbFromTemplate" Style="{StaticResource ModernRadioButton}" 
-                                     IsChecked="True" Checked="SourceOption_Changed">
-                            <StackPanel>
-                                <TextBlock Text="📦 Créer depuis Template" FontWeight="Bold" Foreground="White" FontSize="13"/>
-                                <TextBlock Text="Xnrgy_Module (Library)" FontSize="12" Foreground="White" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </RadioButton>
-                        
-                        <RadioButton x:Name="RbFromExisting" Style="{StaticResource ModernRadioButton}" 
-                                     Checked="SourceOption_Changed" Margin="0,8,0,0">
-                            <StackPanel>
-                                <TextBlock Text="📂 Créer depuis Projet Existant" FontWeight="Bold" Foreground="White" FontSize="13"/>
-                                <TextBlock Text="Projet Local C:" FontSize="12" Foreground="White" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </RadioButton>
-
-                        <RadioButton x:Name="RbFromVault" Style="{StaticResource ModernRadioButton}" 
-                                     Checked="SourceOption_Changed" Margin="0,8,0,0">
-                            <StackPanel>
-                                <TextBlock Text="☁️ Sélectionner depuis Vault" FontWeight="Bold" Foreground="White" FontSize="13"/>
-                                <TextBlock Text="Télécharger depuis Vault ($/Engineering/Projects)" FontSize="12" Foreground="White" Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </RadioButton>
-
-                        <!-- Sélecteur de projet existant (visible uniquement si RbFromExisting) -->
-                        <StackPanel x:Name="PnlProjectSelector" Visibility="Collapsed" Margin="0,10,0,0">
-                            <TextBlock Text="Sélectionner Projet:" Style="{StaticResource ModernLabel}" FontSize="12"/>
-                            <ComboBox x:Name="CmbProjects" Height="36" FontSize="12"
-                                      Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="CmbProjects_SelectionChanged"/>
-                            <Button x:Name="BtnRefreshProjects" Content="🔄 Actualiser les Projets" 
-                                    Style="{StaticResource SecondaryButton}" Margin="0,8,0,0" 
-                                    Padding="12,8" FontSize="11"
-                                    Click="BtnRefreshProjects_Click"/>
-                        </StackPanel>
-
-                        <!-- Sélecteur de projet Vault (visible uniquement si RbFromVault) -->
-                        <StackPanel x:Name="PnlVaultProjectSelector" Visibility="Collapsed" Margin="0,10,0,0">
-                            <TextBlock Text="Sélectionner Projet Vault:" Style="{StaticResource ModernLabel}" FontSize="12"/>
-                            <ComboBox x:Name="CmbVaultProjects" Height="36" FontSize="12"
-                                      Style="{StaticResource ModernComboBox}"
-                                      SelectionChanged="CmbVaultProjects_SelectionChanged"
-                                      DisplayMemberPath="DisplayName"/>
-                            <Button x:Name="BtnRefreshVaultProjects" Content="🔄 Actualiser les Projets Vault" 
-                                    Style="{StaticResource SecondaryButton}" Margin="0,8,0,0" 
-                                    Padding="12,8" FontSize="11"
-                                    Click="BtnRefreshVaultProjects_Click"/>
-                        </StackPanel>
-
-                        <!-- Chemin source -->
-                        <StackPanel Margin="0,12,0,0">
-                            <TextBlock Text="Chemin Source:" Style="{StaticResource ModernLabel}" FontSize="12"/>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBox x:Name="TxtSourcePath" Grid.Column="0" Style="{StaticResource ModernTextBox}"
-                                         Text="C:\Vault\Engineering\Library\Xnrgy_Module" IsReadOnly="True"
-                                         Padding="8,6"/>
-                                <Button x:Name="BtnBrowseSource" Grid.Column="1" Content="📂" 
-                                        Style="{StaticResource SecondaryButton}" Padding="10,6" Margin="5,0,0,0"
-                                        Click="BtnBrowseSource_Click" ToolTip="Parcourir..."/>
-                            </Grid>
-                        </StackPanel>
-
-                        <!-- Bouton Charger fichiers - bien visible -->
-                        <Button x:Name="BtnLoadFiles" Content="🔄 Charger les Fichiers" 
-                                Style="{StaticResource PrimaryButton}" Margin="0,12,0,5" 
-                                Padding="15,10" FontSize="13"
-                                Click="BtnLoadFiles_Click"/>
+                    <!-- ComboBox Selection Equipement depuis Vault -->
+                    <StackPanel Margin="0,0,0,10">
+                        <TextBlock Text="Selectionner Equipement *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                        <ComboBox x:Name="CmbEquipment" Style="{StaticResource ModernComboBox}"
+                                  SelectionChanged="CmbEquipment_SelectionChanged"
+                                  DisplayMemberPath="DisplayName"
+                                  ToolTip="Selectionner l'equipement a placer (charge depuis Vault)"/>
                     </StackPanel>
-                </GroupBox>
+                    
+                    <!-- Bouton Actualiser la liste des equipements -->
+                    <Button x:Name="BtnRefreshEquipments" Content="Actualiser la liste" 
+                            Style="{StaticResource SecondaryButton}"
+                            Padding="10,8" FontSize="11" Margin="0,0,0,10"
+                            Click="BtnRefreshEquipments_Click"
+                            ToolTip="Recharger la liste des equipements depuis Vault"/>
+
+                    <!-- Info equipement selectionne -->
+                    <Border Background="#1A1A28" CornerRadius="6" Padding="12" Margin="0,0,0,10" 
+                            BorderBrush="#4A7FBF" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="Chemin Vault:" Foreground="#888" FontSize="10" Margin="0,0,0,2"/>
+                            <TextBlock x:Name="TxtEquipmentVaultPath" Text="$/Engineering/Library/Equipment/..." 
+                                       Foreground="#4A7FBF" FontSize="10" FontFamily="Consolas" 
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Bouton principal: Charger depuis Vault -->
+                    <Button x:Name="BtnLoadFromVault" 
+                            Style="{StaticResource PrimaryButton}" 
+                            Background="#0078D4" Foreground="White"
+                            Padding="15,12" FontSize="13" FontWeight="Bold"
+                            Click="BtnLoadFromVault_Click"
+                            ToolTip="Telecharger l'equipement depuis Vault vers le dossier local">
+                        <TextBlock Text="Charger depuis Vault" VerticalAlignment="Center"/>
+                    </Button>
+
+                    <!-- Chemin source local (lecture seule) -->
+                    <StackPanel Margin="0,15,0,0">
+                        <TextBlock Text="Chemin Local:" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                        <Border Background="#1A1A28" CornerRadius="4" Padding="8,6" 
+                                BorderBrush="#4A7FBF" BorderThickness="1">
+                            <TextBox x:Name="TxtSourcePath" Text="C:\Vault\Engineering\Library\Equipment\..." 
+                                     IsReadOnly="True" Background="Transparent" BorderThickness="0"
+                                     Foreground="White" FontSize="10" FontFamily="Consolas" TextWrapping="Wrap"/>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Separator -->
+                    <Border Height="1" Background="#3D3D56" Margin="0,15,0,15"/>
+
+                    <!-- Info: Le dossier local sera nettoye -->
+                    <Border Background="#2D1F1F" CornerRadius="4" Padding="10" BorderBrush="#E81123" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="[!] Nettoyage automatique" Foreground="#FF6B6B" FontSize="11" FontWeight="Bold"/>
+                            <TextBlock Text="Le dossier local sera vide avant chaque telechargement pour garantir des fichiers a jour." 
+                                       Foreground="#AAA" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
-            </ScrollViewer>
+                </ScrollViewer>
+            </GroupBox>
 
             <!-- Panneau droit: Liste des fichiers -->
             <GroupBox Grid.Column="1" Style="{StaticResource ModernGroupBox}" Margin="0">
@@ -922,7 +919,7 @@
                         </Grid.ColumnDefinitions>
                         
                         <!-- Titre -->
-                        <TextBlock Grid.Column="0" Text="📄 Fichiers à Copier (Style Copy Design)" 
+                        <TextBlock Grid.Column="0" Text="Fichiers a Copier (Style Copy Design)" 
                                    FontSize="16" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                         
                         <!-- Zone de recherche et filtres -->
@@ -1080,15 +1077,15 @@
 
                 <!-- Boutons d'action (compacts) -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="BtnPreview" Content="👁️ Prévisualiser" Style="{StaticResource SecondaryButton}" 
+                    <Button x:Name="BtnPreview" Content="Previsualiser" Style="{StaticResource SecondaryButton}" 
                             Background="#0891B2" Foreground="White" Height="34" FontSize="13"
                             Padding="12,5" Margin="0,0,8,0" Click="BtnPreview_Click" VerticalContentAlignment="Center"/>
-                    <Button x:Name="BtnCancel" Content="✖️ Annuler" Style="{StaticResource SecondaryButton}" 
+                    <Button x:Name="BtnCancel" Content="Annuler" Style="{StaticResource SecondaryButton}" 
                             Background="#E81123" Foreground="White" Height="34" FontSize="13"
                             Padding="12,5" Margin="0,0,8,0" Click="BtnCancel_Click" VerticalContentAlignment="Center"/>
-                    <Button x:Name="BtnCreateModule" Content="✅ CRÉER LE MODULE" Style="{StaticResource SuccessButton}" 
+                    <Button x:Name="BtnPlaceEquipment" Content="PLACER L'EQUIPEMENT" Style="{StaticResource SuccessButton}" 
                             Height="34" FontSize="13"
-                            Padding="15,5" IsEnabled="False" Click="BtnCreateModule_Click" VerticalContentAlignment="Center"/>
+                            Padding="15,5" IsEnabled="False" Click="BtnPlaceEquipment_Click" VerticalContentAlignment="Center"/>
                 </StackPanel>
             </Grid>
         </Border>

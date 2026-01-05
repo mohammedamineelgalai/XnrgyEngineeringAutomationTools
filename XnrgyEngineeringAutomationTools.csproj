@@ -215,6 +215,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <!-- ========== MODULE: PLACE EQUIPMENT ========== -->
+    <Page Include="Modules\PlaceEquipment\Views\PlaceEquipmentWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <!-- ========== MODULE: UPLOAD TEMPLATE ========== -->
     <Page Include="Modules\UploadTemplate\Views\UploadTemplateWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -231,6 +236,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Modules\SmartTools\Views\HtmlPopupWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\SmartTools\Views\ProgressWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -274,7 +283,8 @@
       <DependentUpon>UploadModuleWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Modules\UploadModule\Models\*.cs" />
+    <Compile Include="Modules\UploadModule\Models\VaultUploadFileItem.cs" />
+    <Compile Include="Modules\UploadModule\Models\VaultUploadModels.cs" />
     <!-- ========== CODE-BEHIND: MODULE CREATE MODULE ========== -->
     <Compile Include="Modules\CreateModule\Views\CreateModuleWindow.xaml.cs">
       <DependentUpon>CreateModuleWindow.xaml</DependentUpon>
@@ -284,8 +294,18 @@
       <DependentUpon>CreateModuleSettingsWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Modules\CreateModule\Models\*.cs" />
-    <Compile Include="Modules\CreateModule\Services\*.cs" />
+    <Compile Include="Modules\CreateModule\Models\CreateModuleRequest.cs" />
+    <Compile Include="Modules\CreateModule\Models\CreateModuleSettings.cs" />
+    <Compile Include="Modules\CreateModule\Services\InventorCopyDesignService.cs" />
+    <Compile Include="Modules\CreateModule\Services\ModuleCopyService.cs" />
+    <!-- ========== CODE-BEHIND: MODULE PLACE EQUIPMENT ========== -->
+    <Compile Include="Modules\PlaceEquipment\Views\PlaceEquipmentWindow.xaml.cs">
+      <DependentUpon>PlaceEquipmentWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\PlaceEquipment\Models\EquipmentItem.cs" />
+    <Compile Include="Modules\PlaceEquipment\Models\PlaceEquipmentRequest.cs" />
+    <Compile Include="Modules\PlaceEquipment\Services\EquipmentPlacementService.cs" />
     <!-- ========== CODE-BEHIND: MODULE UPLOAD TEMPLATE ========== -->
     <Compile Include="Modules\UploadTemplate\Views\UploadTemplateWindow.xaml.cs">
       <DependentUpon>UploadTemplateWindow.xaml</DependentUpon>
@@ -303,6 +323,10 @@
     </Compile>
     <Compile Include="Modules\SmartTools\Views\HtmlPopupWindow.xaml.cs">
       <DependentUpon>HtmlPopupWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\SmartTools\Views\ProgressWindow.xaml.cs">
+      <DependentUpon>ProgressWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Modules\SmartTools\Views\ExportOptionsWindow.xaml.cs">

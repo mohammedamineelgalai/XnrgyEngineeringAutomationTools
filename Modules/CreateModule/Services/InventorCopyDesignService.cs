@@ -2816,6 +2816,215 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
 
         #endregion
 
+        #region Place Equipment Methods
+
+        /// <summary>
+        /// Obtient le chemin du fichier projet (.ipj) actuellement actif dans Inventor
+        /// </summary>
+        /// <returns>Chemin complet du fichier .ipj ou null</returns>
+        public string? GetCurrentProjectFile()
+        {
+            if (_inventorApp == null) return null;
+
+            try
+            {
+                DesignProjectManager designProjectManager = _inventorApp.DesignProjectManager;
+                DesignProject activeProject = designProjectManager.ActiveDesignProject;
+                if (activeProject != null)
+                {
+                    return activeProject.FullFileName;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[!] Erreur lecture projet actuel: {ex.Message}", "WARN");
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Switch vers un fichier projet (.ipj) specifique
+        /// </summary>
+        /// <param name="ipjPath">Chemin complet du fichier .ipj</param>
+        /// <returns>True si le switch a reussi</returns>
+        public bool SwitchProject(string ipjPath)
+        {
+            if (_inventorApp == null) return false;
+
+            try
+            {
+                if (!System.IO.File.Exists(ipjPath))
+                {
+                    Log($"[-] Fichier IPJ introuvable: {ipjPath}", "ERROR");
+                    return false;
+                }
+
+                Log($"[>] Switch vers projet: {System.IO.Path.GetFileName(ipjPath)}", "INFO");
+
+                DesignProjectManager designProjectManager = _inventorApp.DesignProjectManager;
+                DesignProjects projectsCollection = designProjectManager.DesignProjects;
+                DesignProject? targetProject = null;
+
+                // Chercher si le projet est deja dans la collection
+                for (int i = 1; i <= projectsCollection.Count; i++)
+                {
+                    DesignProject proj = projectsCollection[i];
+                    if (proj.FullFileName.Equals(ipjPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        targetProject = proj;
+                        break;
+                    }
+                }
+
+                // Si non trouve, l'ajouter
+                if (targetProject == null)
+                {
+                    targetProject = projectsCollection.AddExisting(ipjPath);
+                    Log($"[+] Projet ajoute a la collection", "DEBUG");
+                }
+
+                // Activer le projet
+                targetProject.Activate();
+                Log($"[+] Projet active: {System.IO.Path.GetFileName(ipjPath)}", "SUCCESS");
+                
+                // Attendre que le switch soit effectif
+                Thread.Sleep(500);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur switch projet: {ex.Message}", "ERROR");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Sauvegarde tous les documents ouverts dans Inventor
+        /// </summary>
+        public void SaveAll()
+        {
+            if (_inventorApp == null) return;
+
+            try
+            {
+                Documents documents = _inventorApp.Documents;
+                int savedCount = 0;
+                
+                foreach (Document doc in documents)
+                {
+                    try
+                    {
+                        if (!doc.IsModifiable) continue;
+                        doc.Save();
+                        savedCount++;
+                    }
+                    catch { }
+                }
+                
+                if (savedCount > 0)
+                {
+                    Log($"[+] {savedCount} document(s) sauvegarde(s)", "SUCCESS");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[!] Erreur sauvegarde documents: {ex.Message}", "WARN");
+            }
+        }
+
+        /// <summary>
+        /// Ferme tous les documents ouverts dans Inventor (version publique)
+        /// </summary>
+        public void CloseAllDocumentsPublic()
+        {
+            CloseAllDocuments();
+        }
+
+        /// <summary>
+        /// Ouvre un document dans Inventor
+        /// </summary>
+        /// <param name="filePath">Chemin complet du fichier a ouvrir</param>
+        /// <returns>True si l'ouverture a reussi</returns>
+        public bool OpenDocument(string filePath)
+        {
+            if (_inventorApp == null) return false;
+
+            try
+            {
+                if (!System.IO.File.Exists(filePath))
+                {
+                    Log($"[-] Fichier introuvable: {filePath}", "ERROR");
+                    return false;
+                }
+
+                Log($"[>] Ouverture document: {System.IO.Path.GetFileName(filePath)}", "INFO");
+                
+                Document doc = _inventorApp.Documents.Open(filePath, true);
+                if (doc != null)
+                {
+                    Log($"[+] Document ouvert: {System.IO.Path.GetFileName(filePath)}", "SUCCESS");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur ouverture document: {ex.Message}", "ERROR");
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Place un composant dans l'assemblage actif (equivalent de Place Component)
+        /// </summary>
+        /// <param name="componentPath">Chemin complet du fichier composant (.iam ou .ipt)</param>
+        /// <returns>True si le placement a reussi</returns>
+        public bool PlaceComponent(string componentPath)
+        {
+            if (_inventorApp == null) return false;
+
+            try
+            {
+                if (!System.IO.File.Exists(componentPath))
+                {
+                    Log($"[-] Composant introuvable: {componentPath}", "ERROR");
+                    return false;
+                }
+
+                // Verifier que le document actif est un assemblage
+                Document activeDoc = _inventorApp.ActiveDocument;
+                if (activeDoc == null || activeDoc.DocumentType != DocumentTypeEnum.kAssemblyDocumentObject)
+                {
+                    Log("[-] Aucun assemblage actif pour placer le composant", "ERROR");
+                    return false;
+                }
+
+                AssemblyDocument assemblyDoc = (AssemblyDocument)activeDoc;
+                AssemblyComponentDefinition compDef = assemblyDoc.ComponentDefinition;
+                
+                Log($"[>] Placement composant: {System.IO.Path.GetFileName(componentPath)}", "INFO");
+                
+                // Creer une matrice de transformation (position par defaut a l'origine)
+                TransientGeometry transientGeom = _inventorApp.TransientGeometry;
+                Matrix positionMatrix = transientGeom.CreateMatrix();
+                
+                // Placer le composant
+                ComponentOccurrence occurrence = compDef.Occurrences.Add(componentPath, positionMatrix);
+                
+                if (occurrence != null)
+                {
+                    Log($"[+] Composant place avec succes: {System.IO.Path.GetFileName(componentPath)}", "SUCCESS");
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur placement composant: {ex.Message}", "ERROR");
+            }
+            return false;
+        }
+
+        #endregion
+
         #region Dispose
 
         public void Dispose()

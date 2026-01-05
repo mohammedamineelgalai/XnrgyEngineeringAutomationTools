@@ -1,0 +1,3430 @@
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
+using ACW = Autodesk.Connectivity.WebServices;
+using VDF = Autodesk.DataManagement.Client.Framework;
+using XnrgyEngineeringAutomationTools.Models;
+using XnrgyEngineeringAutomationTools.Services;
+using XnrgyEngineeringAutomationTools.Shared.Views;
+using XnrgyEngineeringAutomationTools.Modules.CreateModule.Models;
+using XnrgyEngineeringAutomationTools.Modules.CreateModule.Services;
+using XnrgyEngineeringAutomationTools.Modules.CreateModule.Views;
+using XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Models;
+using XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services;
+
+namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
+{
+    /// <summary>
+    /// Fenetre Place Equipment - Copy Design pour equipements XNRGY
+    /// </summary>
+    public partial class PlaceEquipmentWindow : Window
+    {
+        private readonly CreateModuleRequest _request;
+        private readonly ObservableCollection<FileRenameItem> _files;
+        private readonly string _defaultTemplatePath = @"C:\Vault\Engineering\Library\Equipment";
+        private readonly string _projectsBasePath = @"C:\Vault\Engineering\Projects";
+        
+        // Service Place Equipment et equipement selectionne
+        private readonly EquipmentPlacementService _equipmentService;
+        private EquipmentItem? _selectedEquipment;
+        private readonly string _defaultDestinationBase = @"C:\Vault\Engineering\Projects";
+        
+        // Service Vault pour vérification admin (optionnel)
+        private readonly VaultSdkService? _vaultService;
+        private bool _isVaultAdmin = false;
+        
+        // Service Inventor pour vérification de connexion
+        private readonly InventorService _inventorService;
+        private System.Windows.Threading.DispatcherTimer? _inventorStatusTimer;
+        
+        // Suivi du temps pour la progression
+        private DateTime _startTime;
+        private TimeSpan _pausedTime = TimeSpan.Zero;
+        private DateTime _pauseStartTime;
+
+        // Liste des initiales dessinateurs XNRGY (mise à jour 2025-12-30)
+        private readonly List<string> _designerInitials = new List<string>
+        {
+            "N/A", "AC", "AM", "AP", "AR", "BL", "CC", "CP", "DC", "DL", "DM", "FL", 
+            "IM", "KB", "KJ", "MAE", "MC", "NJ", "RO", "SB", "TG", "TV", "VK", "YS", "ZM",
+            "Autre..."
+        };
+
+        /// <summary>
+        /// Constructeur par défaut (sans vérification admin)
+        /// </summary>
+        public PlaceEquipmentWindow() : this(null, null)
+        {
+        }
+
+        /// <summary>
+        /// Constructeur avec service Vault pour vérification admin
+        /// </summary>
+        /// <param name="vaultService">Service Vault connecté (optionnel)</param>
+        public PlaceEquipmentWindow(VaultSdkService? vaultService) : this(vaultService, null)
+        {
+        }
+
+        /// <summary>
+        /// Constructeur avec services Vault et Inventor pour héritage du statut de connexion
+        /// </summary>
+        /// <param name="vaultService">Service Vault connecté (optionnel)</param>
+        /// <param name="inventorService">Service Inventor du formulaire principal (optionnel)</param>
+        public PlaceEquipmentWindow(VaultSdkService? vaultService, InventorService? inventorService)
+        {
+            // IMPORTANT: Initialiser _request et _files AVANT InitializeComponent()
+            // car les evenements TextChanged du XAML sont declenches pendant l'initialisation
+            _request = new CreateModuleRequest();
+            _files = new ObservableCollection<FileRenameItem>();
+            _vaultService = vaultService;
+            // Utiliser le service Inventor du formulaire principal (heritage du statut)
+            _inventorService = inventorService ?? new InventorService();
+            
+            // [+] Initialiser le service Equipment avec callback de log
+            _equipmentService = new EquipmentPlacementService(_vaultService, (msg, level) => AddLog(msg, level));
+            
+            // [+] Forcer la reconnexion COM a chaque ouverture de Place Equipment
+            // Evite les problemes de connexion COM obsolete
+            _inventorService.ForceReconnect();
+            
+            try
+            {
+                InitializeComponent();
+            }
+            catch (Exception ex)
+            {
+                XnrgyMessageBox.ShowError(
+                    $"Erreur lors de l'initialisation de la fenetre Place Equipment:\n\n{ex.Message}\n\nDetails:\n{ex.StackTrace}",
+                    "Erreur d'initialisation");
+                throw;
+            }
+            
+            // S'abonner aux changements de theme
+            MainWindow.ThemeChanged += OnThemeChanged;
+            
+            // Appliquer le theme actuel au demarrage
+            ApplyTheme(MainWindow.CurrentThemeIsDark);
+            
+            // Attendre que la fenetre soit chargee pour initialiser les controles
+            this.Loaded += PlaceEquipmentWindow_Loaded;
+            this.Closed += (s, e) =>
+            {
+                MainWindow.ThemeChanged -= OnThemeChanged;
+                _inventorStatusTimer?.Stop();
+                // Nettoyer le dossier temporaire Vault si present
+                CleanupTempVaultFolder();
+            };
+        }
+
+        /// <summary>
+        /// Gestionnaire de changement de theme depuis MainWindow
+        /// </summary>
+        private void OnThemeChanged(bool isDarkTheme)
+        {
+            Dispatcher.Invoke(() => ApplyTheme(isDarkTheme));
+        }
+
+        /// <summary>
+        /// Applique le theme a cette fenetre
+        /// </summary>
+        private void ApplyTheme(bool isDarkTheme)
+        {
+            // Elements avec fond noir FIXE (ne changent jamais)
+            StatisticsBorder.Background = new SolidColorBrush(Color.FromRgb(26, 26, 40)); // #1A1A28 - Header stats
+            
+            if (isDarkTheme)
+            {
+                // Theme SOMBRE
+                this.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46)); // #1E1E2E
+                InputsSectionBorder.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46)); // #1E1E2E
+            }
+            else
+            {
+                // Theme CLAIR
+                this.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250)); // Bleu-gris tres clair
+                InputsSectionBorder.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250)); // Meme fond clair
+            }
+        }
+
+        #region Journal des Opérations
+
+        /// <summary>
+        /// Ajoute un message au journal des opérations avec style coloré
+        /// </summary>
+        private void AddLog(string message, string level = "INFO")
+        {
+            string timestamp = DateTime.Now.ToString("HH:mm:ss");
+            string icon = level switch
+            {
+                "ERROR" => "✕",
+                "WARN" => "⚠",
+                "SUCCESS" => "✓",
+                "START" => "▶",
+                "STOP" => "■",
+                "CRITICAL" => "✕✕",
+                _ => "ℹ"
+            };
+            
+            string text = $"[{timestamp}] {icon} {message}";
+            
+            Dispatcher.Invoke(() =>
+            {
+                var textBlock = new TextBlock
+                {
+                    Text = text,
+                    FontFamily = new FontFamily("Consolas"),
+                    FontSize = 14,
+                    Padding = new Thickness(10, 4, 10, 4),
+                    TextWrapping = TextWrapping.Wrap
+                };
+                
+                switch (level)
+                {
+                    case "ERROR":
+                    case "CRITICAL":
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 80, 80));
+                        textBlock.FontWeight = FontWeights.Bold;
+                        StartBlinkAnimation(textBlock, Color.FromRgb(255, 80, 80), Color.FromRgb(255, 200, 200));
+                        break;
+                    case "ACTION":
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 100, 100));
+                        textBlock.FontWeight = FontWeights.Bold;
+                        StartBlinkAnimation(textBlock, Color.FromRgb(255, 100, 100), Color.FromRgb(255, 50, 50));
+                        break;
+                    case "READY":
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(50, 255, 100));
+                        textBlock.FontWeight = FontWeights.Bold;
+                        StartBlinkAnimation(textBlock, Color.FromRgb(50, 255, 100), Color.FromRgb(150, 255, 180));
+                        break;
+                    case "WARN":
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(255, 180, 0));
+                        textBlock.FontWeight = FontWeights.SemiBold;
+                        break;
+                    case "SUCCESS":
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(80, 200, 80));
+                        textBlock.FontWeight = FontWeights.SemiBold;
+                        break;
+                    case "START":
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(100, 180, 255));
+                        textBlock.FontWeight = FontWeights.SemiBold;
+                        break;
+                    case "STOP":
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(180, 100, 255));
+                        break;
+                    default:
+                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(220, 220, 220));
+                        break;
+                }
+                
+                LogListBox.Items.Add(textBlock);
+                LogListBox.ScrollIntoView(textBlock);
+                
+                // Limiter à 100 entrées
+                while (LogListBox.Items.Count > 100)
+                {
+                    LogListBox.Items.RemoveAt(0);
+                }
+            });
+        }
+
+        private void StartBlinkAnimation(TextBlock textBlock, Color fromColor, Color toColor)
+        {
+            var animation = new ColorAnimation
+            {
+                From = fromColor,
+                To = toColor,
+                Duration = TimeSpan.FromMilliseconds(300),
+                AutoReverse = true,
+                RepeatBehavior = new RepeatBehavior(5)
+            };
+            
+            var brush = new SolidColorBrush(fromColor);
+            textBlock.Foreground = brush;
+            brush.BeginAnimation(SolidColorBrush.ColorProperty, animation);
+        }
+
+        private void BtnClearLog_Click(object sender, RoutedEventArgs e)
+        {
+            LogListBox.Items.Clear();
+            AddLog("Journal effacé", "INFO");
+        }
+
+        /// <summary>
+        /// Met à jour la barre de progression avec animation
+        /// </summary>
+        private void UpdateProgress(int percent, string statusText, bool isError = false, string currentFile = "")
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // Calculer la largeur de la barre (basée sur la largeur du conteneur parent)
+                var container = ProgressBarFill.Parent as FrameworkElement;
+                if (container != null)
+                {
+                    double maxWidth = container.ActualWidth > 0 ? container.ActualWidth : 400;
+                    double targetWidth = (percent / 100.0) * maxWidth;
+
+                    // Animation de la largeur
+                    var widthAnimation = new DoubleAnimation
+                    {
+                        To = targetWidth,
+                        Duration = TimeSpan.FromMilliseconds(300),
+                        EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut }
+                    };
+
+                    ProgressBarFill.BeginAnimation(WidthProperty, widthAnimation);
+                    // ProgressBarShine et ProgressBarGlow ont été supprimés - effet simplifié
+                }
+
+                // Gradient brillant et cristallisé selon l'état
+                LinearGradientBrush gradientBrush;
+                if (isError)
+                {
+                    // Rouge brillant pour erreur
+                    gradientBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new System.Windows.Point(0, 0),
+                        EndPoint = new System.Windows.Point(1, 0)
+                    };
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FF4444"), 0));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FF6B6B"), 0.5));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#FF4444"), 1));
+                }
+                else if (percent >= 100)
+                {
+                    // Vert néon brillant pour succès
+                    gradientBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new System.Windows.Point(0, 0),
+                        EndPoint = new System.Windows.Point(1, 0)
+                    };
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FF88"), 0));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 0.3));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFCC"), 0.5));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 0.7));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FF88"), 1));
+                }
+                else
+                {
+                    // Cyan/bleu électrique brillant pour progression
+                    gradientBrush = new LinearGradientBrush
+                    {
+                        StartPoint = new System.Windows.Point(0, 0),
+                        EndPoint = new System.Windows.Point(1, 0)
+                    };
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 0));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00D4FF"), 0.3));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00BFFF"), 0.5));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00D4FF"), 0.7));
+                    gradientBrush.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 1));
+                }
+                ProgressBarFill.Background = gradientBrush;
+
+                // Afficher le fichier actuellement en traitement
+                if (!string.IsNullOrEmpty(currentFile))
+                {
+                    TxtCurrentFile.Text = currentFile;
+                }
+                
+                // Calcul du temps écoulé et estimé
+                TimeSpan elapsed = DateTime.Now - _startTime - _pausedTime;
+                TimeSpan? estimatedTotal = null;
+                if (percent > 0 && percent < 100)
+                {
+                    double estimatedSeconds = elapsed.TotalSeconds * 100 / percent;
+                    estimatedTotal = TimeSpan.FromSeconds(estimatedSeconds);
+                }
+                
+                // Formatage du temps
+                string elapsedStr = FormatTimeSpan(elapsed);
+                string estimatedStr = estimatedTotal.HasValue 
+                    ? FormatTimeSpan(estimatedTotal.Value)
+                    : "00:00";
+                TxtProgressTimeElapsed.Text = elapsedStr;
+                TxtProgressTimeEstimated.Text = estimatedStr;
+
+                // Mise à jour du texte
+                TxtStatus.Text = statusText;
+                TxtProgressPercent.Text = percent > 0 ? $"{percent}%" : "";
+
+                // Changer dynamiquement la couleur des textes selon si la barre les couvre
+                UpdateTextColorsForProgress(percent, container?.ActualWidth ?? 400);
+            });
+        }
+
+        private void UpdateTextColorsForProgress(int percent, double containerWidth)
+        {
+            if (containerWidth <= 0) return;
+
+            double progressWidth = (percent / 100.0) * containerWidth;
+            
+            // Position approximative des textes (en pixels depuis la gauche)
+            double statusTextPosition = 12; // Margin left de TxtStatus
+            double currentFilePosition = 220; // Margin left de TxtCurrentFile
+            double timeTextPosition = containerWidth - 80; // À droite
+            double percentTextPosition = containerWidth - 50; // À droite
+
+            // Couleur pour texte non couvert (clair sur fond sombre)
+            var uncoveredColor = new SolidColorBrush(Colors.White);
+            var uncoveredFileColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00D4FF"));
+            var uncoveredTimeColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
+
+            // Couleur pour texte couvert (sombre avec ombre pour contraste sur fond brillant)
+            var coveredColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#001122")); // Noir profond
+            var coveredFileColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#003344")); // Bleu foncé
+            var coveredTimeColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#332200")); // Or foncé
+
+            // TxtStatus
+            if (progressWidth > statusTextPosition + 50) // Si la barre couvre le texte (avec marge)
+            {
+                TxtStatus.Foreground = coveredColor;
+                TxtStatus.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+            }
+            else
+            {
+                TxtStatus.Foreground = uncoveredColor;
+                TxtStatus.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+            }
+
+            // TxtCurrentFile
+            if (progressWidth > currentFilePosition + 50)
+            {
+                TxtCurrentFile.Foreground = coveredFileColor;
+                TxtCurrentFile.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+            }
+            else
+            {
+                TxtCurrentFile.Foreground = uncoveredFileColor;
+                TxtCurrentFile.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+            }
+
+            // TxtProgressTimeElapsed et TxtProgressTimeEstimated (dans StackPanel à droite)
+            if (progressWidth > timeTextPosition - 100) // À droite, donc on vérifie si la barre approche
+            {
+                TxtProgressTimeElapsed.Foreground = coveredTimeColor;
+                TxtProgressTimeEstimated.Foreground = coveredTimeColor;
+                TxtProgressTimeElapsed.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+                TxtProgressTimeEstimated.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+            }
+            else
+            {
+                TxtProgressTimeElapsed.Foreground = uncoveredTimeColor;
+                TxtProgressTimeEstimated.Foreground = uncoveredTimeColor;
+                TxtProgressTimeElapsed.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+                TxtProgressTimeEstimated.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+            }
+
+            // TxtProgressPercent
+            if (progressWidth > percentTextPosition - 50)
+            {
+                TxtProgressPercent.Foreground = coveredTimeColor;
+                TxtProgressPercent.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+            }
+            else
+            {
+                TxtProgressPercent.Foreground = uncoveredTimeColor;
+                TxtProgressPercent.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+            }
+        }
+        
+        private string FormatTimeSpan(TimeSpan ts)
+        {
+            if (ts.TotalHours >= 1)
+                return $"{(int)ts.TotalHours}h {ts.Minutes:D2}m {ts.Seconds:D2}s";
+            else if (ts.TotalMinutes >= 1)
+                return $"{ts.Minutes}m {ts.Seconds:D2}s";
+            else
+                return $"{ts.Seconds}s";
+        }
+
+        /// <summary>
+        /// Réinitialise la barre de progression
+        /// </summary>
+        private void ResetProgress()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ProgressBarFill.Width = 0;
+                // ProgressBarShine et ProgressBarGlow ont été supprimés - effet simplifié
+                
+                // Gradient par défaut (cyan/bleu électrique brillant)
+                var defaultGradient = new LinearGradientBrush
+                {
+                    StartPoint = new System.Windows.Point(0, 0),
+                    EndPoint = new System.Windows.Point(1, 0)
+                };
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 0));
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00D4FF"), 0.3));
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00BFFF"), 0.5));
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00D4FF"), 0.7));
+                defaultGradient.GradientStops.Add(new GradientStop((Color)ColorConverter.ConvertFromString("#00FFAA"), 1));
+                ProgressBarFill.Background = defaultGradient;
+                
+                TxtStatus.Text = "Pret - Selectionnez un equipement";
+                TxtProgressPercent.Text = "";
+                
+                // [+] Reinitialiser les temps a zero
+                TxtProgressTimeElapsed.Text = "00:00";
+                TxtProgressTimeEstimated.Text = "00:00";
+                TxtCurrentFile.Text = "";
+            });
+        }
+
+        #endregion
+
+        private void PlaceEquipmentWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                DgFiles.ItemsSource = _files;
+                
+                // Message de bienvenue dans le journal
+                AddLog("Fenetre Place Equipment initialisee", "START");
+                
+                // Verifier si l'utilisateur est administrateur Vault
+                CheckVaultAdminPermissions();
+                
+                // Initialiser le statut Inventor
+                UpdateInventorStatus();
+                
+                // Timer pour mettre a jour le statut Inventor periodiquement
+                _inventorStatusTimer = new System.Windows.Threading.DispatcherTimer();
+                _inventorStatusTimer.Interval = TimeSpan.FromSeconds(3);
+                _inventorStatusTimer.Tick += (s, args) => UpdateInventorStatus();
+                _inventorStatusTimer.Start();
+                
+                // [+] Charger la liste des equipements depuis Vault
+                LoadEquipmentListFromVault();
+                
+                // Initialiser les ComboBox Reference et Module (01-50)
+                InitializeReferenceModuleComboBoxes();
+                AddLog("ComboBox Reference/Module chargees (01-50)", "INFO");
+                
+                // Initialiser les ComboBox Initiales Dessinateurs
+                InitializeDesignerComboBoxes();
+                AddLog($"Liste des dessinateurs chargee ({_designerInitials.Count} initiales)", "INFO");
+                
+                // Initialiser la date de creation avec DatePicker
+                var today = DateTime.Now;
+                DpCreationDate.SelectedDate = today;
+                _request.CreationDate = today;
+                
+                // Ne pas charger automatiquement de template - l'utilisateur doit selectionner un equipement
+                AddLog("Selectionnez un equipement depuis Vault pour commencer", "INFO");
+                TxtStatus.Text = "Pret - Selectionnez un equipement depuis Vault";
+                
+                UpdateDestinationPreview();
+                UpdateStatistics();
+            }
+            catch (Exception ex)
+            {
+                AddLog($"Erreur d'initialisation: {ex.Message}", "ERROR");
+            }
+        }
+
+        #region Vault Equipment Loading
+
+        /// <summary>
+        /// Classe pour representer un equipement dans Vault
+        /// </summary>
+        private class VaultEquipment
+        {
+            public string Name { get; set; } = string.Empty;
+            public string DisplayName { get; set; } = string.Empty;
+            public string VaultPath { get; set; } = string.Empty;
+            public string LocalPath { get; set; } = string.Empty;
+        }
+
+        /// <summary>
+        /// Charge la liste des equipements depuis Vault ($/Engineering/Library/Equipment)
+        /// </summary>
+        private void LoadEquipmentListFromVault()
+        {
+            if (CmbEquipment == null) return;
+            
+            CmbEquipment.Items.Clear();
+            
+            if (_vaultService == null || !_vaultService.IsConnected)
+            {
+                TxtStatus.Text = "[!] Non connecte a Vault - Impossible de charger les equipements";
+                AddLog("[-] Non connecte a Vault", "WARN");
+                return;
+            }
+
+            try
+            {
+                TxtStatus.Text = "Chargement des equipements depuis Vault...";
+                AddLog("[>] Chargement des equipements depuis Vault...", "INFO");
+                
+                var equipmentBasePath = "$/Engineering/Library/Equipment";
+                
+                var connection = _vaultService.Connection;
+                if (connection == null)
+                {
+                    TxtStatus.Text = "[!] Connexion Vault non disponible";
+                    return;
+                }
+
+                // Obtenir le dossier Equipment
+                var equipmentFolder = connection.WebServiceManager.DocumentService.GetFolderByPath(equipmentBasePath);
+                if (equipmentFolder == null)
+                {
+                    TxtStatus.Text = "[!] Dossier Equipment non trouve dans Vault";
+                    AddLog($"[-] Dossier non trouve: {equipmentBasePath}", "ERROR");
+                    return;
+                }
+
+                // Obtenir tous les sous-dossiers (chaque sous-dossier = un equipement)
+                var subFolders = connection.WebServiceManager.DocumentService.GetFoldersByParentId(equipmentFolder.Id, false);
+                if (subFolders == null || subFolders.Length == 0)
+                {
+                    TxtStatus.Text = "[!] Aucun equipement trouve dans Vault";
+                    AddLog("[-] Aucun sous-dossier dans Equipment", "WARN");
+                    return;
+                }
+
+                var equipments = new List<VaultEquipment>();
+                foreach (var folder in subFolders)
+                {
+                    var equipment = new VaultEquipment
+                    {
+                        Name = folder.Name,
+                        DisplayName = folder.Name.Replace("_", " "),
+                        VaultPath = $"{equipmentBasePath}/{folder.Name}",
+                        LocalPath = Path.Combine(_defaultTemplatePath, folder.Name)
+                    };
+                    equipments.Add(equipment);
+                }
+                
+                // Trier par nom
+                equipments = equipments.OrderBy(e => e.DisplayName).ToList();
+                
+                foreach (var equipment in equipments)
+                {
+                    CmbEquipment.Items.Add(equipment);
+                }
+                
+                TxtStatus.Text = $"[+] {CmbEquipment.Items.Count} equipements trouves dans Vault";
+                AddLog($"[+] {CmbEquipment.Items.Count} equipements charges depuis Vault", "SUCCESS");
+            }
+            catch (Exception ex)
+            {
+                TxtStatus.Text = $"[!] Erreur chargement equipements: {ex.Message}";
+                AddLog($"[-] Erreur chargement equipements Vault: {ex.Message}", "ERROR");
+            }
+        }
+
+        /// <summary>
+        /// Bouton Actualiser la liste des equipements
+        /// </summary>
+        private void BtnRefreshEquipments_Click(object sender, RoutedEventArgs e)
+        {
+            LoadEquipmentListFromVault();
+        }
+
+        /// <summary>
+        /// Gestionnaire de selection d'equipement
+        /// </summary>
+        private void CmbEquipment_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CmbEquipment.SelectedItem is VaultEquipment equipment)
+            {
+                _selectedEquipment = new EquipmentItem
+                {
+                    Name = equipment.Name,
+                    DisplayName = equipment.DisplayName,
+                    VaultPath = equipment.VaultPath,
+                    LocalTempPath = equipment.LocalPath
+                };
+                
+                // Afficher le chemin Vault
+                TxtEquipmentVaultPath.Text = equipment.VaultPath;
+                TxtSourcePath.Text = equipment.LocalPath;
+                
+                AddLog($"[+] Equipement selectionne: {equipment.DisplayName}", "INFO");
+                AddLog($"    Vault: {equipment.VaultPath}", "INFO");
+                TxtStatus.Text = $"[+] Equipement selectionne: {equipment.DisplayName} - Cliquez 'Charger depuis Vault'";
+                
+                // Vider les fichiers - ils seront charges apres le telechargement
+                _files.Clear();
+                UpdateStatistics();
+                UpdateDestinationPreview();
+            }
+        }
+
+        /// <summary>
+        /// Bouton Charger depuis Vault - Telecharge l'equipement et charge les fichiers
+        /// </summary>
+        private async void BtnLoadFromVault_Click(object sender, RoutedEventArgs e)
+        {
+            if (CmbEquipment.SelectedItem is not VaultEquipment equipment)
+            {
+                TxtStatus.Text = "[!] Veuillez selectionner un equipement";
+                XnrgyMessageBox.ShowWarning(
+                    "Veuillez d'abord selectionner un equipement dans la liste.",
+                    "Equipement requis",
+                    this);
+                return;
+            }
+
+            if (_vaultService == null || !_vaultService.IsConnected)
+            {
+                TxtStatus.Text = "[!] Non connecte a Vault";
+                XnrgyMessageBox.ShowWarning(
+                    "Vous n'etes pas connecte a Vault.\nConnectez-vous d'abord depuis la fenetre principale.",
+                    "Connexion Vault requise",
+                    this);
+                return;
+            }
+
+            await DownloadEquipmentFromVault(equipment);
+        }
+
+        /// <summary>
+        /// Telecharge un equipement depuis Vault vers le dossier local
+        /// Utilise la barre de progression principale (0-100%)
+        /// </summary>
+        private async Task DownloadEquipmentFromVault(VaultEquipment equipment)
+        {
+            try
+            {
+                Logger.Info("═══════════════════════════════════════════════════════");
+                Logger.Info("[>] TELECHARGEMENT EQUIPEMENT DEPUIS VAULT");
+                Logger.Info("═══════════════════════════════════════════════════════");
+                
+                // Desactiver les controles pendant le telechargement
+                BtnLoadFromVault.IsEnabled = false;
+                CmbEquipment.IsEnabled = false;
+                
+                // [+] RESET complet de la progression (temps a 00:00)
+                ResetProgress();
+                _startTime = DateTime.Now;
+                _pausedTime = TimeSpan.Zero;
+                
+                // Initialiser la progression principale
+                UpdateProgress(0, $"Preparation du telechargement de {equipment.DisplayName}...");
+                
+                AddLog($"[>] Demarrage telechargement: {equipment.DisplayName}", "INFO");
+                Logger.Info($"[>] Equipment: {equipment.DisplayName}");
+                Logger.Info($"[i] Source Vault: {equipment.VaultPath}");
+                Logger.Info($"[i] Destination locale: {equipment.LocalPath}");
+
+                // Nettoyer le dossier local avant telechargement (2%)
+                UpdateProgress(2, "Nettoyage du dossier local...");
+                if (Directory.Exists(equipment.LocalPath))
+                {
+                    AddLog("[>] Nettoyage du dossier local existant...", "INFO");
+                    Logger.Info("[>] Nettoyage du dossier local existant...");
+                    
+                    try
+                    {
+                        Directory.Delete(equipment.LocalPath, true);
+                        AddLog("[+] Dossier local nettoye", "SUCCESS");
+                        Logger.Info("[+] Dossier local nettoye");
+                    }
+                    catch (Exception ex)
+                    {
+                        AddLog($"[!] Impossible de nettoyer le dossier: {ex.Message}", "WARN");
+                        Logger.Warning($"[!] Impossible de nettoyer le dossier: {ex.Message}");
+                    }
+                }
+
+                // Creer le dossier de destination
+                Directory.CreateDirectory(equipment.LocalPath);
+
+                var connection = _vaultService.Connection;
+                if (connection == null)
+                {
+                    throw new Exception("Connexion Vault perdue");
+                }
+
+                // Obtenir le dossier Vault (5%)
+                UpdateProgress(5, "Connexion au dossier Vault...");
+                
+                var vaultFolder = connection.WebServiceManager.DocumentService.GetFolderByPath(equipment.VaultPath);
+                if (vaultFolder == null)
+                {
+                    throw new Exception($"Dossier Vault introuvable: {equipment.VaultPath}");
+                }
+                Logger.Info($"[+] Dossier Vault trouve: {vaultFolder.FullName} (ID: {vaultFolder.Id})");
+
+                // Obtenir TOUS les fichiers RECURSIVEMENT (10%)
+                UpdateProgress(10, "Enumeration recursive des fichiers...");
+                AddLog($"[>] Enumeration recursive depuis: {equipment.VaultPath}", "INFO");
+                Logger.Info($"[>] Enumeration recursive depuis: {equipment.VaultPath}");
+                
+                var allFiles = new List<ACW.File>();
+                var allFolders = new List<ACW.Folder>();
+                await Task.Run(() => GetAllFilesRecursiveForEquipment(connection, vaultFolder, allFiles, allFolders));
+                
+                AddLog($"[+] {allFolders.Count} dossiers trouves", "INFO");
+                Logger.Info($"[+] {allFolders.Count} dossiers trouves");
+                foreach (var folder in allFolders.Take(10))
+                {
+                    Logger.Debug($"    [i] {folder.FullName}");
+                }
+                if (allFolders.Count > 10)
+                {
+                    Logger.Debug($"    ... et {allFolders.Count - 10} autres dossiers");
+                }
+                
+                if (allFiles.Count == 0)
+                {
+                    UpdateProgress(0, "[!] Aucun fichier trouve dans l'equipement", isError: true);
+                    AddLog("[-] Aucun fichier trouve (meme recursivement)", "ERROR");
+                    Logger.Error("[-] Aucun fichier trouve (meme recursivement)");
+                    return;
+                }
+                
+                int totalFiles = allFiles.Count;
+                AddLog($"[+] {totalFiles} fichiers trouves au total", "SUCCESS");
+                Logger.Info($"[+] {totalFiles} fichiers trouves au total (recursif)");
+
+                // Obtenir le working folder
+                var workingFolderObj = connection.WorkingFoldersManager.GetWorkingFolder("$");
+                if (workingFolderObj == null || string.IsNullOrEmpty(workingFolderObj.FullPath))
+                {
+                    throw new Exception("Working folder non configure dans Vault");
+                }
+
+                var workingFolder = workingFolderObj.FullPath;
+                var relativePath = equipment.VaultPath.TrimStart('$', '/').Replace("/", "\\");
+                var localFolder = Path.Combine(workingFolder, relativePath);
+                Logger.Debug($"[i] Working folder: {workingFolder}");
+                Logger.Debug($"[i] Chemin local Vault: {localFolder}");
+
+                // Preparer le telechargement batch (15%)
+                UpdateProgress(15, $"Preparation de {totalFiles} fichiers...");
+                var downloadSettings = new VDF.Vault.Settings.AcquireFilesSettings(connection, false);
+                
+                int fileIndex = 0;
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                
+                foreach (var file in allFiles)
+                {
+                    try
+                    {
+                        var fileIteration = new VDF.Vault.Currency.Entities.FileIteration(connection, file);
+                        downloadSettings.AddFileToAcquire(fileIteration, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+                        fileIndex++;
+                        
+                        // Mise a jour progression pendant la preparation (15-20%)
+                        if (fileIndex % 10 == 0 || fileIndex == totalFiles)
+                        {
+                            int prepProgress = 15 + (int)((fileIndex / (double)totalFiles) * 5);
+                            UpdateProgress(prepProgress, $"Preparation {fileIndex}/{totalFiles} fichiers...", currentFile: file.Name);
+                        }
+                    }
+                    catch (Exception fileEx)
+                    {
+                        AddLog($"[!] Erreur preparation {file.Name}: {fileEx.Message}", "WARN");
+                        Logger.Warning($"[!] Erreur preparation {file.Name}: {fileEx.Message}");
+                    }
+                }
+                sw.Stop();
+                AddLog($"[+] {fileIndex} fichiers prepares en {sw.ElapsedMilliseconds}ms", "INFO");
+                Logger.Info($"[+] {fileIndex} fichiers prepares en {sw.ElapsedMilliseconds}ms");
+
+                // Telecharger tous les fichiers en UNE SEULE operation batch (20-70%)
+                UpdateProgress(20, $"Telechargement batch de {fileIndex} fichiers...");
+                AddLog($"[>] Lancement telechargement batch...", "INFO");
+                Logger.Info($"[>] Lancement telechargement batch...");
+                
+                sw.Restart();
+                var downloadResult = await Task.Run(() => connection.FileManager.AcquireFiles(downloadSettings));
+                sw.Stop();
+
+                if (downloadResult?.FileResults == null || !downloadResult.FileResults.Any())
+                {
+                    UpdateProgress(0, "[!] Aucun fichier telecharge", isError: true);
+                    AddLog("[-] AcquireFiles n'a retourne aucun resultat", "ERROR");
+                    Logger.Error("[-] AcquireFiles n'a retourne aucun resultat");
+                    return;
+                }
+
+                var fileResultsList = downloadResult.FileResults.ToList();
+                int successCount = fileResultsList.Count(r => r.LocalPath?.FullPath != null && File.Exists(r.LocalPath.FullPath));
+                
+                // Progression apres telechargement batch (70%)
+                UpdateProgress(70, $"[+] {successCount}/{fileResultsList.Count} fichiers telecharges");
+                AddLog($"[+] {successCount}/{fileResultsList.Count} fichiers telecharges en {sw.ElapsedMilliseconds}ms", "SUCCESS");
+                Logger.Info($"[+] {successCount}/{fileResultsList.Count} fichiers telecharges en {sw.ElapsedMilliseconds}ms ({sw.ElapsedMilliseconds / Math.Max(1, successCount)}ms/fichier)");
+
+                // Copier vers le dossier de destination final (70-90%)
+                UpdateProgress(72, "Copie vers dossier destination...");
+                AddLog($"[>] Copie vers {equipment.LocalPath}...", "INFO");
+                Logger.Info($"[>] Copie vers {equipment.LocalPath}...");
+                
+                if (Directory.Exists(localFolder))
+                {
+                    // Copier recursivement en preservant la structure complete
+                    Logger.Info($"[i] Copie depuis working folder: {localFolder}");
+                    
+                    // Copier avec progression
+                    await CopyDirectoryRecursiveWithProgress(localFolder, equipment.LocalPath, 72, 90);
+                }
+                else
+                {
+                    // Si le dossier working folder n'existe pas, copier depuis les resultats
+                    Logger.Warning($"[!] Working folder non trouve: {localFolder}");
+                    Logger.Info("[>] Copie depuis les resultats de telechargement...");
+                    
+                    int copyIndex = 0;
+                    int totalCopy = fileResultsList.Count;
+                    
+                    foreach (var result in fileResultsList)
+                    {
+                        if (result?.LocalPath?.FullPath == null) continue;
+
+                        var localFilePath = result.LocalPath.FullPath;
+                        if (!File.Exists(localFilePath)) continue;
+
+                        // Calculer le chemin relatif depuis le working folder
+                        string relativeFilePath;
+                        if (localFilePath.StartsWith(workingFolder, StringComparison.OrdinalIgnoreCase))
+                        {
+                            relativeFilePath = localFilePath.Substring(workingFolder.Length).TrimStart('\\', '/');
+                            
+                            // Si le chemin commence par le chemin relatif de l'equipement, l'enlever
+                            var equipmentRelativePath = relativePath.TrimStart('\\', '/');
+                            if (!string.IsNullOrEmpty(equipmentRelativePath) && relativeFilePath.StartsWith(equipmentRelativePath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                relativeFilePath = relativeFilePath.Substring(equipmentRelativePath.Length).TrimStart('\\', '/');
+                            }
+                        }
+                        else
+                        {
+                            relativeFilePath = Path.GetFileName(localFilePath);
+                        }
+
+                        var destFilePath = Path.Combine(equipment.LocalPath, relativeFilePath);
+                        var destDir = Path.GetDirectoryName(destFilePath);
+                        if (!string.IsNullOrEmpty(destDir))
+                        {
+                            Directory.CreateDirectory(destDir);
+                        }
+
+                        try
+                        {
+                            File.Copy(localFilePath, destFilePath, true);
+                            copyIndex++;
+                            
+                            // Mise a jour progression copie (72-90%)
+                            if (copyIndex % 5 == 0 || copyIndex == totalCopy)
+                            {
+                                int copyProgress = 72 + (int)((copyIndex / (double)totalCopy) * 18);
+                                UpdateProgress(copyProgress, $"Copie {copyIndex}/{totalCopy}...", currentFile: Path.GetFileName(localFilePath));
+                            }
+                        }
+                        catch (Exception copyEx)
+                        {
+                            AddLog($"[!] Erreur copie {Path.GetFileName(localFilePath)}: {copyEx.Message}", "WARN");
+                            Logger.Warning($"[!] Erreur copie {Path.GetFileName(localFilePath)}: {copyEx.Message}");
+                        }
+                    }
+                }
+                
+                // Verifier si des fichiers ont ete copies (90%)
+                UpdateProgress(90, "Verification des fichiers copies...");
+                var copiedFiles = Directory.GetFiles(equipment.LocalPath, "*.*", SearchOption.AllDirectories);
+                AddLog($"[+] {copiedFiles.Length} fichiers dans le dossier destination", "SUCCESS");
+                Logger.Info($"[+] {copiedFiles.Length} fichiers dans le dossier destination");
+
+                // Charger les fichiers depuis le dossier local (95%)
+                UpdateProgress(95, "Chargement de la liste des fichiers...");
+                await Task.Delay(300);
+                LoadFilesFromPath(equipment.LocalPath);
+                
+                // Termine! (100%)
+                UpdateProgress(100, $"[+] {_files.Count} fichiers charges depuis {equipment.DisplayName}");
+                AddLog($"[+] Telechargement termine: {equipment.DisplayName}", "SUCCESS");
+                AddLog($"[+] {_files.Count} fichiers charges dans la liste", "SUCCESS");
+                Logger.Info($"[+] Telechargement termine: {equipment.DisplayName}");
+                Logger.Info($"[+] {_files.Count} fichiers charges dans la liste");
+                Logger.Info("═══════════════════════════════════════════════════════");
+            }
+            catch (Exception ex)
+            {
+                AddLog($"[-] Erreur telechargement: {ex.Message}", "ERROR");
+                Logger.Error($"[-] Erreur telechargement: {ex.Message}");
+                Logger.Debug($"    StackTrace: {ex.StackTrace}");
+                UpdateProgress(0, $"[-] Erreur: {ex.Message}", isError: true);
+                
+                XnrgyMessageBox.ShowError(
+                    $"Erreur lors du telechargement:\n{ex.Message}",
+                    "Erreur de telechargement",
+                    this);
+            }
+            finally
+            {
+                // Reactiver les controles
+                BtnLoadFromVault.IsEnabled = true;
+                CmbEquipment.IsEnabled = true;
+            }
+        }
+
+        /// <summary>
+        /// Copie recursivement un dossier avec mise a jour de la progression
+        /// </summary>
+        private async Task CopyDirectoryRecursiveWithProgress(string sourceDir, string destDir, int startProgress, int endProgress)
+        {
+            // Enumerer tous les fichiers a copier
+            var allSourceFiles = Directory.GetFiles(sourceDir, "*.*", SearchOption.AllDirectories);
+            int totalFiles = allSourceFiles.Length;
+            int copiedCount = 0;
+            
+            foreach (var sourceFile in allSourceFiles)
+            {
+                try
+                {
+                    // Calculer le chemin relatif
+                    var relativePath = sourceFile.Substring(sourceDir.Length).TrimStart('\\', '/');
+                    var destFile = Path.Combine(destDir, relativePath);
+                    var destDirectory = Path.GetDirectoryName(destFile);
+                    
+                    if (!string.IsNullOrEmpty(destDirectory))
+                    {
+                        Directory.CreateDirectory(destDirectory);
+                    }
+                    
+                    File.Copy(sourceFile, destFile, true);
+                    copiedCount++;
+                    
+                    // Mise a jour progression
+                    if (copiedCount % 5 == 0 || copiedCount == totalFiles)
+                    {
+                        int progress = startProgress + (int)((copiedCount / (double)totalFiles) * (endProgress - startProgress));
+                        UpdateProgress(progress, $"Copie {copiedCount}/{totalFiles}...", currentFile: Path.GetFileName(sourceFile));
+                        await Task.Yield(); // Permettre a l'UI de se rafraichir
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning($"[!] Erreur copie {Path.GetFileName(sourceFile)}: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Obtient tous les fichiers recursivement depuis un dossier Vault (pour equipements)
+        /// </summary>
+        private void GetAllFilesRecursiveForEquipment(VDF.Vault.Currency.Connections.Connection connection, ACW.Folder folder, List<ACW.File> allFiles, List<ACW.Folder> allFolders)
+        {
+            try
+            {
+                // Ajouter ce dossier a la liste
+                allFolders.Add(folder);
+                
+                // Obtenir les fichiers de ce dossier
+                var files = connection.WebServiceManager.DocumentService.GetLatestFilesByFolderId(folder.Id, false);
+                if (files != null && files.Length > 0)
+                {
+                    allFiles.AddRange(files);
+                }
+                
+                // Obtenir les sous-dossiers
+                var subFolders = connection.WebServiceManager.DocumentService.GetFoldersByParentId(folder.Id, false);
+                if (subFolders != null && subFolders.Length > 0)
+                {
+                    foreach (var subFolder in subFolders)
+                    {
+                        // Recursion dans chaque sous-dossier
+                        GetAllFilesRecursiveForEquipment(connection, subFolder, allFiles, allFolders);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"[!] Erreur enumeration {folder.FullName}: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Copie recursivement un dossier vers une destination
+        /// </summary>
+        private void CopyDirectoryRecursive(string sourceDir, string destDir)
+        {
+            // Creer le dossier de destination s'il n'existe pas
+            Directory.CreateDirectory(destDir);
+
+            // Copier tous les fichiers
+            foreach (var file in Directory.GetFiles(sourceDir))
+            {
+                var destFile = Path.Combine(destDir, Path.GetFileName(file));
+                try
+                {
+                    File.Copy(file, destFile, true);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning($"[!] Erreur copie {Path.GetFileName(file)}: {ex.Message}");
+                }
+            }
+
+            // Copier recursivement les sous-dossiers
+            foreach (var subDir in Directory.GetDirectories(sourceDir))
+            {
+                var destSubDir = Path.Combine(destDir, Path.GetFileName(subDir));
+                CopyDirectoryRecursive(subDir, destSubDir);
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Ancienne methode - gardee pour compatibilite mais non utilisee
+        /// </summary>
+        private void InitializeEquipmentComboBox()
+        {
+            // Ne fait plus rien - les equipements sont charges depuis Vault
+            // via LoadEquipmentListFromVault()
+        }
+
+        /// <summary>
+        /// Detecte le module actif dans Inventor et pre-remplit les champs
+        /// </summary>
+        private void BtnDetectModule_Click(object sender, RoutedEventArgs e)
+        {
+            Logger.Info("═══════════════════════════════════════════════════════");
+            Logger.Info("[>] DETECTION MODULE ET CHARGEMENT iProperties");
+            Logger.Info("═══════════════════════════════════════════════════════");
+            AddLog("[>] Detection du module actif dans Inventor...", "INFO");
+            
+            try
+            {
+                if (!_inventorService.IsConnected)
+                {
+                    Logger.Error("[-] Inventor non connecte - Detection impossible");
+                    AddLog("[-] Inventor non connecte - Impossible de detecter le module actif", "ERROR");
+                    XnrgyMessageBox.ShowWarning(
+                        "Inventor n'est pas connecte.\nVeuillez ouvrir Inventor et un assembly de module.",
+                        "Inventor non connecte",
+                        this);
+                    return;
+                }
+
+                Logger.Info("[+] Inventor connecte");
+
+                // Obtenir le chemin du document actif via InventorService
+                var docPath = _inventorService.GetActiveDocumentPath();
+                if (string.IsNullOrEmpty(docPath))
+                {
+                    Logger.Warning("[-] Aucun document actif dans Inventor");
+                    AddLog("[-] Aucun document actif dans Inventor", "WARN");
+                    XnrgyMessageBox.ShowWarning(
+                        "Aucun document n'est ouvert dans Inventor.\nVeuillez ouvrir un assembly de module.",
+                        "Aucun document actif",
+                        this);
+                    return;
+                }
+
+                Logger.Info($"[i] Document actif: {docPath}");
+                AddLog($"[>] Document actif detecte: {docPath}", "INFO");
+
+                // Extraire Project/Reference/Module du chemin
+                // Pattern: C:\Vault\Engineering\Projects\[PROJECT]\REF[XX]\M[XX]\...
+                var match = System.Text.RegularExpressions.Regex.Match(
+                    docPath, 
+                    @"Projects\\(\d{5,6})\\REF(\d{2})\\M(\d{2})\\",
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                if (match.Success)
+                {
+                    var project = match.Groups[1].Value;
+                    var reference = match.Groups[2].Value;
+                    var module = match.Groups[3].Value;
+
+                    Logger.Info($"[+] Pattern reconnu: Projet={project}, REF={reference}, Module={module}");
+
+                    // Pre-remplir les champs
+                    TxtProject.Text = project;
+                    Logger.Debug($"[i] TxtProject.Text = {project}");
+                    
+                    // Selectionner la reference dans la ComboBox
+                    bool refFound = false;
+                    foreach (var item in CmbReference.Items)
+                    {
+                        if (item.ToString() == reference)
+                        {
+                            CmbReference.SelectedItem = item;
+                            refFound = true;
+                            Logger.Debug($"[+] CmbReference selectionne: {reference}");
+                            break;
+                        }
+                    }
+                    if (!refFound) Logger.Warning($"[!] Reference '{reference}' non trouvee dans CmbReference");
+                    
+                    // Selectionner le module dans la ComboBox
+                    bool modFound = false;
+                    foreach (var item in CmbModule.Items)
+                    {
+                        if (item.ToString() == module)
+                        {
+                            CmbModule.SelectedItem = item;
+                            modFound = true;
+                            Logger.Debug($"[+] CmbModule selectionne: {module}");
+                            break;
+                        }
+                    }
+                    if (!modFound) Logger.Warning($"[!] Module '{module}' non trouve dans CmbModule");
+
+                    AddLog($"[+] Module detecte: Projet={project}, REF{reference}, M{module}", "SUCCESS");
+                    Logger.Info($"[+] Module detecte avec succes: {project}-REF{reference}-M{module}");
+                    TxtStatus.Text = $"[+] Module detecte: {project}-REF{reference}-M{module}";
+
+                    // Essayer de lire les iProperties du document actif
+                    Logger.Info("[>] Chargement des iProperties...");
+                    TryReadIPropertiesFromActiveDocument();
+                }
+                else
+                {
+                    Logger.Warning($"[!] Pattern non reconnu dans le chemin: {docPath}");
+                    Logger.Debug("[i] Pattern attendu: ...\\Projects\\[PROJECT]\\REF[XX]\\M[XX]\\...");
+                    AddLog($"[!] Impossible d'extraire les infos projet du chemin: {docPath}", "WARN");
+                    XnrgyMessageBox.ShowWarning(
+                        $"Le chemin du document actif ne correspond pas au pattern attendu:\n{docPath}\n\nPattern attendu: ...\\Projects\\[PROJECT]\\REF[XX]\\M[XX]\\...",
+                        "Pattern non reconnu",
+                        this);
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"[-] Erreur detection module: {ex.Message}");
+                Logger.Debug($"    StackTrace: {ex.StackTrace}");
+                AddLog($"[-] Erreur detection module: {ex.Message}", "ERROR");
+                XnrgyMessageBox.ShowError(
+                    $"Erreur lors de la detection du module:\n{ex.Message}",
+                    "Erreur",
+                    this);
+            }
+            
+            Logger.Info("═══════════════════════════════════════════════════════");
+        }
+
+        /// <summary>
+        /// Tente de lire les iProperties du document actif pour pre-remplir les champs
+        /// </summary>
+        private void TryReadIPropertiesFromActiveDocument()
+        {
+            Logger.Info("[>] Lecture des iProperties depuis le document actif...");
+            AddLog("[>] Lecture des iProperties depuis le document actif...", "INFO");
+            
+            try
+            {
+                // Obtenir l'application Inventor et le document actif
+                var inventorApp = _inventorService.GetInventorApplication();
+                if (inventorApp == null)
+                {
+                    Logger.Warning("[!] Impossible d'obtenir l'application Inventor");
+                    AddLog("[!] Impossible d'obtenir l'application Inventor", "WARN");
+                    return;
+                }
+                
+                dynamic activeDoc = inventorApp.ActiveDocument;
+                if (activeDoc == null)
+                {
+                    Logger.Warning("[!] Aucun document actif dans Inventor");
+                    AddLog("[!] Aucun document actif dans Inventor", "WARN");
+                    return;
+                }
+
+                string docName = activeDoc.DisplayName;
+                Logger.Info($"[i] Document actif: {docName}");
+                AddLog($"[i] Document actif: {docName}", "INFO");
+                
+                // Acceder aux PropertySets du document
+                var propertySets = activeDoc.PropertySets;
+                Logger.Debug($"[i] PropertySets count: {propertySets.Count}");
+                
+                // Chercher dans les Custom Properties
+                dynamic customProps = null;
+                try
+                {
+                    customProps = propertySets["Inventor User Defined Properties"];
+                    Logger.Debug("[+] PropertySet 'Inventor User Defined Properties' trouve");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warning($"[!] PropertySet 'Inventor User Defined Properties' non trouve: {ex.Message}");
+                    AddLog("[!] Pas de proprietes custom dans ce document", "WARN");
+                }
+
+                if (customProps != null)
+                {
+                    int propsFound = 0;
+                    
+                    // Lister toutes les proprietes custom pour debug
+                    try
+                    {
+                        Logger.Debug("[i] Liste des proprietes custom disponibles:");
+                        foreach (dynamic prop in customProps)
+                        {
+                            try
+                            {
+                                string propName = prop.Name;
+                                string propValue = prop.Value?.ToString() ?? "(null)";
+                                Logger.Debug($"    - '{propName}' = '{propValue}'");
+                            }
+                            catch { }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[!] Erreur lors de l'enumeration des proprietes: {ex.Message}");
+                    }
+                    
+                    // Chercher "Initiale_du_Dessinateur" (nom avec underscores dans Inventor)
+                    try
+                    {
+                        dynamic prop = customProps["Initiale_du_Dessinateur"];
+                        string initDessinateur = prop.Value?.ToString() ?? "";
+                        Logger.Info($"[i] Propriete 'Initiale_du_Dessinateur' trouvee: '{initDessinateur}'");
+                        
+                        if (!string.IsNullOrEmpty(initDessinateur))
+                        {
+                            bool found = false;
+                            foreach (var item in CmbInitialeDessinateur.Items)
+                            {
+                                if (item.ToString() == initDessinateur)
+                                {
+                                    CmbInitialeDessinateur.SelectedItem = item;
+                                    AddLog($"[+] Initiales Dessinateur: {initDessinateur}", "SUCCESS");
+                                    Logger.Info($"[+] Initiales Dessinateur selectionnees: {initDessinateur}");
+                                    found = true;
+                                    propsFound++;
+                                    break;
+                                }
+                            }
+                            if (!found)
+                            {
+                                Logger.Warning($"[!] Valeur '{initDessinateur}' non trouvee dans la ComboBox CmbInitialeDessinateur");
+                                AddLog($"[!] Initiales '{initDessinateur}' non trouvees dans la liste", "WARN");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[i] Propriete 'Initiale_du_Dessinateur' non trouvee: {ex.Message}");
+                    }
+
+                    // Chercher "Initiale_du_Co_Dessinateur" (nom avec underscores dans Inventor)
+                    try
+                    {
+                        dynamic prop = customProps["Initiale_du_Co_Dessinateur"];
+                        string initCoDessinateur = prop.Value?.ToString() ?? "";
+                        Logger.Info($"[i] Propriete 'Initiale_du_Co_Dessinateur' trouvee: '{initCoDessinateur}'");
+                        
+                        if (!string.IsNullOrEmpty(initCoDessinateur))
+                        {
+                            bool found = false;
+                            foreach (var item in CmbInitialeCoDessinateur.Items)
+                            {
+                                if (item.ToString() == initCoDessinateur)
+                                {
+                                    CmbInitialeCoDessinateur.SelectedItem = item;
+                                    AddLog($"[+] Initiales Co-Dessinateur: {initCoDessinateur}", "SUCCESS");
+                                    Logger.Info($"[+] Initiales Co-Dessinateur selectionnees: {initCoDessinateur}");
+                                    found = true;
+                                    propsFound++;
+                                    break;
+                                }
+                            }
+                            if (!found)
+                            {
+                                Logger.Warning($"[!] Valeur '{initCoDessinateur}' non trouvee dans la ComboBox CmbInitialeCoDessinateur");
+                                AddLog($"[!] Initiales Co '{initCoDessinateur}' non trouvees dans la liste", "WARN");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[i] Propriete 'Initiale_du_Co_Dessinateur' non trouvee: {ex.Message}");
+                    }
+
+                    // Chercher "Job_Title" (nom avec underscore dans Inventor)
+                    try
+                    {
+                        dynamic prop = customProps["Job_Title"];
+                        string jobTitle = prop.Value?.ToString() ?? "";
+                        Logger.Info($"[i] Propriete 'Job_Title' trouvee: '{jobTitle}'");
+                        
+                        if (!string.IsNullOrEmpty(jobTitle))
+                        {
+                            TxtJobTitle.Text = jobTitle;
+                            AddLog($"[+] Job Title: {jobTitle}", "SUCCESS");
+                            Logger.Info($"[+] Job Title applique: {jobTitle}");
+                            propsFound++;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[i] Propriete 'Job_Title' non trouvee: {ex.Message}");
+                    }
+
+                    // Chercher "Creation_Date" (nom avec underscore dans Inventor)
+                    try
+                    {
+                        dynamic prop = customProps["Creation_Date"];
+                        var dateValue = prop.Value;
+                        Logger.Info($"[i] Propriete 'Creation_Date' trouvee: '{dateValue}' (Type: {dateValue?.GetType().Name ?? "null"})");
+                        
+                        if (dateValue is DateTime dt)
+                        {
+                            DpCreationDate.SelectedDate = dt;
+                            AddLog($"[+] Date: {dt:yyyy-MM-dd}", "SUCCESS");
+                            Logger.Info($"[+] Date appliquee: {dt:yyyy-MM-dd}");
+                            propsFound++;
+                        }
+                        else if (dateValue != null)
+                        {
+                            // Essayer de parser la date
+                            if (DateTime.TryParse(dateValue.ToString(), out DateTime parsedDate))
+                            {
+                                DpCreationDate.SelectedDate = parsedDate;
+                                AddLog($"[+] Date: {parsedDate:yyyy-MM-dd}", "SUCCESS");
+                                Logger.Info($"[+] Date parsee et appliquee: {parsedDate:yyyy-MM-dd}");
+                                propsFound++;
+                            }
+                            else
+                            {
+                                Logger.Warning($"[!] Impossible de parser la date: '{dateValue}'");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[i] Propriete 'Creation_Date' non trouvee: {ex.Message}");
+                    }
+
+                    if (propsFound > 0)
+                    {
+                        AddLog($"[+] {propsFound} iProperties chargees depuis le document actif", "SUCCESS");
+                        Logger.Info($"[+] {propsFound} iProperties chargees avec succes");
+                    }
+                    else
+                    {
+                        AddLog("[!] Aucune iProperty correspondante trouvee", "WARN");
+                        Logger.Warning("[!] Aucune iProperty correspondante trouvee dans le document");
+                    }
+                }
+                else
+                {
+                    AddLog("[!] Pas de proprietes custom dans ce document", "WARN");
+                    Logger.Warning("[!] PropertySet 'Inventor User Defined Properties' est null");
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog($"[-] Erreur lecture iProperties: {ex.Message}", "ERROR");
+                Logger.Error($"[-] Erreur lors de la lecture des iProperties: {ex.Message}");
+                Logger.Debug($"    StackTrace: {ex.StackTrace}");
+            }
+        }
+
+        /// <summary>
+        /// Vérifie si l'utilisateur connecté à Vault est administrateur
+        /// et affiche/masque le bouton Réglages en conséquence
+        /// </summary>
+        private void CheckVaultAdminPermissions()
+        {
+            try
+            {
+                if (_vaultService != null && _vaultService.IsConnected)
+                {
+                    // Mettre à jour le statut de connexion dans l'en-tête
+                    UpdateVaultConnectionStatus(true, _vaultService.VaultName, _vaultService.UserName);
+                    
+                    _isVaultAdmin = _vaultService.IsCurrentUserAdmin();
+                    
+                    if (_isVaultAdmin)
+                    {
+                        BtnSettings.Visibility = Visibility.Visible;
+                        AddLog($"[+] Mode Admin activé ({_vaultService.UserName}) - Réglages accessibles", "SUCCESS");
+                    }
+                    else
+                    {
+                        BtnSettings.Visibility = Visibility.Collapsed;
+                        AddLog($"[i] Utilisateur standard ({_vaultService.UserName}) - Réglages masqués", "INFO");
+                    }
+                }
+                else
+                {
+                    // Pas de connexion Vault - masquer le bouton par défaut
+                    UpdateVaultConnectionStatus(false, null, null);
+                    BtnSettings.Visibility = Visibility.Collapsed;
+                    AddLog("[i] Non connecté à Vault - Réglages non disponibles", "INFO");
+                }
+            }
+            catch (Exception ex)
+            {
+                UpdateVaultConnectionStatus(false, null, null);
+                BtnSettings.Visibility = Visibility.Collapsed;
+                AddLog($"[!] Erreur vérification admin: {ex.Message}", "WARN");
+            }
+        }
+
+        /// <summary>
+        /// Met à jour l'indicateur de connexion Vault dans l'en-tête
+        /// </summary>
+        private void UpdateVaultConnectionStatus(bool isConnected, string? vaultName, string? userName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (VaultStatusIndicator != null)
+                {
+                    VaultStatusIndicator.Fill = new SolidColorBrush(
+                        isConnected ? (Color)ColorConverter.ConvertFromString("#107C10") : (Color)ColorConverter.ConvertFromString("#E81123"));
+                }
+                
+                if (RunVaultName != null && RunUserName != null && RunStatus != null)
+                {
+                    RunVaultName.Text = isConnected ? $" Vault : {vaultName}  /  " : " Vault : --  /  ";
+                    RunUserName.Text = isConnected ? $" Utilisateur : {userName}  /  " : " Utilisateur : --  /  ";
+                    RunStatus.Text = isConnected ? " Statut : Connecte" : " Statut : Deconnecte";
+                }
+            });
+        }
+
+        /// <summary>
+        /// Met à jour l'indicateur de connexion Inventor dans l'en-tête
+        /// </summary>
+        private void UpdateInventorStatus()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                bool isConnected = _inventorService.IsConnected;
+                
+                if (InventorStatusIndicator != null)
+                {
+                    InventorStatusIndicator.Fill = new SolidColorBrush(
+                        isConnected ? (Color)ColorConverter.ConvertFromString("#107C10") : (Color)ColorConverter.ConvertFromString("#E81123"));
+                }
+                
+                if (RunInventorStatus != null)
+                {
+                    RunInventorStatus.Text = isConnected ? " Inventor : Connecte" : " Inventor : Deconnecte";
+                }
+            });
+        }
+
+        private void InitializeReferenceModuleComboBoxes()
+        {
+            // Remplir Référence et Module avec 01 à 50
+            for (int i = 1; i <= 50; i++)
+            {
+                string value = i.ToString("D2"); // Format 01, 02, ... 50
+                CmbReference.Items.Add(value);
+                CmbModule.Items.Add(value);
+            }
+            
+            // Sélectionner 01 par défaut
+            CmbReference.SelectedIndex = 0;
+            CmbModule.SelectedIndex = 0;
+        }
+
+        private void InitializeDesignerComboBoxes()
+        {
+            // Remplir les ComboBox avec les initiales dessinateurs
+            foreach (var initial in _designerInitials)
+            {
+                CmbInitialeDessinateur.Items.Add(initial);
+                CmbInitialeCoDessinateur.Items.Add(initial);
+            }
+            
+            // Sélectionner N/A par défaut pour le co-dessinateur
+            CmbInitialeDessinateur.SelectedIndex = 0;
+            CmbInitialeCoDessinateur.SelectedIndex = 0; // N/A
+        }
+
+        private void CmbReference_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateDestinationPreview();
+            UpdateFullProjectNumber();
+            ValidateForm();
+        }
+
+        private void CmbModule_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            UpdateDestinationPreview();
+            UpdateFullProjectNumber();
+            ValidateForm();
+        }
+
+        private void CmbInitialeDessinateur_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Gérer l'option "Autre..." pour saisie personnalisée
+            if (CmbInitialeDessinateur.SelectedItem?.ToString() == "Autre...")
+            {
+                string customValue = ShowCustomInitialDialog("Dessinateur");
+                if (!string.IsNullOrWhiteSpace(customValue))
+                {
+                    // Ajouter la valeur custom avant "Autre..." si elle n'existe pas déjà
+                    if (!CmbInitialeDessinateur.Items.Contains(customValue))
+                    {
+                        int autreIndex = CmbInitialeDessinateur.Items.IndexOf("Autre...");
+                        CmbInitialeDessinateur.Items.Insert(autreIndex, customValue);
+                    }
+                    CmbInitialeDessinateur.SelectedItem = customValue;
+                }
+                else
+                {
+                    // Annulé - revenir à N/A
+                    CmbInitialeDessinateur.SelectedIndex = 0;
+                }
+            }
+            ValidateForm();
+        }
+
+        private void CmbInitialeCoDessinateur_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Gérer l'option "Autre..." pour saisie personnalisée
+            if (CmbInitialeCoDessinateur.SelectedItem?.ToString() == "Autre...")
+            {
+                string customValue = ShowCustomInitialDialog("Co-Dessinateur");
+                if (!string.IsNullOrWhiteSpace(customValue))
+                {
+                    // Ajouter la valeur custom avant "Autre..." si elle n'existe pas déjà
+                    if (!CmbInitialeCoDessinateur.Items.Contains(customValue))
+                    {
+                        int autreIndex = CmbInitialeCoDessinateur.Items.IndexOf("Autre...");
+                        CmbInitialeCoDessinateur.Items.Insert(autreIndex, customValue);
+                    }
+                    CmbInitialeCoDessinateur.SelectedItem = customValue;
+                }
+                else
+                {
+                    // Annulé - revenir à N/A
+                    CmbInitialeCoDessinateur.SelectedIndex = 0;
+                }
+            }
+            // Pas de validation requise car optionnel
+        }
+
+        /// <summary>
+        /// Affiche une boîte de dialogue pour saisir des initiales personnalisées
+        /// </summary>
+        private string ShowCustomInitialDialog(string type)
+        {
+            // Créer une fenêtre de dialogue simple
+            var dialog = new Window
+            {
+                Title = $"Initiales {type} personnalisées",
+                Width = 350,
+                Height = 180,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize,
+                Background = new SolidColorBrush(Color.FromRgb(30, 30, 45)),
+                WindowStyle = WindowStyle.ToolWindow
+            };
+
+            var stack = new StackPanel { Margin = new Thickness(20) };
+            
+            var label = new TextBlock
+            {
+                Text = $"Entrez les initiales du {type} (2-4 caractères):",
+                Foreground = Brushes.White,
+                FontSize = 13,
+                Margin = new Thickness(0, 0, 0, 10)
+            };
+            
+            var textBox = new TextBox
+            {
+                MaxLength = 4,
+                FontSize = 14,
+                Padding = new Thickness(8, 6, 8, 6),
+                Background = new SolidColorBrush(Color.FromRgb(45, 45, 65)),
+                Foreground = Brushes.White,
+                BorderBrush = new SolidColorBrush(Color.FromRgb(80, 80, 120)),
+                CaretBrush = Brushes.White
+            };
+            textBox.Focus();
+            
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 15, 0, 0)
+            };
+            
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 80,
+                Padding = new Thickness(0, 6, 0, 6),
+                Margin = new Thickness(0, 0, 10, 0),
+                IsDefault = true
+            };
+            okButton.Click += (s, e) => { dialog.DialogResult = true; dialog.Close(); };
+            
+            var cancelButton = new Button
+            {
+                Content = "Annuler",
+                Width = 80,
+                Padding = new Thickness(0, 6, 0, 6),
+                IsCancel = true
+            };
+            cancelButton.Click += (s, e) => { dialog.DialogResult = false; dialog.Close(); };
+            
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+            
+            stack.Children.Add(label);
+            stack.Children.Add(textBox);
+            stack.Children.Add(buttonPanel);
+            
+            dialog.Content = stack;
+            
+            if (dialog.ShowDialog() == true && !string.IsNullOrWhiteSpace(textBox.Text))
+            {
+                return textBox.Text.Trim().ToUpper();
+            }
+            return null;
+        }
+
+        #region Event Handlers - Project Info
+
+        private void ProjectInfo_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            UpdateDestinationPreview();
+            UpdateFullProjectNumber();
+            UpdateRenamePreviews();
+            ValidateForm();
+        }
+
+        private void TxtJobTitle_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            // Verifier que la fenetre est chargee avant de valider
+            if (!IsLoaded || BtnPlaceEquipment == null) return;
+            ValidateForm();
+        }
+
+        private void UpdateDestinationPreview()
+        {
+            if (TxtProject == null || CmbReference == null || CmbModule == null) return;
+
+            var project = TxtProject.Text?.Trim() ?? "";
+            var reference = CmbReference.SelectedItem?.ToString() ?? "01";
+            var module = CmbModule.SelectedItem?.ToString() ?? "01";
+            
+            // [+] Pour Place Equipment: destination dans 1-Equipment\[EquipmentName]
+            var equipmentName = _selectedEquipment?.Name ?? "[EQUIPMENT]";
+
+            string destPath;
+            if (string.IsNullOrEmpty(project))
+            {
+                destPath = $"{_defaultDestinationBase}\\[PROJET]\\REF{reference}\\M{module}\\1-Equipment\\{equipmentName}";
+            }
+            else
+            {
+                destPath = Path.Combine(_defaultDestinationBase, project, $"REF{reference}", $"M{module}", "1-Equipment", equipmentName);
+            }
+
+            if (TxtDestinationPath != null)
+                TxtDestinationPath.Text = destPath;
+
+            if (TxtDestinationPreview != null)
+                TxtDestinationPreview.Text = $"Destination: {destPath}";
+
+            // Mettre a jour les proprietes du request (DestinationPath est calcule automatiquement)
+            _request.Project = project;
+            _request.Reference = reference;
+            _request.Module = module;
+
+            // Mettre a jour les chemins de destination pour chaque fichier
+            UpdateFileDestinationPaths(destPath);
+        }
+
+        private void UpdateFileDestinationPaths(string destinationBase)
+        {
+            if (_files == null || _files.Count == 0) return;
+
+            bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+
+            foreach (var file in _files)
+            {
+                // Calculer le chemin relatif une seule fois
+                var relativeDir = Path.GetDirectoryName(file.RelativePath) ?? "";
+                var isAtRoot = string.IsNullOrEmpty(relativeDir);
+                
+                // Renommer le Top Assembly (.iam) avec le numéro de projet formaté
+                // Pour templates: fichier marqué IsTopAssembly (Module_.iam)
+                // Pour projets existants: premier .iam à la racine
+                if (!string.IsNullOrEmpty(_request.FullProjectNumber))
+                {
+                    if (file.IsTopAssembly)
+                    {
+                        file.NewFileName = $"{_request.FullProjectNumber}.iam";
+                    }
+                    else if (isFromExistingProject && isAtRoot && file.FileType == "IAM")
+                    {
+                        // Pour projets existants: renommer le .iam à la racine (un seul)
+                        // Vérifier qu'on n'a pas déjà renommé un autre .iam
+                        var alreadyRenamed = _files.Any(f => f != file && f.FileType == "IAM" && 
+                            string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)) &&
+                            f.NewFileName == $"{_request.FullProjectNumber}.iam");
+                        if (!alreadyRenamed)
+                        {
+                            file.NewFileName = $"{_request.FullProjectNumber}.iam";
+                        }
+                    }
+                }
+                
+                // Renommer le fichier projet principal (.ipj)
+                // Pour templates: pattern XXXXX-XX-XX_2026.ipj
+                // Pour projets existants: tout .ipj à la racine
+                if (file.FileType == "IPJ" && !string.IsNullOrEmpty(_request.FullProjectNumber) && isAtRoot)
+                {
+                    if (isFromExistingProject || IsMainProjectFilePattern(file.OriginalFileName))
+                    {
+                        file.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                    }
+                }
+                
+                // Construire le chemin de destination en conservant la structure relative
+                var fileName = !string.IsNullOrEmpty(file.NewFileName) ? file.NewFileName : file.OriginalFileName;
+                
+                if (isAtRoot)
+                {
+                    file.DestinationPath = Path.Combine(destinationBase, fileName);
+                }
+                else
+                {
+                    file.DestinationPath = Path.Combine(destinationBase, relativeDir, fileName);
+                }
+            }
+
+            // Rafraîchir l'affichage
+            DgFiles?.Items.Refresh();
+        }
+
+        private void UpdateFullProjectNumber()
+        {
+            if (TxtFullProjectNumber == null) return;
+
+            var project = (TxtProject?.Text?.Trim() ?? "").PadLeft(5, '0');
+            var reference = CmbReference?.SelectedItem?.ToString() ?? "01";
+            var module = CmbModule?.SelectedItem?.ToString() ?? "01";
+
+            // Mettre à jour les propriétés du request (FullProjectNumber sera calculé automatiquement)
+            _request.Project = TxtProject?.Text?.Trim() ?? "";
+            _request.Reference = reference;
+            _request.Module = module;
+
+            // Afficher le numéro complet calculé
+            var fullNumber = _request.FullProjectNumber;
+            TxtFullProjectNumber.Text = fullNumber;
+            
+            // Renommer automatiquement les fichiers Excel si le numéro de projet est défini
+            if (!string.IsNullOrEmpty(fullNumber) && _files.Count > 0)
+            {
+                RenameSpecialExcelFiles();
+                DgFiles?.Items.Refresh();
+            }
+            
+            // Mettre à jour les prévisualisations
+            UpdateRenamePreviews();
+        }
+
+        #endregion
+
+        #region Event Handlers - Source Options (Simplified for Equipment)
+
+        /// <summary>
+        /// Chemin temporaire pour le telechargement Vault
+        /// </summary>
+        private string? _tempVaultDownloadPath = null;
+
+        private void BtnBrowseDestination_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new System.Windows.Forms.FolderBrowserDialog
+            {
+                Description = "Sélectionner le dossier de destination de base",
+                ShowNewFolderButton = true
+            };
+
+            if (Directory.Exists(_defaultDestinationBase))
+            {
+                dialog.SelectedPath = _defaultDestinationBase;
+            }
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            {
+                _request.DestinationBasePath = dialog.SelectedPath;
+                UpdateDestinationPreview();
+            }
+        }
+
+        #endregion
+
+        #region Event Handlers - Load Files
+
+        private void CopyDirectory(string sourceDir, string destDir)
+        {
+            Directory.CreateDirectory(destDir);
+
+            foreach (var file in Directory.GetFiles(sourceDir))
+            {
+                var fileName = Path.GetFileName(file);
+                var destFile = Path.Combine(destDir, fileName);
+                File.Copy(file, destFile, true);
+            }
+
+            foreach (var dir in Directory.GetDirectories(sourceDir))
+            {
+                var dirName = Path.GetFileName(dir);
+                var destSubDir = Path.Combine(destDir, dirName);
+                CopyDirectory(dir, destSubDir);
+            }
+        }
+
+        /// <summary>
+        /// Obtient tous les fichiers recursivement depuis un dossier Vault
+        /// </summary>
+        private void GetAllFilesRecursive(VDF.Vault.Currency.Connections.Connection connection, ACW.Folder folder, List<ACW.File> allFiles, List<ACW.Folder> allFolders)
+        {
+            try
+            {
+                // Ajouter ce dossier a la liste
+                allFolders.Add(folder);
+                
+                // Obtenir les fichiers de ce dossier
+                var files = connection.WebServiceManager.DocumentService.GetLatestFilesByFolderId(folder.Id, false);
+                if (files != null && files.Length > 0)
+                {
+                    allFiles.AddRange(files);
+                }
+                
+                // Obtenir les sous-dossiers
+                var subFolders = connection.WebServiceManager.DocumentService.GetFoldersByParentId(folder.Id, false);
+                if (subFolders != null && subFolders.Length > 0)
+                {
+                    foreach (var subFolder in subFolders)
+                    {
+                        // Recursion dans chaque sous-dossier
+                        GetAllFilesRecursive(connection, subFolder, allFiles, allFolders);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log l'erreur mais continue avec les autres dossiers
+                System.Diagnostics.Debug.WriteLine($"[!] Erreur enumeration {folder.FullName}: {ex.Message}");
+            }
+        }
+
+        private void CleanupTempVaultFolder()
+        {
+            if (_tempVaultDownloadPath != null && Directory.Exists(_tempVaultDownloadPath))
+            {
+                try
+                {
+                    AddLog($"Nettoyage du dossier temporaire: {_tempVaultDownloadPath}", "INFO");
+                    Directory.Delete(_tempVaultDownloadPath, true);
+                    _tempVaultDownloadPath = null;
+                    AddLog("✓ Dossier temporaire supprimé", "SUCCESS");
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"⚠ Impossible de supprimer le dossier temporaire: {ex.Message}", "WARNING");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Charge tous les fichiers depuis un dossier source (copie complète du dossier)
+        /// </summary>
+        private void LoadFilesFromPath(string sourcePath)
+        {
+            try
+            {
+                _files.Clear();
+                if (TxtStatus != null) TxtStatus.Text = "Chargement des fichiers...";
+
+                if (string.IsNullOrEmpty(sourcePath) || !Directory.Exists(sourcePath))
+                {
+                    if (TxtStatus != null) TxtStatus.Text = "⚠️ Chemin source invalide";
+                    return;
+                }
+
+                // Determiner si on est en mode "Projet Existant"
+                bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+
+                // Scanner TOUS les fichiers du dossier (copie design complète)
+                // Exclure: fichiers temporaires, Vault, .bak, dossiers _V et OldVersions
+                var vaultTempExtensions = new[] { ".v", ".v1", ".v2", ".v3", ".v4", ".v5", ".vbak", ".bak" };
+                var excludedFolders = new[] { "_V", "OldVersions", "oldversions" };
+                
+                var allFiles = Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories)
+                    .Where(f => 
+                    {
+                        var fileName = Path.GetFileName(f);
+                        var ext = Path.GetExtension(f).ToLower();
+                        var dirPath = Path.GetDirectoryName(f) ?? "";
+                        
+                        // Exclure les fichiers temporaires
+                        if (fileName.StartsWith(".") || fileName.StartsWith("~"))
+                            return false;
+                        
+                        // Exclure les fichiers .bak
+                        if (ext == ".bak")
+                            return false;
+                        
+                        // Exclure les fichiers temporaires Vault (.v, .v1, .v2, etc.)
+                        if (vaultTempExtensions.Any(ve => ext.StartsWith(ve)))
+                            return false;
+                        
+                        // Exclure les dossiers _V et OldVersions
+                        if (excludedFolders.Any(ef => dirPath.Contains($"\\{ef}\\") || dirPath.EndsWith($"\\{ef}")))
+                            return false;
+                        
+                        // Pour les projets existants: NE PAS exclure l'IPJ, il sera copié et renommé
+                        // Pour les templates: tout inclure aussi
+                        
+                        return true;
+                    })
+                    .ToList();
+
+                // Extensions Inventor pour identifier le type
+                var inventorExtensions = new[] { ".iam", ".ipt", ".idw", ".dwg", ".ipn" };
+
+                // Trier: IAM en premier, puis IPT, IDW, puis autres
+                var sortedFiles = allFiles
+                    .OrderBy(f => 
+                    {
+                        var ext = Path.GetExtension(f).ToLower();
+                        if (ext == ".iam") return 0;
+                        if (ext == ".ipt") return 1;
+                        if (ext == ".idw") return 2;
+                        if (ext == ".dwg") return 3;
+                        return 4;
+                    })
+                    .ThenBy(f => Path.GetFileName(f))
+                    .ToList();
+
+                foreach (var file in sortedFiles)
+                {
+                    var fileName = Path.GetFileName(file);
+                    var extension = Path.GetExtension(file).ToUpper().TrimStart('.');
+                    var relativePath = file.Substring(sourcePath.Length).TrimStart('\\');
+                    var isInventorFile = inventorExtensions.Contains(Path.GetExtension(file).ToLower());
+                    var isTopAssembly = fileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase);
+                    var isProjectFile = extension == "IPJ";
+                    // Fichier projet principal: pattern XXXXX-XX-XX_2026.ipj (à la racine du module)
+                    var isMainProjectFile = isProjectFile && 
+                                           string.IsNullOrEmpty(Path.GetDirectoryName(relativePath)) &&
+                                           IsMainProjectFilePattern(fileName);
+
+                    var item = new FileRenameItem
+                    {
+                        IsSelected = true,
+                        OriginalPath = file,
+                        RelativePath = relativePath,
+                        NewFileName = fileName,
+                        FileType = extension,
+                        Status = isInventorFile ? "Inventor" : (isProjectFile ? "Projet" : "Copie simple"),
+                        IsTopAssembly = isTopAssembly,
+                        IsInventorFile = isInventorFile
+                    };
+
+                    // Pour templates: renommer Module_.iam et fichier IPJ principal (pattern XXXXX-XX-XX_2026.ipj)
+                    // Pour projets existants: renommer le premier .iam à la racine et le premier .ipj à la racine
+                    if (!isFromExistingProject)
+                    {
+                        // Renommage automatique du Top Assembly (.iam) - template Module_.iam
+                        if (isTopAssembly && !string.IsNullOrEmpty(TxtProject?.Text))
+                        {
+                            item.NewFileName = $"{_request.FullProjectNumber}.iam";
+                        }
+                        
+                        // Renommage automatique UNIQUEMENT du fichier projet principal (.ipj)
+                        // Pattern: XXXXX-XX-XX_2026.ipj (à la racine)
+                        if (isMainProjectFile && !string.IsNullOrEmpty(TxtProject?.Text))
+                        {
+                            item.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                        }
+                    }
+                    else
+                    {
+                        // PROJET EXISTANT: Renommer le fichier Top Assembly (.iam à la racine) avec le numéro de projet
+                        // Note: Pour les projets existants, isTopAssembly est false car le fichier ne s'appelle pas "Module_.iam"
+                        // On détecte le premier .iam à la racine comme Top Assembly
+                        bool isRootIam = extension == "IAM" && string.IsNullOrEmpty(Path.GetDirectoryName(relativePath));
+                        bool isRootIpj = isProjectFile && string.IsNullOrEmpty(Path.GetDirectoryName(relativePath));
+                        
+                        if (isRootIam && !string.IsNullOrEmpty(TxtProject?.Text))
+                        {
+                            // Vérifier si c'est le premier .iam trouvé à la racine (Top Assembly)
+                            bool alreadyHasTopAssembly = _files.Any(f => f.IsTopAssembly || 
+                                (f.FileType == "IAM" && string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath))));
+                            
+                            if (!alreadyHasTopAssembly)
+                            {
+                                item.IsTopAssembly = true;
+                                item.NewFileName = $"{_request.FullProjectNumber}.iam";
+                            }
+                        }
+                        
+                        if (isRootIpj && !string.IsNullOrEmpty(TxtProject?.Text))
+                        {
+                            // Vérifier si c'est le premier .ipj trouvé à la racine (fichier projet)
+                            bool alreadyHasProjectFile = _files.Any(f => f.FileType == "IPJ" && 
+                                string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)));
+                            
+                            if (!alreadyHasProjectFile)
+                            {
+                                item.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                            }
+                        }
+                    }
+                    
+                    // Calculer le chemin de destination
+                    UpdateFileDestination(item);
+
+                    _files.Add(item);
+                }
+
+                // Mettre à jour les filtres avec les valeurs réellement trouvées
+                UpdateFileTypeFilter();
+                UpdateStatusFilter();
+
+                // Renommer automatiquement les fichiers Excel spécifiques si le numéro de projet est défini
+                if (!string.IsNullOrEmpty(_request.FullProjectNumber))
+                {
+                    RenameSpecialExcelFiles();
+                }
+
+                UpdateStatistics();
+                UpdateFileCount();
+                UpdateRenamePreviews();
+                AddLog($"{_files.Count} fichiers chargés depuis {Path.GetFileName(sourcePath)}", "SUCCESS");
+                if (TxtStatus != null) TxtStatus.Text = $"✓ {_files.Count} fichiers chargés depuis {Path.GetFileName(sourcePath)}";
+                ValidateForm();
+            }
+            catch (Exception ex)
+            {
+                AddLog($"Erreur lors du chargement des fichiers: {ex.Message}", "ERROR");
+                if (TxtStatus != null) TxtStatus.Text = $"Erreur: {ex.Message}";
+            }
+        }
+
+        #endregion
+
+        #region Event Handlers - Rename Options
+
+        private void RenameOptions_Changed(object sender, TextChangedEventArgs e)
+        {
+            // Mise à jour en temps réel désactivée pour performance
+            // L'utilisateur doit cliquer sur "Appliquer"
+        }
+
+        private void BtnApplyRename_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var search = TxtSearch?.Text ?? "";
+                var replace = TxtReplace?.Text ?? "";
+                var prefix = TxtPrefix?.Text ?? "";
+                var suffix = TxtSuffix?.Text ?? "";
+                
+                // Nouvelles options de renommage
+                bool applyProjectPrefix = ChkApplyProjectPrefix?.IsChecked == true;
+                string fixedSuffix = "";
+                if (CmbFixedSuffix?.SelectedItem is ComboBoxItem fixedSuffixItem && 
+                    fixedSuffixItem.Content?.ToString() != "Aucun" && 
+                    fixedSuffixItem.Content?.ToString() != "Autre...")
+                {
+                    fixedSuffix = fixedSuffixItem.Content.ToString();
+                }
+                bool applyIncrementalSuffix = ChkApplyIncrementalSuffix?.IsChecked == true;
+                
+                // Si la checkbox n'est pas cochée, ne renommer que les fichiers Inventor
+                bool includeNonInventor = ChkIncludeNonInventor?.IsChecked == true;
+
+                // Compteur pour suffixe incrémentatif
+                int incrementalCounter = 1;
+
+                // Liste des fichiers sélectionnés pour traitement
+                var selectedFiles = _files.Where(f => f.IsSelected).ToList();
+
+                foreach (var file in selectedFiles)
+                {
+                    // Skip fichiers non-Inventor si checkbox non cochée
+                    if (!includeNonInventor && !file.IsInventorFile)
+                    {
+                        continue;
+                    }
+                    
+                    // STRATÉGIE DE RENOMMAGE CUMULATIVE:
+                    // 1. Partir du nom actuel (NewFileName) ou original si pas encore modifié
+                    var currentName = file.NewFileName != file.OriginalFileName 
+                        ? file.NewFileName 
+                        : file.OriginalFileName;
+                    
+                    var baseName = Path.GetFileNameWithoutExtension(currentName);
+                    var ext = Path.GetExtension(currentName);
+                    var newName = currentName;
+
+                    // 2. Appliquer préfixe numéro projet si activé (vérifier qu'il n'est pas déjà présent)
+                    if (applyProjectPrefix && !string.IsNullOrEmpty(_request.FullProjectNumber))
+                    {
+                        var projectPrefix = $"{_request.FullProjectNumber}_";
+                        if (!baseName.StartsWith(projectPrefix, StringComparison.OrdinalIgnoreCase))
+                        {
+                            baseName = $"{projectPrefix}{baseName}";
+                        }
+                    }
+
+                    // 3. Appliquer préfixe manuel (vérifier qu'il n'est pas déjà présent)
+                    if (!string.IsNullOrEmpty(prefix) && !baseName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        baseName = $"{prefix}{baseName}";
+                    }
+
+                    // 4. Appliquer suffixe manuel (vérifier qu'il n'est pas déjà présent)
+                    if (!string.IsNullOrEmpty(suffix) && !baseName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        baseName = $"{baseName}{suffix}";
+                    }
+
+                    // 5. Appliquer suffixe fixe (liste déroulante) - vérifier qu'il n'est pas déjà présent
+                    if (!string.IsNullOrEmpty(fixedSuffix) && !baseName.EndsWith(fixedSuffix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        baseName = $"{baseName}{fixedSuffix}";
+                    }
+
+                    // 6. Appliquer suffixe incrémentatif (toujours ajouter car il est unique)
+                    if (applyIncrementalSuffix)
+                    {
+                        // Vérifier si un suffixe incrémentatif existe déjà (format _XX où XX est un nombre)
+                        var incrementalPattern = new System.Text.RegularExpressions.Regex(@"_\d{2}$");
+                        if (!incrementalPattern.IsMatch(baseName))
+                        {
+                            baseName = $"{baseName}_{incrementalCounter:D2}";
+                            incrementalCounter++;
+                        }
+                        else
+                        {
+                            // Remplacer le suffixe incrémentatif existant
+                            baseName = incrementalPattern.Replace(baseName, $"_{incrementalCounter:D2}");
+                            incrementalCounter++;
+                        }
+                    }
+
+                    // 7. Reconstruire le nom avec extension
+                    newName = $"{baseName}{ext}";
+
+                    // 8. Appliquer rechercher/remplacer (sur le nom complet)
+                    if (!string.IsNullOrEmpty(search))
+                    {
+                        var index = newName.IndexOf(search, StringComparison.OrdinalIgnoreCase);
+                        while (index >= 0)
+                        {
+                            newName = newName.Substring(0, index) + replace + newName.Substring(index + search.Length);
+                            index = newName.IndexOf(search, index + replace.Length, StringComparison.OrdinalIgnoreCase);
+                        }
+                    }
+
+                    file.NewFileName = newName;
+                }
+
+                // Renommage automatique des fichiers Excel spécifiques
+                RenameSpecialExcelFiles();
+
+                // Toujours renommer le Top Assembly et IPJ avec le numéro de projet
+                bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+                
+                // Top Assembly
+                var topAssembly = _files.FirstOrDefault(f => f.IsTopAssembly);
+                if (topAssembly == null && isFromExistingProject)
+                {
+                    // Pour projets existants: premier .iam à la racine
+                    topAssembly = _files.FirstOrDefault(f => f.FileType == "IAM" && 
+                        string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)));
+                }
+                if (topAssembly != null && !string.IsNullOrEmpty(TxtProject?.Text))
+                {
+                    topAssembly.NewFileName = $"{_request.FullProjectNumber}.iam";
+                }
+                
+                // IPJ principal
+                var mainIpj = _files.FirstOrDefault(f => f.FileType == "IPJ" && 
+                    string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)) &&
+                    (isFromExistingProject || IsMainProjectFilePattern(f.OriginalFileName)));
+                if (mainIpj != null && !string.IsNullOrEmpty(TxtProject?.Text))
+                {
+                    mainIpj.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                }
+
+                // Rafraîchir l'affichage
+                DgFiles?.Items.Refresh();
+
+                AddLog("Renommage appliqué aux fichiers sélectionnés", "SUCCESS");
+                TxtStatus.Text = "✓ Renommage appliqué";
+            }
+            catch (Exception ex)
+            {
+                AddLog($"Erreur lors du renommage: {ex.Message}", "ERROR");
+            }
+        }
+
+        /// <summary>
+        /// Renomme automatiquement les fichiers Excel spécifiques avec le numéro de projet
+        /// Recherche les fichiers: XXXXXXXXX_Décompte de DXF_DXF Count.xlsx et XXXXXXXXX_Liste de vérification_Check List.xlsm
+        /// </summary>
+        private void RenameSpecialExcelFiles()
+        {
+            if (string.IsNullOrEmpty(_request.FullProjectNumber)) return;
+
+            // Noms des fichiers Excel à renommer automatiquement (sans le préfixe XXXXXXXXX_)
+            var excelFileSuffixes = new[]
+            {
+                "_Décompte de DXF_DXF Count.xlsx",
+                "_Liste de vérification_Check List.xlsm"
+            };
+
+            foreach (var file in _files)
+            {
+                var fileName = file.OriginalFileName;
+                
+                // Vérifier si le fichier correspond à un des patterns Excel
+                foreach (var suffix in excelFileSuffixes)
+                {
+                    // Chercher les fichiers qui se terminent par le suffixe (peu importe le préfixe)
+                    if (fileName.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Vérifier si le fichier commence déjà par le numéro de projet
+                        if (!file.NewFileName.StartsWith(_request.FullProjectNumber, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Renommer avec le numéro de projet
+                            file.NewFileName = $"{_request.FullProjectNumber}{suffix}";
+                            AddLog($"Fichier Excel renommé automatiquement: {file.OriginalFileName} → {file.NewFileName}", "INFO");
+                        }
+                        break; // Un seul suffixe peut correspondre
+                    }
+                }
+            }
+        }
+
+        private void BtnResetNames_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var file in _files)
+            {
+                file.NewFileName = file.OriginalFileName;
+            }
+
+            TxtSearch.Text = "";
+            TxtReplace.Text = "";
+            TxtPrefix.Text = "";
+            TxtSuffix.Text = "";
+            ChkApplyProjectPrefix.IsChecked = false;
+            CmbFixedSuffix.SelectedIndex = 0;
+            ChkApplyIncrementalSuffix.IsChecked = false;
+
+            TxtStatus.Text = "✓ Noms réinitialisés";
+        }
+
+        private void ChkApplyProjectPrefix_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdateRenamePreviews();
+        }
+
+        private void ChkApplyIncrementalSuffix_Changed(object sender, RoutedEventArgs e)
+        {
+            UpdateRenamePreviews();
+        }
+
+        private void CmbFixedSuffix_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Gérer l'option "Autre..." pour saisie personnalisée
+            if (CmbFixedSuffix?.SelectedItem is ComboBoxItem item && item.Content?.ToString() == "Autre...")
+            {
+                string customValue = ShowCustomSuffixDialog();
+                if (!string.IsNullOrWhiteSpace(customValue))
+                {
+                    // S'assurer que le suffixe commence par _
+                    if (!customValue.StartsWith("_"))
+                    {
+                        customValue = "_" + customValue;
+                    }
+                    
+                    // Ajouter la valeur custom avant "Autre..." si elle n'existe pas déjà
+                    if (!CmbFixedSuffix.Items.Cast<ComboBoxItem>().Any(i => i.Content?.ToString() == customValue))
+                    {
+                        int autreIndex = CmbFixedSuffix.Items.Cast<ComboBoxItem>()
+                            .ToList()
+                            .FindIndex(i => i.Content?.ToString() == "Autre...");
+                        if (autreIndex >= 0)
+                        {
+                            var newItem = new ComboBoxItem { Content = customValue };
+                            CmbFixedSuffix.Items.Insert(autreIndex, newItem);
+                        }
+                    }
+                    CmbFixedSuffix.SelectedItem = CmbFixedSuffix.Items.Cast<ComboBoxItem>()
+                        .FirstOrDefault(i => i.Content?.ToString() == customValue);
+                }
+                else
+                {
+                    // Annulé - revenir à "Aucun"
+                    CmbFixedSuffix.SelectedIndex = 0;
+                }
+            }
+        }
+
+        private string ShowCustomSuffixDialog()
+        {
+            // Créer une fenêtre de dialogue simple
+            var dialog = new Window
+            {
+                Title = "Suffixe personnalisé",
+                Width = 350,
+                Height = 180,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize,
+                Background = new SolidColorBrush(Color.FromRgb(30, 30, 45)),
+                WindowStyle = WindowStyle.ToolWindow
+            };
+
+            var stack = new StackPanel { Margin = new Thickness(20) };
+
+            var label = new TextBlock
+            {
+                Text = "Entrez le suffixe personnalisé (ex: _11, _A, _TEST):",
+                Foreground = new SolidColorBrush(Colors.White),
+                FontSize = 13,
+                Margin = new Thickness(0, 0, 0, 15),
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            var textBox = new TextBox
+            {
+                FontSize = 14,
+                Padding = new Thickness(8),
+                Margin = new Thickness(0, 0, 0, 15),
+                Background = new SolidColorBrush(Color.FromRgb(45, 45, 60)),
+                Foreground = new SolidColorBrush(Colors.White),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(74, 127, 191)),
+                BorderThickness = new Thickness(2)
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+
+            var okButton = new Button
+            {
+                Content = "OK",
+                Width = 80,
+                Height = 35,
+                Margin = new Thickness(0, 0, 10, 0),
+                Background = new SolidColorBrush(Color.FromRgb(74, 127, 191)),
+                Foreground = new SolidColorBrush(Colors.White),
+                FontSize = 13,
+                FontWeight = FontWeights.Bold
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Annuler",
+                Width = 80,
+                Height = 35,
+                Background = new SolidColorBrush(Color.FromRgb(100, 100, 100)),
+                Foreground = new SolidColorBrush(Colors.White),
+                FontSize = 13
+            };
+
+            string result = null;
+
+            okButton.Click += (s, args) =>
+            {
+                result = textBox.Text?.Trim();
+                dialog.DialogResult = true;
+                dialog.Close();
+            };
+
+            cancelButton.Click += (s, args) =>
+            {
+                dialog.DialogResult = false;
+                dialog.Close();
+            };
+
+            textBox.KeyDown += (s, args) =>
+            {
+                if (args.Key == System.Windows.Input.Key.Enter)
+                {
+                    result = textBox.Text?.Trim();
+                    dialog.DialogResult = true;
+                    dialog.Close();
+                }
+            };
+
+            buttonPanel.Children.Add(okButton);
+            buttonPanel.Children.Add(cancelButton);
+
+            stack.Children.Add(label);
+            stack.Children.Add(textBox);
+            stack.Children.Add(buttonPanel);
+
+            dialog.Content = stack;
+            textBox.Focus();
+
+            dialog.ShowDialog();
+
+            return result;
+        }
+
+        #endregion
+
+        #region Event Handlers - Selection & Filtering
+
+        private void BtnSelectAll_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var file in _files)
+            {
+                file.IsSelected = true;
+            }
+            UpdateFileCount();
+        }
+
+        private void BtnSelectNone_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var file in _files)
+            {
+                file.IsSelected = false;
+            }
+            UpdateFileCount();
+        }
+
+        private void BtnInvertSelection_Click(object sender, RoutedEventArgs e)
+        {
+            foreach (var file in _files)
+            {
+                file.IsSelected = !file.IsSelected;
+            }
+            UpdateFileCount();
+            AddLog("Sélection inversée", "INFO");
+        }
+
+        private void DgFiles_MouseLeftButtonUp(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            // Toggle selection on click - bascule la checkbox quand on clique sur la ligne
+            if (DgFiles.SelectedItem is FileRenameItem selectedFile)
+            {
+                selectedFile.IsSelected = !selectedFile.IsSelected;
+                DgFiles.Items.Refresh();
+                UpdateFileCount();
+            }
+        }
+
+        private void TxtSearchFiles_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyFilters();
+            BtnClearSearch.Visibility = string.IsNullOrEmpty(TxtSearchFiles.Text) ? Visibility.Collapsed : Visibility.Visible;
+        }
+
+        private void BtnClearSearch_Click(object sender, RoutedEventArgs e)
+        {
+            TxtSearchFiles.Text = "";
+        }
+
+        private void CmbFilterType_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void CmbFilterSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void ChkIncludeNonInventor_Changed(object sender, RoutedEventArgs e)
+        {
+            // La checkbox contrôle le renommage, pas le filtrage
+            UpdateRenamePreviews();
+        }
+
+        private void UpdateRenamePreviews()
+        {
+            // Prévisualisation pour "Inclure fichiers non-Inventor"
+            if (TxtPreviewInclude != null)
+            {
+                if (ChkIncludeNonInventor?.IsChecked == true)
+                {
+                    var nonInventorCount = _files?.Count(f => !f.OriginalFileName.EndsWith(".ipt", StringComparison.OrdinalIgnoreCase) &&
+                                                              !f.OriginalFileName.EndsWith(".iam", StringComparison.OrdinalIgnoreCase) &&
+                                                              !f.OriginalFileName.EndsWith(".idw", StringComparison.OrdinalIgnoreCase) &&
+                                                              !f.OriginalFileName.EndsWith(".dwg", StringComparison.OrdinalIgnoreCase)) ?? 0;
+                    TxtPreviewInclude.Text = nonInventorCount > 0 ? $"({nonInventorCount} fichiers)" : "";
+                }
+                else
+                {
+                    TxtPreviewInclude.Text = "";
+                }
+            }
+
+            // Prévisualisation pour "Préfixe Numéro Projet"
+            if (TxtPreviewPrefix != null)
+            {
+                if (ChkApplyProjectPrefix?.IsChecked == true && !string.IsNullOrEmpty(_request?.FullProjectNumber))
+                {
+                    var exampleName = _files?.FirstOrDefault()?.OriginalFileName ?? "fichier.exemple";
+                    var preview = $"{_request.FullProjectNumber}_{exampleName}";
+                    if (preview.Length > 30) preview = preview.Substring(0, 27) + "...";
+                    TxtPreviewPrefix.Text = $"→ {preview}";
+                }
+                else
+                {
+                    TxtPreviewPrefix.Text = "";
+                }
+            }
+
+            // Prévisualisation pour "Suffixe incrémentatif"
+            if (TxtPreviewIncremental != null)
+            {
+                if (ChkApplyIncrementalSuffix?.IsChecked == true)
+                {
+                    var selectedCount = _files?.Count(f => f.IsSelected) ?? 0;
+                    if (selectedCount > 0)
+                    {
+                        var exampleName = _files?.FirstOrDefault(f => f.IsSelected)?.OriginalFileName ?? "fichier.exemple";
+                        var nameWithoutExt = Path.GetFileNameWithoutExtension(exampleName);
+                        var ext = Path.GetExtension(exampleName);
+                        TxtPreviewIncremental.Text = $"→ {nameWithoutExt}_01{ext} ... ({selectedCount} fichiers)";
+                    }
+                    else
+                    {
+                        TxtPreviewIncremental.Text = "(aucun fichier sélectionné)";
+                    }
+                }
+                else
+                {
+                    TxtPreviewIncremental.Text = "";
+                }
+            }
+        }
+
+        private void ApplyFilters()
+        {
+            if (_files == null || DgFiles == null) return;
+
+            var filteredFiles = _files.AsEnumerable();
+
+            // Filtre par recherche texte
+            if (!string.IsNullOrWhiteSpace(TxtSearchFiles?.Text))
+            {
+                var searchTerm = TxtSearchFiles.Text.ToLower();
+                filteredFiles = filteredFiles.Where(f => 
+                    f.OriginalFileName.ToLower().Contains(searchTerm) ||
+                    f.NewFileName.ToLower().Contains(searchTerm));
+            }
+
+            // Filtre par type de fichier (supporte ComboBoxItem et string)
+            if (CmbFilterType?.SelectedItem != null)
+            {
+                string? selectedType = null;
+                
+                if (CmbFilterType.SelectedItem is ComboBoxItem typeItem)
+                {
+                    selectedType = typeItem.Content?.ToString();
+                }
+                else if (CmbFilterType.SelectedItem is string typeString)
+                {
+                    selectedType = typeString;
+                }
+                
+                if (!string.IsNullOrEmpty(selectedType) && selectedType != "Tous")
+                {
+                    filteredFiles = filteredFiles.Where(f => f.FileType.Equals(selectedType, StringComparison.OrdinalIgnoreCase));
+                }
+            }
+
+            // Filtre par statut (dynamique)
+            if (CmbFilterSelection?.SelectedItem is ComboBoxItem selItem)
+            {
+                var selection = selItem.Content?.ToString();
+                if (!string.IsNullOrEmpty(selection) && selection != "Tous")
+                {
+                    filteredFiles = filteredFiles.Where(f => f.Status == selection);
+                }
+            }
+
+            DgFiles.ItemsSource = filteredFiles.ToList();
+            UpdateFileCount();
+        }
+
+        private void UpdateFileCount()
+        {
+            if (TxtFileCount == null || _files == null) return;
+
+            var displayed = (DgFiles.ItemsSource as IEnumerable<FileItem>)?.Count() ?? _files.Count;
+            var selected = _files.Count(f => f.IsSelected);
+            TxtFileCount.Text = $"{selected}/{_files.Count} sélectionnés";
+
+            // Mettre à jour les statistiques de l'en-tête (sélection)
+            if (TxtStatsSelected != null) TxtStatsSelected.Text = selected.ToString();
+        }
+
+        #endregion
+
+        #region Event Handlers - Actions
+
+        private void BtnPreview_Click(object sender, RoutedEventArgs e)
+        {
+            var validation = ValidateAllInputs();
+            if (!validation.IsValid)
+            {
+                AddLog($"Validation échouée: {validation.ErrorMessage}", "WARN");
+                return;
+            }
+
+            var selectedFiles = _files.Where(f => f.IsSelected).ToList();
+            AddLog($"Prévisualisation demandée - {selectedFiles.Count} fichiers sélectionnés", "INFO");
+            
+            // Mettre à jour la date depuis le DatePicker
+            _request.CreationDate = DpCreationDate.SelectedDate ?? DateTime.Now;
+            
+            // Ouvrir la fenêtre de prévisualisation moderne
+            var previewWindow = new PreviewWindow();
+            previewWindow.Owner = this;
+            previewWindow.SetPreviewData(
+                TxtProject?.Text ?? "",
+                CmbReference?.SelectedItem?.ToString() ?? "01",
+                CmbModule?.SelectedItem?.ToString() ?? "01",
+                _request.FullProjectNumber,
+                TxtDestinationPath?.Text ?? "",
+                CmbInitialeDessinateur?.SelectedItem?.ToString() ?? "",
+                CmbInitialeCoDessinateur?.SelectedItem?.ToString() ?? "",
+                _request.CreationDate,
+                TxtJobTitle?.Text ?? "",
+                selectedFiles,
+                selectedFiles.Count
+            );
+
+            // Si l'utilisateur confirme, proceder au placement
+            if (previewWindow.ShowDialog() == true && previewWindow.IsConfirmed)
+            {
+                AddLog("Placement confirme via previsualisation", "START");
+                ExecuteEquipmentPlacement();
+            }
+            else
+            {
+                AddLog("Placement annule par l'utilisateur", "INFO");
+            }
+        }
+
+        private void BtnPlaceEquipment_Click(object sender, RoutedEventArgs e)
+        {
+            // Verifier qu'un equipement est selectionne
+            if (_selectedEquipment == null)
+            {
+                AddLog("[-] Aucun equipement selectionne", "ERROR");
+                return;
+            }
+
+            // Verifier que le projet/reference/module sont definis
+            var project = TxtProject.Text?.Trim();
+            var reference = CmbReference?.SelectedItem?.ToString() ?? "";
+            var module = CmbModule?.SelectedItem?.ToString() ?? "";
+            
+            if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(reference) || string.IsNullOrEmpty(module))
+            {
+                AddLog("[-] Project/Reference/Module requis - Cliquez sur 'Detecter le Module'", "ERROR");
+                return;
+            }
+
+            AddLog($"[>] Demarrage placement equipement: {_selectedEquipment.DisplayName}", "START");
+            AddLog($"[i] Destination: {project}/REF{reference}/M{module}/1-Equipment/{_selectedEquipment.Name}", "INFO");
+            
+            ExecuteEquipmentPlacement();
+        }
+
+        /// <summary>
+        /// Execute le placement d'equipement complet:
+        /// 1. Fermer l'assemblage principal du module
+        /// 2. Sauvegarder l'IPJ actuel
+        /// 3. Switch vers IPJ de l'equipement
+        /// 4. Copy Design vers destination
+        /// 5. Switch retour vers IPJ du projet
+        /// 6. Ouvrir l'assemblage principal du module
+        /// 7. Placer l'equipement dans le module
+        /// </summary>
+        private async void ExecuteEquipmentPlacement()
+        {
+            if (_selectedEquipment == null)
+            {
+                AddLog("[-] Aucun equipement selectionne", "ERROR");
+                return;
+            }
+
+            string? originalIpjPath = null;
+            string? moduleTopAssemblyPath = null;
+            
+            try
+            {
+                BtnPlaceEquipment.IsEnabled = false;
+                BtnCancel.IsEnabled = false;
+                BtnPreview.IsEnabled = false;
+                
+                // [+] RESET complet de la progression (temps a 00:00)
+                ResetProgress();
+                _startTime = DateTime.Now;
+                _pausedTime = TimeSpan.Zero;
+                
+                UpdateProgress(0, "Initialisation du placement d'equipement...");
+                AddLog("[>] Debut du placement d'equipement...", "START");
+                Logger.Info("═══════════════════════════════════════════════════════");
+                Logger.Info("[>] PLACEMENT EQUIPEMENT - DEMARRAGE");
+                Logger.Info("═══════════════════════════════════════════════════════");
+
+                // ══════════════════════════════════════════════════════════
+                // ETAPE 1: Detecter et sauvegarder le contexte actuel
+                // ══════════════════════════════════════════════════════════
+                UpdateProgress(2, "Detection du module actif...");
+                AddLog("[1/7] Detection du module actif dans Inventor...", "INFO");
+                
+                var project = TxtProject.Text?.Trim() ?? "";
+                var reference = CmbReference?.SelectedItem?.ToString() ?? "";
+                var module = CmbModule?.SelectedItem?.ToString() ?? "";
+                
+                // Construire les chemins
+                var modulePath = Path.Combine(_projectsBasePath, project, $"REF{reference}", $"M{module}");
+                var equipmentDestPath = Path.Combine(modulePath, "1-Equipment", _selectedEquipment.Name);
+                
+                AddLog($"[i] Module: {project}-REF{reference}-M{module}", "INFO");
+                AddLog($"[i] Destination equipement: {equipmentDestPath}", "INFO");
+                Logger.Info($"[i] Module: {project}-REF{reference}-M{module}");
+                Logger.Info($"[i] Destination equipement: {equipmentDestPath}");
+
+                // ══════════════════════════════════════════════════════════
+                // ETAPE 2: Obtenir l'IPJ actuel et le top assembly du module
+                // ══════════════════════════════════════════════════════════
+                UpdateProgress(5, "Sauvegarde du projet Inventor actuel...");
+                AddLog("[2/7] Sauvegarde du projet Inventor actuel...", "INFO");
+                
+                using (var copyDesignService = new InventorCopyDesignService(
+                    (msg, level) => Dispatcher.Invoke(() => AddLog(msg, level)),
+                    (percent, status) => { }))
+                {
+                    if (!copyDesignService.Initialize())
+                    {
+                        throw new Exception("Impossible de se connecter a Inventor. Verifiez qu'Inventor 2026 est demarre.");
+                    }
+                    
+                    // Obtenir l'IPJ actuel du projet
+                    originalIpjPath = copyDesignService.GetCurrentProjectFile();
+                    if (string.IsNullOrEmpty(originalIpjPath))
+                    {
+                        throw new Exception("Impossible de determiner le fichier projet (.ipj) actuel");
+                    }
+                    AddLog($"[+] IPJ original: {Path.GetFileName(originalIpjPath)}", "SUCCESS");
+                    Logger.Info($"[+] IPJ original sauvegarde: {originalIpjPath}");
+                    
+                    // Obtenir le chemin du document actif (top assembly du module)
+                    moduleTopAssemblyPath = _inventorService.GetActiveDocumentPath();
+                    if (string.IsNullOrEmpty(moduleTopAssemblyPath))
+                    {
+                        throw new Exception("Aucun assemblage actif dans Inventor");
+                    }
+                    AddLog($"[+] Top Assembly module: {Path.GetFileName(moduleTopAssemblyPath)}", "SUCCESS");
+                    Logger.Info($"[+] Top Assembly module: {moduleTopAssemblyPath}");
+
+                    // ══════════════════════════════════════════════════════════
+                    // ETAPE 3: Fermer l'assemblage principal du module
+                    // ══════════════════════════════════════════════════════════
+                    UpdateProgress(10, "Fermeture de l'assemblage du module...");
+                    AddLog("[3/7] Fermeture de l'assemblage du module...", "INFO");
+                    
+                    // Sauvegarder et fermer tous les documents
+                    copyDesignService.SaveAll();
+                    AddLog("[+] Documents sauvegardes", "SUCCESS");
+                    
+                    copyDesignService.CloseAllDocumentsPublic();
+                    AddLog("[+] Documents fermes", "SUCCESS");
+                    Logger.Info("[+] Assemblage module ferme");
+                    
+                    await Task.Delay(1000); // Attendre que tout soit ferme
+
+                    // ══════════════════════════════════════════════════════════
+                    // ETAPE 4: Switch vers IPJ de l'equipement
+                    // ══════════════════════════════════════════════════════════
+                    UpdateProgress(15, $"Switch vers projet equipement: {_selectedEquipment.ProjectFileName}...");
+                    AddLog($"[4/7] Switch vers IPJ equipement: {_selectedEquipment.ProjectFileName}...", "INFO");
+                    
+                    var equipmentIpjPath = Path.Combine(_selectedEquipment.LocalTempPath, _selectedEquipment.ProjectFileName);
+                    if (!File.Exists(equipmentIpjPath))
+                    {
+                        throw new Exception($"Fichier IPJ equipement introuvable: {equipmentIpjPath}");
+                    }
+                    
+                    copyDesignService.SwitchProject(equipmentIpjPath);
+                    AddLog($"[+] Projet switch vers: {_selectedEquipment.ProjectFileName}", "SUCCESS");
+                    Logger.Info($"[+] Switch IPJ vers: {equipmentIpjPath}");
+                    
+                    await Task.Delay(500);
+
+                    // ══════════════════════════════════════════════════════════
+                    // ETAPE 5: Copy Design de l'equipement vers destination
+                    // ══════════════════════════════════════════════════════════
+                    UpdateProgress(20, "Execution du Copy Design...");
+                    AddLog($"[5/7] Copy Design vers: {equipmentDestPath}...", "INFO");
+                    
+                    // Creer le dossier destination
+                    if (!Directory.Exists(equipmentDestPath))
+                    {
+                        Directory.CreateDirectory(equipmentDestPath);
+                        AddLog($"[+] Dossier cree: {equipmentDestPath}", "SUCCESS");
+                    }
+                    
+                    // Preparer la requete Copy Design
+                    var equipmentSourceAssembly = Path.Combine(_selectedEquipment.LocalTempPath, _selectedEquipment.AssemblyFileName);
+                    if (!File.Exists(equipmentSourceAssembly))
+                    {
+                        throw new Exception($"Assemblage source introuvable: {equipmentSourceAssembly}");
+                    }
+                    
+                    // Configurer la requete pour Copy Design
+                    // On utilise DestinationBasePath pour forcer le chemin correct
+                    // Le destination final sera: DestinationBasePath\Project\REFxx\Mxx
+                    // Mais pour equipement on veut aller dans: modulePath\1-Equipment\EquipmentName
+                    // Donc on manipule les valeurs pour arriver au bon resultat
+                    
+                    // Preparer les iProperties
+                    var initialeDessinateur = CmbInitialeDessinateur?.SelectedItem?.ToString() ?? "";
+                    var initialeCoDessinateur = CmbInitialeCoDessinateur?.SelectedItem?.ToString() ?? "";
+                    _request.InitialeDessinateur = initialeDessinateur == "N/A" ? "" : initialeDessinateur;
+                    _request.InitialeCoDessinateur = initialeCoDessinateur == "N/A" ? "" : initialeCoDessinateur;
+                    _request.JobTitle = TxtJobTitle?.Text ?? "";
+                    _request.CreationDate = DpCreationDate.SelectedDate ?? DateTime.Now;
+                    _request.FilesToCopy = _files;
+                }
+                
+                // Utiliser un nouveau service pour le Copy Design avec callbacks de progression
+                using (var copyDesignService = new InventorCopyDesignService(
+                    (message, level) => Dispatcher.Invoke(() => AddLog(message, level)),
+                    (percent, statusText) =>
+                    {
+                        // Mapper la progression 0-100 du Copy Design vers 20-70 de notre progression
+                        int mappedPercent = 20 + (int)(percent * 0.5);
+                        string currentFile = "";
+                        if (statusText.Contains(":"))
+                        {
+                            var parts = statusText.Split(':');
+                            if (parts.Length > 1) currentFile = parts[parts.Length - 1].Trim();
+                        }
+                        UpdateProgress(mappedPercent, statusText, false, currentFile);
+                    }))
+                {
+                    if (!copyDesignService.Initialize())
+                    {
+                        throw new Exception("Impossible de reinitialiser Inventor pour Copy Design");
+                    }
+                    
+                    var result = await copyDesignService.ExecuteCopyDesignAsync(_request);
+                    
+                    if (!result.Success)
+                    {
+                        throw new Exception($"Copy Design echoue: {result.ErrorMessage}");
+                    }
+                    
+                    AddLog($"[+] Copy Design termine: {result.FilesCopied} fichiers copies", "SUCCESS");
+                    Logger.Info($"[+] Copy Design termine: {result.FilesCopied} fichiers");
+
+                    // ══════════════════════════════════════════════════════════
+                    // ETAPE 6: Switch retour vers IPJ du projet original
+                    // ══════════════════════════════════════════════════════════
+                    UpdateProgress(75, "Retour vers projet original...");
+                    AddLog($"[6/7] Switch retour vers IPJ original: {Path.GetFileName(originalIpjPath)}...", "INFO");
+                    
+                    copyDesignService.SwitchProject(originalIpjPath);
+                    AddLog($"[+] Projet restaure: {Path.GetFileName(originalIpjPath)}", "SUCCESS");
+                    Logger.Info($"[+] IPJ restaure: {originalIpjPath}");
+                    
+                    await Task.Delay(500);
+
+                    // ══════════════════════════════════════════════════════════
+                    // ETAPE 7: Ouvrir le top assembly du module et placer l'equipement
+                    // ══════════════════════════════════════════════════════════
+                    UpdateProgress(80, "Ouverture du module et placement de l'equipement...");
+                    AddLog($"[7/7] Ouverture du module et placement de l'equipement...", "INFO");
+                    
+                    // Ouvrir le top assembly du module
+                    if (!string.IsNullOrEmpty(moduleTopAssemblyPath) && File.Exists(moduleTopAssemblyPath))
+                    {
+                        copyDesignService.OpenDocument(moduleTopAssemblyPath);
+                        AddLog($"[+] Module ouvert: {Path.GetFileName(moduleTopAssemblyPath)}", "SUCCESS");
+                        Logger.Info($"[+] Module ouvert: {moduleTopAssemblyPath}");
+                        
+                        await Task.Delay(1000); // Attendre l'ouverture
+                        
+                        // Placer l'equipement dans le module (Place Component)
+                        var copiedEquipmentAssembly = Path.Combine(equipmentDestPath, _selectedEquipment.AssemblyFileName);
+                        if (File.Exists(copiedEquipmentAssembly))
+                        {
+                            UpdateProgress(90, $"Placement de {_selectedEquipment.AssemblyFileName}...");
+                            
+                            bool placed = copyDesignService.PlaceComponent(copiedEquipmentAssembly);
+                            if (placed)
+                            {
+                                AddLog($"[+] Equipement place: {_selectedEquipment.AssemblyFileName}", "SUCCESS");
+                                Logger.Info($"[+] Equipement place dans le module: {copiedEquipmentAssembly}");
+                            }
+                            else
+                            {
+                                AddLog($"[!] Placement manuel requis pour: {_selectedEquipment.AssemblyFileName}", "WARN");
+                                Logger.Warning($"[!] Placement automatique echoue, placement manuel requis");
+                            }
+                        }
+                        else
+                        {
+                            AddLog($"[!] Assemblage copie introuvable: {copiedEquipmentAssembly}", "WARN");
+                        }
+                    }
+                    else
+                    {
+                        AddLog($"[!] Module introuvable, ouverture manuelle requise", "WARN");
+                    }
+                }
+                
+                // ══════════════════════════════════════════════════════════
+                // TERMINE
+                // ══════════════════════════════════════════════════════════
+                UpdateProgress(100, $"[+] Equipement {_selectedEquipment.DisplayName} place avec succes!");
+                AddLog($"[+] PLACEMENT TERMINE: {_selectedEquipment.DisplayName}", "SUCCESS");
+                Logger.Info("═══════════════════════════════════════════════════════");
+                Logger.Info($"[+] PLACEMENT EQUIPEMENT TERMINE: {_selectedEquipment.DisplayName}");
+                Logger.Info("═══════════════════════════════════════════════════════");
+                
+                // Nettoyer le dossier temporaire
+                CleanupTempVaultFolder();
+            }
+            catch (Exception ex)
+            {
+                AddLog($"[-] ERREUR: {ex.Message}", "ERROR");
+                Logger.Error($"[-] Erreur placement equipement: {ex.Message}");
+                Logger.Debug($"    StackTrace: {ex.StackTrace}");
+                UpdateProgress(0, $"[-] Erreur: {ex.Message}", isError: true);
+                
+                // Tenter de restaurer l'IPJ original en cas d'erreur
+                if (!string.IsNullOrEmpty(originalIpjPath))
+                {
+                    try
+                    {
+                        using (var restoreService = new InventorCopyDesignService((m, l) => { }, (p, s) => { }))
+                        {
+                            if (restoreService.Initialize())
+                            {
+                                restoreService.SwitchProject(originalIpjPath);
+                                AddLog($"[+] IPJ original restaure apres erreur", "INFO");
+                            }
+                        }
+                    }
+                    catch { }
+                }
+                
+                // Nettoyer meme en cas d'erreur
+                CleanupTempVaultFolder();
+            }
+            finally
+            {
+                BtnPlaceEquipment.IsEnabled = true;
+                BtnCancel.IsEnabled = true;
+                BtnPreview.IsEnabled = true;
+                AddLog("Operation terminee", "STOP");
+            }
+        }
+
+        private void BtnCancel_Click(object sender, RoutedEventArgs e)
+        {
+            // Fermer sans confirmation - l'utilisateur sait ce qu'il fait
+            AddLog("Fermeture de la fenêtre", "STOP");
+            DialogResult = false;
+            Close();
+        }
+
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            BtnCancel_Click(sender, e);
+        }
+
+        /// <summary>
+        /// Ouvre la fenêtre de réglages - Accessible uniquement aux administrateurs Vault
+        /// </summary>
+        private void BtnSettings_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                AddLog("Ouverture des reglages administrateur...", "START");
+                
+                // Passer le VaultService pour la synchronisation Vault
+                var settingsWindow = new CreateModuleSettingsWindow(_vaultService)
+                {
+                    Owner = this
+                };
+                
+                var result = settingsWindow.ShowDialog();
+                
+                if (result == true)
+                {
+                    // Recharger les parametres apres sauvegarde
+                    AddLog("[+] Parametres mis a jour et synchronises vers Vault", "SUCCESS");
+                    ReloadSettingsFromService();
+                }
+                else
+                {
+                    AddLog("Reglages annules", "INFO");
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog($"Erreur ouverture réglages: {ex.Message}", "ERROR");
+            }
+        }
+
+        /// <summary>
+        /// Recharge les paramètres depuis le service après modification
+        /// </summary>
+        private void ReloadSettingsFromService()
+        {
+            try
+            {
+                SettingsService.Reload();
+                var settings = SettingsService.Current?.CreateModule;
+                
+                if (settings != null)
+                {
+                    // Recharger les initiales dessinateurs
+                    CmbInitialeDessinateur.Items.Clear();
+                    CmbInitialeCoDessinateur.Items.Clear();
+                    
+                    foreach (var initial in settings.DesignerInitials)
+                    {
+                        CmbInitialeDessinateur.Items.Add(initial);
+                        CmbInitialeCoDessinateur.Items.Add(initial);
+                    }
+                    
+                    // Ajouter "Autre..." si pas présent
+                    if (!settings.DesignerInitials.Contains("Autre..."))
+                    {
+                        CmbInitialeDessinateur.Items.Add("Autre...");
+                        CmbInitialeCoDessinateur.Items.Add("Autre...");
+                    }
+                    
+                    // Resélectionner N/A par défaut si disponible
+                    if (CmbInitialeDessinateur.Items.Contains("N/A"))
+                    {
+                        CmbInitialeDessinateur.SelectedItem = "N/A";
+                        CmbInitialeCoDessinateur.SelectedItem = "N/A";
+                    }
+                    
+                    AddLog($"[+] {settings.DesignerInitials.Count} initiales rechargées", "SUCCESS");
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog($"[!] Erreur rechargement paramètres: {ex.Message}", "WARN");
+            }
+        }
+
+        #endregion
+
+        #region Helpers
+
+        private void UpdateStatistics()
+        {
+            // Les statistiques dans le panneau gauche ont été supprimées
+            // On garde juste les statistiques dans l'en-tête
+
+            var iamCount = _files.Count(f => f.FileType == "IAM");
+            var iptCount = _files.Count(f => f.FileType == "IPT");
+            var idwCount = _files.Count(f => f.FileType == "IDW");
+            var inventorCount = iamCount + iptCount + idwCount;
+            var otherCount = _files.Count(f => f.FileType != "IAM" && f.FileType != "IPT" && f.FileType != "IDW");
+            var selectedCount = _files.Count(f => f.IsSelected);
+
+            // Statistiques dans l'en-tête (nouvelles)
+            if (TxtStatsTotal != null) TxtStatsTotal.Text = _files.Count.ToString();
+            if (TxtStatsInventor != null) TxtStatsInventor.Text = inventorCount.ToString();
+            if (TxtStatsOther != null) TxtStatsOther.Text = otherCount.ToString();
+            if (TxtStatsSelected != null) TxtStatsSelected.Text = selectedCount.ToString();
+        }
+
+        private void ValidateForm()
+        {
+            if (BtnPlaceEquipment == null) return;
+
+            var validation = ValidateAllInputs();
+            BtnPlaceEquipment.IsEnabled = validation.IsValid;
+            
+            // Afficher message READY ou ACTION selon la validation
+            if (validation.IsValid)
+            {
+                AddLog("READY", "[+] Pret pour le placement de l'equipement");
+            }
+            else if (!string.IsNullOrEmpty(validation.ErrorMessage))
+            {
+                AddLog("ACTION", $"[!] {validation.ErrorMessage}");
+            }
+        }
+
+        private (bool IsValid, string ErrorMessage) ValidateAllInputs()
+        {
+            if (string.IsNullOrWhiteSpace(TxtProject?.Text))
+                return (false, "Le numéro de projet est requis");
+
+            if (TxtProject.Text.Length < 4)
+                return (false, "Le numéro de projet doit contenir au moins 4 chiffres");
+
+            // Vérifier que les initiales du dessinateur sont sélectionnées (et pas N/A)
+            var initialeDessinateur = CmbInitialeDessinateur?.SelectedItem?.ToString();
+            if (string.IsNullOrEmpty(initialeDessinateur) || initialeDessinateur == "N/A")
+                return (false, "Les initiales du dessinateur sont requises (ne peut pas être N/A)");
+
+            // Job Title est requis
+            if (string.IsNullOrWhiteSpace(TxtJobTitle?.Text))
+                return (false, "Le titre du projet (Job Title) est requis");
+
+            if (!_files.Any(f => f.IsSelected))
+                return (false, "Aucun fichier sélectionné");
+
+            return (true, string.Empty);
+        }
+
+        /// <summary>
+        /// Vérifie si un fichier .ipj correspond au pattern du fichier projet principal
+        /// Pattern: XXXXX-XX-XX_2026.ipj ou similaire (contient _2026 ou _202X)
+        /// </summary>
+        private bool IsMainProjectFilePattern(string fileName)
+        {
+            if (string.IsNullOrEmpty(fileName)) return false;
+            
+            // Le fichier projet principal contient généralement "_2026" ou "_202" dans le nom
+            // Exemples: XXXXX-XX-XX_2026.ipj, Module_2026.ipj, etc.
+            var nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
+            
+            // Pattern 1: Contient _202X (année)
+            if (nameWithoutExt.Contains("_202"))
+                return true;
+            
+            // Pattern 2: Format XXXXX-XX-XX (numéro de projet avec tirets)
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameWithoutExt, @"^\d{5}-\d{2}-\d{2}"))
+                return true;
+            
+            // Pattern 3: Le nom contient "Module" (fichier projet du module)
+            if (nameWithoutExt.IndexOf("Module", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+                
+            return false;
+        }
+
+        /// <summary>
+        /// Met à jour le chemin de destination et le nouveau nom pour un fichier
+        /// </summary>
+        private void UpdateFileDestination(FileRenameItem item)
+        {
+            if (item == null) return;
+            
+            var destBase = _request.DestinationPath;
+            if (string.IsNullOrEmpty(destBase)) return;
+            
+            // Calculer le chemin relatif pour la destination
+            var relativePath = item.RelativePath;
+            var fileName = item.NewFileName;
+            
+            // Pour les fichiers à la racine (Module_.iam, .ipj), pas de sous-dossier
+            var destDir = Path.GetDirectoryName(relativePath);
+            if (string.IsNullOrEmpty(destDir))
+            {
+                item.DestinationPath = Path.Combine(destBase, fileName);
+            }
+            else
+            {
+                item.DestinationPath = Path.Combine(destBase, destDir, fileName);
+            }
+        }
+        
+        /// <summary>
+        /// Met à jour le filtre des types de fichiers avec les extensions réellement trouvées
+        /// </summary>
+        private void UpdateFileTypeFilter()
+        {
+            if (CmbFilterType == null) return;
+            
+            // Collecter toutes les extensions uniques
+            var extensions = _files
+                .Select(f => f.FileType)
+                .Distinct()
+                .OrderBy(e => e)
+                .ToList();
+            
+            // Sauvegarder la sélection actuelle
+            var currentSelection = CmbFilterType.SelectedItem?.ToString();
+            
+            // Mettre à jour les items
+            CmbFilterType.Items.Clear();
+            CmbFilterType.Items.Add("Tous");
+            foreach (var ext in extensions)
+            {
+                CmbFilterType.Items.Add(ext);
+            }
+            
+            // Restaurer la sélection ou mettre "Tous"
+            if (!string.IsNullOrEmpty(currentSelection) && CmbFilterType.Items.Contains(currentSelection))
+            {
+                CmbFilterType.SelectedItem = currentSelection;
+            }
+            else
+            {
+                CmbFilterType.SelectedIndex = 0;
+            }
+            
+            AddLog($"[i] Filtre extension: {extensions.Count} types detectes", "INFO");
+        }
+        
+        /// <summary>
+        /// Met à jour le filtre des statuts avec les statuts réellement trouvés
+        /// </summary>
+        private void UpdateStatusFilter()
+        {
+            if (CmbFilterSelection == null) return;
+            
+            // Collecter tous les statuts uniques
+            var statuses = _files
+                .Select(f => f.Status)
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+            
+            // Sauvegarder la sélection actuelle
+            string? currentSelection = null;
+            if (CmbFilterSelection.SelectedItem is ComboBoxItem selItem)
+                currentSelection = selItem.Content?.ToString();
+            
+            // Mettre à jour les items
+            CmbFilterSelection.Items.Clear();
+            CmbFilterSelection.Items.Add(new ComboBoxItem { Content = "Tous", IsSelected = true });
+            foreach (var status in statuses)
+            {
+                CmbFilterSelection.Items.Add(new ComboBoxItem { Content = status });
+            }
+            
+            // Restaurer la sélection ou mettre "Tous"
+            CmbFilterSelection.SelectedIndex = 0;
+            if (!string.IsNullOrEmpty(currentSelection))
+            {
+                for (int i = 0; i < CmbFilterSelection.Items.Count; i++)
+                {
+                    if (CmbFilterSelection.Items[i] is ComboBoxItem item && item.Content?.ToString() == currentSelection)
+                    {
+                        CmbFilterSelection.SelectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            
+            AddLog($"[i] Filtre statut: {statuses.Count} statuts detectes", "INFO");
+        }
+        
+        /// <summary>
+        /// Met à jour tous les fichiers avec les nouveaux noms et destinations
+        /// Appelé quand les champs Projet/Reference/Module changent
+        /// </summary>
+        private void UpdateAllFileNamesAndDestinations()
+        {
+            if (_files == null || _files.Count == 0) return;
+            
+            foreach (var item in _files)
+            {
+                // Renommer le Top Assembly (.iam)
+                if (item.IsTopAssembly)
+                {
+                    item.NewFileName = $"{_request.FullProjectNumber}.iam";
+                }
+                
+                // Renommer le fichier projet (.ipj)
+                if (item.FileType == "IPJ")
+                {
+                    item.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                }
+                
+                // Mettre à jour le chemin de destination
+                UpdateFileDestination(item);
+            }
+            
+            // Rafraîchir l'affichage
+            DgFiles?.Items.Refresh();
+            UpdateRenamePreviews();
+        }
+
+        #endregion
+    }}
+

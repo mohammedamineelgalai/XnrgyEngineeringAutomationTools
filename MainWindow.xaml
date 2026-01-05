@@ -184,6 +184,16 @@
                                 <TextBlock x:Name="BtnPackAndGoDesc" Text="Pack &amp; Go / Copy Design" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Button>
+                        <!-- Place Equipment -->
+                        <Button x:Name="BtnPlaceEquipment" Style="{StaticResource ModuleButton}" Click="OpenPlaceEquipment_Click" Width="260" Height="210" Margin="10">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="#5B5FC7" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
+                                    <TextBlock Text="&#x2699;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock x:Name="BtnPlaceEquipmentTitle" Text="Place Equipment" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnPlaceEquipmentDesc" Text="Placer équipement dans module" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                         <!-- Build Module -->
                         <Button x:Name="BtnBuildModule" Style="{StaticResource ModuleButton}" Click="OpenBuildModule_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">

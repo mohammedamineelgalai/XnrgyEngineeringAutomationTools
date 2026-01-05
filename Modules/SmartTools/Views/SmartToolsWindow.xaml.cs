@@ -7,6 +7,7 @@ using System.Windows.Documents;
 using XnrgyEngineeringAutomationTools.Modules.SmartTools.Services;
 using XnrgyEngineeringAutomationTools.Services;
 using XnrgyEngineeringAutomationTools.Shared.Views;
+using IProgressWindow = XnrgyEngineeringAutomationTools.Modules.SmartTools.Views.IProgressWindow;
 
 namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
 {
@@ -55,6 +56,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             // Passer le callback pour les popups HTML au service
             _smartToolsService.SetHtmlPopupCallback(ShowHtmlPopup);
             _smartToolsService.SetExportOptionsCallback(ShowExportOptions);
+            _smartToolsService.SetProgressWindowCallback(ShowProgressWindow);
             
             Loaded += SmartToolsWindow_Loaded;
             Closed += SmartToolsWindow_Closed;
@@ -524,6 +526,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             {
                 HtmlPopupWindow.ShowHtml(title, htmlContent, this);
             });
+        }
+
+        /// <summary>
+        /// Callback pour créer une fenêtre de progression HTML
+        /// </summary>
+        private IProgressWindow ShowProgressWindow(string title, string htmlContent)
+        {
+            IProgressWindow? result = null;
+            Dispatcher.Invoke(() =>
+            {
+                var window = ProgressWindow.ShowProgress(title, htmlContent, this);
+                result = new ProgressWindowWrapper(window);
+            });
+            return result!;
         }
 
         /// <summary>

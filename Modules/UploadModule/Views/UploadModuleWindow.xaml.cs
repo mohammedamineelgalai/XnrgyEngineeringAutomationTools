@@ -790,6 +790,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
             _uploadedCount = 0;
             _failedCount = 0;
             _cancellationTokenSource = new CancellationTokenSource();
+            
+            // [+] RESET du timer au début de l'opération
             _startTime = DateTime.Now;
             _pausedTime = TimeSpan.Zero;
 
@@ -1012,13 +1014,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                 
                 // Formatage du temps
                 string elapsedStr = FormatTimeSpan(elapsed);
-                string timeStr = estimatedTotal.HasValue 
-                    ? $"{elapsedStr} / {FormatTimeSpan(estimatedTotal.Value)}"
-                    : elapsedStr;
+                string estimatedStr = estimatedTotal.HasValue 
+                    ? FormatTimeSpan(estimatedTotal.Value)
+                    : "00:00";
                 
                 TxtProgress.Text = $"{percent}% - {current}/{total} fichiers";
                 TxtCurrentFile.Text = fileName;
-                TxtProgressTime.Text = timeStr;
+                TxtProgressTimeElapsed.Text = elapsedStr;
+                TxtProgressTimeEstimated.Text = estimatedStr;
                 TxtProgressPercent.Text = $"{percent}%";
             });
         }

@@ -11,6 +11,7 @@ using System.Windows.Media.Animation;
 using XnrgyEngineeringAutomationTools.Services;
 using XnrgyEngineeringAutomationTools.Shared.Views;
 using XnrgyEngineeringAutomationTools.Modules.CreateModule.Views;
+using XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views;
 using XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views;
 using XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views;
 using XnrgyEngineeringAutomationTools.Modules.SmartTools.Views;
@@ -1168,6 +1169,49 @@ namespace XnrgyEngineeringAutomationTools
             catch (Exception ex)
             {
                 AddLog("Erreur ouverture Créer Module: " + ex.Message, "ERROR");
+                StatusText.Text = "Erreur";
+            }
+        }
+
+        private void OpenPlaceEquipment_Click(object sender, RoutedEventArgs e)
+        {
+            AddLog("Ouverture de l'outil Place Equipment...", "START");
+            StatusText.Text = "Place Equipment...";
+            
+            try
+            {
+                // [+] Rafraîchir la connexion COM Inventor avant d'ouvrir le module
+                if (_isInventorConnected)
+                {
+                    AddLog("[>] Rafraichissement connexion Inventor...", "DEBUG");
+                    _inventorService.ForceReconnect();
+                    AddLog("[+] Connexion Inventor rafraichie", "DEBUG");
+                }
+                
+                // Passer les services Vault et Inventor pour héritage du statut de connexion
+                var placeEquipmentWindow = new PlaceEquipmentWindow(
+                    _isVaultConnected ? _vaultService : null,
+                    _isInventorConnected ? _inventorService : null);
+                placeEquipmentWindow.Owner = this;
+                
+                AddLog("Fenêtre Place Equipment ouverte", "INFO");
+                
+                var result = placeEquipmentWindow.ShowDialog();
+                
+                if (result == true)
+                {
+                    AddLog("Équipement placé avec succès!", "SUCCESS");
+                    StatusText.Text = "Équipement placé";
+                }
+                else
+                {
+                    AddLog("Placement d'équipement annulé", "INFO");
+                    StatusText.Text = "Placement annulé";
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog("Erreur ouverture Place Equipment: " + ex.Message, "ERROR");
                 StatusText.Text = "Erreur";
             }
         }

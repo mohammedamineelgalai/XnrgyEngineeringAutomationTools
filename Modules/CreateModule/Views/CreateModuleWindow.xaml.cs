@@ -271,8 +271,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     };
 
                     ProgressBarFill.BeginAnimation(WidthProperty, widthAnimation);
-                    ProgressBarShine.BeginAnimation(WidthProperty, widthAnimation);
-                    ProgressBarGlow?.BeginAnimation(WidthProperty, widthAnimation);
+                    // ProgressBarShine et ProgressBarGlow ont été supprimés - effet simplifié
                 }
 
                 // Gradient brillant et cristallisé selon l'état
@@ -336,10 +335,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 
                 // Formatage du temps
                 string elapsedStr = FormatTimeSpan(elapsed);
-                string timeStr = estimatedTotal.HasValue 
-                    ? $"{elapsedStr} / {FormatTimeSpan(estimatedTotal.Value)}"
-                    : elapsedStr;
-                TxtProgressTime.Text = timeStr;
+                string estimatedStr = estimatedTotal.HasValue 
+                    ? FormatTimeSpan(estimatedTotal.Value)
+                    : "00:00";
+                TxtProgressTimeElapsed.Text = elapsedStr;
+                TxtProgressTimeEstimated.Text = estimatedStr;
 
                 // Mise à jour du texte
                 TxtStatus.Text = statusText;
@@ -420,11 +420,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 };
             }
 
-            // TxtProgressTime
+            // TxtProgressTimeElapsed et TxtProgressTimeEstimated (dans StackPanel à droite)
             if (progressWidth > timeTextPosition - 100) // À droite, donc on vérifie si la barre approche
             {
-                TxtProgressTime.Foreground = coveredTimeColor;
-                TxtProgressTime.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                TxtProgressTimeElapsed.Foreground = coveredTimeColor;
+                TxtProgressTimeEstimated.Foreground = coveredTimeColor;
+                TxtProgressTimeElapsed.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.White,
+                    BlurRadius = 4,
+                    ShadowDepth = 0,
+                    Opacity = 0.9
+                };
+                TxtProgressTimeEstimated.Effect = new System.Windows.Media.Effects.DropShadowEffect
                 {
                     Color = Colors.White,
                     BlurRadius = 4,
@@ -434,8 +442,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             }
             else
             {
-                TxtProgressTime.Foreground = uncoveredTimeColor;
-                TxtProgressTime.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                TxtProgressTimeElapsed.Foreground = uncoveredTimeColor;
+                TxtProgressTimeEstimated.Foreground = uncoveredTimeColor;
+                TxtProgressTimeElapsed.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color = Colors.Black,
+                    BlurRadius = 3,
+                    ShadowDepth = 1,
+                    Opacity = 0.8
+                };
+                TxtProgressTimeEstimated.Effect = new System.Windows.Media.Effects.DropShadowEffect
                 {
                     Color = Colors.Black,
                     BlurRadius = 3,
@@ -487,8 +503,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             Dispatcher.Invoke(() =>
             {
                 ProgressBarFill.Width = 0;
-                ProgressBarShine.Width = 0;
-                ProgressBarGlow.Width = 0;
+                // ProgressBarShine et ProgressBarGlow ont été supprimés - effet simplifié
                 
                 // Gradient par défaut (cyan/bleu électrique brillant)
                 var defaultGradient = new LinearGradientBrush
