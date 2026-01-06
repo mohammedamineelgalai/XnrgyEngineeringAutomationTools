@@ -39,12 +39,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Models
         /// <summary>
         /// Chemin vers le fichier IPJ template
         /// </summary>
-        public string TemplateIpjFileName { get; set; } = "XXXXX-XX-XX_2026.ipj";
+        public string TemplateIpjFileName { get; set; } = "000000000.ipj";
 
         /// <summary>
-        /// Nom du fichier Top Assembly template
+        /// Nom du fichier Top Assembly template (nouveau: 000000000.iam, ancien: Module_.iam)
         /// </summary>
-        public string TemplateTopAssemblyName { get; set; } = "Module_.iam";
+        public string TemplateTopAssemblyName { get; set; } = "000000000.iam";
 
         /// <summary>
         /// Préfixe pour les dossiers de référence (ex: "REF" pour REF01, REF02...)

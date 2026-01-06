@@ -247,6 +247,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <!-- ========== MODULE: UPDATE WORKSPACE ========== -->
+    <Page Include="Modules\UpdateWorkspace\Views\UpdateWorkspaceWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <!-- ========== STYLES ========== -->
     <Page Include="Styles\XnrgyStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -335,6 +340,11 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Modules\SmartTools\Services\*.cs" />
+    <!-- ========== CODE-BEHIND: MODULE UPDATE WORKSPACE ========== -->
+    <Compile Include="Modules\UpdateWorkspace\Views\UpdateWorkspaceWindow.xaml.cs">
+      <DependentUpon>UpdateWorkspaceWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <!-- ========== CORE CODE ========== -->
     <Compile Include="ViewModels\*.cs" />
     <Compile Include="Models\*.cs" />

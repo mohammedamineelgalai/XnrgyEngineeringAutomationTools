@@ -467,21 +467,26 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                 Parameters parameters = assemblyDoc.ComponentDefinition.Parameters;
                 UserParameters userParams = parameters.UserParameters;
 
-                // Paramètres standards XNRGY
-                SetParameter(userParams, "Project_Form", request.Project);
-                SetParameter(userParams, "Reference_Form", request.Reference);
-                SetParameter(userParams, "Module_Form", request.Module);
-                SetParameter(userParams, "Numero_Form", request.FullProjectNumber);
-                SetParameter(userParams, "Initiale_du_Dessinateur_Form", request.InitialeDessinateur);
-                SetParameter(userParams, "Initiale_du_Co_Dessinateur_Form", request.InitialeCoDessinateur);
-                SetParameter(userParams, "Creation_Date_Form", request.CreationDateFormatted);
-                
-                if (!string.IsNullOrEmpty(request.JobTitle))
-                {
-                    SetParameter(userParams, "Job_Title_Form", request.JobTitle);
-                }
+                Log($"[i] Valeurs à écrire: FullProjectNumber={request.FullProjectNumber}, Dessinateur={request.InitialeDessinateur}, CoDessinateur={request.InitialeCoDessinateur}, Date={request.CreationDateFormatted}", "DEBUG");
 
-                Log($"[+] Paramètres Inventor appliqués", "SUCCESS");
+                // Paramètres standards XNRGY (4 paires = 8 paramètres)
+                // Numero_de_Projet_Form + Numero_de_Projet
+                SetParameter(userParams, "Numero_de_Projet_Form", request.FullProjectNumber);
+                SetParameter(userParams, "Numero_de_Projet", request.FullProjectNumber);
+                
+                // Initiale_du_Dessinateur_Form + Initiale_du_Dessinateur
+                SetParameter(userParams, "Initiale_du_Dessinateur_Form", request.InitialeDessinateur);
+                SetParameter(userParams, "Initiale_du_Dessinateur", request.InitialeDessinateur);
+                
+                // Initiale_du_Co_Dessinateur_Form + Initiale_du_Co_Dessinateur
+                SetParameter(userParams, "Initiale_du_Co_Dessinateur_Form", request.InitialeCoDessinateur);
+                SetParameter(userParams, "Initiale_du_Co_Dessinateur", request.InitialeCoDessinateur);
+                
+                // Creation_Date_Form + Creation_Date
+                SetParameter(userParams, "Creation_Date_Form", request.CreationDateFormatted);
+                SetParameter(userParams, "Creation_Date", request.CreationDateFormatted);
+
+                Log($"[+] Paramètres Inventor appliqués (8 paramètres)", "SUCCESS");
             }
             catch (Exception ex)
             {
@@ -525,18 +530,25 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                     if (userParams[i].Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                     {
                         userParams[i].Expression = $"\"{value}\"";
+                        Log($"    [+] Paramètre '{name}' = '{value}' (mis à jour)", "DEBUG");
                         return;
                     }
                 }
 
                 // Si pas trouvé, créer un nouveau paramètre texte
                 userParams.AddByExpression(name, $"\"{value}\"", UnitsTypeEnum.kTextUnits);
+                Log($"    [+] Paramètre '{name}' = '{value}' (créé)", "DEBUG");
             }
-            catch { /* Ignorer les erreurs de paramètres */ }
+            catch (Exception ex)
+            {
+                Log($"    [!] Erreur paramètre '{name}': {ex.Message}", "WARN");
+            }
         }
 
         /// <summary>
         /// Ferme tous les documents ouverts dans Inventor
+        /// IMPORTANT: Ferme chaque document individuellement pour s'assurer qu'ils
+        /// ne restent pas dans les "Recent Files" d'Inventor
         /// </summary>
         private void CloseAllDocuments()
         {
@@ -550,8 +562,33 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                 if (docCount > 0)
                 {
                     Log($"[i] Fermeture de {docCount} document(s)...", "DEBUG");
-                    documents.CloseAll(false); // false = ne pas sauvegarder
+                    
+                    // Fermer chaque document individuellement (plus fiable que CloseAll)
+                    // Parcourir en sens inverse car la collection change pendant la fermeture
+                    for (int i = docCount; i >= 1; i--)
+                    {
+                        try
+                        {
+                            Document doc = documents[i];
+                            string docName = System.IO.Path.GetFileName(doc.FullFileName);
+                            doc.Close(true); // true = skip save prompt
+                            Log($"    [+] Fermé: {docName}", "DEBUG");
+                        }
+                        catch (Exception ex)
+                        {
+                            Log($"    [!] Note fermeture doc {i}: {ex.Message}", "DEBUG");
+                        }
+                    }
+                    
                     Thread.Sleep(500);
+                    
+                    // Vérifier qu'il ne reste plus de documents
+                    if (documents.Count > 0)
+                    {
+                        Log($"[!] {documents.Count} document(s) restant(s), tentative CloseAll...", "DEBUG");
+                        documents.CloseAll(true);
+                        Thread.Sleep(500);
+                    }
                 }
             }
             catch (Exception ex)
@@ -642,11 +679,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                 ReportProgress(0, "Préparation du Copy Design...");
 
                 // Trouver le fichier Top Assembly (.iam)
-                // Pour templates: chercher Module_.iam
+                // Pour templates: chercher Module_.iam (ancien) ou 000000000.iam (nouveau)
                 // Pour projets existants: chercher n'importe quel .iam à la racine
                 var topAssemblyFile = request.FilesToCopy
                     .FirstOrDefault(f => f.IsTopAssembly || 
-                                         f.OriginalFileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase));
+                                         f.OriginalFileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase) ||
+                                         f.OriginalFileName.Equals("000000000.iam", StringComparison.OrdinalIgnoreCase));
 
                 if (topAssemblyFile == null)
                 {
@@ -863,6 +901,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                 // ÉTAPE 6: Renommer le fichier .ipj avec le numéro de projet formaté
                 string newIpjPath = await RenameProjectFileAsync(request.DestinationPath, request.FullProjectNumber, null, request.Source);
 
+                // ═══════════════════════════════════════════════════════════════════════
+                // ÉTAPE 6.5: CRITIQUE - Fermer TOUS les documents avant switch IPJ
+                // Ceci évite que les fichiers source restent dans "Recent Files"
+                // ═══════════════════════════════════════════════════════════════════════
+                ReportProgress(93, "Fermeture des documents source...");
+                await Task.Run(() =>
+                {
+                    try
+                    {
+                        // Fermer tous les documents sans sauvegarder (déjà sauvegardés)
+                        if (_inventorApp != null && _inventorApp.Documents.Count > 0)
+                        {
+                            Log($"[i] Fermeture de {_inventorApp.Documents.Count} document(s) restants...", "DEBUG");
+                            _inventorApp.Documents.CloseAll(true); // true = skip save prompts
+                            Thread.Sleep(1000); // Attendre qu'Inventor soit stable
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"[!] Note fermeture: {ex.Message}", "DEBUG");
+                    }
+                });
+
                 // ÉTAPE 7: Switch vers le nouveau projet IPJ créé
                 ReportProgress(94, "Activation du nouveau projet...");
                 if (!string.IsNullOrEmpty(newIpjPath) && System.IO.File.Exists(newIpjPath))
@@ -1045,11 +1106,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                         }
                         catch (Exception ex)
                         {
-                            Log($"  ✗ Erreur copie {System.IO.Path.GetFileName(orphanFile)}: {ex.Message}", "WARN");
+                            Log($"  [-] Erreur copie {System.IO.Path.GetFileName(orphanFile)}: {ex.Message}", "WARN");
                         }
                     }
 
-                    Log($"✓ {copiedCount} fichiers Inventor copiés ({renamedCount} renommés, {skippedCount} ignorés car déjà présents)", "SUCCESS");
+                    Log($"[+] {copiedCount} fichiers Inventor copiés ({renamedCount} renommés, {skippedCount} ignorés car déjà présents)", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
@@ -1367,15 +1428,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                             pathMapping[cf.OriginalPath] = cf.NewPath;
                         }
                     }
-                    // Ajouter le mapping du Top Assembly
-                    string originalTopPath = System.IO.Path.Combine(sourceRoot, "Module_.iam");
+                    // Ajouter le mapping du Top Assembly (ancien template Module_.iam ou nouveau 000000000.iam)
+                    var topAssemblyResult = copiedFiles.FirstOrDefault(f => f.IsTopAssembly);
+                    string originalTopFileName = topAssemblyResult?.OriginalFileName ?? "000000000.iam";
+                    string originalTopPath = System.IO.Path.Combine(sourceRoot, originalTopFileName);
                     string newTopPath = System.IO.Path.Combine(destRoot, newTopAssemblyName);
                     pathMapping[originalTopPath] = newTopPath;
                     
                     // Créer un dictionnaire des renommages (nom fichier uniquement)
-                    // Pour le Top Assembly Module_.iam → nouveau nom ET tous les fichiers avec préfixe/suffixe
+                    // Pour le Top Assembly Module_.iam/000000000.iam → nouveau nom ET tous les fichiers avec préfixe/suffixe
                     var idwRenameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    // Ajouter les deux noms possibles du template
                     idwRenameMap["Module_.iam"] = newTopAssemblyName;
+                    idwRenameMap["000000000.iam"] = newTopAssemblyName;
                     
                     // Ajouter aussi les renommages pour les fichiers référencés (préfixe/suffixe)
                     // Utiliser renameMapByName qui contient les noms de fichiers sans chemin
@@ -1943,11 +2008,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                             
                             int progress = 35 + (int)(processed * 40.0 / totalFiles);
                             ReportProgress(progress, $"Copie: {System.IO.Path.GetFileName(newPath)}");
-                            Log($"  ✓ {System.IO.Path.GetFileName(newPath)}", "SUCCESS");
+                            Log($"  [+] {System.IO.Path.GetFileName(newPath)}", "SUCCESS");
                         }
                         catch (Exception ex)
                         {
-                            Log($"  ✗ Erreur copie {System.IO.Path.GetFileName(refDoc.FullFileName)}: {ex.Message}", "ERROR");
+                            Log($"  [-] Erreur copie {System.IO.Path.GetFileName(refDoc.FullFileName)}: {ex.Message}", "ERROR");
                         }
                     }
 
@@ -1955,10 +2020,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                     string topAssemblyNewPath = System.IO.Path.Combine(destRoot, newTopAssemblyName);
                     asmDoc.SaveAs(topAssemblyNewPath, false);
                     
+                    // Obtenir le nom original du fichier Top Assembly
+                    string originalTopAssemblyFileName = System.IO.Path.GetFileName(asmDoc.FullFileName);
+                    
                     copiedFiles.Add(new FileCopyResult
                     {
                         OriginalPath = asmDoc.FullFileName,
-                        OriginalFileName = "Module_.iam",
+                        OriginalFileName = originalTopAssemblyFileName,
                         NewPath = topAssemblyNewPath,
                         NewFileName = newTopAssemblyName,
                         Success = true,
@@ -1967,7 +2035,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                     });
                     filesCopied++;
                     
-                    Log($"  ✓ Top Assembly: {newTopAssemblyName}", "SUCCESS");
+                    Log($"  [+] Top Assembly: {newTopAssemblyName}", "SUCCESS");
                 }
                 catch (Exception ex)
                 {
@@ -2076,11 +2144,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                                 Success = true
                             });
 
-                            Log($"  ✓ {System.IO.Path.GetFileName(drawingFile)} (dessin)", "SUCCESS");
+                            Log($"  [+] {System.IO.Path.GetFileName(drawingFile)} (dessin)", "SUCCESS");
                         }
                         catch (Exception ex)
                         {
-                            Log($"  ✗ Erreur copie dessin {System.IO.Path.GetFileName(drawingFile)}: {ex.Message}", "WARN");
+                            Log($"  [-] Erreur copie dessin {System.IO.Path.GetFileName(drawingFile)}: {ex.Message}", "WARN");
                         }
                     }
                 }
@@ -2185,11 +2253,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                                 Success = true
                             });
 
-                            Log($"  ✓ {relativePath} (non-Inventor)", "SUCCESS");
+                            Log($"  [+] {relativePath} (non-Inventor)", "SUCCESS");
                         }
                         catch (Exception ex)
                         {
-                            Log($"  ✗ Erreur copie {System.IO.Path.GetFileName(filePath)}: {ex.Message}", "WARN");
+                            Log($"  [-] Erreur copie {System.IO.Path.GetFileName(filePath)}: {ex.Message}", "WARN");
                         }
                     }
                 }

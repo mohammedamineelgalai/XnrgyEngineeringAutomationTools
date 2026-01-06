@@ -1987,77 +1987,90 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             if (logCallback != null)
                 SetLogCallback(logCallback);
 
-            await Task.Run(async () =>
+            IProgressWindow? progressWindow = null;
+            try
             {
-                IProgressWindow? progressWindow = null;
-                try
-                {
-                    dynamic inventorApp = GetInventorApplication();
-                    dynamic doc = inventorApp.ActiveDocument;
+                dynamic inventorApp = GetInventorApplication();
+                dynamic doc = inventorApp.ActiveDocument;
 
-                    if (doc == null)
+                if (doc == null)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
                         MessageBox.Show("⚠️ Aucun document actif n'est ouvert.", "Erreur", 
                             MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-
-                    int docType = doc.DocumentType;
-                    const int kAssemblyDocumentObject = 12290;
-                    const int kPartDocumentObject = 12288;
-                    const int kDrawingDocumentObject = 12291;
-
-                    string typeText = docType == kAssemblyDocumentObject ? "Assemblage" :
-                                     docType == kPartDocumentObject ? "Pièce" :
-                                     docType == kDrawingDocumentObject ? "Mise en plan" : "Document";
-
-                    string docName = doc.DisplayName ?? "Document";
-                    string htmlContent = GenerateSmartSaveHtml(docType, docName, typeText);
-
-                    // Créer la fenêtre de progression
-                    if (_progressWindowCallback != null)
-                    {
-                        progressWindow = _progressWindowCallback("💾 Smart Save - V1.1 @2025 - By Mohammed Amine Elgalai", htmlContent);
-                    }
-
-                    // Exécuter les étapes avec mise à jour du HTML
-                    if (docType == kAssemblyDocumentObject)
-                    {
-                        await ExecuteAssemblyStepsWithProgressAsync(doc, inventorApp, progressWindow);
-                    }
-                    else if (docType == kPartDocumentObject)
-                    {
-                        await ExecutePartStepsWithProgressAsync(doc, inventorApp, progressWindow);
-                    }
-                    else if (docType == kDrawingDocumentObject)
-                    {
-                        await ExecuteDrawingStepsWithProgressAsync(doc, inventorApp, progressWindow);
-                    }
-                    else
-                    {
-                        await ExecuteGenericStepsWithProgressAsync(doc, inventorApp, progressWindow);
-                    }
-
-                    // Afficher le message de complétion
-                    if (progressWindow != null)
-                    {
-                        await progressWindow.ShowCompletionAsync("✅ Sauvegarde effectuée avec succès !");
-                        await Task.Delay(1500);
-                        progressWindow.CloseWindow();
-                    }
+                    });
+                    return;
                 }
-                catch (Exception ex)
+
+                int docType = doc.DocumentType;
+                const int kAssemblyDocumentObject = 12290;
+                const int kPartDocumentObject = 12288;
+                const int kDrawingDocumentObject = 12291;
+
+                string typeText = docType == kAssemblyDocumentObject ? "Assemblage" :
+                                 docType == kPartDocumentObject ? "Pièce" :
+                                 docType == kDrawingDocumentObject ? "Mise en plan" : "Document";
+
+                string docName = doc.DisplayName ?? "Document";
+                string htmlContent = GenerateSmartSaveHtml(docType, docName, typeText);
+
+                // Créer la fenêtre de progression sur le thread UI
+                if (_progressWindowCallback != null)
                 {
-                    if (progressWindow != null)
+                    progressWindow = System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        await progressWindow.ShowCompletionAsync($"❌ Erreur: {ex.Message}");
-                        await Task.Delay(2000);
+                        return _progressWindowCallback("💾 Smart Save - V1.1 @2025 - By Mohammed Amine Elgalai", htmlContent);
+                    });
+                }
+
+                // Exécuter les étapes avec mise à jour du HTML (sur le thread principal pour Inventor)
+                if (docType == kAssemblyDocumentObject)
+                {
+                    await ExecuteAssemblyStepsWithProgressAsync(doc, inventorApp, progressWindow);
+                }
+                else if (docType == kPartDocumentObject)
+                {
+                    await ExecutePartStepsWithProgressAsync(doc, inventorApp, progressWindow);
+                }
+                else if (docType == kDrawingDocumentObject)
+                {
+                    await ExecuteDrawingStepsWithProgressAsync(doc, inventorApp, progressWindow);
+                }
+                else
+                {
+                    await ExecuteGenericStepsWithProgressAsync(doc, inventorApp, progressWindow);
+                }
+
+                // Afficher le message de complétion
+                if (progressWindow != null)
+                {
+                    await progressWindow.ShowCompletionAsync("✅ Sauvegarde effectuée avec succès !");
+                    await Task.Delay(1500);
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
                         progressWindow.CloseWindow();
-                    }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                {
+                    await progressWindow.ShowCompletionAsync($"❌ Erreur: {ex.Message}");
+                    await Task.Delay(2000);
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        progressWindow.CloseWindow();
+                    });
+                }
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
                     MessageBox.Show($"❌ Erreur lors du Smart Save : {ex.Message}", "Erreur", 
                         MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            });
+                });
+                Log($"Erreur lors de la sauvegarde: {ex.Message}", "ERROR");
+            }
         }
 
         private void ExecuteAssemblySteps(dynamic doc, dynamic inventorApp)
@@ -2913,77 +2926,90 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             if (logCallback != null)
                 SetLogCallback(logCallback);
 
-            await Task.Run(async () =>
+            IProgressWindow? progressWindow = null;
+            try
             {
-                IProgressWindow? progressWindow = null;
-                try
-                {
-                    dynamic inventorApp = GetInventorApplication();
-                    dynamic doc = inventorApp.ActiveDocument;
+                dynamic inventorApp = GetInventorApplication();
+                dynamic doc = inventorApp.ActiveDocument;
 
-                    if (doc == null)
+                if (doc == null)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
                         MessageBox.Show("Aucun document actif n'est ouvert.", "Erreur", 
                             MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-
-                    int docType = doc.DocumentType;
-                    const int kAssemblyDocumentObject = 12290;
-                    const int kPartDocumentObject = 12288;
-                    const int kDrawingDocumentObject = 12291;
-
-                    string typeText = docType == kAssemblyDocumentObject ? "Assemblage" :
-                                     docType == kPartDocumentObject ? "Pièce" :
-                                     docType == kDrawingDocumentObject ? "Mise en plan" : "Document";
-
-                    string docName = doc.DisplayName ?? "Document";
-                    string htmlContent = GenerateSafeCloseHtml(docType, docName, typeText);
-
-                    // Créer la fenêtre de progression
-                    if (_progressWindowCallback != null)
-                    {
-                        progressWindow = _progressWindowCallback("🔒 Safe Close V1.7 - Released on 2025-12-18 - By Mohammed Amine Elgalai - XNRGY Climate Systems ULC", htmlContent);
-                    }
-
-                    // Exécuter les étapes avec mise à jour du HTML
-                    if (docType == kAssemblyDocumentObject)
-                    {
-                        await ExecuteAssemblyStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
-                    }
-                    else if (docType == kPartDocumentObject)
-                    {
-                        await ExecutePartStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
-                    }
-                    else if (docType == kDrawingDocumentObject)
-                    {
-                        await ExecuteDrawingStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
-                    }
-                    else
-                    {
-                        await ExecuteGenericStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
-                    }
-
-                    // Afficher le message de complétion
-                    if (progressWindow != null)
-                    {
-                        await progressWindow.ShowCompletionAsync("🎉 Toutes les étapes sont terminées avec succès !");
-                        await Task.Delay(1500);
-                        progressWindow.CloseWindow();
-                    }
+                    });
+                    return;
                 }
-                catch (Exception ex)
+
+                int docType = doc.DocumentType;
+                const int kAssemblyDocumentObject = 12290;
+                const int kPartDocumentObject = 12288;
+                const int kDrawingDocumentObject = 12291;
+
+                string typeText = docType == kAssemblyDocumentObject ? "Assemblage" :
+                                 docType == kPartDocumentObject ? "Pièce" :
+                                 docType == kDrawingDocumentObject ? "Mise en plan" : "Document";
+
+                string docName = doc.DisplayName ?? "Document";
+                string htmlContent = GenerateSafeCloseHtml(docType, docName, typeText);
+
+                // Créer la fenêtre de progression sur le thread UI
+                if (_progressWindowCallback != null)
                 {
-                    if (progressWindow != null)
+                    progressWindow = System.Windows.Application.Current.Dispatcher.Invoke(() =>
                     {
-                        await progressWindow.ShowCompletionAsync($"❌ Erreur: {ex.Message}");
-                        await Task.Delay(2000);
+                        return _progressWindowCallback("🔒 Safe Close V1.7 - Released on 2025-12-18 - By Mohammed Amine Elgalai - XNRGY Climate Systems ULC", htmlContent);
+                    });
+                }
+
+                // Exécuter les étapes avec mise à jour du HTML (sur le thread principal pour Inventor)
+                if (docType == kAssemblyDocumentObject)
+                {
+                    await ExecuteAssemblyStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
+                }
+                else if (docType == kPartDocumentObject)
+                {
+                    await ExecutePartStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
+                }
+                else if (docType == kDrawingDocumentObject)
+                {
+                    await ExecuteDrawingStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
+                }
+                else
+                {
+                    await ExecuteGenericStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
+                }
+
+                // Afficher le message de complétion
+                if (progressWindow != null)
+                {
+                    await progressWindow.ShowCompletionAsync("🎉 Toutes les étapes sont terminées avec succès !");
+                    await Task.Delay(1500);
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
                         progressWindow.CloseWindow();
-                    }
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                {
+                    await progressWindow.ShowCompletionAsync($"❌ Erreur: {ex.Message}");
+                    await Task.Delay(2000);
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        progressWindow.CloseWindow();
+                    });
+                }
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
                     MessageBox.Show($"Erreur lors du Safe Close : {ex.Message}", "Erreur", 
                         MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            });
+                });
+                Log($"Erreur lors de la fermeture: {ex.Message}", "ERROR");
+            }
         }
 
         private void ExecuteAssemblyStepsForClose(dynamic doc, dynamic inventorApp)

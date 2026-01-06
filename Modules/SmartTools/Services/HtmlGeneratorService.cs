@@ -218,8 +218,308 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             return html.ToString();
         }
 
-        // Note: Les autres méthodes HTML (InfoCommand, ConstraintReport, etc.) seront ajoutées dans les prochaines étapes
-        // pour éviter de dépasser la limite de taille
+        /// <summary>
+        /// Génère le HTML pour Smart Save avec barre de progression et changement dynamique de couleur du texte
+        /// </summary>
+        public static string GenerateSmartSaveProgressHtml(string docName, string typeText, List<string> steps, string primaryColor = "#2e7d32", string secondaryColor = "#4caf50")
+        {
+            var html = new StringBuilder();
+            
+            html.AppendLine("<!DOCTYPE html>");
+            html.AppendLine("<html lang='fr'>");
+            html.AppendLine("<head>");
+            html.AppendLine("    <meta charset='UTF-8'>");
+            html.AppendLine("    <meta name='viewport' content='width=device-width, initial-scale=1.0'>");
+            html.AppendLine("    <title>💾 Smart Save - V1.1 @2025 - By Mohammed Amine Elgalai</title>");
+            html.AppendLine("    <style>");
+            html.AppendLine("        @import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');");
+            html.AppendLine("        * { font-family: 'Segoe UI', 'Roboto', 'Noto Color Emoji', 'Apple Color Emoji', sans-serif; }");
+            html.AppendLine($"        body {{ margin: 15px; background: linear-gradient(135deg, {primaryColor} 0%, {secondaryColor} 100%); font-size: 16px; min-height: calc(100vh - 30px); color: white; }}");
+            html.AppendLine("        .container { max-width: 95%; margin: 0 auto; background: rgba(255,255,255,0.95); padding: 25px; border-radius: 12px; box-shadow: 0 8px 25px rgba(0,0,0,0.3); color: #333; }");
+            html.AppendLine($"        h2 {{ color: {primaryColor}; font-size: 24px; text-align: center; margin-bottom: 20px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }}");
+            html.AppendLine($"        .info-box {{ background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 2px solid {secondaryColor}; }}");
+            html.AppendLine($"        .info-box strong {{ color: {primaryColor}; }}");
+            html.AppendLine("        ul { list-style: none; padding: 0; margin: 0; }");
+            html.AppendLine("        li { margin: 8px 0; font-size: 15px; padding: 8px 12px; border-radius: 6px; display: flex; align-items: center; background: rgba(248,249,250,0.8); border-left: 4px solid #90a4ae; position: relative; overflow: hidden; transition: all 0.3s ease; }");
+            html.AppendLine("        li .step-text { position: relative; z-index: 2; transition: color 0.3s ease; }");
+            html.AppendLine("        li .progress-bar { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, rgba(76,175,80,0.3) 0%, rgba(76,175,80,0.6) 100%); transition: width 0.5s ease; z-index: 1; }");
+            html.AppendLine($"        li.completed {{ background: rgba(232,245,233,0.9); border-left-color: {secondaryColor}; }}");
+            html.AppendLine($"        li.completed .progress-bar {{ width: 100%; background: linear-gradient(90deg, rgba(76,175,80,0.5) 0%, rgba(76,175,80,0.8) 100%); }}");
+            html.AppendLine("        li.error { background: rgba(255,235,238,0.9); border-left-color: #f44336; }");
+            html.AppendLine("        li.info { background: rgba(227,242,253,0.9); border-left-color: #2196f3; }");
+            html.AppendLine("        li.active { background: rgba(255,243,224,0.9); border-left-color: #ff9800; }");
+            html.AppendLine("        li.active .progress-bar { width: 50%; background: linear-gradient(90deg, rgba(255,152,0,0.3) 0%, rgba(255,152,0,0.6) 100%); }");
+            html.AppendLine("        .emoji { font-size: 18px; margin-right: 10px; min-width: 25px; }");
+            html.AppendLine($"        .completion {{ text-align: center; font-size: 18px; font-weight: bold; color: {primaryColor}; margin: 20px 0; padding: 15px; background: rgba(232,245,233,0.8); border-radius: 8px; display: none; }}");
+            html.AppendLine($"        .btn-close {{ display: block; width: 150px; padding: 12px; margin: 20px auto; font-size: 16px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; background: {secondaryColor}; color: white; transition: all 0.3s; }}");
+            html.AppendLine($"        .btn-close:hover {{ background: {primaryColor}; transform: scale(1.05); }}");
+            html.AppendLine("    </style>");
+            html.AppendLine("</head>");
+            html.AppendLine("<body>");
+            html.AppendLine("    <div class='container'>");
+            html.AppendLine($"        <h2><span class='emoji'>💾</span> Smart Save V1.1 - {WebUtility.HtmlEncode(typeText)}</h2>");
+            html.AppendLine("        <div class='info-box'>");
+            html.AppendLine($"            <span class='emoji'>📄</span> <strong>Document:</strong> {WebUtility.HtmlEncode(docName)}<br>");
+            html.AppendLine($"            <span class='emoji'>📋</span> <strong>Type:</strong> {WebUtility.HtmlEncode(typeText)}<br>");
+            html.AppendLine($"            <span class='emoji'>📅</span> <strong>Date:</strong> {DateTime.Now:yyyy-MM-dd HH:mm:ss} UTC<br>");
+            html.AppendLine("            <span class='emoji'>👨‍💻</span> <strong>Développé par:</strong> Mohammed Amine Elgalai");
+            html.AppendLine("        </div>");
+            html.AppendLine("        <ul>");
+
+            for (int i = 0; i < steps.Count; i++)
+            {
+                html.AppendLine($"            <li id='step{i + 1}'>");
+                html.AppendLine("                <div class='progress-bar'></div>");
+                html.AppendLine($"                <span class='step-text'><span class='emoji'>⏳</span> {WebUtility.HtmlEncode(steps[i])}</span>");
+                html.AppendLine("            </li>");
+            }
+
+            html.AppendLine("        </ul>");
+            html.AppendLine("        <div id='completion' class='completion'></div>");
+            html.AppendLine("        <button class='btn-close' onclick='closeForm()'>✅ Fermer</button>");
+            html.AppendLine("    </div>");
+
+            // JavaScript pour le changement dynamique de couleur
+            html.AppendLine("    <script>");
+            html.AppendLine("        function getLuminance(r, g, b) {");
+            html.AppendLine("            var [rs, gs, bs] = [r, g, b].map(c => {");
+            html.AppendLine("                c = c / 255;");
+            html.AppendLine("                return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);");
+            html.AppendLine("            });");
+            html.AppendLine("            return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;");
+            html.AppendLine("        }");
+            html.AppendLine("        function hexToRgb(hex) {");
+            html.AppendLine("            var result = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(hex);");
+            html.AppendLine("            return result ? {");
+            html.AppendLine("                r: parseInt(result[1], 16),");
+            html.AppendLine("                g: parseInt(result[2], 16),");
+            html.AppendLine("                b: parseInt(result[3], 16)");
+            html.AppendLine("            } : null;");
+            html.AppendLine("        }");
+            html.AppendLine("        function getBackgroundColor(element) {");
+            html.AppendLine("            var style = window.getComputedStyle(element);");
+            html.AppendLine("            var bgColor = style.backgroundColor || style.background;");
+            html.AppendLine("            if (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {");
+            html.AppendLine("                var parent = element.parentElement;");
+            html.AppendLine("                while (parent && (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent')) {");
+            html.AppendLine("                    var parentStyle = window.getComputedStyle(parent);");
+            html.AppendLine("                    bgColor = parentStyle.backgroundColor || parentStyle.background;");
+            html.AppendLine("                    parent = parent.parentElement;");
+            html.AppendLine("                }");
+            html.AppendLine("            }");
+            html.AppendLine("            return bgColor;");
+            html.AppendLine("        }");
+            html.AppendLine("        function parseColor(color) {");
+            html.AppendLine("            if (color.startsWith('#')) return hexToRgb(color);");
+            html.AppendLine("            if (color.startsWith('rgb')) {");
+            html.AppendLine("                var matches = color.match(/\\d+/g);");
+            html.AppendLine("                return matches ? { r: parseInt(matches[0]), g: parseInt(matches[1]), b: parseInt(matches[2]) } : null;");
+            html.AppendLine("            }");
+            html.AppendLine("            if (color.startsWith('rgba')) {");
+            html.AppendLine("                var matches = color.match(/\\d+/g);");
+            html.AppendLine("                return matches ? { r: parseInt(matches[0]), g: parseInt(matches[1]), b: parseInt(matches[2]) } : null;");
+            html.AppendLine("            }");
+            html.AppendLine("            return null;");
+            html.AppendLine("        }");
+            html.AppendLine("        function updateTextColor(stepElement) {");
+            html.AppendLine("            var progressBar = stepElement.querySelector('.progress-bar');");
+            html.AppendLine("            var stepText = stepElement.querySelector('.step-text');");
+            html.AppendLine("            if (!progressBar || !stepText) return;");
+            html.AppendLine("            var progressWidth = parseFloat(progressBar.style.width) || 0;");
+            html.AppendLine("            if (progressWidth > 0) {");
+            html.AppendLine("                var bgColor = getBackgroundColor(progressBar);");
+            html.AppendLine("                var rgb = parseColor(bgColor);");
+            html.AppendLine("                if (rgb) {");
+            html.AppendLine("                    var luminance = getLuminance(rgb.r, rgb.g, rgb.b);");
+            html.AppendLine("                    stepText.style.color = luminance > 0.5 ? '#000000' : '#FFFFFF';");
+            html.AppendLine("                    stepText.style.textShadow = luminance > 0.5 ? '1px 1px 2px rgba(255,255,255,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)';");
+            html.AppendLine("                    stepText.style.fontWeight = 'bold';");
+            html.AppendLine("                }");
+            html.AppendLine("            } else {");
+            html.AppendLine("                stepText.style.color = '';");
+            html.AppendLine("                stepText.style.textShadow = '';");
+            html.AppendLine("                stepText.style.fontWeight = '';");
+            html.AppendLine("            }");
+            html.AppendLine("        }");
+            html.AppendLine("        function observeProgressBars() {");
+            html.AppendLine("            var steps = document.querySelectorAll('li[id^=\"step\"]');");
+            html.AppendLine("            steps.forEach(function(step) {");
+            html.AppendLine("                var progressBar = step.querySelector('.progress-bar');");
+            html.AppendLine("                if (progressBar) {");
+            html.AppendLine("                    var observer = new MutationObserver(function() {");
+            html.AppendLine("                        updateTextColor(step);");
+            html.AppendLine("                    });");
+            html.AppendLine("                    observer.observe(progressBar, { attributes: true, attributeFilter: ['style'] });");
+            html.AppendLine("                    updateTextColor(step);");
+            html.AppendLine("                }");
+            html.AppendLine("            });");
+            html.AppendLine("        }");
+            html.AppendLine("        function closeForm() {");
+            html.AppendLine("            if (window.chrome && window.chrome.webview) {");
+            html.AppendLine("                window.chrome.webview.postMessage(JSON.stringify({action: 'CloseWindow'}));");
+            html.AppendLine("            }");
+            html.AppendLine("        }");
+            html.AppendLine("        window.onload = function() {");
+            html.AppendLine("            observeProgressBars();");
+            html.AppendLine("            setInterval(function() {");
+            html.AppendLine("                var steps = document.querySelectorAll('li[id^=\"step\"]');");
+            html.AppendLine("                steps.forEach(updateTextColor);");
+            html.AppendLine("            }, 100);");
+            html.AppendLine("        };");
+            html.AppendLine("    </script>");
+            html.AppendLine("</body>");
+            html.AppendLine("</html>");
+
+            return html.ToString();
+        }
+
+        /// <summary>
+        /// Génère le HTML pour Safe Close avec barre de progression et changement dynamique de couleur du texte
+        /// </summary>
+        public static string GenerateSafeCloseProgressHtml(string docName, string typeText, List<string> steps, string primaryColor = "#0d47a1", string secondaryColor = "#1976d2")
+        {
+            // Même structure que Smart Save mais avec les couleurs bleues
+            return GenerateSmartSaveProgressHtml(docName, typeText, steps, primaryColor, secondaryColor)
+                .Replace("Smart Save", "Safe Close")
+                .Replace("💾", "🔒")
+                .Replace("Sauvegarde", "Fermeture");
+        }
+
+        /// <summary>
+        /// Génère le HTML pour HideBox avec barre de progression et changement dynamique de couleur du texte
+        /// </summary>
+        public static string GenerateHideBoxProgressHtml(string actionEnCours, int nombreTotal, int nombreVisibles, int nombreCaches, bool isXnrgyDoor = false)
+        {
+            var html = new StringBuilder();
+            string couleurAction = actionEnCours.Contains("RÉAFFICHAGE") ? "#28a745" : "#dc3545";
+
+            html.AppendLine("<!DOCTYPE html>");
+            html.AppendLine("<html><head><meta charset='UTF-8'>");
+            html.AppendLine("<style>");
+            html.AppendLine("body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); margin: 0; padding: 10px; color: #333; overflow: auto; }");
+            html.AppendLine(".container { background: rgba(255,255,255,0.95); border-radius: 10px; padding: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); width: 100%; min-height: 300px; box-sizing: border-box; display: flex; flex-direction: column; justify-content: flex-start; }");
+            html.AppendLine("h1 { color: #444; margin: 0 0 20px 0; font-size: 20px; text-align: center; }");
+            html.AppendLine($".step {{ margin: 10px 0; padding: 12px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid {couleurAction}; text-align: left; font-size: 16px; line-height: 1.4; position: relative; overflow: hidden; transition: all 0.3s ease; }}");
+            html.AppendLine(".step .step-text { position: relative; z-index: 2; transition: color 0.3s ease; }");
+            html.AppendLine($".step .progress-bar {{ position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: linear-gradient(90deg, {couleurAction}33 0%, {couleurAction}66 100%); transition: width 0.5s ease; z-index: 1; }}");
+            html.AppendLine(".step span { margin-right: 10px; }");
+            html.AppendLine(".analysis { background: #e3f2fd; border-left-color: #2196f3; margin-bottom: 15px; }");
+            html.AppendLine(".spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; }");
+            html.AppendLine("@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }");
+            html.AppendLine("</style></head><body>");
+            html.AppendLine("<div class='container'>");
+            html.AppendLine("<h1>🔄 Smart Hide/Show Box V1.5 - Mode Intelligent</h1>");
+            html.AppendLine("<div class='step analysis'>");
+            html.AppendLine($"<span>🔍</span> Analyse: {nombreTotal} composants détectés ({nombreVisibles} visibles, {nombreCaches} cachés)<br>");
+            html.AppendLine("<span>🔧</span> Inclut: Box, Template, Multi_Opening, Cut_Opening, tous types de Dummy, AirFlow, PanFactice, etc.");
+            html.AppendLine("</div>");
+
+            if (isXnrgyDoor)
+            {
+                html.AppendLine("<div class='step analysis' style='background:#fff3e0; border-left-color:#ff9800;'>");
+                html.AppendLine("<span>🚪</span> <strong>Xnrgy_Door détecté:</strong> Gestion spéciale des OpenDummy_1<br>");
+                html.AppendLine($"<span>🔄</span> <strong>Alternance intelligente:</strong> {actionEnCours} basé sur l'état précédent<br>");
+                html.AppendLine("<span>🎯</span> <strong>Optimisation:</strong> Détection des External_Swing et Internal_Swing");
+                html.AppendLine("</div>");
+            }
+
+            html.AppendLine($"<div id='step1' class='step'>");
+            html.AppendLine("    <div class='progress-bar'></div>");
+            html.AppendLine($"    <span class='step-text'><span class='spinner'></span> Étape 1: {actionEnCours} des composants de référence en cours...</span>");
+            html.AppendLine("</div>");
+            html.AppendLine($"<div id='step2' class='step'>");
+            html.AppendLine("    <div class='progress-bar'></div>");
+            html.AppendLine("    <span class='step-text'><span class='spinner'></span> Étape 2: Mise à jour du document en cours...</span>");
+            html.AppendLine("</div>");
+            html.AppendLine("</div>");
+
+            // JavaScript pour le changement dynamique de couleur (même logique que Smart Save)
+            html.AppendLine("<script>");
+            html.AppendLine("        function getLuminance(r, g, b) {");
+            html.AppendLine("            var [rs, gs, bs] = [r, g, b].map(c => {");
+            html.AppendLine("                c = c / 255;");
+            html.AppendLine("                return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);");
+            html.AppendLine("            });");
+            html.AppendLine("            return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;");
+            html.AppendLine("        }");
+            html.AppendLine("        function hexToRgb(hex) {");
+            html.AppendLine("            var result = /^#?([a-f\\d]{2})([a-f\\d]{2})([a-f\\d]{2})$/i.exec(hex);");
+            html.AppendLine("            return result ? {");
+            html.AppendLine("                r: parseInt(result[1], 16),");
+            html.AppendLine("                g: parseInt(result[2], 16),");
+            html.AppendLine("                b: parseInt(result[3], 16)");
+            html.AppendLine("            } : null;");
+            html.AppendLine("        }");
+            html.AppendLine("        function getBackgroundColor(element) {");
+            html.AppendLine("            var style = window.getComputedStyle(element);");
+            html.AppendLine("            var bgColor = style.backgroundColor || style.background;");
+            html.AppendLine("            if (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent') {");
+            html.AppendLine("                var parent = element.parentElement;");
+            html.AppendLine("                while (parent && (bgColor === 'rgba(0, 0, 0, 0)' || bgColor === 'transparent')) {");
+            html.AppendLine("                    var parentStyle = window.getComputedStyle(parent);");
+            html.AppendLine("                    bgColor = parentStyle.backgroundColor || parentStyle.background;");
+            html.AppendLine("                    parent = parent.parentElement;");
+            html.AppendLine("                }");
+            html.AppendLine("            }");
+            html.AppendLine("            return bgColor;");
+            html.AppendLine("        }");
+            html.AppendLine("        function parseColor(color) {");
+            html.AppendLine("            if (color.startsWith('#')) return hexToRgb(color);");
+            html.AppendLine("            if (color.startsWith('rgb')) {");
+            html.AppendLine("                var matches = color.match(/\\d+/g);");
+            html.AppendLine("                return matches ? { r: parseInt(matches[0]), g: parseInt(matches[1]), b: parseInt(matches[2]) } : null;");
+            html.AppendLine("            }");
+            html.AppendLine("            if (color.startsWith('rgba')) {");
+            html.AppendLine("                var matches = color.match(/\\d+/g);");
+            html.AppendLine("                return matches ? { r: parseInt(matches[0]), g: parseInt(matches[1]), b: parseInt(matches[2]) } : null;");
+            html.AppendLine("            }");
+            html.AppendLine("            return null;");
+            html.AppendLine("        }");
+            html.AppendLine("        function updateTextColor(stepElement) {");
+            html.AppendLine("            var progressBar = stepElement.querySelector('.progress-bar');");
+            html.AppendLine("            var stepText = stepElement.querySelector('.step-text');");
+            html.AppendLine("            if (!progressBar || !stepText) return;");
+            html.AppendLine("            var progressWidth = parseFloat(progressBar.style.width) || 0;");
+            html.AppendLine("            if (progressWidth > 0) {");
+            html.AppendLine("                var bgColor = getBackgroundColor(progressBar);");
+            html.AppendLine("                var rgb = parseColor(bgColor);");
+            html.AppendLine("                if (rgb) {");
+            html.AppendLine("                    var luminance = getLuminance(rgb.r, rgb.g, rgb.b);");
+            html.AppendLine("                    stepText.style.color = luminance > 0.5 ? '#000000' : '#FFFFFF';");
+            html.AppendLine("                    stepText.style.textShadow = luminance > 0.5 ? '1px 1px 2px rgba(255,255,255,0.8)' : '1px 1px 2px rgba(0,0,0,0.8)';");
+            html.AppendLine("                    stepText.style.fontWeight = 'bold';");
+            html.AppendLine("                }");
+            html.AppendLine("            } else {");
+            html.AppendLine("                stepText.style.color = '';");
+            html.AppendLine("                stepText.style.textShadow = '';");
+            html.AppendLine("                stepText.style.fontWeight = '';");
+            html.AppendLine("            }");
+            html.AppendLine("        }");
+            html.AppendLine("        function observeProgressBars() {");
+            html.AppendLine("            var steps = document.querySelectorAll('.step[id^=\"step\"]');");
+            html.AppendLine("            steps.forEach(function(step) {");
+            html.AppendLine("                var progressBar = step.querySelector('.progress-bar');");
+            html.AppendLine("                if (progressBar) {");
+            html.AppendLine("                    var observer = new MutationObserver(function() {");
+            html.AppendLine("                        updateTextColor(step);");
+            html.AppendLine("                    });");
+            html.AppendLine("                    observer.observe(progressBar, { attributes: true, attributeFilter: ['style'] });");
+            html.AppendLine("                    updateTextColor(step);");
+            html.AppendLine("                }");
+            html.AppendLine("            });");
+            html.AppendLine("        }");
+            html.AppendLine("        window.onload = function() {");
+            html.AppendLine("            observeProgressBars();");
+            html.AppendLine("            setInterval(function() {");
+            html.AppendLine("                var steps = document.querySelectorAll('.step[id^=\"step\"]');");
+            html.AppendLine("                steps.forEach(updateTextColor);");
+            html.AppendLine("            }, 100);");
+            html.AppendLine("        };");
+            html.AppendLine("</script>");
+            html.AppendLine("</body></html>");
+
+            return html.ToString();
+        }
     }
 
     /// <summary>
@@ -239,4 +539,5 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         }
     }
 }
+
 

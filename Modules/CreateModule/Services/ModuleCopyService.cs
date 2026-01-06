@@ -171,7 +171,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                 {
                     copyResult.Success = false;
                     copyResult.ErrorMessage = ex.Message;
-                    file.Status = $"✗ Erreur: {ex.Message}";
+                    file.Status = $"[-] Erreur: {ex.Message}";
                     Log($"Erreur copie {file.OriginalFileName}: {ex.Message}", "ERROR");
                 }
 
@@ -373,11 +373,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
 
                         if (file.PropertiesUpdated)
                         {
-                            Log($"✓ iProperties mis à jour: {file.NewFileName}", "SUCCESS");
+                            Log($"[+] iProperties mis à jour: {file.NewFileName}", "SUCCESS");
                         }
                         else
                         {
-                            Log($"✗ Échec iProperties: {file.NewFileName}", "WARN");
+                            Log($"[-] Echec iProperties: {file.NewFileName}", "WARN");
                         }
                     }
                     catch (Exception ex)
@@ -454,7 +454,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                 {
                     var fileName = Path.GetFileName(file);
                     var extension = Path.GetExtension(file).ToUpper().TrimStart('.');
-                    var isTopAssembly = fileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase);
+                    // Top Assembly detection: Module_.iam (ancien template) ou 000000000.iam (nouveau template)
+                    var isTopAssembly = fileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase) ||
+                                        fileName.Equals("000000000.iam", StringComparison.OrdinalIgnoreCase);
 
                     files.Add(new FileRenameItem
                     {

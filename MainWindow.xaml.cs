@@ -15,6 +15,7 @@ using XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views;
 using XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views;
 using XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views;
 using XnrgyEngineeringAutomationTools.Modules.SmartTools.Views;
+using XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views;
 
 namespace XnrgyEngineeringAutomationTools
 {
@@ -468,6 +469,9 @@ namespace XnrgyEngineeringAutomationTools
                 
                 // Synchronisation automatique des parametres depuis Vault au demarrage
                 SyncSettingsFromVaultAsync();
+                
+                // Proposer la mise a jour du workspace apres connexion reussie
+                ShowUpdateWorkspaceWindow();
             }
             else
             {
@@ -493,6 +497,54 @@ namespace XnrgyEngineeringAutomationTools
                 
                 // Synchronisation automatique des parametres depuis Vault au demarrage
                 SyncSettingsFromVaultAsync();
+                
+                // Proposer la mise a jour du workspace apres connexion reussie
+                ShowUpdateWorkspaceWindow();
+            }
+        }
+        
+        /// <summary>
+        /// Affiche la fenetre de mise a jour du workspace
+        /// Permet de synchroniser les fichiers depuis Vault et installer les outils
+        /// </summary>
+        private void ShowUpdateWorkspaceWindow()
+        {
+            try
+            {
+                var connection = _vaultService.Connection;
+                if (connection == null)
+                {
+                    AddLog("[!] Connexion Vault requise pour la mise a jour du workspace", "WARN");
+                    return;
+                }
+                
+                var updateWindow = new UpdateWorkspaceWindow(connection)
+                {
+                    Owner = this
+                };
+                
+                AddLog("[>] Ouverture de la fenetre de mise a jour du workspace...", "INFO");
+                
+                if (updateWindow.ShowDialog() == true)
+                {
+                    if (updateWindow.WasSkipped)
+                    {
+                        AddLog("[i] Mise a jour du workspace ignoree par l'utilisateur", "INFO");
+                    }
+                    else
+                    {
+                        AddLog("[+] Mise a jour du workspace terminee", "SUCCESS");
+                    }
+                }
+                else
+                {
+                    AddLog("[!] Mise a jour du workspace annulee", "WARN");
+                }
+            }
+            catch (Exception ex)
+            {
+                AddLog($"[-] Erreur lors de la mise a jour du workspace: {ex.Message}", "ERROR");
+                Logger.Log($"[-] Erreur UpdateWorkspace: {ex.Message}", Logger.LogLevel.ERROR);
             }
         }
 

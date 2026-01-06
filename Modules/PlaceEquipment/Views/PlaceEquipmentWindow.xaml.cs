@@ -279,9 +279,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     };
 
                     ProgressBarFill.BeginAnimation(WidthProperty, widthAnimation);
-                    
-                    // Changer la couleur des textes temps/pourcentage quand la barre les couvre
-                    UpdateTimeTextColors(percent, maxWidth);
                 }
 
                 // Gradient brillant et cristallisé selon l'état
@@ -357,39 +354,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             });
         }
 
-        /// <summary>
-        /// Change la couleur des textes temps/pourcentage quand la barre les couvre (simple changement sans zigzag)
-        /// </summary>
-        private void UpdateTimeTextColors(int percent, double containerWidth)
-        {
-            // Les textes temps sont a droite, donc on change leur couleur quand la barre atteint ~70%
-            var darkColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A1A28"));
-            var yellowColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
-            var grayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"));
-            var darkGrayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
-            
-            if (percent >= 70)
-            {
-                // Texte sombre sur barre verte/cyan
-                TxtTimeLabel.Foreground = darkColor;
-                TxtProgressTimeElapsed.Foreground = darkColor;
-                TxtEstimatedLabel.Foreground = darkColor;
-                TxtProgressTimeEstimated.Foreground = darkColor;
-                TxtSeparator.Foreground = darkGrayColor;
-                TxtProgressPercent.Foreground = darkColor;
-            }
-            else
-            {
-                // Texte jaune sur fond sombre
-                TxtTimeLabel.Foreground = yellowColor;
-                TxtProgressTimeElapsed.Foreground = yellowColor;
-                TxtEstimatedLabel.Foreground = yellowColor;
-                TxtProgressTimeEstimated.Foreground = yellowColor;
-                TxtSeparator.Foreground = grayColor;
-                TxtProgressPercent.Foreground = yellowColor;
-            }
-        }
-
         
         private string FormatTimeSpan(TimeSpan ts)
         {
@@ -428,16 +392,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 TxtProgressTimeElapsed.Text = "00:00";
                 TxtProgressTimeEstimated.Text = "00:00";
                 TxtCurrentFile.Text = "";
-                
-                // Remettre les couleurs par defaut (jaune)
-                var yellowColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
-                var grayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"));
-                TxtTimeLabel.Foreground = yellowColor;
-                TxtProgressTimeElapsed.Foreground = yellowColor;
-                TxtEstimatedLabel.Foreground = yellowColor;
-                TxtProgressTimeEstimated.Foreground = yellowColor;
-                TxtSeparator.Foreground = grayColor;
-                TxtProgressPercent.Foreground = yellowColor;
             });
         }
 
@@ -1973,9 +1927,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     var extension = Path.GetExtension(file).ToUpper().TrimStart('.');
                     var relativePath = file.Substring(sourcePath.Length).TrimStart('\\');
                     var isInventorFile = inventorExtensions.Contains(Path.GetExtension(file).ToLower());
-                    var isTopAssembly = fileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase);
+                    // Top Assembly detection: Module_.iam (ancien template) ou 000000000.iam (nouveau template)
+                    var isTopAssembly = fileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase) ||
+                                        fileName.Equals("000000000.iam", StringComparison.OrdinalIgnoreCase);
                     var isProjectFile = extension == "IPJ";
-                    // Fichier projet principal: pattern XXXXX-XX-XX_2026.ipj (à la racine du module)
+                    // Fichier projet principal: pattern XXXXX-XX-XX_2026.ipj ou 000000000.ipj (à la racine du module)
                     var isMainProjectFile = isProjectFile && 
                                            string.IsNullOrEmpty(Path.GetDirectoryName(relativePath)) &&
                                            IsMainProjectFilePattern(fileName);

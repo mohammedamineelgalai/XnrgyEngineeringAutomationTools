@@ -1058,18 +1058,18 @@
                         <!-- Fichier en cours -->
                         <TextBlock x:Name="TxtCurrentFile" 
                                    Text="" 
-                                   Foreground="#00D4FF" FontSize="12" FontWeight="Bold"
+                                   Foreground="White" FontSize="12" FontWeight="Bold"
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
                                    Margin="220,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
                         
-                        <!-- Temps écoulé et pourcentage -->
+                        <!-- Temps écoulé et pourcentage - TOUT EN BLANC GRAS -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0">
-                            <TextBlock x:Name="TxtTimeLabel" Text="⏱️ Écoulé: " Foreground="#FFD700" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtProgressTimeElapsed" Text="00:00" Foreground="#FFD700" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtEstimatedLabel" Text=" / Estimé: " Foreground="#FFD700" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                            <TextBlock x:Name="TxtProgressTimeEstimated" Text="00:00" Foreground="#FFD700" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtSeparator" Text=" | " Foreground="#888888" FontSize="11" VerticalAlignment="Center" Margin="8,0,8,0"/>
-                            <TextBlock x:Name="TxtProgressPercent" Text="0%" Foreground="#FFD700" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtTimeLabel" Text="⏱️ " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtProgressTimeElapsed" Text="00:00" Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtEstimatedLabel" Text=" / " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            <TextBlock x:Name="TxtProgressTimeEstimated" Text="00:00" Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtSeparator" Text=" | " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,8,0"/>
+                            <TextBlock x:Name="TxtProgressPercent" Text="0%" Foreground="White" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Grid>
                 </Border>

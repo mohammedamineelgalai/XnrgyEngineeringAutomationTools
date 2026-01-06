@@ -271,9 +271,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     };
 
                     ProgressBarFill.BeginAnimation(WidthProperty, widthAnimation);
-                    
-                    // Changer la couleur des textes temps/pourcentage quand la barre les couvre
-                    UpdateTimeTextColors(percent, maxWidth);
                 }
 
                 // Gradient brillant et cristallisé selon l'état
@@ -348,39 +345,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 TxtProgressPercent.Text = percent > 0 ? $"{percent}%" : "";
             });
         }
-
-        /// <summary>
-        /// Change la couleur des textes temps/pourcentage quand la barre les couvre (simple changement sans zigzag)
-        /// </summary>
-        private void UpdateTimeTextColors(int percent, double containerWidth)
-        {
-            // Les textes temps sont a droite, donc on change leur couleur quand la barre atteint ~70%
-            var darkColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A1A28"));
-            var yellowColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
-            var grayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"));
-            var darkGrayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
-            
-            if (percent >= 70)
-            {
-                // Texte sombre sur barre verte/cyan
-                TxtTimeLabel.Foreground = darkColor;
-                TxtProgressTimeElapsed.Foreground = darkColor;
-                TxtEstimatedLabel.Foreground = darkColor;
-                TxtProgressTimeEstimated.Foreground = darkColor;
-                TxtSeparator.Foreground = darkGrayColor;
-                TxtProgressPercent.Foreground = darkColor;
-            }
-            else
-            {
-                // Texte jaune sur fond sombre
-                TxtTimeLabel.Foreground = yellowColor;
-                TxtProgressTimeElapsed.Foreground = yellowColor;
-                TxtEstimatedLabel.Foreground = yellowColor;
-                TxtProgressTimeEstimated.Foreground = yellowColor;
-                TxtSeparator.Foreground = grayColor;
-                TxtProgressPercent.Foreground = yellowColor;
-            }
-        }
         
         private string FormatTimeSpan(TimeSpan ts)
         {
@@ -419,16 +383,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 TxtProgressTimeElapsed.Text = "00:00";
                 TxtProgressTimeEstimated.Text = "00:00";
                 TxtCurrentFile.Text = "";
-                
-                // Remettre les couleurs par defaut (jaune)
-                var yellowColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFD700"));
-                var grayColor = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#888888"));
-                TxtTimeLabel.Foreground = yellowColor;
-                TxtProgressTimeElapsed.Foreground = yellowColor;
-                TxtEstimatedLabel.Foreground = yellowColor;
-                TxtProgressTimeEstimated.Foreground = yellowColor;
-                TxtSeparator.Foreground = grayColor;
-                TxtProgressPercent.Foreground = yellowColor;
             });
         }
 
@@ -572,7 +526,26 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 
                 if (RunInventorStatus != null)
                 {
-                    RunInventorStatus.Text = isConnected ? " Inventor : Connecte" : " Inventor : Deconnecte";
+                    if (isConnected)
+                    {
+                        // Récupérer le nom du fichier actif
+                        string? activeFileName = _inventorService.GetActiveDocumentName();
+                        if (!string.IsNullOrEmpty(activeFileName))
+                        {
+                            // Tronquer si trop long
+                            if (activeFileName.Length > 25)
+                                activeFileName = activeFileName.Substring(0, 22) + "...";
+                            RunInventorStatus.Text = $" Inventor : {activeFileName}";
+                        }
+                        else
+                        {
+                            RunInventorStatus.Text = " Inventor : Connecte";
+                        }
+                    }
+                    else
+                    {
+                        RunInventorStatus.Text = " Inventor : Deconnecte";
+                    }
                 }
             });
         }
@@ -608,15 +581,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
         private void CmbReference_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UpdateDestinationPreview();
             UpdateFullProjectNumber();
+            UpdateDestinationPreview();
             ValidateForm();
         }
 
         private void CmbModule_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            UpdateDestinationPreview();
             UpdateFullProjectNumber();
+            UpdateDestinationPreview();
             ValidateForm();
         }
 
@@ -756,8 +729,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
         private void ProjectInfo_TextChanged(object sender, TextChangedEventArgs e)
         {
-            UpdateDestinationPreview();
+            // IMPORTANT: Mettre a jour le numero de projet AVANT les chemins de destination
+            // Car UpdateFileDestinationPaths utilise _request.FullProjectNumber pour renommer les fichiers
             UpdateFullProjectNumber();
+            UpdateDestinationPreview();
             UpdateRenamePreviews();
             ValidateForm();
         }
@@ -807,6 +782,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             if (_files == null || _files.Count == 0) return;
 
             bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+            // Verifier si un numero de projet valide est entre (pas juste des zeros)
+            bool hasValidProjectNumber = !string.IsNullOrWhiteSpace(_request.Project) && _request.Project.Length >= 4;
+            var fullProjectNumber = hasValidProjectNumber ? _request.FullProjectNumber : string.Empty;
 
             foreach (var file in _files)
             {
@@ -814,14 +792,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 var relativeDir = Path.GetDirectoryName(file.RelativePath) ?? "";
                 var isAtRoot = string.IsNullOrEmpty(relativeDir);
                 
-                // Renommer le Top Assembly (.iam) avec le numéro de projet formaté
-                // Pour templates: fichier marqué IsTopAssembly (Module_.iam)
-                // Pour projets existants: premier .iam à la racine
-                if (!string.IsNullOrEmpty(_request.FullProjectNumber))
+                // Renommer le Top Assembly (.iam) avec le numero de projet formate
+                // Pour templates: fichier marque IsTopAssembly (Module_.iam ou 000000000.iam)
+                // Pour projets existants: premier .iam a la racine
+                if (!string.IsNullOrEmpty(fullProjectNumber))
                 {
                     if (file.IsTopAssembly)
                     {
-                        file.NewFileName = $"{_request.FullProjectNumber}.iam";
+                        file.NewFileName = $"{fullProjectNumber}.iam";
                     }
                     else if (isFromExistingProject && isAtRoot && file.FileType == "IAM")
                     {
@@ -829,22 +807,35 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                         // Vérifier qu'on n'a pas déjà renommé un autre .iam
                         var alreadyRenamed = _files.Any(f => f != file && f.FileType == "IAM" && 
                             string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)) &&
-                            f.NewFileName == $"{_request.FullProjectNumber}.iam");
+                            f.NewFileName == $"{fullProjectNumber}.iam");
                         if (!alreadyRenamed)
                         {
-                            file.NewFileName = $"{_request.FullProjectNumber}.iam";
+                            file.NewFileName = $"{fullProjectNumber}.iam";
                         }
+                    }
+                }
+                else
+                {
+                    // Pas de projet valide - reinitialiser le NewFileName au nom original pour les fichiers IAM
+                    if (file.IsTopAssembly || (isFromExistingProject && isAtRoot && file.FileType == "IAM"))
+                    {
+                        file.NewFileName = file.OriginalFileName;
                     }
                 }
                 
                 // Renommer le fichier projet principal (.ipj)
-                // Pour templates: pattern XXXXX-XX-XX_2026.ipj
-                // Pour projets existants: tout .ipj à la racine
-                if (file.FileType == "IPJ" && !string.IsNullOrEmpty(_request.FullProjectNumber) && isAtRoot)
+                // Pour templates: pattern XXXXX-XX-XX_2026.ipj ou 000000000.ipj (nouveau template)
+                // Pour projets existants: tout .ipj a la racine
+                if (file.FileType == "IPJ" && isAtRoot)
                 {
-                    if (isFromExistingProject || IsMainProjectFilePattern(file.OriginalFileName))
+                    if (!string.IsNullOrEmpty(fullProjectNumber) && (isFromExistingProject || IsMainProjectFilePattern(file.OriginalFileName)))
                     {
-                        file.NewFileName = $"{_request.FullProjectNumber}.ipj";
+                        file.NewFileName = $"{fullProjectNumber}.ipj";
+                    }
+                    else if (string.IsNullOrEmpty(fullProjectNumber) && IsMainProjectFilePattern(file.OriginalFileName))
+                    {
+                        // Reinitialiser au nom original si pas de projet valide
+                        file.NewFileName = file.OriginalFileName;
                     }
                 }
                 
@@ -861,8 +852,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 }
             }
 
-            // Rafraîchir l'affichage
-            DgFiles?.Items.Refresh();
+            // Rafraîchir l'affichage - Réappliquer les filtres pour mettre à jour la vue
+            ApplyFilters();
+            UpdateStatistics();
         }
 
         private void UpdateFullProjectNumber()
@@ -1597,7 +1589,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     var extension = Path.GetExtension(file).ToUpper().TrimStart('.');
                     var relativePath = file.Substring(sourcePath.Length).TrimStart('\\');
                     var isInventorFile = inventorExtensions.Contains(Path.GetExtension(file).ToLower());
-                    var isTopAssembly = fileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase);
+                    // Top Assembly detection: Module_.iam (ancien template) ou 000000000.iam (nouveau template)
+                    var isTopAssembly = fileName.Equals("Module_.iam", StringComparison.OrdinalIgnoreCase) ||
+                                        fileName.Equals("000000000.iam", StringComparison.OrdinalIgnoreCase);
                     var isProjectFile = extension == "IPJ";
                     // Fichier projet principal: pattern XXXXX-XX-XX_2026.ipj (à la racine du module)
                     var isMainProjectFile = isProjectFile && 
@@ -1616,18 +1610,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                         IsInventorFile = isInventorFile
                     };
 
-                    // Pour templates: renommer Module_.iam et fichier IPJ principal (pattern XXXXX-XX-XX_2026.ipj)
-                    // Pour projets existants: renommer le premier .iam à la racine et le premier .ipj à la racine
+                    // Pour templates: renommer Module_.iam/000000000.iam et fichier IPJ principal
+                    // Pour projets existants: renommer le premier .iam a la racine et le premier .ipj a la racine
                     if (!isFromExistingProject)
                     {
-                        // Renommage automatique du Top Assembly (.iam) - template Module_.iam
+                        // Renommage automatique du Top Assembly (.iam) - template Module_.iam ou 000000000.iam
                         if (isTopAssembly && !string.IsNullOrEmpty(TxtProject?.Text))
                         {
                             item.NewFileName = $"{_request.FullProjectNumber}.iam";
                         }
                         
                         // Renommage automatique UNIQUEMENT du fichier projet principal (.ipj)
-                        // Pattern: XXXXX-XX-XX_2026.ipj (à la racine)
+                        // Pattern: XXXXX-XX-XX_2026.ipj ou 000000000.ipj (nouveau template)
                         if (isMainProjectFile && !string.IsNullOrEmpty(TxtProject?.Text))
                         {
                             item.NewFileName = $"{_request.FullProjectNumber}.ipj";
@@ -1735,11 +1729,35 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
                 // Liste des fichiers sélectionnés pour traitement
                 var selectedFiles = _files.Where(f => f.IsSelected).ToList();
+                
+                // Identifier les fichiers à EXCLURE des options de renommage:
+                // - TopAssy (sera renommé avec le numéro de projet)
+                // - IPJ principal (sera renommé avec le numéro de projet)
+                // - IDW (drawings - héritent du nom de leur assembly parent, ne pas modifier)
+                bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+                
+                var topAssemblyFile = _files.FirstOrDefault(f => f.IsTopAssembly);
+                if (topAssemblyFile == null && isFromExistingProject)
+                {
+                    topAssemblyFile = _files.FirstOrDefault(f => f.FileType == "IAM" && 
+                        string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)));
+                }
+                
+                var mainIpjFile = _files.FirstOrDefault(f => f.FileType == "IPJ" && 
+                    string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)) &&
+                    (isFromExistingProject || IsMainProjectFilePattern(f.OriginalFileName)));
 
                 foreach (var file in selectedFiles)
                 {
                     // Skip fichiers non-Inventor si checkbox non cochée
                     if (!includeNonInventor && !file.IsInventorFile)
+                    {
+                        continue;
+                    }
+                    
+                    // [!] EXCLURE du renommage avec options: TopAssy et IPJ principal SEULEMENT
+                    // Ces fichiers masters sont renommés avec le numéro de projet (infos projet)
+                    if (file == topAssemblyFile || file == mainIpjFile)
                     {
                         continue;
                     }
@@ -1821,7 +1839,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 RenameSpecialExcelFiles();
 
                 // Toujours renommer le Top Assembly et IPJ avec le numéro de projet
-                bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+                // (isFromExistingProject deja declare plus haut)
                 
                 // Top Assembly
                 var topAssembly = _files.FirstOrDefault(f => f.IsTopAssembly);
@@ -2248,9 +2266,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         {
             if (TxtFileCount == null || _files == null) return;
 
-            var displayed = (DgFiles.ItemsSource as IEnumerable<FileItem>)?.Count() ?? _files.Count;
+            var displayed = (DgFiles.ItemsSource as IEnumerable<FileRenameItem>)?.Count() ?? _files.Count;
             var selected = _files.Count(f => f.IsSelected);
-            TxtFileCount.Text = $"{selected}/{_files.Count} sélectionnés";
+            TxtFileCount.Text = $"{selected}/{_files.Count} selectionnes";
 
             // Mettre à jour les statistiques de l'en-tête (sélection)
             if (TxtStatsSelected != null) TxtStatsSelected.Text = selected.ToString();
@@ -2391,7 +2409,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     AddLog("Connexion à Inventor...", "INFO");
                     if (!copyDesignService.Initialize())
                     {
-                        UpdateProgress(0, "✗ Erreur: Inventor non disponible", isError: true);
+                        UpdateProgress(0, "[-] Erreur: Inventor non disponible", isError: true);
                         throw new Exception("Impossible de se connecter à Inventor. Assurez-vous qu'Inventor 2026 est installé.");
                     }
 
@@ -2610,27 +2628,35 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
         }
 
         /// <summary>
-        /// Vérifie si un fichier .ipj correspond au pattern du fichier projet principal
-        /// Pattern: XXXXX-XX-XX_2026.ipj ou similaire (contient _2026 ou _202X)
+        /// Verifie si un fichier .ipj correspond au pattern du fichier projet principal
+        /// Pattern: XXXXX-XX-XX_2026.ipj, 000000000.ipj (nouveau template), ou similaire
         /// </summary>
         private bool IsMainProjectFilePattern(string fileName)
         {
             if (string.IsNullOrEmpty(fileName)) return false;
             
-            // Le fichier projet principal contient généralement "_2026" ou "_202" dans le nom
+            // Le fichier projet principal contient generalement "_2026" ou "_202" dans le nom
             // Exemples: XXXXX-XX-XX_2026.ipj, Module_2026.ipj, etc.
             var nameWithoutExt = Path.GetFileNameWithoutExtension(fileName);
             
-            // Pattern 1: Contient _202X (année)
+            // Pattern 1: Nouveau template vierge 000000000.ipj
+            if (nameWithoutExt.Equals("000000000", StringComparison.OrdinalIgnoreCase))
+                return true;
+            
+            // Pattern 2: Contient _202X (annee)
             if (nameWithoutExt.Contains("_202"))
                 return true;
             
-            // Pattern 2: Format XXXXX-XX-XX (numéro de projet avec tirets)
+            // Pattern 3: Format XXXXX-XX-XX (numero de projet avec tirets)
             if (System.Text.RegularExpressions.Regex.IsMatch(nameWithoutExt, @"^\d{5}-\d{2}-\d{2}"))
                 return true;
             
-            // Pattern 3: Le nom contient "Module" (fichier projet du module)
+            // Pattern 4: Le nom contient "Module" (fichier projet du module)
             if (nameWithoutExt.IndexOf("Module", StringComparison.OrdinalIgnoreCase) >= 0)
+                return true;
+            
+            // Pattern 5: Format XXXXXXXXX (9 chiffres - numero de projet complet)
+            if (System.Text.RegularExpressions.Regex.IsMatch(nameWithoutExt, @"^\d{9}$"))
                 return true;
                 
             return false;
