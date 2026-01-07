@@ -214,7 +214,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                     throw new Exception("Inventor non initialise");
                 }
 
-                string assemblyFileName = IOPath.GetFileName(sourceAssemblyPath);
+                // ══════════════════════════════════════════════════════════════════
+                // CRITIQUE: Activer le mode silencieux pour éviter les dialogues
+                // pendant toute l'opération de Copy Design (SaveAs, Save, etc.)
+                // ══════════════════════════════════════════════════════════════════
+                bool origSilentOperation = _inventorApp.SilentOperation;
+                bool origUserInteractionDisabled = _inventorApp.UserInterfaceManager.UserInteractionDisabled;
+                
+                try
+                {
+                    _inventorApp.SilentOperation = true;
+                    _inventorApp.UserInterfaceManager.UserInteractionDisabled = true;
+
+                    string assemblyFileName = IOPath.GetFileName(sourceAssemblyPath);
 
                 Log($"[>] COPY DESIGN EQUIPEMENT: {assemblyFileName}", "INFO");
                 Log($"   IPJ: {IOPath.GetFileName(equipmentIpjPath)}", "DEBUG");
@@ -464,6 +476,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                 Log($"[+] COPY DESIGN TERMINE: {result.FilesCopied} fichiers copies", "SUCCESS");
 
                 return result;
+                }
+                finally
+                {
+                    // CRITIQUE: Restaurer les modes silencieux
+                    _inventorApp.SilentOperation = origSilentOperation;
+                    _inventorApp.UserInterfaceManager.UserInteractionDisabled = origUserInteractionDisabled;
+                }
             }
             catch (Exception ex)
             {
@@ -643,8 +662,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
         {
             if (_inventorApp == null) return;
             
+            // Activer le mode silencieux pour éviter les dialogues
+            bool origSilent = _inventorApp.SilentOperation;
+            bool origUserDisabled = _inventorApp.UserInterfaceManager.UserInteractionDisabled;
+            
             try
             {
+                _inventorApp.SilentOperation = true;
+                _inventorApp.UserInterfaceManager.UserInteractionDisabled = true;
+                
                 // Ouvrir l'assemblage
                 var doc = _inventorApp.Documents.Open(assemblyPath, false);
                 bool modified = false;
@@ -717,6 +743,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
             {
                 Log($"  [!] Erreur update refs {IOPath.GetFileName(assemblyPath)}: {ex.Message}", "WARN");
             }
+            finally
+            {
+                // Restaurer les modes silencieux
+                _inventorApp!.SilentOperation = origSilent;
+                _inventorApp.UserInterfaceManager.UserInteractionDisabled = origUserDisabled;
+            }
         }
 
         private string GetRelativePath(string fullPath, string basePath)
@@ -784,8 +816,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
         {
             if (_inventorApp == null) return false;
 
+            // Activer le mode silencieux pour éviter les dialogues
+            bool origSilent = _inventorApp.SilentOperation;
+            bool origUserDisabled = _inventorApp.UserInterfaceManager.UserInteractionDisabled;
+            
             try
             {
+                _inventorApp.SilentOperation = true;
+                _inventorApp.UserInterfaceManager.UserInteractionDisabled = true;
+                
                 Document? activeDoc = _inventorApp.ActiveDocument;
                 if (activeDoc == null || activeDoc.DocumentType != DocumentTypeEnum.kAssemblyDocumentObject)
                 {
@@ -809,14 +848,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                 Log($"[-] Erreur insertion: {ex.Message}", "ERROR");
                 return false;
             }
+            finally
+            {
+                // Restaurer les modes silencieux
+                _inventorApp.SilentOperation = origSilent;
+                _inventorApp.UserInterfaceManager.UserInteractionDisabled = origUserDisabled;
+            }
         }
 
         public void SaveAll()
         {
             if (_inventorApp == null) return;
 
+            // Activer le mode silencieux pour éviter les dialogues
+            bool origSilent = _inventorApp.SilentOperation;
+            bool origUserDisabled = _inventorApp.UserInterfaceManager.UserInteractionDisabled;
+            
             try
             {
+                _inventorApp.SilentOperation = true;
+                _inventorApp.UserInterfaceManager.UserInteractionDisabled = true;
+                
                 foreach (Document doc in _inventorApp.Documents)
                 {
                     try
@@ -831,6 +883,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
             catch (Exception ex)
             {
                 Log($"[!] Erreur sauvegarde: {ex.Message}", "WARN");
+            }
+            finally
+            {
+                // Restaurer les modes silencieux
+                _inventorApp.SilentOperation = origSilent;
+                _inventorApp.UserInterfaceManager.UserInteractionDisabled = origUserDisabled;
             }
         }
 

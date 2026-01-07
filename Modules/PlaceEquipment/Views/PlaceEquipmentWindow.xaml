@@ -398,10 +398,14 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="30"/>
                                     </Grid.ColumnDefinitions>
+                                    <!-- ContentPresenter pour afficher correctement la selection avec DisplayMemberPath -->
                                     <ContentPresenter Grid.Column="0" Margin="10,8" 
                                                       Content="{TemplateBinding SelectionBoxItem}"
                                                       ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                                      VerticalAlignment="Center"/>
+                                                      ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Left"
+                                                      IsHitTestVisible="False"/>
                                     <ToggleButton Grid.Column="1" x:Name="ToggleButton" 
                                                   Background="Transparent" BorderThickness="0"
                                                   IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"

@@ -460,6 +460,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             public string LocalPath { get; set; } = string.Empty;
             public string ProjectFileName { get; set; } = string.Empty;
             public string AssemblyFileName { get; set; } = string.Empty;
+            
+            /// <summary>
+            /// Override ToString pour afficher le DisplayName dans le ComboBox
+            /// </summary>
+            public override string ToString() => DisplayName;
         }
 
         /// <summary>
@@ -656,24 +661,24 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 Logger.Info($"[i] Source Vault: {equipment.VaultPath}");
                 Logger.Info($"[i] Destination locale: {equipment.LocalPath}");
 
-                // Nettoyer le dossier local avant telechargement (2%)
-                UpdateProgress(2, "Nettoyage du dossier local...");
-                if (Directory.Exists(equipment.LocalPath))
+                // ══════════════════════════════════════════════════════════════════
+                // ETAPE 0: NETTOYAGE COMPLET du dossier Equipment AVANT TOUT
+                // Nettoyer C:\Vault\Engineering\Library\Equipment AU COMPLET
+                // ══════════════════════════════════════════════════════════════════
+                UpdateProgress(1, "NETTOYAGE COMPLET du dossier Equipment...");
+                AddLog("[>] NETTOYAGE COMPLET de C:\\Vault\\Engineering\\Library\\Equipment...", "INFO");
+                Logger.Info("[>] NETTOYAGE COMPLET du dossier Equipment de base");
+                
+                bool cleanSuccess = CleanEntireEquipmentFolder();
+                if (!cleanSuccess)
                 {
-                    AddLog("[>] Nettoyage du dossier local existant...", "INFO");
-                    Logger.Info("[>] Nettoyage du dossier local existant...");
-                    
-                    try
-                    {
-                        Directory.Delete(equipment.LocalPath, true);
-                        AddLog("[+] Dossier local nettoye", "SUCCESS");
-                        Logger.Info("[+] Dossier local nettoye");
-                    }
-                    catch (Exception ex)
-                    {
-                        AddLog($"[!] Impossible de nettoyer le dossier: {ex.Message}", "WARN");
-                        Logger.Warning($"[!] Impossible de nettoyer le dossier: {ex.Message}");
-                    }
+                    AddLog("[!] Nettoyage partiel - certains fichiers n'ont pas pu etre supprimes", "WARN");
+                    Logger.Warning("[!] Nettoyage partiel du dossier Equipment");
+                }
+                else
+                {
+                    AddLog("[+] Dossier Equipment nettoye completement", "SUCCESS");
+                    Logger.Info("[+] Dossier Equipment nettoye completement");
                 }
 
                 // Creer le dossier de destination
@@ -797,85 +802,21 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 AddLog($"[+] {successCount}/{fileResultsList.Count} fichiers telecharges en {sw.ElapsedMilliseconds}ms", "SUCCESS");
                 Logger.Info($"[+] {successCount}/{fileResultsList.Count} fichiers telecharges en {sw.ElapsedMilliseconds}ms ({sw.ElapsedMilliseconds / Math.Max(1, successCount)}ms/fichier)");
 
-                // Copier vers le dossier de destination final (70-90%)
-                UpdateProgress(72, "Copie vers dossier destination...");
-                AddLog($"[>] Copie vers {equipment.LocalPath}...", "INFO");
-                Logger.Info($"[>] Copie vers {equipment.LocalPath}...");
+                // [+] PAS DE COPIE NECESSAIRE - Vault telecharge directement dans le working folder
+                // qui est deja equipment.LocalPath (C:\Vault\Engineering\Library\Equipment\XXX)
+                // La copie precedente causait des erreurs "Access denied" car les fichiers etaient deja la
                 
-                if (Directory.Exists(localFolder))
-                {
-                    // Copier recursivement en preservant la structure complete
-                    Logger.Info($"[i] Copie depuis working folder: {localFolder}");
-                    
-                    // Copier avec progression
-                    await CopyDirectoryRecursiveWithProgress(localFolder, equipment.LocalPath, 72, 90);
-                }
-                else
-                {
-                    // Si le dossier working folder n'existe pas, copier depuis les resultats
-                    Logger.Warning($"[!] Working folder non trouve: {localFolder}");
-                    Logger.Info("[>] Copie depuis les resultats de telechargement...");
-                    
-                    int copyIndex = 0;
-                    int totalCopy = fileResultsList.Count;
-                    
-                    foreach (var result in fileResultsList)
-                    {
-                        if (result?.LocalPath?.FullPath == null) continue;
-
-                        var localFilePath = result.LocalPath.FullPath;
-                        if (!File.Exists(localFilePath)) continue;
-
-                        // Calculer le chemin relatif depuis le working folder
-                        string relativeFilePath;
-                        if (localFilePath.StartsWith(workingFolder, StringComparison.OrdinalIgnoreCase))
-                        {
-                            relativeFilePath = localFilePath.Substring(workingFolder.Length).TrimStart('\\', '/');
-                            
-                            // Si le chemin commence par le chemin relatif de l'equipement, l'enlever
-                            var equipmentRelativePath = relativePath.TrimStart('\\', '/');
-                            if (!string.IsNullOrEmpty(equipmentRelativePath) && relativeFilePath.StartsWith(equipmentRelativePath, StringComparison.OrdinalIgnoreCase))
-                            {
-                                relativeFilePath = relativeFilePath.Substring(equipmentRelativePath.Length).TrimStart('\\', '/');
-                            }
-                        }
-                        else
-                        {
-                            relativeFilePath = Path.GetFileName(localFilePath);
-                        }
-
-                        var destFilePath = Path.Combine(equipment.LocalPath, relativeFilePath);
-                        var destDir = Path.GetDirectoryName(destFilePath);
-                        if (!string.IsNullOrEmpty(destDir))
-                        {
-                            Directory.CreateDirectory(destDir);
-                        }
-
-                        try
-                        {
-                            File.Copy(localFilePath, destFilePath, true);
-                            copyIndex++;
-                            
-                            // Mise a jour progression copie (72-90%)
-                            if (copyIndex % 5 == 0 || copyIndex == totalCopy)
-                            {
-                                int copyProgress = 72 + (int)((copyIndex / (double)totalCopy) * 18);
-                                UpdateProgress(copyProgress, $"Copie {copyIndex}/{totalCopy}...", currentFile: Path.GetFileName(localFilePath));
-                            }
-                        }
-                        catch (Exception copyEx)
-                        {
-                            AddLog($"[!] Erreur copie {Path.GetFileName(localFilePath)}: {copyEx.Message}", "WARN");
-                            Logger.Warning($"[!] Erreur copie {Path.GetFileName(localFilePath)}: {copyEx.Message}");
-                        }
-                    }
-                }
+                // Verifier si des fichiers ont ete telecharges (90%)
+                UpdateProgress(90, "Verification des fichiers telecharges...");
                 
-                // Verifier si des fichiers ont ete copies (90%)
-                UpdateProgress(90, "Verification des fichiers copies...");
-                var copiedFiles = Directory.GetFiles(equipment.LocalPath, "*.*", SearchOption.AllDirectories);
-                AddLog($"[+] {copiedFiles.Length} fichiers dans le dossier destination", "SUCCESS");
-                Logger.Info($"[+] {copiedFiles.Length} fichiers dans le dossier destination");
+                // Enlever les attributs ReadOnly sur les fichiers telecharges pour pouvoir les utiliser
+                RemoveReadOnlyAttributes(equipment.LocalPath);
+                
+                var downloadedFiles = Directory.GetFiles(equipment.LocalPath, "*.*", SearchOption.AllDirectories)
+                    .Where(f => !f.Contains("\\_V\\"))  // Exclure les fichiers de version _V
+                    .ToArray();
+                AddLog($"[+] {downloadedFiles.Length} fichiers telecharges dans le dossier", "SUCCESS");
+                Logger.Info($"[+] {downloadedFiles.Length} fichiers dans le dossier destination (excl. _V)");
 
                 // Charger les fichiers depuis le dossier local (95%)
                 UpdateProgress(95, "Chargement de la liste des fichiers...");
@@ -912,6 +853,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
 
         /// <summary>
         /// Copie recursivement un dossier avec mise a jour de la progression
+        /// NOTE: Cette methode n'est plus utilisee pour le telechargement Vault
+        /// car Vault telecharge directement dans le working folder
         /// </summary>
         private async Task CopyDirectoryRecursiveWithProgress(string sourceDir, string destDir, int startProgress, int endProgress)
         {
@@ -2781,10 +2724,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     AddLog($"[!] IPJ attendu non trouve: {_selectedEquipment.ProjectFileName}", "WARN");
                     Logger.Warning($"[!] IPJ attendu non trouve: {equipmentIpjPath}");
                     
-                    // Chercher l'IPJ EXACT par nom (pas n'importe quel IPJ!)
+                    // Chercher l'IPJ EXACT par nom dans les sous-dossiers (pas n'importe quel IPJ!)
                     var ipjFiles = Directory.GetFiles(_selectedEquipment.LocalTempPath, "*.ipj", SearchOption.AllDirectories);
                     
-                    // Chercher d'abord un IPJ qui correspond au nom attendu (sans le chemin)
+                    // Chercher UNIQUEMENT un IPJ qui correspond EXACTEMENT au nom attendu
                     var expectedIpjName = _selectedEquipment.ProjectFileName;
                     var matchingIpj = ipjFiles.FirstOrDefault(f => 
                         Path.GetFileName(f).Equals(expectedIpjName, StringComparison.OrdinalIgnoreCase));
@@ -2795,16 +2738,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                         AddLog($"[+] IPJ equipement trouve (sous-dossier): {Path.GetFileName(equipmentIpjPath)}", "INFO");
                         Logger.Info($"[+] IPJ trouve dans sous-dossier: {equipmentIpjPath}");
                     }
-                    else if (ipjFiles.Length > 0)
-                    {
-                        // Si on ne trouve pas l'IPJ attendu, prendre le premier mais logger un WARNING
-                        equipmentIpjPath = ipjFiles[0];
-                        AddLog($"[!] IPJ utilise (fallback): {Path.GetFileName(equipmentIpjPath)}", "WARN");
-                        Logger.Warning($"[!] IPJ attendu '{expectedIpjName}' non trouve, utilisation de: {equipmentIpjPath}");
-                    }
                     else
                     {
-                        throw new Exception($"Aucun fichier IPJ trouve dans: {_selectedEquipment.LocalTempPath}");
+                        // PAS DE FALLBACK! Si l'IPJ master n'existe pas, ERREUR!
+                        // La liste master dans EquipmentPlacementService.cs doit etre mise a jour
+                        AddLog($"[-] ERREUR: IPJ '{expectedIpjName}' introuvable!", "ERROR");
+                        AddLog($"[-] Verifiez la liste master dans EquipmentPlacementService.cs", "ERROR");
+                        Logger.Error($"[-] IPJ master '{expectedIpjName}' introuvable dans Vault!");
+                        Logger.Error($"[-] IPJ disponibles: {string.Join(", ", ipjFiles.Select(Path.GetFileName))}");
+                        throw new Exception($"IPJ master '{expectedIpjName}' introuvable! Mettez a jour EquipmentPlacementService.AvailableEquipment avec le bon nom IPJ.");
                     }
                 }
                 else
@@ -3055,6 +2997,31 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 BtnPlaceEquipment.IsEnabled = true;
                 BtnCancel.IsEnabled = true;
                 BtnPreview.IsEnabled = true;
+                
+                // ══════════════════════════════════════════════════════════════════
+                // NETTOYAGE COMPLET A LA FIN: Vider TOUT le dossier Equipment
+                // Que le placement ait reussi ou echoue, on nettoie TOUT
+                // pour garantir que le dossier Equipment reste vide
+                // ══════════════════════════════════════════════════════════════════
+                try
+                {
+                    AddLog("[>] NETTOYAGE COMPLET du dossier Equipment...", "INFO");
+                    Logger.Info("[>] NETTOYAGE COMPLET post-placement: C:\\Vault\\Engineering\\Library\\Equipment");
+                    bool cleanSuccess = CleanEntireEquipmentFolder();
+                    if (cleanSuccess)
+                    {
+                        AddLog("[+] Dossier Equipment nettoye completement", "SUCCESS");
+                    }
+                    else
+                    {
+                        AddLog("[!] Nettoyage partiel du dossier Equipment", "WARN");
+                    }
+                }
+                catch (Exception cleanEx)
+                {
+                    Logger.Warning($"[!] Erreur nettoyage post-placement: {cleanEx.Message}");
+                }
+                
                 AddLog("Operation terminee", "STOP");
             }
         }
@@ -3390,5 +3357,315 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
         }
 
         #endregion
-    }}
-
+        
+        #region Equipment Folder Cleanup Utilities
+        
+        /// <summary>
+        /// Chemin de base du dossier Equipment
+        /// </summary>
+        private const string EQUIPMENT_BASE_PATH = @"C:\Vault\Engineering\Library\Equipment";
+        
+        /// <summary>
+        /// NETTOIE COMPLETEMENT le dossier C:\Vault\Engineering\Library\Equipment
+        /// Supprime TOUS les sous-dossiers et fichiers AVANT chaque telechargement
+        /// pour garantir que seuls les fichiers a jour de Vault sont presents
+        /// </summary>
+        /// <returns>True si le nettoyage complet a reussi</returns>
+        private bool CleanEntireEquipmentFolder()
+        {
+            try
+            {
+                Logger.Info($"[>] NETTOYAGE COMPLET: {EQUIPMENT_BASE_PATH}");
+                
+                if (!Directory.Exists(EQUIPMENT_BASE_PATH))
+                {
+                    Logger.Info("[i] Dossier Equipment n'existe pas - rien a nettoyer");
+                    return true;
+                }
+                
+                // Utiliser DirectoryInfo pour avoir acces aux attributs
+                var baseDir = new DirectoryInfo(EQUIPMENT_BASE_PATH);
+                
+                // Etape 1: Enlever attributs sur le dossier principal
+                baseDir.Attributes = FileAttributes.Normal;
+                
+                // Etape 2: Parcourir TOUS les fichiers et enlever ReadOnly
+                foreach (var file in baseDir.GetFiles("*.*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        file.Attributes = FileAttributes.Normal;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[!] Impossible de modifier attributs: {file.FullName} - {ex.Message}");
+                    }
+                }
+                
+                // Etape 3: Parcourir TOUS les dossiers et enlever ReadOnly
+                foreach (var dir in baseDir.GetDirectories("*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        dir.Attributes = FileAttributes.Normal;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[!] Impossible de modifier attributs dossier: {dir.FullName} - {ex.Message}");
+                    }
+                }
+                
+                // Etape 4: Supprimer TOUS les sous-dossiers (pas le dossier Equipment lui-meme)
+                int deletedDirs = 0;
+                int deletedFiles = 0;
+                
+                foreach (var subDir in baseDir.GetDirectories())
+                {
+                    try
+                    {
+                        // Compter les fichiers avant suppression
+                        deletedFiles += Directory.GetFiles(subDir.FullName, "*.*", SearchOption.AllDirectories).Length;
+                        
+                        // Supprimer le sous-dossier completement
+                        subDir.Delete(true);
+                        deletedDirs++;
+                        Logger.Debug($"[+] Supprime: {subDir.Name}");
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warning($"[!] Echec suppression {subDir.Name}: {ex.Message}");
+                        
+                        // Tentative alternative: supprimer fichier par fichier
+                        try
+                        {
+                            foreach (var file in subDir.GetFiles("*.*", SearchOption.AllDirectories))
+                            {
+                                try { file.Delete(); deletedFiles++; } catch { }
+                            }
+                            foreach (var dir in subDir.GetDirectories("*", SearchOption.AllDirectories).OrderByDescending(d => d.FullName.Length))
+                            {
+                                try { dir.Delete(false); } catch { }
+                            }
+                            try { subDir.Delete(false); deletedDirs++; } catch { }
+                        }
+                        catch { }
+                    }
+                }
+                
+                // Supprimer aussi les fichiers a la racine de Equipment (s'il y en a)
+                foreach (var file in baseDir.GetFiles())
+                {
+                    try
+                    {
+                        file.Delete();
+                        deletedFiles++;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[!] Echec suppression fichier: {file.Name} - {ex.Message}");
+                    }
+                }
+                
+                Logger.Info($"[+] NETTOYAGE TERMINE: {deletedDirs} dossiers, {deletedFiles} fichiers supprimes");
+                
+                // Verifier si le nettoyage est complet
+                var remaining = baseDir.GetDirectories().Length + baseDir.GetFiles().Length;
+                if (remaining > 0)
+                {
+                    Logger.Warning($"[!] {remaining} elements restants dans {EQUIPMENT_BASE_PATH}");
+                    return false;
+                }
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"[-] Erreur nettoyage complet Equipment: {ex.Message}");
+                return false;
+            }
+        }
+        
+        /// <summary>
+        /// Enleve recursivement les attributs ReadOnly sur un dossier et tous ses fichiers
+        /// FORCE: Enleve aussi les attributs Hidden et System
+        /// </summary>
+        /// <param name="path">Chemin du dossier a traiter</param>
+        private void RemoveReadOnlyAttributes(string path)
+        {
+            if (!Directory.Exists(path)) return;
+            
+            try
+            {
+                Logger.Info($"[>] Suppression attributs ReadOnly sur: {path}");
+                AddLog($"[>] Suppression ReadOnly: {Path.GetFileName(path)}...", "INFO");
+                
+                // Enlever ReadOnly sur le dossier lui-meme
+                var dirInfo = new DirectoryInfo(path);
+                dirInfo.Attributes = FileAttributes.Normal;
+                
+                // Traiter tous les fichiers recursivement (y compris _V)
+                foreach (var file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        var fileInfo = new FileInfo(file);
+                        // Forcer Normal pour enlever ReadOnly, Hidden, System
+                        fileInfo.Attributes = FileAttributes.Normal;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[!] Impossible d'enlever attributs sur {file}: {ex.Message}");
+                    }
+                }
+                
+                // Traiter tous les sous-dossiers (y compris _V)
+                foreach (var dir in Directory.GetDirectories(path, "*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        var subDirInfo = new DirectoryInfo(dir);
+                        subDirInfo.Attributes = FileAttributes.Normal;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[!] Impossible d'enlever attributs sur dossier {dir}: {ex.Message}");
+                    }
+                }
+                
+                Logger.Info($"[+] Attributs ReadOnly enleves sur: {path}");
+                AddLog($"[+] ReadOnly enleve", "SUCCESS");
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"[!] Erreur lors de la suppression ReadOnly sur {path}: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// FORCE la suppression complete d'un dossier equipement
+        /// - Enleve TOUS les attributs (ReadOnly, Hidden, System)
+        /// - Supprime le dossier et TOUT son contenu (y compris _V)
+        /// - Utilise plusieurs tentatives si necessaire
+        /// </summary>
+        /// <param name="equipmentPath">Chemin du dossier equipement a supprimer</param>
+        /// <returns>True si le nettoyage a reussi</returns>
+        private bool CleanEquipmentFolder(string equipmentPath)
+        {
+            if (string.IsNullOrEmpty(equipmentPath)) return true;
+            if (!Directory.Exists(equipmentPath)) return true;
+            
+            try
+            {
+                Logger.Info($"[>] NETTOYAGE FORCE du dossier equipement: {equipmentPath}");
+                AddLog($"[>] Nettoyage FORCE de {Path.GetFileName(equipmentPath)}...", "INFO");
+                
+                // Etape 1: Enlever TOUS les attributs sur TOUS les fichiers et dossiers
+                RemoveReadOnlyAttributes(equipmentPath);
+                
+                // Etape 2: Attendre un peu pour que les handles soient liberes
+                System.Threading.Thread.Sleep(100);
+                
+                // Etape 3: Supprimer avec plusieurs tentatives
+                int maxRetries = 3;
+                for (int attempt = 1; attempt <= maxRetries; attempt++)
+                {
+                    try
+                    {
+                        // Forcer la suppression recursive
+                        Directory.Delete(equipmentPath, true);
+                        Logger.Info($"[+] Dossier equipement SUPPRIME: {equipmentPath}");
+                        AddLog($"[+] Dossier {Path.GetFileName(equipmentPath)} SUPPRIME", "SUCCESS");
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Warning($"[!] Tentative {attempt}/{maxRetries} echouee: {ex.Message}");
+                        
+                        if (attempt < maxRetries)
+                        {
+                            // Re-essayer apres avoir enleve les attributs a nouveau
+                            System.Threading.Thread.Sleep(200);
+                            RemoveReadOnlyAttributes(equipmentPath);
+                            
+                            // Tenter de supprimer fichier par fichier
+                            try
+                            {
+                                foreach (var file in Directory.GetFiles(equipmentPath, "*.*", SearchOption.AllDirectories))
+                                {
+                                    try { File.Delete(file); } catch { }
+                                }
+                                foreach (var dir in Directory.GetDirectories(equipmentPath, "*", SearchOption.AllDirectories).OrderByDescending(d => d.Length))
+                                {
+                                    try { Directory.Delete(dir, false); } catch { }
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                }
+                
+                // Si on arrive ici, le nettoyage n'a pas completement reussi
+                // Verifier si le dossier est vide ou presque vide
+                if (Directory.Exists(equipmentPath))
+                {
+                    var remainingFiles = Directory.GetFiles(equipmentPath, "*.*", SearchOption.AllDirectories);
+                    if (remainingFiles.Length > 0)
+                    {
+                        Logger.Warning($"[!] {remainingFiles.Length} fichiers restants dans {equipmentPath}");
+                        AddLog($"[!] {remainingFiles.Length} fichiers non supprimes", "WARN");
+                        return false;
+                    }
+                }
+                
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"[-] Erreur nettoyage dossier {equipmentPath}: {ex.Message}");
+                AddLog($"[-] Erreur nettoyage: {ex.Message}", "ERROR");
+                return false;
+            }
+        }
+        
+        /// <summary>
+        /// Prepare le dossier Equipment de base avant toute operation
+        /// - Enleve les attributs ReadOnly sur C:\Vault\Engineering\Library\Equipment
+        /// - Enleve les attributs sur TOUS les sous-dossiers
+        /// </summary>
+        private void PrepareEquipmentBaseFolder()
+        {
+            try
+            {
+                if (Directory.Exists(EQUIPMENT_BASE_PATH))
+                {
+                    Logger.Info($"[>] Preparation du dossier Equipment de base: {EQUIPMENT_BASE_PATH}");
+                    AddLog("[>] Preparation dossier Equipment...", "INFO");
+                    
+                    // Enlever attributs sur le dossier principal
+                    var dirInfo = new DirectoryInfo(EQUIPMENT_BASE_PATH);
+                    dirInfo.Attributes = FileAttributes.Normal;
+                    
+                    // Enlever attributs sur tous les sous-dossiers de premier niveau
+                    foreach (var subDir in Directory.GetDirectories(EQUIPMENT_BASE_PATH))
+                    {
+                        try
+                        {
+                            var subDirInfo = new DirectoryInfo(subDir);
+                            subDirInfo.Attributes = FileAttributes.Normal;
+                        }
+                        catch { }
+                    }
+                    
+                    Logger.Info($"[+] Dossier Equipment prepare");
+                    AddLog("[+] Dossier Equipment prepare", "SUCCESS");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"[!] Erreur preparation dossier Equipment: {ex.Message}");
+            }
+        }
+        
+        #endregion
+    }
+}

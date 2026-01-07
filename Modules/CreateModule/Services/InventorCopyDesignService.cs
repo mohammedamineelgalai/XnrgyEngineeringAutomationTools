@@ -323,12 +323,37 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
 
             await Task.Run(() =>
             {
+                // ══════════════════════════════════════════════════════════════════
+                // APPROCHE iLOGIC: Ouvrir en mode INVISIBLE (false) pour éviter
+                // le dialogue "Multiple files have been updated in current session"
+                // 
+                // Le dialogue apparaît PENDANT l'ouverture visible car Inventor
+                // vérifie les références et détecte des fichiers modifiés.
+                // En mode invisible, pas de vérification UI = pas de dialogue.
+                // 
+                // Séquence:
+                // 1. Ouvrir en mode INVISIBLE (Visible=false)
+                // 2. Appliquer iProperties et paramètres
+                // 3. Update + Save (tout en invisible)
+                // 4. Fermer le document
+                // 5. Ré-ouvrir en mode VISIBLE (pas de dialogue car tout est frais)
+                // ══════════════════════════════════════════════════════════════════
+                
+                // Sauvegarder et activer le mode silencieux pour éviter les dialogues
+                bool originalSilentOperation = _inventorApp.SilentOperation;
+                bool originalUserInteractionDisabled = _inventorApp.UserInterfaceManager.UserInteractionDisabled;
+                
                 try
                 {
-                    Log($"[i] Ouverture du nouveau module: {System.IO.Path.GetFileName(topAssemblyPath)}", "INFO");
+                    // Activer le mode silencieux AVANT d'ouvrir le module
+                    _inventorApp.SilentOperation = true;
+                    _inventorApp.UserInterfaceManager.UserInteractionDisabled = true;
+                    
+                    Log($"[i] Ouverture du nouveau module (mode invisible)...", "INFO");
 
-                    // 1. Ouvrir le Top Assembly
-                    Document topAssemblyDoc = _inventorApp.Documents.Open(topAssemblyPath, true);
+                    // 1. Ouvrir le Top Assembly en mode INVISIBLE
+                    // CRITIQUE: Visible=false évite le dialogue de vérification des références
+                    Document topAssemblyDoc = _inventorApp.Documents.Open(topAssemblyPath, false);
                     
                     if (topAssemblyDoc == null)
                     {
@@ -336,7 +361,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                         return;
                     }
 
-                    Log($"[+] Document ouvert: {System.IO.Path.GetFileName(topAssemblyPath)}", "SUCCESS");
+                    Log($"[+] Document ouvert (invisible): {System.IO.Path.GetFileName(topAssemblyPath)}", "SUCCESS");
 
                     // 2. Appliquer les iProperties
                     Log($"[>] Application des iProperties...", "INFO");
@@ -349,31 +374,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                         ApplyInventorParameters(assemblyDoc, request);
                     }
 
-                    // 4. Update All (rebuild de l'assemblage)
+                    // 4. Update All (rebuild de l'assemblage) - en mode invisible
                     Log($"[>] Update All (rebuild)...", "INFO");
                     try
                     {
                         topAssemblyDoc.Update2(true); // true = full update
-                        Log($"[+] Update terminé", "SUCCESS");
+                        Log($"[+] Update termine", "SUCCESS");
                     }
                     catch (Exception updateEx)
                     {
                         Log($"[!] Erreur pendant Update: {updateEx.Message}", "WARN");
                     }
 
-                    // 4.5 Préparer la vue: cacher workfeatures, vue ISO, zoom all
-                    Log($"[>] Préparation de la vue...", "INFO");
-                    try
-                    {
-                        PrepareViewForDesigner(topAssemblyDoc);
-                        Log($"[+] Vue préparée (ISO, Zoom All, Workfeatures cachés)", "SUCCESS");
-                    }
-                    catch (Exception viewEx)
-                    {
-                        Log($"[!] Note: Préparation vue: {viewEx.Message}", "DEBUG");
-                    }
-
-                    // 5. Save All
+                    // 5. Save All - en mode invisible
                     Log($"[i] Save All...", "INFO");
                     try
                     {
@@ -392,25 +405,73 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                             }
                             catch { /* Ignorer les erreurs de sauvegarde individuelles */ }
                         }
-                        Log($"[+] Sauvegarde terminée", "SUCCESS");
+                        Log($"[+] Sauvegarde terminee", "SUCCESS");
                     }
                     catch (Exception saveEx)
                     {
                         Log($"[!] Erreur pendant Save: {saveEx.Message}", "WARN");
                     }
 
-                    // 6. Activer le document (le mettre au premier plan)
+                    // 6. Fermer le document pour préparer la ré-ouverture visible
+                    string docPath = topAssemblyDoc.FullFileName;
+                    Log($"[>] Fermeture du document (preparation vue visible)...", "DEBUG");
                     try
                     {
-                        topAssemblyDoc.Activate();
-                        _inventorApp.Visible = true; // S'assurer qu'Inventor est visible
-                        Log($"[+] Module prêt pour le dessinateur: {System.IO.Path.GetFileName(topAssemblyPath)}", "SUCCESS");
+                        topAssemblyDoc.Close(true); // true = skip save prompt
                     }
                     catch { }
+                    
+                    // Attendre que Inventor soit stable
+                    System.Threading.Thread.Sleep(500);
+
+                    // 7. Restaurer les modes AVANT la ré-ouverture visible
+                    // Sinon l'utilisateur ne pourra pas interagir avec Inventor
+                    _inventorApp.UserInterfaceManager.UserInteractionDisabled = originalUserInteractionDisabled;
+                    _inventorApp.SilentOperation = originalSilentOperation;
+
+                    // 8. Ré-ouvrir en mode VISIBLE - pas de dialogue car fichier fraîchement sauvé
+                    Log($"[>] Re-ouverture en mode visible...", "INFO");
+                    Document visibleDoc = _inventorApp.Documents.Open(docPath, true);
+                    
+                    if (visibleDoc != null)
+                    {
+                        // 9. Préparer la vue: cacher workfeatures, vue ISO, zoom all
+                        Log($"[>] Preparation de la vue...", "INFO");
+                        try
+                        {
+                            PrepareViewForDesigner(visibleDoc);
+                            Log($"[+] Vue preparee (ISO, Zoom All, Workfeatures caches)", "SUCCESS");
+                        }
+                        catch (Exception viewEx)
+                        {
+                            Log($"[!] Note: Preparation vue: {viewEx.Message}", "DEBUG");
+                        }
+
+                        // 10. Activer le document (le mettre au premier plan)
+                        try
+                        {
+                            visibleDoc.Activate();
+                            _inventorApp.Visible = true; // S'assurer qu'Inventor est visible
+                            Log($"[+] Module pret pour le dessinateur: {System.IO.Path.GetFileName(docPath)}", "SUCCESS");
+                        }
+                        catch { }
+                    }
+                    else
+                    {
+                        Log($"[!] Impossible de re-ouvrir le document en mode visible", "WARN");
+                    }
                 }
                 catch (Exception ex)
                 {
                     Log($"[-] Erreur finalisation module: {ex.Message}", "ERROR");
+                    
+                    // Restaurer les modes en cas d'erreur aussi
+                    try
+                    {
+                        _inventorApp.UserInterfaceManager.UserInteractionDisabled = originalUserInteractionDisabled;
+                        _inventorApp.SilentOperation = originalSilentOperation;
+                    }
+                    catch { }
                 }
             });
         }
@@ -794,8 +855,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                 
                 await Task.Run(() =>
                 {
+                    // ══════════════════════════════════════════════════════════════════
+                    // CRITIQUE: Activer le mode silencieux pour éviter les dialogues
+                    // pendant la mise à jour des références et le Save() des fichiers
+                    // ══════════════════════════════════════════════════════════════════
+                    bool origSilent = _inventorApp!.SilentOperation;
+                    bool origUserDisabled = _inventorApp.UserInterfaceManager.UserInteractionDisabled;
+                    
                     try
                     {
+                        _inventorApp.SilentOperation = true;
+                        _inventorApp.UserInterfaceManager.UserInteractionDisabled = true;
+                        
                         Log($"[>] Mise a jour des references dans les assemblages...", "INFO");
                         
                         // Construire le renameMapByName à partir de tous les fichiers copiés
@@ -883,6 +954,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                     catch (Exception ex)
                     {
                         Log($"[!] Erreur MAJ refs: {ex.Message}", "WARN");
+                    }
+                    finally
+                    {
+                        // CRITIQUE: Restaurer les modes silencieux
+                        _inventorApp!.SilentOperation = origSilent;
+                        _inventorApp.UserInterfaceManager.UserInteractionDisabled = origUserDisabled;
                     }
                 });
 
@@ -1155,9 +1232,36 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
             await Task.Run(() =>
             {
                 AssemblyDocument? asmDoc = null;
+                bool originalSilentOperation = false;
+                bool originalUserInteractionDisabled = false;
 
                 try
                 {
+                    // ══════════════════════════════════════════════════════════════════
+                    // IMPORTANT: Activer le mode silencieux pour éviter les dialogues
+                    // Inventor peut demander des confirmations lors de SaveAs sur les .idw
+                    // Le iLogic Copy Design natif ne pose pas ces questions
+                    // On utilise DEUX propriétés pour être sûr:
+                    // 1. SilentOperation = true (désactive certains dialogues)
+                    // 2. UserInteractionDisabled = true (désactive TOUS les dialogues)
+                    // ══════════════════════════════════════════════════════════════════
+                    try
+                    {
+                        originalSilentOperation = _inventorApp!.SilentOperation;
+                        _inventorApp.SilentOperation = true;
+                        
+                        // CRITIQUE: Désactiver aussi UserInteractionDisabled pour bloquer
+                        // le dialogue "Multiple files have been updated in current session"
+                        originalUserInteractionDisabled = _inventorApp.UserInterfaceManager.UserInteractionDisabled;
+                        _inventorApp.UserInterfaceManager.UserInteractionDisabled = true;
+                        
+                        Log($"[i] Mode silencieux active (SilentOperation=true, UserInteractionDisabled=true)", "DEBUG");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"[!] Impossible d'activer le mode silencieux: {ex.Message}", "WARN");
+                    }
+
                     string sourceModuleName = System.IO.Path.GetFileName(sourceTopAssembly);
                     Log($"[>] NATIVE COPY DESIGN: {sourceModuleName} -> {newTopAssemblyName}", "INFO");
                     Log($"   Source: {sourceRoot}", "DEBUG");
@@ -1396,7 +1500,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
 
                     // ══════════════════════════════════════════════════════════════════
                     // CRITIQUE: FERMER TOUS LES DOCUMENTS AVANT de continuer
-                    // Les références seront mises à jour dans la 2ème passe (après copie des fichiers orphelins)
                     // ══════════════════════════════════════════════════════════════════
                     ReportProgress(72, "Fermeture des documents...");
                     Log($"[>] Fermeture de tous les documents...", "DEBUG");
@@ -1413,46 +1516,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
 
                     // ══════════════════════════════════════════════════════════════════
                     // PHASE 5: Traiter les fichiers .idw (dessins)
-                    // Les dessins ne sont PAS inclus dans AllReferencedDocuments
-                    // car ils référencent l'assemblage, pas l'inverse
-                    // On doit mettre à jour leurs références AVANT de les copier
+                    // APPROCHE SIMPLIFIÉE: Copie physique UNIQUEMENT, pas d'ouverture API
+                    // Les références seront résolues automatiquement par Inventor via l'IPJ
+                    // quand le dessinateur ouvrira les fichiers dans le bon projet
                     // ══════════════════════════════════════════════════════════════════
-                    ReportProgress(75, "Traitement des dessins (.idw)...");
+                    ReportProgress(75, "Copie des dessins (.idw)...");
 
-                    // Créer un dictionnaire des chemins source → destination pour les références
-                    var pathMapping = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var cf in copiedFiles)
-                    {
-                        if (!string.IsNullOrEmpty(cf.OriginalPath) && !string.IsNullOrEmpty(cf.NewPath))
-                        {
-                            pathMapping[cf.OriginalPath] = cf.NewPath;
-                        }
-                    }
-                    // Ajouter le mapping du Top Assembly (ancien template Module_.iam ou nouveau 000000000.iam)
-                    var topAssemblyResult = copiedFiles.FirstOrDefault(f => f.IsTopAssembly);
-                    string originalTopFileName = topAssemblyResult?.OriginalFileName ?? "000000000.iam";
-                    string originalTopPath = System.IO.Path.Combine(sourceRoot, originalTopFileName);
-                    string newTopPath = System.IO.Path.Combine(destRoot, newTopAssemblyName);
-                    pathMapping[originalTopPath] = newTopPath;
-                    
-                    // Créer un dictionnaire des renommages (nom fichier uniquement)
-                    // Pour le Top Assembly Module_.iam/000000000.iam → nouveau nom ET tous les fichiers avec préfixe/suffixe
-                    var idwRenameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                    // Ajouter les deux noms possibles du template
-                    idwRenameMap["Module_.iam"] = newTopAssemblyName;
-                    idwRenameMap["000000000.iam"] = newTopAssemblyName;
-                    
-                    // Ajouter aussi les renommages pour les fichiers référencés (préfixe/suffixe)
-                    // Utiliser renameMapByName qui contient les noms de fichiers sans chemin
-                    foreach (var kvp in renameMapByName)
-                    {
-                        if (!idwRenameMap.ContainsKey(kvp.Key))
-                        {
-                            idwRenameMap[kvp.Key] = kvp.Value;
-                        }
-                    }
-
-                    Log($"[i] Traitement de {idwFiles.Count} fichiers de dessins...", "INFO");
+                    Log($"[i] Copie physique de {idwFiles.Count} fichiers de dessins...", "INFO");
                     int idwIndex = 0;
 
                     foreach (var idwPath in idwFiles)
@@ -1480,28 +1550,34 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                             string relativePath = GetRelativePath(idwPath, sourceRoot);
                             string idwOriginalFileName = System.IO.Path.GetFileName(idwPath);
                             string idwNewFileName;
-                            string newIdwPath;
                             
-                            // Vérifier si ce fichier IDW a un renommage (préfixe/suffixe)
-                            // Chercher d'abord par chemin, puis par nom de fichier
+                            // ═══════════════════════════════════════════════════════════
+                            // RENOMMAGE IDW: Appliquer le même préfixe/suffixe que les autres fichiers
+                            // Les IDW doivent être renommés comme les IPT/IAM
+                            // ═══════════════════════════════════════════════════════════
                             string normalizedIdwPath = idwPath.Replace("/", "\\").ToLowerInvariant();
                             string idwFileNameLower = idwOriginalFileName.ToLowerInvariant();
                             
+                            // Chercher par chemin complet, puis par nom de fichier
                             if (renameMapByPath.TryGetValue(normalizedIdwPath, out string? customIdwName) && !string.IsNullOrEmpty(customIdwName))
                             {
                                 idwNewFileName = customIdwName;
+                                Log($"    [>] Renommage IDW (chemin): {idwOriginalFileName} -> {idwNewFileName}", "DEBUG");
                             }
-                            else if (renameMapByName.TryGetValue(idwFileNameLower, out string? customIdwNameByName) && !string.IsNullOrEmpty(customIdwNameByName))
+                            else if (renameMapByName.TryGetValue(idwFileNameLower, out string? customIdwNameByFileName) && !string.IsNullOrEmpty(customIdwNameByFileName))
                             {
-                                idwNewFileName = customIdwNameByName;
+                                idwNewFileName = customIdwNameByFileName;
+                                Log($"    [>] Renommage IDW (nom): {idwOriginalFileName} -> {idwNewFileName}", "DEBUG");
                             }
                             else
                             {
+                                // Pas de renommage spécifique, garder le nom original
                                 idwNewFileName = idwOriginalFileName;
                             }
                             
                             // Construire le nouveau chemin
                             string? relativeDir = System.IO.Path.GetDirectoryName(relativePath);
+                            string newIdwPath;
                             if (string.IsNullOrEmpty(relativeDir))
                             {
                                 newIdwPath = System.IO.Path.Combine(destRoot, idwNewFileName);
@@ -1518,17 +1594,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                                 Directory.CreateDirectory(newDir);
                             }
 
-                            // Ouvrir le dessin
-                            var drawDoc = (DrawingDocument)_inventorApp!.Documents.Open(idwPath, false);
-                            
                             // ═══════════════════════════════════════════════════════════
-                            // IMPORTANT: Mettre à jour les références du dessin
-                            // AVANT de faire le SaveAs
+                            // COPIE PHYSIQUE SIMPLE - PAS D'OUVERTURE API INVENTOR
+                            // Les références seront résolues via le fichier IPJ
                             // ═══════════════════════════════════════════════════════════
-                            UpdateDrawingReferencesWithMapping(drawDoc, sourceRoot, destRoot, pathMapping, idwRenameMap);
-                            
-                            // SaveAs vers la nouvelle destination
-                            ((Document)drawDoc).SaveAs(newIdwPath, false);
+                            System.IO.File.Copy(idwPath, newIdwPath, true);
                             
                             copiedFiles.Add(new FileCopyResult
                             {
@@ -1540,10 +1610,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                             });
                             filesCopied++;
                             
-                            Log($"  [i] [{idwIndex}/{idwFiles.Count}] {idwOriginalFileName} -> {idwNewFileName}", "SUCCESS");
-                            
-                            // Fermer le dessin
-                            drawDoc.Close(false);
+                            Log($"  [+] [{idwIndex}/{idwFiles.Count}] {idwOriginalFileName}", "SUCCESS");
                             
                             int progress = 75 + (int)(idwIndex * 15.0 / idwFiles.Count);
                             ReportProgress(progress, $"Dessin: {idwNewFileName}");
@@ -1565,10 +1632,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                 }
                 finally
                 {
-                    // Nettoyage: fermer tous les documents ouverts
+                    // Nettoyage: s'assurer que tous les documents sont fermés
                     try
                     {
-                        if (asmDoc != null) asmDoc.Close(false);
+                        // CloseAll avec true pour éviter tout dialogue
+                        _inventorApp?.Documents.CloseAll(true);
+                    }
+                    catch { }
+                    
+                    // asmDoc n'est plus valide après CloseAll
+                    asmDoc = null;
+                    
+                    // IMPORTANT: Restaurer les modes originaux
+                    try
+                    {
+                        if (_inventorApp != null)
+                        {
+                            // Restaurer UserInteractionDisabled AVANT SilentOperation
+                            _inventorApp.UserInterfaceManager.UserInteractionDisabled = originalUserInteractionDisabled;
+                            _inventorApp.SilentOperation = originalSilentOperation;
+                            Log($"[i] Modes restaures (SilentOperation={originalSilentOperation}, UserInteractionDisabled={originalUserInteractionDisabled})", "DEBUG");
+                        }
                     }
                     catch { }
                 }
@@ -2169,10 +2253,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
         {
             var results = new List<FileCopyResult>();
 
-            // Créer un dictionnaire pour lookup rapide des renommages
-            var renameMap = request.FilesToCopy
+            // Créer un dictionnaire pour lookup rapide des renommages par chemin
+            var renameMapByPath = request.FilesToCopy
                 .Where(f => !string.IsNullOrEmpty(f.NewFileName) && f.NewFileName != f.OriginalFileName)
-                .ToDictionary(f => f.OriginalPath.ToLowerInvariant(), f => f.NewFileName);
+                .ToDictionary(f => f.OriginalPath.ToLowerInvariant(), f => f.NewFileName, StringComparer.OrdinalIgnoreCase);
+            
+            // Aussi créer un dictionnaire par nom de fichier (pour les fichiers non listés explicitement)
+            var renameMapByName = request.FilesToCopy
+                .Where(f => !string.IsNullOrEmpty(f.NewFileName) && f.NewFileName != f.OriginalFileName)
+                .GroupBy(f => System.IO.Path.GetFileName(f.OriginalPath).ToLowerInvariant())
+                .ToDictionary(g => g.Key, g => g.First().NewFileName, StringComparer.OrdinalIgnoreCase);
 
             await Task.Run(() =>
             {
@@ -2181,7 +2271,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                     // Parcourir tous les fichiers du dossier source
                     var allFiles = Directory.GetFiles(sourceRoot, "*.*", SearchOption.AllDirectories);
                     
-                    Log($"Analyse: {allFiles.Length} fichiers trouvés dans le template", "INFO");
+                    Log($"Analyse: {allFiles.Length} fichiers trouves dans le template", "INFO");
                     int renamedCount = 0;
 
                     foreach (var filePath in allFiles)
@@ -2213,11 +2303,22 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                         string originalFileName = System.IO.Path.GetFileName(filePath);
                         
                         // Vérifier si ce fichier a un nouveau nom défini (préfixe/suffixe/renommage)
+                        // D'abord chercher par chemin complet, puis par nom de fichier
                         string newFileName = originalFileName;
-                        if (renameMap.TryGetValue(filePath.ToLowerInvariant(), out string? customName) && !string.IsNullOrEmpty(customName))
+                        string filePathLower = filePath.ToLowerInvariant();
+                        string fileNameLower = originalFileName.ToLowerInvariant();
+                        
+                        if (renameMapByPath.TryGetValue(filePathLower, out string? customNameByPath) && !string.IsNullOrEmpty(customNameByPath))
                         {
-                            newFileName = customName;
+                            newFileName = customNameByPath;
                             renamedCount++;
+                            Log($"    [>] Renommage (chemin): {originalFileName} -> {newFileName}", "DEBUG");
+                        }
+                        else if (renameMapByName.TryGetValue(fileNameLower, out string? customNameByFileName) && !string.IsNullOrEmpty(customNameByFileName))
+                        {
+                            newFileName = customNameByFileName;
+                            renamedCount++;
+                            Log($"    [>] Renommage (nom): {originalFileName} -> {newFileName}", "DEBUG");
                         }
                         
                         // Construire le chemin destination avec le nouveau nom

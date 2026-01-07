@@ -1220,11 +1220,25 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     return;
                 }
 
-                // Creer un dossier temporaire pour le telechargement
-                var tempPath = Path.Combine(Path.GetTempPath(), $"VaultDownload_{Guid.NewGuid():N}");
-                Directory.CreateDirectory(tempPath);
-                _tempVaultDownloadPath = tempPath;
-                AddLog($"[i] Dossier temporaire: {tempPath}", "DEBUG");
+                // Obtenir le working folder - Vault telecharge directement dedans
+                var workingFolderObj = connection.WorkingFoldersManager.GetWorkingFolder("$");
+                if (workingFolderObj == null || string.IsNullOrEmpty(workingFolderObj.FullPath))
+                {
+                    TxtStatus.Text = "[!] Working folder non configure";
+                    AddLog("[-] Working folder non configure dans Vault", "ERROR");
+                    BtnLoadFiles.IsEnabled = true;
+                    return;
+                }
+                
+                var workingFolder = workingFolderObj.FullPath;
+                var relativePath = project.VaultPath.TrimStart('$', '/').Replace("/", "\\");
+                var localProjectPath = Path.Combine(workingFolder, relativePath);
+                
+                AddLog($"[i] Working folder: {workingFolder}", "DEBUG");
+                AddLog($"[i] Chemin local projet: {localProjectPath}", "DEBUG");
+                
+                // PAS de dossier temporaire - Vault telecharge directement dans le working folder
+                _tempVaultDownloadPath = localProjectPath;
 
                 // Obtenir le dossier Vault
                 UpdateProgress(5, "Connexion au dossier Vault...");
@@ -1267,22 +1281,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 
                 // Convertir en array pour compatibilite
                 var files = allFiles.ToArray();
-
-                // Obtenir le working folder
-                var workingFolderObj = connection.WorkingFoldersManager.GetWorkingFolder("$");
-                if (workingFolderObj == null || string.IsNullOrEmpty(workingFolderObj.FullPath))
-                {
-                    TxtStatus.Text = "[!] Working folder non configure";
-                    AddLog("[-] Working folder non configure dans Vault", "ERROR");
-                    BtnLoadFiles.IsEnabled = true;
-                    return;
-                }
-
-                var workingFolder = workingFolderObj.FullPath;
-                var relativePath = project.VaultPath.TrimStart('$', '/').Replace("/", "\\");
-                var localFolder = Path.Combine(workingFolder, relativePath);
-                AddLog($"[i] Working folder: {workingFolder}", "DEBUG");
-                AddLog($"[i] Chemin local cible: {localFolder}", "DEBUG");
 
                 // Preparer le telechargement batch
                 UpdateProgress(15, $"Preparation de {files.Length} fichiers...");
@@ -1327,91 +1325,33 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 int successCount = fileResultsList.Count(r => r.LocalPath?.FullPath != null && File.Exists(r.LocalPath.FullPath));
                 AddLog($"[+] {successCount}/{fileResultsList.Count} fichiers telecharges en {sw.ElapsedMilliseconds}ms ({sw.ElapsedMilliseconds / Math.Max(1, successCount)}ms/fichier)", "SUCCESS");
 
-                // Copier vers le dossier temporaire
-                UpdateProgress(70, "Copie vers dossier temporaire...");
-                AddLog($"[>] Copie vers {tempPath}...", "INFO");
+                // [+] PAS DE COPIE NECESSAIRE - Vault telecharge directement dans le working folder
+                // qui est deja localProjectPath (C:\Vault\Engineering\Projects\XXX)
+                // La copie precedente etait inutile et causait des erreurs
                 
-                if (Directory.Exists(localFolder))
-                {
-                    // Copier récursivement en préservant la structure complète
-                    CopyDirectory(localFolder, tempPath);
-                }
-                else
-                {
-                    // Si le dossier n'existe pas, utiliser les chemins Vault pour préserver la structure
-                    // Créer un dictionnaire pour mapper les fichiers par leur nom
-                    var fileMap = new Dictionary<string, ACW.File>(StringComparer.OrdinalIgnoreCase);
-                    foreach (var file in files)
-                    {
-                        var fileName = file.Name;
-                        if (!fileMap.ContainsKey(fileName))
-                        {
-                            fileMap[fileName] = file;
-                        }
-                    }
-
-                    // Copier chaque fichier téléchargé en préservant sa structure de sous-dossiers
-                    // Vault télécharge les fichiers en préservant la structure dans le working folder
-                    foreach (var result in fileResultsList)
-                    {
-                        if (result?.LocalPath?.FullPath == null) continue;
-
-                        var localFilePath = result.LocalPath.FullPath;
-                        if (!File.Exists(localFilePath)) continue;
-
-                        // Calculer le chemin relatif depuis le working folder
-                        // Vault préserve la structure des dossiers lors du téléchargement
-                        string relativeFilePath;
-                        if (localFilePath.StartsWith(workingFolder, StringComparison.OrdinalIgnoreCase))
-                        {
-                            relativeFilePath = localFilePath.Substring(workingFolder.Length).TrimStart('\\', '/');
-                            
-                            // Si le chemin commence par le chemin relatif du projet, l'enlever
-                            var projectRelativePath = relativePath.TrimStart('\\', '/');
-                            if (!string.IsNullOrEmpty(projectRelativePath) && relativeFilePath.StartsWith(projectRelativePath, StringComparison.OrdinalIgnoreCase))
-                            {
-                                relativeFilePath = relativeFilePath.Substring(projectRelativePath.Length).TrimStart('\\', '/');
-                            }
-                        }
-                        else
-                        {
-                            // Dernier recours: utiliser le nom du fichier
-                            relativeFilePath = Path.GetFileName(localFilePath);
-                        }
-
-                        var destFilePath = Path.Combine(tempPath, relativeFilePath);
-                        var destDir = Path.GetDirectoryName(destFilePath);
-                        if (!string.IsNullOrEmpty(destDir))
-                        {
-                            Directory.CreateDirectory(destDir);
-                        }
-
-                        try
-                        {
-                            File.Copy(localFilePath, destFilePath, true);
-                        }
-                        catch (Exception copyEx)
-                        {
-                            AddLog($"[!] Erreur copie {Path.GetFileName(localFilePath)}: {copyEx.Message}", "WARNING");
-                        }
-                    }
-                }
+                UpdateProgress(80, "Verification des fichiers telecharges...");
                 
-                // Verifier si des fichiers ont ete copies
-                var copiedFiles = Directory.GetFiles(tempPath, "*.*", SearchOption.AllDirectories);
-                if (copiedFiles.Length == 0)
+                // Enlever les attributs ReadOnly sur les fichiers telecharges
+                RemoveReadOnlyAttributesRecursive(localProjectPath);
+                
+                // Verifier si des fichiers ont ete telecharges
+                var downloadedFiles = Directory.GetFiles(localProjectPath, "*.*", SearchOption.AllDirectories)
+                    .Where(f => !f.Contains("\\_V\\"))  // Exclure les fichiers de version _V
+                    .ToArray();
+                    
+                if (downloadedFiles.Length == 0)
                 {
                     TxtStatus.Text = "[!] Aucun fichier telecharge";
-                    AddLog("[-] Aucun fichier copie vers le dossier temporaire", "ERROR");
+                    AddLog("[-] Aucun fichier trouve dans le dossier projet", "ERROR");
                     BtnLoadFiles.IsEnabled = true;
                     return;
                 }
                 
-                AddLog($"[+] {copiedFiles.Length} fichiers copies vers le dossier temporaire", "SUCCESS");
+                AddLog($"[+] {downloadedFiles.Length} fichiers telecharges dans le dossier projet", "SUCCESS");
                 UpdateProgress(90, "Chargement de la liste des fichiers...");
 
-                // Charger les fichiers depuis le dossier temporaire
-                LoadFilesFromPath(tempPath);
+                // Charger les fichiers directement depuis le dossier projet (PAS de temp)
+                LoadFilesFromPath(localProjectPath);
                 
                 UpdateProgress(100, $"[+] {_files.Count} fichiers charges depuis Vault");
                 AddLog($"[+] Telechargement Vault termine: {_files.Count} fichiers prets", "SUCCESS");
@@ -1422,22 +1362,36 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 TxtStatus.Text = $"[-] Erreur: {ex.Message}";
                 AddLog($"[-] Erreur telechargement Vault: {ex.Message}", "ERROR");
                 AddLog($"    Stack: {ex.StackTrace?.Split('\n').FirstOrDefault()}", "DEBUG");
-                
-                // Nettoyer le dossier temporaire en cas d'erreur
-                try
-                {
-                    if (_tempVaultDownloadPath != null && Directory.Exists(_tempVaultDownloadPath))
-                    {
-                        Directory.Delete(_tempVaultDownloadPath, true);
-                    }
-                }
-                catch { }
-                _tempVaultDownloadPath = null;
             }
             finally
             {
                 BtnLoadFiles.IsEnabled = true;
             }
+        }
+        
+        /// <summary>
+        /// Enleve recursivement les attributs ReadOnly sur un dossier et tous ses fichiers
+        /// </summary>
+        private void RemoveReadOnlyAttributesRecursive(string path)
+        {
+            if (!Directory.Exists(path)) return;
+            
+            try
+            {
+                foreach (var file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        var fileInfo = new FileInfo(file);
+                        if (fileInfo.IsReadOnly)
+                        {
+                            fileInfo.IsReadOnly = false;
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch { }
         }
 
         private void CopyDirectory(string sourceDir, string destDir)

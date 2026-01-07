@@ -1098,13 +1098,13 @@
                 <!-- Boutons d'action (compacts) -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <Button x:Name="BtnPreview" Content="👁️ Prévisualiser" Style="{StaticResource SecondaryButton}" 
-                            Background="#0891B2" Foreground="#87CEEB" Height="34" FontSize="13"
+                            Background="#0891B2" Foreground="White" Height="34" FontSize="13" FontWeight="Bold"
                             Padding="12,5" Margin="0,0,8,0" Click="BtnPreview_Click" VerticalContentAlignment="Center"/>
                     <Button x:Name="BtnCancel" Content="✖️ Annuler" Style="{StaticResource SecondaryButton}" 
-                            Background="#E81123" Foreground="#FFAAAA" Height="34" FontSize="13"
+                            Background="#E81123" Foreground="White" Height="34" FontSize="13" FontWeight="Bold"
                             Padding="12,5" Margin="0,0,8,0" Click="BtnCancel_Click" VerticalContentAlignment="Center"/>
                     <Button x:Name="BtnCreateModule" Content="✅ CRÉER LE MODULE" Style="{StaticResource SuccessButton}" 
-                            Height="34" FontSize="13"
+                            Foreground="White" Height="34" FontSize="13" FontWeight="Bold"
                             Padding="15,5" IsEnabled="False" Click="BtnCreateModule_Click" VerticalContentAlignment="Center"/>
                 </StackPanel>
             </Grid>
@@ -1127,7 +1127,7 @@
                         <Button Content="🗑️ Effacer" 
                                 HorizontalAlignment="Right" 
                                 Style="{StaticResource SecondaryButton}" 
-                                Background="#DC2626" Foreground="#FFAAAA"
+                                Background="#DC2626" Foreground="White" FontWeight="Bold"
                                 Padding="10,5"
                                 Click="BtnClearLog_Click"/>
                     </Grid>
