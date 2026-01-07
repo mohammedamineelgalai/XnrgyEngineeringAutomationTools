@@ -486,14 +486,14 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="🪭" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="🧊" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Row="0" Grid.Column="1" Text="💨" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="🌀" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 <TextBlock Grid.Row="1" Grid.Column="1" Text="❄️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="🪭 Place Equipment - Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="🧊 Place Equipment - Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
                             <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
                                 <Run Text="Copie et placement d'equipements dans les modules Inventor"/>
                             </TextBlock>

@@ -197,7 +197,7 @@
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="*"/>
                                         </Grid.ColumnDefinitions>
-                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="🪭" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <TextBlock Grid.Row="0" Grid.Column="0" Text="🧊" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Row="0" Grid.Column="1" Text="💨" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Row="1" Grid.Column="0" Text="🌀" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                         <TextBlock Grid.Row="1" Grid.Column="1" Text="❄️" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
