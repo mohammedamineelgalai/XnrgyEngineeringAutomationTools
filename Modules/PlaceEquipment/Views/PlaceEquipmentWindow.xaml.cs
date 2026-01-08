@@ -949,6 +949,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
 
         /// <summary>
         /// Obtient tous les fichiers recursivement depuis un dossier Vault (pour equipements)
+        /// IMPORTANT: Recupere aussi les associations/dependances des fichiers Inventor
+        /// Tous les fichiers sont dans le meme dossier (et sous-dossiers) dans Vault
         /// </summary>
         private void GetAllFilesRecursiveForEquipment(VDF.Vault.Currency.Connections.Connection connection, ACW.Folder folder, List<ACW.File> allFiles, List<ACW.Folder> allFolders)
         {
@@ -961,7 +963,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 var files = connection.WebServiceManager.DocumentService.GetLatestFilesByFolderId(folder.Id, false);
                 if (files != null && files.Length > 0)
                 {
-                    allFiles.AddRange(files);
+                    foreach (var file in files)
+                    {
+                        // Ajouter le fichier s'il n'est pas deja dans la liste
+                        if (!allFiles.Any(f => f.Id == file.Id))
+                        {
+                            allFiles.Add(file);
+                        }
+                    }
                 }
                 
                 // Obtenir les sous-dossiers

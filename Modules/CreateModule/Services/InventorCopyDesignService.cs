@@ -503,7 +503,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                 SetProperty(customProps, "Numero_de_Projet", request.FullProjectNumber, true);
                 SetProperty(customProps, "Initiale_du_Dessinateur", request.InitialeDessinateur, true);
                 SetProperty(customProps, "Initiale_du_Co_Dessinateur", request.InitialeCoDessinateur, true);
+                SetProperty(customProps, "Concepteur Lead CAD", request.InitialeLeadCAD ?? "", true);
                 SetProperty(customProps, "Creation_Date", request.CreationDateFormatted, true);
+                SetProperty(customProps, "Weight", "", true); // Vide, sera mis a jour par iLogic
                 
                 if (!string.IsNullOrEmpty(request.JobTitle))
                 {

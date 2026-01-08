@@ -463,7 +463,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                 // Fermer tous les documents
                 CloseAllDocuments();
 
-                ReportProgress(92, "Copie fichiers non-Inventor...");
+                ReportProgress(91, "Copie fichiers Inventor orphelins...");
+
+                // ══════════════════════════════════════════════════════════════════
+                // PHASE CRITIQUE: Copier les fichiers Inventor "orphelins"
+                // Ces fichiers sont dans le dossier mais pas references directement
+                // Ils sont appeles dynamiquement par iLogic selon les scenarios
+                // IMPORTANT: Ne pas ouvrir ces fichiers, juste les copier physiquement
+                // ══════════════════════════════════════════════════════════════════
+                int orphansCopied = await CopyOrphanInventorFilesAsync(sourceFolder, destinationFolder, result.CopiedFiles);
+                Log($"[+] {orphansCopied} fichiers Inventor orphelins copies (appeles par iLogic)", "SUCCESS");
+
+                ReportProgress(95, "Copie fichiers non-Inventor...");
 
                 // Copier les fichiers non-Inventor (IPJ, images, etc.)
                 await CopyNonInventorFilesAsync(sourceFolder, destinationFolder);
@@ -581,6 +592,88 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                     }
                 }
             });
+        }
+
+        /// <summary>
+        /// Copie les fichiers Inventor "orphelins" - fichiers .ipt/.iam/.ipn qui sont dans le dossier source
+        /// mais qui n'ont pas ete copies par le Copy Design car non references directement.
+        /// Ces fichiers sont typiquement appeles dynamiquement par les regles iLogic.
+        /// IMPORTANT: Copie physique simple sans ouvrir dans Inventor (evite les erreurs de references)
+        /// </summary>
+        private async Task<int> CopyOrphanInventorFilesAsync(string sourceFolder, string destFolder, List<FileCopyInfo> alreadyCopied)
+        {
+            int copiedCount = 0;
+            
+            await Task.Run(() =>
+            {
+                string[] inventorExtensions = { ".ipt", ".iam", ".ipn" };
+                
+                // Creer un HashSet des fichiers deja copies (pour verification rapide)
+                var copiedPaths = new HashSet<string>(
+                    alreadyCopied.Select(f => f.OriginalPath ?? ""),
+                    StringComparer.OrdinalIgnoreCase
+                );
+                
+                // Parcourir tous les fichiers Inventor du dossier source
+                foreach (var file in IODirectory.GetFiles(sourceFolder, "*.*", System.IO.SearchOption.AllDirectories))
+                {
+                    string ext = IOPath.GetExtension(file).ToLowerInvariant();
+                    string fileName = IOPath.GetFileName(file);
+                    string dirName = IOPath.GetFileName(IOPath.GetDirectoryName(file) ?? "");
+
+                    // Seulement les fichiers Inventor (pas .idw qui sont traites separement)
+                    if (!inventorExtensions.Contains(ext)) continue;
+
+                    // Exclure fichiers temporaires Vault
+                    if (VaultTempExtensions.Any(e => ext.StartsWith(e))) continue;
+                    if (fileName.StartsWith("~$") || fileName.StartsWith("._")) continue;
+
+                    // Exclure dossiers _V et OldVersions
+                    if (ExcludedFolders.Contains(dirName, StringComparer.OrdinalIgnoreCase)) continue;
+                    if (file.Contains("\\_V\\") || file.Contains("\\OldVersions\\")) continue;
+
+                    // Verifier si ce fichier a deja ete copie par le Copy Design
+                    if (copiedPaths.Contains(file)) continue;
+
+                    // Calculer le chemin de destination
+                    string relativePath = GetRelativePath(file, sourceFolder);
+                    string destPath = IOPath.Combine(destFolder, relativePath);
+                    string? destDir = IOPath.GetDirectoryName(destPath);
+
+                    // Verifier si le fichier existe deja a destination
+                    if (IOFile.Exists(destPath)) continue;
+
+                    // Creer le dossier si necessaire
+                    if (!string.IsNullOrEmpty(destDir) && !IODirectory.Exists(destDir))
+                    {
+                        IODirectory.CreateDirectory(destDir);
+                    }
+
+                    try
+                    {
+                        // Copie physique simple (pas de SaveAs, pas d'ouverture Inventor)
+                        IOFile.Copy(file, destPath, true);
+                        copiedCount++;
+                        
+                        // Log tous les 50 fichiers pour ne pas spammer
+                        if (copiedCount <= 10 || copiedCount % 50 == 0)
+                        {
+                            Log($"  [+] Orphelin: {fileName}", "DEBUG");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"  [!] Erreur copie orphelin {fileName}: {ex.Message}", "WARN");
+                    }
+                }
+                
+                if (copiedCount > 10)
+                {
+                    Log($"  ... et {copiedCount - 10} autres fichiers orphelins", "DEBUG");
+                }
+            });
+            
+            return copiedCount;
         }
 
         /// <summary>

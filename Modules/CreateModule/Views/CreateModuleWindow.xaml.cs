@@ -2406,10 +2406,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 // Préparer les données depuis les ComboBox
                 var initialeDessinateur = CmbInitialeDessinateur?.SelectedItem?.ToString() ?? "";
                 var initialeCoDessinateur = CmbInitialeCoDessinateur?.SelectedItem?.ToString() ?? "";
+                var initialeLeadCAD = CmbInitialeLeadCAD?.SelectedItem?.ToString() ?? "";
                 
                 // Si N/A est sélectionné, on le traite comme vide
                 _request.InitialeDessinateur = initialeDessinateur == "N/A" ? "" : initialeDessinateur;
                 _request.InitialeCoDessinateur = initialeCoDessinateur == "N/A" ? "" : initialeCoDessinateur;
+                _request.InitialeLeadCAD = initialeLeadCAD == "N/A" ? "" : initialeLeadCAD;
                 _request.JobTitle = TxtJobTitle?.Text ?? "";
                 _request.CreationDate = DpCreationDate.SelectedDate ?? DateTime.Now;
                 _request.FilesToCopy = _files;
@@ -2417,6 +2419,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 AddLog($"Dessinateur: {_request.InitialeDessinateur}", "INFO");
                 if (!string.IsNullOrEmpty(_request.InitialeCoDessinateur))
                     AddLog($"Co-Dessinateur: {_request.InitialeCoDessinateur}", "INFO");
+                if (!string.IsNullOrEmpty(_request.InitialeLeadCAD))
+                    AddLog($"Lead CAD: {_request.InitialeLeadCAD}", "INFO");
                 AddLog($"Date de création: {_request.CreationDate:yyyy-MM-dd}", "INFO");
                 AddLog($"Destination: {_request.DestinationPath}", "INFO");
 
