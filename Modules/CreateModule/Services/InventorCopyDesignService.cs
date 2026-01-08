@@ -2418,14 +2418,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                     SetOrCreateProperty(customProps, "Numero_de_Projet", request.FullProjectNumber);
                     SetOrCreateProperty(customProps, "Initiale_du_Dessinateur", request.InitialeDessinateur);
                     SetOrCreateProperty(customProps, "Initiale_du_Co_Dessinateur", request.InitialeCoDessinateur ?? "");
+                    SetOrCreateProperty(customProps, "Concepteur Lead CAD", request.InitialeLeadCAD ?? "");
                     SetOrCreateProperty(customProps, "Creation_Date", request.CreationDate.ToString("yyyy-MM-dd"));
                     SetOrCreateProperty(customProps, "Job_Title", request.JobTitle ?? "");
+                    SetOrCreateProperty(customProps, "Weight", ""); // Vide, sera mis a jour par iLogic
                     
                     Log($"  Project: {request.Project}", "INFO");
                     Log($"  Reference: {request.Reference}", "INFO");
                     Log($"  Module: {request.Module}", "INFO");
                     Log($"  Numéro complet: {request.FullProjectNumber}", "INFO");
                     Log($"  Dessinateur: {request.InitialeDessinateur}", "INFO");
+                    Log($"  Lead CAD: {request.InitialeLeadCAD ?? "(vide)"}", "INFO");
                 }
                 catch (Exception ex)
                 {

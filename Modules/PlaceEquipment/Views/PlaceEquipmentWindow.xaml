@@ -486,10 +486,10 @@
                                     <ColumnDefinition Width="*"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Grid.Row="0" Grid.Column="0" Text="🧊" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Row="0" Grid.Column="1" Text="💨" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Row="1" Grid.Column="0" Text="🌀" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                <TextBlock Grid.Row="1" Grid.Column="1" Text="❄️" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="🧊" FontSize="14" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="0" Grid.Column="1" Text="💨" FontSize="14" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="🌀" FontSize="14" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="❄️" FontSize="14" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Grid>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
@@ -675,36 +675,46 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="280"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Initiale Dessinateur - ComboBox avec liste prédéfinie -->
-                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                <TextBlock Text="Initiales Dessinateur *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <StackPanel Grid.Column="0" Margin="0,0,4,0">
+                                <TextBlock Text="Dessinateur *" Style="{StaticResource ModernLabel}" FontSize="11"/>
                                 <ComboBox x:Name="CmbInitialeDessinateur" Style="{StaticResource ModernComboBox}"
                                           SelectionChanged="CmbInitialeDessinateur_SelectionChanged"
                                           ToolTip="Sélectionner les initiales du dessinateur principal"/>
                             </StackPanel>
 
                             <!-- Initiale Co-Dessinateur - ComboBox avec liste prédéfinie -->
-                            <StackPanel Grid.Column="1" Margin="0,0,8,0">
-                                <TextBlock Text="Initiales Co-Dessinateur" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <StackPanel Grid.Column="1" Margin="0,0,4,0">
+                                <TextBlock Text="Co-Dessinateur" Style="{StaticResource ModernLabel}" FontSize="11"/>
                                 <ComboBox x:Name="CmbInitialeCoDessinateur" Style="{StaticResource ModernComboBox}"
                                           SelectionChanged="CmbInitialeCoDessinateur_SelectionChanged"
                                           ToolTip="Sélectionner les initiales du co-dessinateur (optionnel)"/>
                             </StackPanel>
 
+                            <!-- Initiale Lead CAD - ComboBox avec liste prédéfinie -->
+                            <StackPanel Grid.Column="2" Margin="0,0,4,0">
+                                <TextBlock Text="Lead CAD" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <ComboBox x:Name="CmbInitialeLeadCAD" Style="{StaticResource ModernComboBox}"
+                                          SelectionChanged="CmbInitialeLeadCAD_SelectionChanged"
+                                          ToolTip="Sélectionner les initiales du Lead CAD (optionnel)"/>
+                            </StackPanel>
+
                             <!-- Job Title (requis) -->
-                            <StackPanel Grid.Column="2" Margin="0,0,8,0">
+                            <StackPanel Grid.Column="3" Margin="0,0,4,0">
                                 <TextBlock Text="Job Title *" Style="{StaticResource ModernLabel}" FontSize="11"/>
-                                <TextBox x:Name="TxtJobTitle" Style="{StaticResource ModernTextBox}" Padding="10,8"
-                                         MaxLength="100" TextChanged="TxtJobTitle_TextChanged"
-                                         ToolTip="Titre du projet pour pages de couverture PDF (requis)"/>
+                                <TextBox x:Name="TxtJobTitle" Style="{StaticResource ModernTextBox}" Padding="8,8"
+                                         TextChanged="TxtJobTitle_TextChanged"
+                                         CharacterCasing="Upper"
+                                         ToolTip="Titre du projet en MAJUSCULES"/>
                             </StackPanel>
 
                             <!-- Date de Création avec DatePicker stylé -->
-                            <StackPanel Grid.Column="3">
-                                <TextBlock Text="Date de Création" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="Date" Style="{StaticResource ModernLabel}" FontSize="11"/>
                                 <DatePicker x:Name="DpCreationDate" 
                                             Style="{StaticResource ModernDatePicker}"
                                             SelectedDateFormat="Short"

@@ -69,6 +69,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Models
             set { _initialeCoDessinateur = value; OnPropertyChanged(); }
         }
 
+        private string _initialeLeadCAD = string.Empty;
+        /// <summary>
+        /// Initiales du Lead CAD (ex: MAE)
+        /// Linké au paramètre Concepteur Lead CAD dans Top Assy
+        /// </summary>
+        public string InitialeLeadCAD
+        {
+            get => _initialeLeadCAD;
+            set { _initialeLeadCAD = value; OnPropertyChanged(); }
+        }
+
         private DateTime _creationDate = DateTime.Now;
         /// <summary>
         /// Date de création du module

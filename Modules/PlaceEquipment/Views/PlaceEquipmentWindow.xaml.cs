@@ -777,16 +777,68 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 AddLog($"[+] {fileIndex} fichiers prepares en {sw.ElapsedMilliseconds}ms", "INFO");
                 Logger.Info($"[+] {fileIndex} fichiers prepares en {sw.ElapsedMilliseconds}ms");
 
-                // Telecharger tous les fichiers en UNE SEULE operation batch (20-70%)
-                UpdateProgress(20, $"Telechargement batch de {fileIndex} fichiers...");
-                AddLog($"[>] Lancement telechargement batch...", "INFO");
-                Logger.Info($"[>] Lancement telechargement batch...");
+                // ══════════════════════════════════════════════════════════════════
+                // TELECHARGEMENT PAR LOTS avec progression precise (20-70%)
+                // Telecharge par lots de 10 fichiers pour permettre mise a jour UI
+                // ══════════════════════════════════════════════════════════════════
+                const int BATCH_SIZE = 10;
+                int downloadedCount = 0;
+                int totalToDownload = allFiles.Count;
+                var allDownloadResults = new List<VDF.Vault.Results.FileAcquisitionResult>();
+                
+                UpdateProgress(20, $"Telechargement de {totalToDownload} fichiers...");
+                AddLog($"[>] Lancement telechargement par lots de {BATCH_SIZE}...", "INFO");
+                Logger.Info($"[>] Lancement telechargement par lots de {BATCH_SIZE} fichiers...");
                 
                 sw.Restart();
-                var downloadResult = await Task.Run(() => connection.FileManager.AcquireFiles(downloadSettings));
+                
+                // Diviser en lots pour mise a jour progressive
+                var fileBatches = allFiles
+                    .Select((file, index) => new { file, index })
+                    .GroupBy(x => x.index / BATCH_SIZE)
+                    .Select(g => g.Select(x => x.file).ToList())
+                    .ToList();
+                
+                foreach (var batch in fileBatches)
+                {
+                    try
+                    {
+                        // Preparer le lot
+                        var batchSettings = new VDF.Vault.Settings.AcquireFilesSettings(connection, false);
+                        foreach (var file in batch)
+                        {
+                            var fileIteration = new VDF.Vault.Currency.Entities.FileIteration(connection, file);
+                            batchSettings.AddFileToAcquire(fileIteration, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+                        }
+                        
+                        // Telecharger le lot
+                        var batchResult = await Task.Run(() => connection.FileManager.AcquireFiles(batchSettings));
+                        
+                        if (batchResult?.FileResults != null)
+                        {
+                            allDownloadResults.AddRange(batchResult.FileResults);
+                        }
+                        
+                        downloadedCount += batch.Count;
+                        
+                        // Mise a jour progression (20-70% = 50% de plage)
+                        int progressPercent = 20 + (int)((downloadedCount / (double)totalToDownload) * 50);
+                        string currentFileName = batch.LastOrDefault()?.Name ?? "";
+                        UpdateProgress(progressPercent, $"Telechargement {downloadedCount}/{totalToDownload}...", currentFile: currentFileName);
+                        
+                        // Permettre a l'UI de se rafraichir
+                        await Task.Delay(10);
+                    }
+                    catch (Exception batchEx)
+                    {
+                        Logger.Warning($"[!] Erreur lot: {batchEx.Message}");
+                        downloadedCount += batch.Count; // Continuer meme en cas d'erreur
+                    }
+                }
+                
                 sw.Stop();
 
-                if (downloadResult?.FileResults == null || !downloadResult.FileResults.Any())
+                if (allDownloadResults.Count == 0)
                 {
                     UpdateProgress(0, "[!] Aucun fichier telecharge", isError: true);
                     AddLog("[-] AcquireFiles n'a retourne aucun resultat", "ERROR");
@@ -794,7 +846,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     return;
                 }
 
-                var fileResultsList = downloadResult.FileResults.ToList();
+                var fileResultsList = allDownloadResults;
                 int successCount = fileResultsList.Count(r => r.LocalPath?.FullPath != null && File.Exists(r.LocalPath.FullPath));
                 
                 // Progression apres telechargement batch (70%)
@@ -1231,6 +1283,40 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                         Logger.Debug($"[i] Propriete 'Initiale_du_Co_Dessinateur' non trouvee: {ex.Message}");
                     }
 
+                    // Chercher "Concepteur Lead CAD" (NOUVEAU)
+                    try
+                    {
+                        dynamic prop = customProps["Concepteur Lead CAD"];
+                        string leadCAD = prop.Value?.ToString() ?? "";
+                        Logger.Info($"[i] Propriete 'Concepteur Lead CAD' trouvee: '{leadCAD}'");
+                        
+                        if (!string.IsNullOrEmpty(leadCAD))
+                        {
+                            bool found = false;
+                            foreach (var item in CmbInitialeLeadCAD.Items)
+                            {
+                                if (item.ToString() == leadCAD)
+                                {
+                                    CmbInitialeLeadCAD.SelectedItem = item;
+                                    AddLog($"[+] Lead CAD: {leadCAD}", "SUCCESS");
+                                    Logger.Info($"[+] Lead CAD selectionne: {leadCAD}");
+                                    found = true;
+                                    propsFound++;
+                                    break;
+                                }
+                            }
+                            if (!found)
+                            {
+                                Logger.Warning($"[!] Valeur '{leadCAD}' non trouvee dans la ComboBox CmbInitialeLeadCAD");
+                                AddLog($"[!] Lead CAD '{leadCAD}' non trouve dans la liste", "WARN");
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Debug($"[i] Propriete 'Concepteur Lead CAD' non trouvee: {ex.Message}");
+                    }
+
                     // Chercher "Job_Title" (nom avec underscore dans Inventor)
                     try
                     {
@@ -1419,11 +1505,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             {
                 CmbInitialeDessinateur.Items.Add(initial);
                 CmbInitialeCoDessinateur.Items.Add(initial);
+                CmbInitialeLeadCAD.Items.Add(initial);
             }
             
-            // Sélectionner N/A par défaut pour le co-dessinateur
+            // Sélectionner N/A par défaut pour le co-dessinateur et Lead CAD
             CmbInitialeDessinateur.SelectedIndex = 0;
             CmbInitialeCoDessinateur.SelectedIndex = 0; // N/A
+            CmbInitialeLeadCAD.SelectedIndex = 0; // N/A
         }
 
         private void CmbReference_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1485,6 +1573,31 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 {
                     // Annulé - revenir à N/A
                     CmbInitialeCoDessinateur.SelectedIndex = 0;
+                }
+            }
+            // Pas de validation requise car optionnel
+        }
+
+        private void CmbInitialeLeadCAD_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Gérer l'option "Autre..." pour saisie personnalisée
+            if (CmbInitialeLeadCAD.SelectedItem?.ToString() == "Autre...")
+            {
+                string customValue = ShowCustomInitialDialog("Lead CAD");
+                if (!string.IsNullOrWhiteSpace(customValue))
+                {
+                    // Ajouter la valeur custom avant "Autre..." si elle n'existe pas déjà
+                    if (!CmbInitialeLeadCAD.Items.Contains(customValue))
+                    {
+                        int autreIndex = CmbInitialeLeadCAD.Items.IndexOf("Autre...");
+                        CmbInitialeLeadCAD.Items.Insert(autreIndex, customValue);
+                    }
+                    CmbInitialeLeadCAD.SelectedItem = customValue;
+                }
+                else
+                {
+                    // Annulé - revenir à N/A
+                    CmbInitialeLeadCAD.SelectedIndex = 0;
                 }
             }
             // Pas de validation requise car optionnel
@@ -2882,10 +2995,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     UpdateProgress(65, "Application des iProperties...");
                     AddLog("[6/8] Application des iProperties a l'equipement...", "INFO");
                     
-                    // TODO: Implementer l'application des iProperties directement ici
-                    // Pour l'instant, les iProperties sont appliquees par ExecuteCopyDesignAsync
-                    AddLog("[+] iProperties appliquees via Copy Design", "SUCCESS");
-                    Logger.Info("[+] iProperties appliquees a l'equipement via Copy Design");
+                    // Appliquer les iProperties du formulaire a l'assemblage equipement ouvert
+                    int propsApplied = ApplyIPropertiesToEquipment();
+                    if (propsApplied > 0)
+                    {
+                        AddLog($"[+] {propsApplied} iProperties appliquees a l'equipement", "SUCCESS");
+                        Logger.Info($"[+] {propsApplied} iProperties appliquees a l'equipement");
+                    }
+                    else
+                    {
+                        AddLog("[!] Aucune iProperty appliquee", "WARN");
+                        Logger.Warning("[!] Aucune iProperty appliquee a l'equipement");
+                    }
                     
                     // Preparer la vue pour le designer (cacher plans, vue ISO, zoom all)
                     AddLog("[>] Preparation vue equipement (plans, ISO, zoom)...", "INFO");
@@ -3663,6 +3784,269 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             catch (Exception ex)
             {
                 Logger.Warning($"[!] Erreur preparation dossier Equipment: {ex.Message}");
+            }
+        }
+        
+        #endregion
+        
+        #region Application iProperties à l'équipement
+        
+        /// <summary>
+        /// Applique les iProperties du formulaire à l'assemblage equipement ouvert dans Inventor
+        /// Mapping des propriétés:
+        /// - Initiale_du_Dessinateur : CmbInitialeDessinateur
+        /// - Initiale_du_Co_Dessinateur : CmbInitialeCoDessinateur
+        /// - Concepteur Lead CAD : CmbInitialeLeadCAD
+        /// - Job_Title : TxtJobTitle
+        /// - Creation_Date : DpCreationDate
+        /// - Weight : (vide, sera mis a jour par iLogic)
+        /// </summary>
+        /// <returns>Nombre de proprietes appliquees</returns>
+        private int ApplyIPropertiesToEquipment()
+        {
+            Logger.Info("[>] Application des iProperties a l'equipement...");
+            AddLog("[>] Application des iProperties...", "INFO");
+            
+            int propsApplied = 0;
+            
+            try
+            {
+                var inventorApp = _inventorService.GetInventorApplication();
+                if (inventorApp == null)
+                {
+                    Logger.Error("[-] Impossible d'obtenir l'application Inventor");
+                    AddLog("[-] Inventor non disponible", "ERROR");
+                    return 0;
+                }
+                
+                dynamic activeDoc = inventorApp.ActiveDocument;
+                if (activeDoc == null)
+                {
+                    Logger.Error("[-] Aucun document actif dans Inventor");
+                    AddLog("[-] Aucun document actif", "ERROR");
+                    return 0;
+                }
+                
+                string docName = activeDoc.DisplayName;
+                Logger.Info($"[i] Document actif pour iProperties: {docName}");
+                
+                // Acceder aux PropertySets du document
+                var propertySets = activeDoc.PropertySets;
+                
+                // Obtenir ou creer le PropertySet custom
+                dynamic customProps = null;
+                try
+                {
+                    customProps = propertySets["Inventor User Defined Properties"];
+                }
+                catch
+                {
+                    Logger.Warning("[!] PropertySet custom non trouve, creation...");
+                }
+                
+                if (customProps == null)
+                {
+                    Logger.Error("[-] Impossible d'acceder aux proprietes custom");
+                    AddLog("[-] Proprietes custom non accessibles", "ERROR");
+                    return 0;
+                }
+                
+                // ══════════════════════════════════════════════════════════════
+                // 1. Initiale_du_Dessinateur
+                // ══════════════════════════════════════════════════════════════
+                string dessinateur = GetSelectedComboValue(CmbInitialeDessinateur);
+                if (!string.IsNullOrEmpty(dessinateur) && dessinateur != "N/A")
+                {
+                    if (SetOrCreateProperty(customProps, "Initiale_du_Dessinateur", dessinateur))
+                    {
+                        Logger.Info($"[+] Initiale_du_Dessinateur = {dessinateur}");
+                        AddLog($"[+] Dessinateur: {dessinateur}", "SUCCESS");
+                        propsApplied++;
+                    }
+                }
+                
+                // ══════════════════════════════════════════════════════════════
+                // 2. Initiale_du_Co_Dessinateur
+                // ══════════════════════════════════════════════════════════════
+                string coDessinateur = GetSelectedComboValue(CmbInitialeCoDessinateur);
+                if (!string.IsNullOrEmpty(coDessinateur) && coDessinateur != "N/A")
+                {
+                    if (SetOrCreateProperty(customProps, "Initiale_du_Co_Dessinateur", coDessinateur))
+                    {
+                        Logger.Info($"[+] Initiale_du_Co_Dessinateur = {coDessinateur}");
+                        AddLog($"[+] Co-Dessinateur: {coDessinateur}", "SUCCESS");
+                        propsApplied++;
+                    }
+                }
+                
+                // ══════════════════════════════════════════════════════════════
+                // 3. Concepteur Lead CAD (NOUVEAU)
+                // ══════════════════════════════════════════════════════════════
+                string leadCAD = GetSelectedComboValue(CmbInitialeLeadCAD);
+                if (!string.IsNullOrEmpty(leadCAD) && leadCAD != "N/A")
+                {
+                    if (SetOrCreateProperty(customProps, "Concepteur Lead CAD", leadCAD))
+                    {
+                        Logger.Info($"[+] Concepteur Lead CAD = {leadCAD}");
+                        AddLog($"[+] Lead CAD: {leadCAD}", "SUCCESS");
+                        propsApplied++;
+                    }
+                }
+                else
+                {
+                    // Creer la propriete meme vide
+                    SetOrCreateProperty(customProps, "Concepteur Lead CAD", "");
+                    Logger.Info("[i] Concepteur Lead CAD cree (vide)");
+                }
+                
+                // ══════════════════════════════════════════════════════════════
+                // 4. Job_Title
+                // ══════════════════════════════════════════════════════════════
+                string jobTitle = TxtJobTitle?.Text?.Trim() ?? "";
+                if (!string.IsNullOrEmpty(jobTitle))
+                {
+                    if (SetOrCreateProperty(customProps, "Job_Title", jobTitle))
+                    {
+                        Logger.Info($"[+] Job_Title = {jobTitle}");
+                        AddLog($"[+] Job Title: {jobTitle}", "SUCCESS");
+                        propsApplied++;
+                    }
+                }
+                
+                // ══════════════════════════════════════════════════════════════
+                // 5. Creation_Date
+                // ══════════════════════════════════════════════════════════════
+                if (DpCreationDate?.SelectedDate != null)
+                {
+                    DateTime creationDate = DpCreationDate.SelectedDate.Value;
+                    if (SetOrCreateProperty(customProps, "Creation_Date", creationDate))
+                    {
+                        Logger.Info($"[+] Creation_Date = {creationDate:yyyy-MM-dd}");
+                        AddLog($"[+] Date: {creationDate:yyyy-MM-dd}", "SUCCESS");
+                        propsApplied++;
+                    }
+                }
+                
+                // ══════════════════════════════════════════════════════════════
+                // 6. Weight (vide, sera mis a jour par iLogic)
+                // ══════════════════════════════════════════════════════════════
+                // Creer la propriete Weight meme vide, pour qu'iLogic puisse la mettre a jour
+                SetOrCreateProperty(customProps, "Weight", "");
+                Logger.Info("[i] Weight cree (vide - sera mis a jour par iLogic)");
+                
+                // ══════════════════════════════════════════════════════════════
+                // 7. Project (numero de projet - ex: 10359)
+                // ══════════════════════════════════════════════════════════════
+                string project = TxtProject?.Text?.Trim() ?? "";
+                if (!string.IsNullOrEmpty(project))
+                {
+                    if (SetOrCreateProperty(customProps, "Project", project))
+                    {
+                        Logger.Info($"[+] Project = {project}");
+                        AddLog($"[+] Project: {project}", "SUCCESS");
+                        propsApplied++;
+                    }
+                }
+                
+                // ══════════════════════════════════════════════════════════════
+                // 8. Reference (ex: 09 de REF09)
+                // ══════════════════════════════════════════════════════════════
+                string reference = CmbReference?.SelectedItem?.ToString() ?? "";
+                if (!string.IsNullOrEmpty(reference))
+                {
+                    if (SetOrCreateProperty(customProps, "Reference", reference))
+                    {
+                        Logger.Info($"[+] Reference = {reference}");
+                        AddLog($"[+] Reference: {reference}", "SUCCESS");
+                        propsApplied++;
+                    }
+                }
+                
+                // ══════════════════════════════════════════════════════════════
+                // 9. Module (ex: 03 de M03)
+                // ══════════════════════════════════════════════════════════════
+                string module = CmbModule?.SelectedItem?.ToString() ?? "";
+                if (!string.IsNullOrEmpty(module))
+                {
+                    if (SetOrCreateProperty(customProps, "Module", module))
+                    {
+                        Logger.Info($"[+] Module = {module}");
+                        AddLog($"[+] Module: {module}", "SUCCESS");
+                        propsApplied++;
+                    }
+                }
+                
+                // ══════════════════════════════════════════════════════════════
+                // 10. Numero_de_Projet (format complet: 1035909M03)
+                // ══════════════════════════════════════════════════════════════
+                if (!string.IsNullOrEmpty(project) && !string.IsNullOrEmpty(reference) && !string.IsNullOrEmpty(module))
+                {
+                    string numeroProjet = $"{project}{reference}M{module}";
+                    if (SetOrCreateProperty(customProps, "Numero_de_Projet", numeroProjet))
+                    {
+                        Logger.Info($"[+] Numero_de_Projet = {numeroProjet}");
+                        AddLog($"[+] Numero de Projet: {numeroProjet}", "SUCCESS");
+                        propsApplied++;
+                    }
+                }
+                
+                Logger.Info($"[+] {propsApplied} iProperties appliquees a l'equipement");
+                AddLog($"[+] {propsApplied} iProperties appliquees", "SUCCESS");
+                
+                return propsApplied;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error($"[-] Erreur application iProperties: {ex.Message}");
+                AddLog($"[-] Erreur iProperties: {ex.Message}", "ERROR");
+                return propsApplied;
+            }
+        }
+        
+        /// <summary>
+        /// Obtient la valeur selectionnee d'un ComboBox
+        /// </summary>
+        private string GetSelectedComboValue(ComboBox? combo)
+        {
+            if (combo == null || combo.SelectedItem == null) return "";
+            return combo.SelectedItem.ToString() ?? "";
+        }
+        
+        /// <summary>
+        /// Definit ou cree une propriete custom dans Inventor
+        /// ATTENTION: L'API Inventor PropertySets.Add() a l'ordre (value, name) et non (name, value)!
+        /// </summary>
+        private bool SetOrCreateProperty(dynamic customProps, string propName, object value)
+        {
+            try
+            {
+                // Essayer de modifier la propriete existante
+                try
+                {
+                    dynamic prop = customProps[propName];
+                    prop.Value = value;
+                    return true;
+                }
+                catch
+                {
+                    // La propriete n'existe pas, la creer
+                    // IMPORTANT: Add(value, name) - ordre inverse!
+                    try
+                    {
+                        customProps.Add(value, propName);
+                        return true;
+                    }
+                    catch (Exception createEx)
+                    {
+                        Logger.Warning($"[!] Impossible de creer la propriete '{propName}': {createEx.Message}");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"[!] Erreur propriete '{propName}': {ex.Message}");
+                return false;
             }
         }
         

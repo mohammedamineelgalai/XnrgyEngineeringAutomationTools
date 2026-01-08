@@ -572,11 +572,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             {
                 CmbInitialeDessinateur.Items.Add(initial);
                 CmbInitialeCoDessinateur.Items.Add(initial);
+                CmbInitialeLeadCAD.Items.Add(initial);
             }
             
-            // Sélectionner N/A par défaut pour le co-dessinateur
+            // Sélectionner N/A par défaut pour le co-dessinateur et Lead CAD
             CmbInitialeDessinateur.SelectedIndex = 0;
             CmbInitialeCoDessinateur.SelectedIndex = 0; // N/A
+            CmbInitialeLeadCAD.SelectedIndex = 0; // N/A
         }
 
         private void CmbReference_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -638,6 +640,31 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 {
                     // Annulé - revenir à N/A
                     CmbInitialeCoDessinateur.SelectedIndex = 0;
+                }
+            }
+            // Pas de validation requise car optionnel
+        }
+
+        private void CmbInitialeLeadCAD_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Gérer l'option "Autre..." pour saisie personnalisée
+            if (CmbInitialeLeadCAD.SelectedItem?.ToString() == "Autre...")
+            {
+                string customValue = ShowCustomInitialDialog("Lead CAD");
+                if (!string.IsNullOrWhiteSpace(customValue))
+                {
+                    // Ajouter la valeur custom avant "Autre..." si elle n'existe pas déjà
+                    if (!CmbInitialeLeadCAD.Items.Contains(customValue))
+                    {
+                        int autreIndex = CmbInitialeLeadCAD.Items.IndexOf("Autre...");
+                        CmbInitialeLeadCAD.Items.Insert(autreIndex, customValue);
+                    }
+                    CmbInitialeLeadCAD.SelectedItem = customValue;
+                }
+                else
+                {
+                    // Annulé - revenir à N/A
+                    CmbInitialeLeadCAD.SelectedIndex = 0;
                 }
             }
             // Pas de validation requise car optionnel
@@ -1012,6 +1039,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             public string Module { get; set; } = string.Empty;
             public string VaultPath { get; set; } = string.Empty;
             public string DisplayName => $"{Project} / {Reference} / {Module}";
+            
+            // Override ToString pour l'affichage dans ComboBox
+            public override string ToString() => DisplayName;
         }
 
         private string? _tempVaultDownloadPath = null;
@@ -1305,15 +1335,67 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 sw.Stop();
                 AddLog($"[+] {fileIndex} fichiers prepares en {sw.ElapsedMilliseconds}ms", "INFO");
 
-                // Telecharger tous les fichiers en UNE SEULE operation batch (comme Vault Client)
-                UpdateProgress(20, $"Telechargement batch de {fileIndex} fichiers...");
-                AddLog($"[>] Lancement telechargement batch...", "INFO");
+                // ══════════════════════════════════════════════════════════════════
+                // TELECHARGEMENT PAR LOTS avec progression precise (20-70%)
+                // Telecharge par lots de 10 fichiers pour permettre mise a jour UI
+                // ══════════════════════════════════════════════════════════════════
+                const int BATCH_SIZE = 10;
+                int downloadedCount = 0;
+                int totalToDownload = files.Length;
+                var allDownloadResults = new List<VDF.Vault.Results.FileAcquisitionResult>();
+                
+                UpdateProgress(20, $"Telechargement de {totalToDownload} fichiers...");
+                AddLog($"[>] Lancement telechargement par lots de {BATCH_SIZE}...", "INFO");
                 
                 sw.Restart();
-                var downloadResult = await Task.Run(() => connection.FileManager.AcquireFiles(downloadSettings));
+                
+                // Diviser en lots pour mise a jour progressive
+                var fileBatches = files
+                    .Select((file, index) => new { file, index })
+                    .GroupBy(x => x.index / BATCH_SIZE)
+                    .Select(g => g.Select(x => x.file).ToList())
+                    .ToList();
+                
+                foreach (var batch in fileBatches)
+                {
+                    try
+                    {
+                        // Preparer le lot
+                        var batchSettings = new VDF.Vault.Settings.AcquireFilesSettings(connection, false);
+                        foreach (var file in batch)
+                        {
+                            var fileIteration = new VDF.Vault.Currency.Entities.FileIteration(connection, file);
+                            batchSettings.AddFileToAcquire(fileIteration, VDF.Vault.Settings.AcquireFilesSettings.AcquisitionOption.Download);
+                        }
+                        
+                        // Telecharger le lot
+                        var batchResult = await Task.Run(() => connection.FileManager.AcquireFiles(batchSettings));
+                        
+                        if (batchResult?.FileResults != null)
+                        {
+                            allDownloadResults.AddRange(batchResult.FileResults);
+                        }
+                        
+                        downloadedCount += batch.Count;
+                        
+                        // Mise a jour progression (20-70% = 50% de plage)
+                        int progressPercent = 20 + (int)((downloadedCount / (double)totalToDownload) * 50);
+                        string currentFileName = batch.LastOrDefault()?.Name ?? "";
+                        UpdateProgress(progressPercent, $"Telechargement {downloadedCount}/{totalToDownload}...", currentFile: currentFileName);
+                        
+                        // Permettre a l'UI de se rafraichir
+                        await Task.Delay(10);
+                    }
+                    catch (Exception batchEx)
+                    {
+                        AddLog($"[!] Erreur lot: {batchEx.Message}", "WARNING");
+                        downloadedCount += batch.Count; // Continuer meme en cas d'erreur
+                    }
+                }
+                
                 sw.Stop();
 
-                if (downloadResult?.FileResults == null || !downloadResult.FileResults.Any())
+                if (allDownloadResults.Count == 0)
                 {
                     TxtStatus.Text = "[!] Aucun fichier telecharge";
                     AddLog("[-] AcquireFiles n'a retourne aucun resultat", "ERROR");
@@ -1321,7 +1403,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     return;
                 }
 
-                var fileResultsList = downloadResult.FileResults.ToList();
+                var fileResultsList = allDownloadResults;
                 int successCount = fileResultsList.Count(r => r.LocalPath?.FullPath != null && File.Exists(r.LocalPath.FullPath));
                 AddLog($"[+] {successCount}/{fileResultsList.Count} fichiers telecharges en {sw.ElapsedMilliseconds}ms ({sw.ElapsedMilliseconds / Math.Max(1, successCount)}ms/fichier)", "SUCCESS");
 
@@ -1329,7 +1411,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 // qui est deja localProjectPath (C:\Vault\Engineering\Projects\XXX)
                 // La copie precedente etait inutile et causait des erreurs
                 
-                UpdateProgress(80, "Verification des fichiers telecharges...");
+                UpdateProgress(75, "Verification des fichiers telecharges...");
                 
                 // Enlever les attributs ReadOnly sur les fichiers telecharges
                 RemoveReadOnlyAttributesRecursive(localProjectPath);
@@ -1482,8 +1564,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     return;
                 }
 
-                // Determiner si on est en mode "Projet Existant"
+                // Determiner si on est en mode "Projet Existant" ou "Depuis Vault"
+                // Les deux modes utilisent la meme logique de renommage (fichiers avec noms reels, pas templates)
                 bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
+                bool isFromVault = _request.Source == CreateModuleSource.FromVault;
+                bool useExistingProjectLogic = isFromExistingProject || isFromVault;
 
                 // Scanner TOUS les fichiers du dossier (copie design complète)
                 // Exclure: fichiers temporaires, Vault, .bak, dossiers _V et OldVersions
@@ -1565,8 +1650,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     };
 
                     // Pour templates: renommer Module_.iam/000000000.iam et fichier IPJ principal
-                    // Pour projets existants: renommer le premier .iam a la racine et le premier .ipj a la racine
-                    if (!isFromExistingProject)
+                    // Pour projets existants ET Vault: renommer le premier .iam a la racine et le premier .ipj a la racine
+                    if (!useExistingProjectLogic)
                     {
                         // Renommage automatique du Top Assembly (.iam) - template Module_.iam ou 000000000.iam
                         if (isTopAssembly && !string.IsNullOrEmpty(TxtProject?.Text))
@@ -1583,8 +1668,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     }
                     else
                     {
-                        // PROJET EXISTANT: Renommer le fichier Top Assembly (.iam à la racine) avec le numéro de projet
-                        // Note: Pour les projets existants, isTopAssembly est false car le fichier ne s'appelle pas "Module_.iam"
+                        // PROJET EXISTANT ou VAULT: Renommer le fichier Top Assembly (.iam à la racine) avec le numéro de projet
+                        // Note: Pour les projets existants/Vault, isTopAssembly est false car le fichier ne s'appelle pas "Module_.iam"
                         // On détecte le premier .iam à la racine comme Top Assembly
                         bool isRootIam = extension == "IAM" && string.IsNullOrEmpty(Path.GetDirectoryName(relativePath));
                         bool isRootIpj = isProjectFile && string.IsNullOrEmpty(Path.GetDirectoryName(relativePath));
