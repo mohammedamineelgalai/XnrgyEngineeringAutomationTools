@@ -1057,6 +1057,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
         /// IMPORTANT: Dans le template Xnrgy_Module, la plupart des fichiers sont "orphelins" car le Module_.iam
         /// ne référence que des fichiers de la Library. Tous ces fichiers doivent être copiés.
         /// Utilise les NewFileName définis dans le request pour appliquer préfixes/suffixes/renommages.
+        /// EXCLUSION CRITIQUE: Top Assembly et IPJ principal sont exclus car ils sont renommes differemment
         /// </summary>
         private async Task<List<FileCopyResult>> CopyOrphanInventorFilesAsync(
             string sourceRoot, 
@@ -1066,10 +1067,50 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
         {
             var results = new List<FileCopyResult>();
 
-            // Créer un dictionnaire pour lookup rapide des renommages
-            var renameMap = request.FilesToCopy
+            // ══════════════════════════════════════════════════════════════════
+            // CRITIQUE: Identifier le Top Assembly et IPJ principal (000000000.iam/ipj) pour les EXCLURE
+            // Ces fichiers sont renommes avec le numero de projet SANS prefixe
+            // et sont deja copies par le Copy Design natif
+            // ══════════════════════════════════════════════════════════════════
+            var topAssemblyFile = request.FilesToCopy.FirstOrDefault(f => f.IsTopAssembly ||
+                f.OriginalFileName.Equals("000000000.iam", StringComparison.OrdinalIgnoreCase));
+            
+            var mainIpjFile = request.FilesToCopy.FirstOrDefault(f => 
+                f.OriginalFileName.Equals("000000000.ipj", StringComparison.OrdinalIgnoreCase));
+
+            // [DEBUG] Log des fichiers master
+            if (topAssemblyFile != null)
+            {
+                Log($"[DEBUG] Top Assembly: Original={topAssemblyFile.OriginalFileName}, New={topAssemblyFile.NewFileName}", "DEBUG");
+            }
+            if (mainIpjFile != null)
+            {
+                Log($"[DEBUG] IPJ principal: Original={mainIpjFile.OriginalFileName}, New={mainIpjFile.NewFileName}", "DEBUG");
+            }
+
+            // Creer un dictionnaire pour lookup rapide des renommages
+            // INCLURE TOUS les fichiers avec NewFileName different de OriginalFileName
+            // SAUF les 2 fichiers master (Top Assembly 000000000.iam et IPJ 000000000.ipj)
+            var masterPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (topAssemblyFile != null) masterPaths.Add(topAssemblyFile.OriginalPath.ToLowerInvariant());
+            if (mainIpjFile != null) masterPaths.Add(mainIpjFile.OriginalPath.ToLowerInvariant());
+            
+            // Dictionnaire par chemin complet
+            var renameMapByPath = request.FilesToCopy
                 .Where(f => !string.IsNullOrEmpty(f.NewFileName) && f.NewFileName != f.OriginalFileName)
-                .ToDictionary(f => f.OriginalPath.ToLowerInvariant(), f => f.NewFileName);
+                .Where(f => !masterPaths.Contains(f.OriginalPath.ToLowerInvariant()))
+                .ToDictionary(f => f.OriginalPath.ToLowerInvariant(), f => f.NewFileName, StringComparer.OrdinalIgnoreCase);
+            
+            // Dictionnaire par nom de fichier seul (fallback si le chemin ne correspond pas)
+            var renameMapByName = request.FilesToCopy
+                .Where(f => !string.IsNullOrEmpty(f.NewFileName) && f.NewFileName != f.OriginalFileName)
+                .Where(f => !masterPaths.Contains(f.OriginalPath.ToLowerInvariant()))
+                .GroupBy(f => f.OriginalFileName.ToLowerInvariant())
+                .ToDictionary(g => g.Key, g => g.First().NewFileName, StringComparer.OrdinalIgnoreCase);
+            
+            // [DEBUG] Log du renameMap pour les fichiers orphelins
+            Log($"[DEBUG] renameMap contient {renameMapByPath.Count} fichiers avec renommage (par chemin)", "DEBUG");
+            Log($"[DEBUG] renameMapByName contient {renameMapByName.Count} fichiers avec renommage (par nom)", "DEBUG");
 
             await Task.Run(() =>
             {
@@ -1087,12 +1128,24 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                         .Select(p => p.ToLowerInvariant().Trim())
                         .ToHashSet();
 
+                    // Chemins normalises des fichiers master pour exclusion explicite
+                    var masterPathsNorm = masterPaths.Select(p => p.ToLowerInvariant().Trim()).ToHashSet();
+
                     // Exclure les fichiers déjà copiés et ceux dans les dossiers exclus
                     var orphanFiles = allInventorFiles
                         .Where(f =>
                         {
+                            string fNorm = f.ToLowerInvariant().Trim();
+                            
+                            // [CRITIQUE] Exclure les fichiers master (Top Assembly et IPJ principal)
+                            if (masterPathsNorm.Contains(fNorm))
+                            {
+                                Log($"  [i] Exclu (fichier master): {System.IO.Path.GetFileName(f)}", "DEBUG");
+                                return false;
+                            }
+
                             // Vérifier si déjà copié (comparaison normalisée)
-                            if (normalizedCopiedPaths.Contains(f.ToLowerInvariant().Trim()))
+                            if (normalizedCopiedPaths.Contains(fNorm))
                                 return false;
 
                             // Vérifier si dans un dossier exclu
@@ -1130,10 +1183,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                             string originalFileName = System.IO.Path.GetFileName(orphanFile);
                             
                             // Vérifier si ce fichier a un nouveau nom défini (préfixe/suffixe/renommage)
+                            // D'abord chercher par chemin complet, puis par nom de fichier
                             string newFileName = originalFileName;
-                            if (renameMap.TryGetValue(orphanFile.ToLowerInvariant(), out string? customName) && !string.IsNullOrEmpty(customName))
+                            string orphanFileLower = orphanFile.ToLowerInvariant();
+                            string originalFileNameLower = originalFileName.ToLowerInvariant();
+                            
+                            if (renameMapByPath.TryGetValue(orphanFileLower, out string? customNameByPath) && !string.IsNullOrEmpty(customNameByPath))
                             {
-                                newFileName = customName;
+                                newFileName = customNameByPath;
+                                renamedCount++;
+                            }
+                            else if (renameMapByName.TryGetValue(originalFileNameLower, out string? customNameByName) && !string.IsNullOrEmpty(customNameByName))
+                            {
+                                newFileName = customNameByName;
                                 renamedCount++;
                             }
                             
@@ -1274,6 +1336,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                     // IMPORTANT: Utilisé pour tous les fichiers enfants, pas seulement les orphelins
                     // Normaliser les chemins en minuscules pour éviter les problèmes de casse
                     // ══════════════════════════════════════════════════════════════════
+                    // [CRITIQUE] Identifier le Top Assembly et IPJ pour les EXCLURE du rename map
+                    // Ces fichiers sont renommes avec newTopAssemblyName directement, pas via le map
+                    var topAssemblyNorm = sourceTopAssembly.Replace("/", "\\").ToLowerInvariant();
+                    
                     var renameMapByPath = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                     var renameMapByName = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                     
@@ -1281,6 +1347,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Services
                     {
                         // Normaliser le chemin (remplacer / par \ et utiliser lowercase)
                         string normalizedPath = f.OriginalPath.Replace("/", "\\").ToLowerInvariant();
+                        
+                        // [CRITIQUE] Exclure le Top Assembly et IPJ principal (000000000.iam/ipj) du rename map
+                        // Ces fichiers sont renommes directement avec le numero de projet
+                        bool isTopAssemblyOrIpj = f.IsTopAssembly || 
+                            normalizedPath == topAssemblyNorm ||
+                            f.OriginalFileName.Equals("000000000.iam", StringComparison.OrdinalIgnoreCase) ||
+                            f.OriginalFileName.Equals("000000000.ipj", StringComparison.OrdinalIgnoreCase);
+                        
+                        if (isTopAssemblyOrIpj)
+                        {
+                            Log($"[DEBUG] Exclu du renameMap (fichier master): {f.OriginalFileName} -> {f.NewFileName}", "DEBUG");
+                            continue;
+                        }
+                        
                         if (!renameMapByPath.ContainsKey(normalizedPath))
                         {
                             renameMapByPath[normalizedPath] = f.NewFileName;

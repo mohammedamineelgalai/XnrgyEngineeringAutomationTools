@@ -24,6 +24,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         private Action<string, string>? _htmlPopupCallback;
         private Func<string, string, ExportOptionsResult?>? _exportOptionsCallback;
         private Func<string, string, IProgressWindow>? _progressWindowCallback;
+        private Action<string, string, Func<string, string, bool>, Func<string, string, bool>>? _iPropertiesPopupCallback;
+        private Action<string, string, System.Collections.Generic.Dictionary<string, string>, Func<string, string, bool>, Func<string, string, bool>>? _iPropertiesWindowCallback;
+        
+        // Document actif pour les modifications de propriétés
+        private dynamic? _currentPropertiesDocument;
 
         public SmartToolsService(InventorService inventorService)
         {
@@ -60,6 +65,117 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         public void SetProgressWindowCallback(Func<string, string, IProgressWindow>? callback)
         {
             _progressWindowCallback = callback;
+        }
+        
+        /// <summary>
+        /// Définit le callback pour afficher la popup iProperties avec les fonctions de modification
+        /// </summary>
+        public void SetIPropertiesPopupCallback(Action<string, string, Func<string, string, bool>, Func<string, string, bool>>? callback)
+        {
+            _iPropertiesPopupCallback = callback;
+        }
+        
+        /// <summary>
+        /// Définit le callback pour afficher la fenêtre iProperties WPF native
+        /// </summary>
+        public void SetIPropertiesWindowCallback(Action<string, string, System.Collections.Generic.Dictionary<string, string>, Func<string, string, bool>, Func<string, string, bool>>? callback)
+        {
+            _iPropertiesWindowCallback = callback;
+        }
+        
+        /// <summary>
+        /// Modifie une propriété utilisateur dans le document actif
+        /// </summary>
+        public bool ApplyPropertyChange(string propertyName, string propertyValue)
+        {
+            try
+            {
+                if (_currentPropertiesDocument == null)
+                {
+                    Log($"Aucun document actif pour modifier la propriété {propertyName}", "ERROR");
+                    return false;
+                }
+                
+                dynamic propSets = _currentPropertiesDocument.PropertySets;
+                dynamic customProps = propSets["Inventor User Defined Properties"];
+                
+                try
+                {
+                    // Essayer de modifier une propriété existante
+                    dynamic prop = customProps[propertyName];
+                    prop.Value = propertyValue;
+                    Log($"Propriété '{propertyName}' mise à jour: {propertyValue}", "SUCCESS");
+                    return true;
+                }
+                catch
+                {
+                    // Si la propriété n'existe pas dans les custom, essayer Design Tracking
+                    try
+                    {
+                        dynamic designProps = propSets["Design Tracking Properties"];
+                        dynamic prop = designProps[propertyName];
+                        prop.Value = propertyValue;
+                        Log($"Propriété Design '{propertyName}' mise à jour: {propertyValue}", "SUCCESS");
+                        return true;
+                    }
+                    catch
+                    {
+                        Log($"Propriété '{propertyName}' non trouvée", "ERROR");
+                        return false;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"Erreur modification propriété '{propertyName}': {ex.Message}", "ERROR");
+                return false;
+            }
+        }
+        
+        /// <summary>
+        /// Ajoute une nouvelle propriété utilisateur au document actif
+        /// </summary>
+        public bool AddNewProperty(string propertyName, string propertyValue)
+        {
+            try
+            {
+                if (_currentPropertiesDocument == null)
+                {
+                    Log($"Aucun document actif pour ajouter la propriété {propertyName}", "ERROR");
+                    return false;
+                }
+                
+                if (string.IsNullOrWhiteSpace(propertyName))
+                {
+                    Log("Le nom de la propriété ne peut pas être vide", "ERROR");
+                    return false;
+                }
+                
+                dynamic propSets = _currentPropertiesDocument.PropertySets;
+                dynamic customProps = propSets["Inventor User Defined Properties"];
+                
+                // Vérifier si la propriété existe déjà
+                try
+                {
+                    dynamic existingProp = customProps[propertyName];
+                    Log($"La propriété '{propertyName}' existe déjà", "WARNING");
+                    return false;
+                }
+                catch
+                {
+                    // La propriété n'existe pas, on peut la créer
+                }
+                
+                // Ajouter la nouvelle propriété
+                customProps.Add(propertyValue, propertyName);
+                Log($"Propriété '{propertyName}' ajoutée avec valeur: {propertyValue}", "SUCCESS");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log($"Erreur ajout propriété '{propertyName}': {ex.Message}", "ERROR");
+                return false;
+            }
         }
 
         private void Log(string message, string level = "INFO")
@@ -1764,44 +1880,41 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// <summary>
         /// Affiche un résumé des iProperties du composant sélectionné
         /// Code converti depuis iPropertiesSummary.vb
+        /// Note: Exécution sur le thread principal pour éviter les erreurs de threading COM
         /// </summary>
         public async Task ExecuteIPropertiesSummaryAsync(Action<string, string>? logCallback = null)
         {
             if (logCallback != null)
                 SetLogCallback(logCallback);
 
-            await Task.Run(() =>
+            // Exécuter sur le thread principal (pas de Task.Run) car COM Inventor nécessite le thread STA
+            try
             {
-                try
+                Log("Démarrage iProperties Summary...", "INFO");
+                
+                dynamic inventorApp = GetInventorApplication();
+                dynamic doc = inventorApp.ActiveDocument;
+
+                if (doc == null)
                 {
-                    dynamic inventorApp = GetInventorApplication();
-                    dynamic doc = inventorApp.ActiveDocument;
+                    Log("Aucun document actif n'est ouvert.", "ERROR");
+                    MessageBox.Show("Aucun document actif n'est ouvert.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
 
-                    if (doc == null)
-                    {
-                        Log("Aucun document actif n'est ouvert.", "ERROR");
-                        return;
-                    }
+                // Vérifier s'il y a une sélection
+                dynamic selectSet = doc.SelectSet;
+                dynamic compDoc = null;
+                string componentName = "";
 
-                    // Vérifier s'il y a une sélection
-                    dynamic selectSet = doc.SelectSet;
-                    if (selectSet.Count == 0)
-                    {
-                        Log("Veuillez sélectionner un composant dans l'arbre ou le graphique.", "WARNING");
-                        MessageBox.Show("Veuillez selectionner un composant dans l'arbre ou le graphique.", 
-                            "Aucune selection", MessageBoxButton.OK, MessageBoxImage.Warning);
-                        return;
-                    }
-
+                if (selectSet.Count > 0)
+                {
                     // Obtenir l'objet sélectionné
                     dynamic selObj = selectSet[1];
-                    dynamic compDoc = null;
-                    string componentName = "";
 
                     // Vérifier si c'est un ComponentOccurrence (assemblage)
                     try
                     {
-                        // Essayer d'accéder aux propriétés d'un ComponentOccurrence
                         dynamic definition = selObj.Definition;
                         compDoc = definition.Document;
                         componentName = selObj.Name;
@@ -1814,163 +1927,241 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         componentName = System.IO.Path.GetFileName(doc.FullFileName);
                         Log($"Document actif utilisé: {componentName}", "INFO");
                     }
+                }
+                else
+                {
+                    // Pas de sélection, utiliser le document actif
+                    compDoc = doc;
+                    componentName = System.IO.Path.GetFileName(doc.FullFileName);
+                    Log($"Document actif utilisé (pas de sélection): {componentName}", "INFO");
+                }
 
-                    if (compDoc == null)
-                    {
-                        Log("Impossible d'accéder au document du composant.", "ERROR");
-                        return;
-                    }
+                if (compDoc == null)
+                {
+                    Log("Impossible d'accéder au document du composant.", "ERROR");
+                    return;
+                }
 
-                    Log("Lecture des propriétés...", "INFO");
+                Log("Lecture de TOUTES les propriétés...", "INFO");
 
-                    // Récupérer les propriétés
-                    var properties = new System.Collections.Generic.Dictionary<string, string>();
+                // Récupérer TOUTES les propriétés (même vides)
+                var properties = new System.Collections.Generic.Dictionary<string, string>();
+
+                try
+                {
+                    dynamic propSets = compDoc.PropertySets;
                     
-                    // Ordre prioritaire des propriétés XNRGY
-                    var priorityProps = new[] { "Tag", "Tag_Assy", "Description", "Material", 
-                        "Length", "Width", "Depth", "Thickness", "Prefix", "Destination", 
-                        "Engraving", "Finish_Paint_Face", "MachineNo" };
-
+                    // === 1. CUSTOM PROPERTIES (Propriétés personnalisées) - EN PREMIER ===
                     try
                     {
-                        dynamic propSets = compDoc.PropertySets;
+                        dynamic customProps = propSets["Inventor User Defined Properties"];
+                        Log("  [Custom] Lecture des propriétés personnalisées...", "DEBUG");
                         
-                        // Propriétés utilisateur personnalisées
-                        try
+                        foreach (dynamic prop in customProps)
                         {
-                            dynamic customProps = propSets["Inventor User Defined Properties"];
-                            foreach (string propName in priorityProps)
-                            {
-                                try
-                                {
-                                    dynamic prop = customProps[propName];
-                                    if (prop != null && prop.Value != null)
-                                    {
-                                        properties[propName] = prop.Value.ToString();
-                                    }
-                                }
-                                catch { /* Propriété non trouvée */ }
-                            }
-
-                            // Ajouter les autres propriétés custom non listées
-                            foreach (dynamic prop in customProps)
+                            try
                             {
                                 string propName = prop.Name;
-                                if (!properties.ContainsKey(propName) && propName != "Sheet Metal StyleName")
+                                if (propName != "Sheet Metal StyleName")
                                 {
-                                    try
-                                    {
-                                        if (prop.Value != null)
-                                            properties[propName] = prop.Value.ToString();
-                                    }
-                                    catch { }
+                                    string val = prop.Value?.ToString() ?? "";
+                                    properties[$"Custom:{propName}"] = val;
                                 }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Log($"Erreur lecture propriétés custom: {ex.Message}", "WARNING");
-                        }
-
-                        // Propriétés de conception (Design Tracking)
-                        try
-                        {
-                            dynamic designProps = propSets["Design Tracking Properties"];
-                            
-                            // Material si pas déjà défini
-                            if (!properties.ContainsKey("Material"))
-                            {
-                                try
-                                {
-                                    dynamic matProp = designProps["Material"];
-                                    if (matProp != null && matProp.Value != null)
-                                        properties["Material"] = matProp.Value.ToString();
-                                }
-                                catch { }
-                            }
-
-                            // Description si pas déjà défini
-                            if (!properties.ContainsKey("Description"))
-                            {
-                                try
-                                {
-                                    dynamic descProp = designProps["Description"];
-                                    if (descProp != null && descProp.Value != null)
-                                        properties["Description"] = descProp.Value.ToString();
-                                }
-                                catch { }
-                            }
-
-                            // Part Number
-                            try
-                            {
-                                dynamic partNumProp = designProps["Part Number"];
-                                if (partNumProp != null && partNumProp.Value != null)
-                                    properties["Part Number"] = partNumProp.Value.ToString();
                             }
                             catch { }
                         }
-                        catch { }
-
-                        // Propriétés du document (Summary Information)
-                        try
-                        {
-                            dynamic summaryProps = propSets["Inventor Summary Information"];
-                            
-                            try
-                            {
-                                dynamic authorProp = summaryProps["Author"];
-                                if (authorProp != null && authorProp.Value != null)
-                                    properties["Auteur"] = authorProp.Value.ToString();
-                            }
-                            catch { }
-                        }
-                        catch { }
-
-                        // Propriétés document info
-                        try
-                        {
-                            dynamic docProps = propSets["Inventor Document Summary Information"];
-                            
-                            try
-                            {
-                                dynamic companyProp = docProps["Company"];
-                                if (companyProp != null && companyProp.Value != null)
-                                    properties["Entreprise"] = companyProp.Value.ToString();
-                            }
-                            catch { }
-                        }
-                        catch { }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log($"Erreur accès PropertySets: {ex.Message}", "ERROR");
-                    }
-
-                    // Ajouter des infos système
-                    try
-                    {
-                        properties["Derniere sauvegarde"] = System.IO.File.GetLastWriteTime(compDoc.FullFileName).ToString("yyyy-MM-dd HH:mm");
                     }
                     catch { }
 
-                    Log($"Propriétés lues: {properties.Count}", "INFO");
+                    // === 2. GENERAL (Informations générales du fichier) ===
+                    try
+                    {
+                        Log("  [General] Lecture des informations générales...", "DEBUG");
+                        var fileInfo = new System.IO.FileInfo(compDoc.FullFileName);
+                        
+                        // Type de fichier
+                        string docType = compDoc.DocumentType.ToString();
+                        string typeDisplay = docType.Contains("Assembly") || docType.Contains("12290") ? "Assembly" :
+                                            docType.Contains("Part") || docType.Contains("12291") ? "Part" :
+                                            docType.Contains("Drawing") || docType.Contains("12292") ? "Drawing" : "Document";
+                        properties["General:Type of file"] = $"Autodesk Inventor {typeDisplay}";
+                        properties["General:Location"] = System.IO.Path.GetDirectoryName(compDoc.FullFileName) ?? "";
+                        properties["General:Size"] = $"{fileInfo.Length / 1024.0:F2} KB";
+                        properties["General:Created"] = fileInfo.CreationTime.ToString("yyyy-MM-dd HH:mm:ss");
+                        properties["General:Modified"] = fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss");
+                        properties["General:Accessed"] = fileInfo.LastAccessTime.ToString("yyyy-MM-dd HH:mm:ss");
+                    }
+                    catch { }
 
-                    // Générer et afficher le HTML
-                    string fileName = System.IO.Path.GetFileName(compDoc.FullFileName);
-                    string fullPath = compDoc.FullFileName;
-                    string htmlContent = Views.HtmlPopupWindow.GenerateIPropertiesHtml(fileName, fullPath, properties);
-                    
-                    // Afficher via le callback
-                    ShowHtmlPopup($"iProperties - {componentName}", htmlContent);
-                    
-                    Log("Résumé iProperties affiché avec succès", "SUCCESS");
+                    // === 3. SUMMARY INFORMATION ===
+                    try
+                    {
+                        dynamic summaryProps = propSets["Inventor Summary Information"];
+                        Log("  [Summary] Lecture des informations résumé...", "DEBUG");
+                        
+                        var summaryPropNames = new[] { "Title", "Subject", "Author", "Keywords", "Comments", "Last Saved By", "Revision Number" };
+                        foreach (string propName in summaryPropNames)
+                        {
+                            try
+                            {
+                                dynamic prop = summaryProps[propName];
+                                string val = prop?.Value?.ToString() ?? "";
+                                properties[$"Summary:{propName}"] = val;
+                            }
+                            catch { }
+                        }
+                    }
+                    catch { }
+
+                    // Document Summary (aussi dans Summary)
+                    try
+                    {
+                        dynamic docProps = propSets["Inventor Document Summary Information"];
+                        var docPropNames = new[] { "Company", "Manager", "Category" };
+                        foreach (string propName in docPropNames)
+                        {
+                            try
+                            {
+                                dynamic prop = docProps[propName];
+                                string val = prop?.Value?.ToString() ?? "";
+                                properties[$"Summary:{propName}"] = val;
+                            }
+                            catch { }
+                        }
+                    }
+                    catch { }
+
+                    // === 4. PROJECT (Design Tracking Properties) ===
+                    try
+                    {
+                        dynamic designProps = propSets["Design Tracking Properties"];
+                        Log("  [Project] Lecture des propriétés projet...", "DEBUG");
+                        
+                        var projectPropNames = new[] { "Part Number", "Stock Number", "Description", "Revision Number", 
+                            "Project", "Designer", "Engineer", "Authority", "Cost Center", "Cost", "Vendor", 
+                            "Creation Date", "WEB Link" };
+                        
+                        foreach (string propName in projectPropNames)
+                        {
+                            try
+                            {
+                                dynamic prop = designProps[propName];
+                                string val = prop?.Value?.ToString() ?? "";
+                                properties[$"Project:{propName}"] = val;
+                            }
+                            catch { }
+                        }
+                    }
+                    catch { }
+
+                    // === 5. STATUS ===
+                    try
+                    {
+                        dynamic designProps = propSets["Design Tracking Properties"];
+                        Log("  [Status] Lecture des propriétés statut...", "DEBUG");
+                        
+                        var statusPropNames = new[] { "Design Status", "User Status", "Checked By", "Date Checked",
+                            "Engr Approved By", "Engr Date Approved", "Mfg Approved By", "Mfg Date Approved" };
+                        
+                        foreach (string propName in statusPropNames)
+                        {
+                            try
+                            {
+                                dynamic prop = designProps[propName];
+                                string val = prop?.Value?.ToString() ?? "";
+                                properties[$"Status:{propName}"] = val;
+                            }
+                            catch { }
+                        }
+                    }
+                    catch { }
+
+                    // === 6. SAVE (Informations de sauvegarde) ===
+                    try
+                    {
+                        Log("  [Save] Lecture des informations de sauvegarde...", "DEBUG");
+                        var fileInfo = new System.IO.FileInfo(compDoc.FullFileName);
+                        properties["Save:Last Save"] = fileInfo.LastWriteTime.ToString("yyyy-MM-dd HH:mm:ss");
+                        properties["Save:Last Saved By"] = "";
+                        try
+                        {
+                            dynamic summaryProps = propSets["Inventor Summary Information"];
+                            dynamic lastSavedBy = summaryProps["Last Saved By"];
+                            properties["Save:Last Saved By"] = lastSavedBy?.Value?.ToString() ?? "";
+                        }
+                        catch { }
+                    }
+                    catch { }
+
+                    // === 7. PHYSICAL PROPERTIES ===
+                    try
+                    {
+                        Log("  [Physical] Lecture des propriétés physiques...", "DEBUG");
+                        
+                        // Material depuis Design Tracking
+                        try
+                        {
+                            dynamic designProps = propSets["Design Tracking Properties"];
+                            dynamic matProp = designProps["Material"];
+                            properties["Physical:Material"] = matProp?.Value?.ToString() ?? "";
+                        }
+                        catch { }
+
+                        // Propriétés de masse (si disponibles)
+                        try
+                        {
+                            dynamic massProps = compDoc.ComponentDefinition.MassProperties;
+                            properties["Physical:Mass"] = $"{massProps.Mass:F4} kg";
+                            properties["Physical:Area"] = $"{massProps.Area:F4} cm²";
+                            properties["Physical:Volume"] = $"{massProps.Volume:F4} cm³";
+                        }
+                        catch 
+                        {
+                            properties["Physical:Mass"] = "N/A";
+                            properties["Physical:Area"] = "N/A";
+                            properties["Physical:Volume"] = "N/A";
+                        }
+                    }
+                    catch { }
                 }
                 catch (Exception ex)
                 {
-                    Log($"Erreur lors de la génération du résumé: {ex.Message}", "ERROR");
+                    Log($"Erreur accès PropertySets: {ex.Message}", "ERROR");
                 }
-            });
+
+                Log($"Total propriétés lues: {properties.Count}", "INFO");
+
+                // Stocker le document pour les modifications ultérieures
+                _currentPropertiesDocument = compDoc;
+
+                string fileName = System.IO.Path.GetFileName(compDoc.FullFileName);
+                string fullPath = compDoc.FullFileName;
+                
+                // Afficher la fenêtre WPF native
+                if (_iPropertiesWindowCallback != null)
+                {
+                    _iPropertiesWindowCallback(fileName, fullPath, properties, ApplyPropertyChange, AddNewProperty);
+                }
+                else if (_iPropertiesPopupCallback != null)
+                {
+                    string htmlContent = Views.HtmlPopupWindow.GenerateIPropertiesHtml(fileName, fullPath, properties);
+                    _iPropertiesPopupCallback($"iProperties - {componentName}", htmlContent, ApplyPropertyChange, AddNewProperty);
+                }
+                else
+                {
+                    string htmlContent = Views.HtmlPopupWindow.GenerateIPropertiesHtml(fileName, fullPath, properties);
+                    ShowHtmlPopup($"iProperties - {componentName}", htmlContent);
+                }
+                
+                Log("Résumé iProperties affiché avec succès", "SUCCESS");
+            }
+            catch (Exception ex)
+            {
+                Log($"Erreur lors de la génération du résumé: {ex.Message}", "ERROR");
+                MessageBox.Show($"Erreur: {ex.Message}", "Erreur iProperties", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            
+            await Task.CompletedTask; // Pour satisfaire le compilateur async
         }
 
         #endregion
@@ -1981,6 +2172,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// Sauvegarde intelligente des documents Inventor sans les fermer
         /// Code converti depuis SmartSave.iLogicVb
         /// Affiche une fenêtre HTML dynamique avec progression en temps réel
+        /// Note: Exécution sur le thread principal pour éviter les erreurs de threading COM/WPF
         /// </summary>
         public async Task ExecuteSmartSaveAsync(Action<string, string>? logCallback = null)
         {
@@ -1990,16 +2182,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             IProgressWindow? progressWindow = null;
             try
             {
+                Log("Démarrage Smart Save...", "INFO");
+                
                 dynamic inventorApp = GetInventorApplication();
                 dynamic doc = inventorApp.ActiveDocument;
 
                 if (doc == null)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        MessageBox.Show("⚠️ Aucun document actif n'est ouvert.", "Erreur", 
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
-                    });
+                    Log("Aucun document actif n'est ouvert.", "WARNING");
+                    MessageBox.Show("⚠️ Aucun document actif n'est ouvert.", "Erreur", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -2013,18 +2205,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                                  docType == kDrawingDocumentObject ? "Mise en plan" : "Document";
 
                 string docName = doc.DisplayName ?? "Document";
+                Log($"Document: {docName} ({typeText})", "INFO");
+                
                 string htmlContent = GenerateSmartSaveHtml(docType, docName, typeText);
 
                 // Créer la fenêtre de progression sur le thread UI
                 if (_progressWindowCallback != null)
                 {
-                    progressWindow = System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        return _progressWindowCallback("💾 Smart Save - V1.1 @2025 - By Mohammed Amine Elgalai", htmlContent);
-                    });
+                    progressWindow = _progressWindowCallback("💾 Smart Save - V1.1 @2025 - By Mohammed Amine Elgalai", htmlContent);
                 }
 
-                // Exécuter les étapes avec mise à jour du HTML (sur le thread principal pour Inventor)
+                // Permettre à l'UI de se rafraîchir
+                await Task.Yield();
+
+                // Exécuter les étapes avec mise à jour du HTML
                 if (docType == kAssemblyDocumentObject)
                 {
                     await ExecuteAssemblyStepsWithProgressAsync(doc, inventorApp, progressWindow);
@@ -2047,29 +2241,26 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 {
                     await progressWindow.ShowCompletionAsync("✅ Sauvegarde effectuée avec succès !");
                     await Task.Delay(1500);
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        progressWindow.CloseWindow();
-                    });
+                    progressWindow.CloseWindow();
                 }
+                
+                Log("Smart Save terminé avec succès", "SUCCESS");
             }
             catch (Exception ex)
             {
+                Log($"Erreur Smart Save: {ex.Message}", "ERROR");
                 if (progressWindow != null)
                 {
-                    await progressWindow.ShowCompletionAsync($"❌ Erreur: {ex.Message}");
-                    await Task.Delay(2000);
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    try
                     {
+                        await progressWindow.ShowCompletionAsync($"❌ Erreur: {ex.Message}");
+                        await Task.Delay(2000);
                         progressWindow.CloseWindow();
-                    });
+                    }
+                    catch { /* Ignorer les erreurs de fermeture */ }
                 }
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    MessageBox.Show($"❌ Erreur lors du Smart Save : {ex.Message}", "Erreur", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                });
-                Log($"Erreur lors de la sauvegarde: {ex.Message}", "ERROR");
+                MessageBox.Show($"❌ Erreur lors du Smart Save : {ex.Message}", "Erreur", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -2920,6 +3111,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// Fermeture intelligente et sécurisée des documents Inventor
         /// Code converti depuis SafeClose.iLogicVb
         /// Affiche une fenêtre HTML dynamique avec progression en temps réel
+        /// Note: Exécution sur le thread principal pour éviter les erreurs de threading COM/WPF
         /// </summary>
         public async Task ExecuteSafeCloseAsync(Action<string, string>? logCallback = null)
         {
@@ -2929,16 +3121,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             IProgressWindow? progressWindow = null;
             try
             {
+                Log("Démarrage Safe Close...", "INFO");
+                
                 dynamic inventorApp = GetInventorApplication();
                 dynamic doc = inventorApp.ActiveDocument;
 
                 if (doc == null)
                 {
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        MessageBox.Show("Aucun document actif n'est ouvert.", "Erreur", 
-                            MessageBoxButton.OK, MessageBoxImage.Warning);
-                    });
+                    Log("Aucun document actif n'est ouvert.", "WARNING");
+                    MessageBox.Show("Aucun document actif n'est ouvert.", "Erreur", 
+                        MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -2952,18 +3144,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                                  docType == kDrawingDocumentObject ? "Mise en plan" : "Document";
 
                 string docName = doc.DisplayName ?? "Document";
+                Log($"Document: {docName} ({typeText})", "INFO");
+                
                 string htmlContent = GenerateSafeCloseHtml(docType, docName, typeText);
 
                 // Créer la fenêtre de progression sur le thread UI
                 if (_progressWindowCallback != null)
                 {
-                    progressWindow = System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        return _progressWindowCallback("🔒 Safe Close V1.7 - Released on 2025-12-18 - By Mohammed Amine Elgalai - XNRGY Climate Systems ULC", htmlContent);
-                    });
+                    progressWindow = _progressWindowCallback("🔒 Safe Close V1.7 - Released on 2025-12-18 - By Mohammed Amine Elgalai - XNRGY Climate Systems ULC", htmlContent);
                 }
 
-                // Exécuter les étapes avec mise à jour du HTML (sur le thread principal pour Inventor)
+                // Permettre à l'UI de se rafraîchir
+                await Task.Yield();
+
+                // Exécuter les étapes avec mise à jour du HTML
                 if (docType == kAssemblyDocumentObject)
                 {
                     await ExecuteAssemblyStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
@@ -2986,29 +3180,26 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 {
                     await progressWindow.ShowCompletionAsync("🎉 Toutes les étapes sont terminées avec succès !");
                     await Task.Delay(1500);
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        progressWindow.CloseWindow();
-                    });
+                    progressWindow.CloseWindow();
                 }
+                
+                Log("Safe Close terminé avec succès", "SUCCESS");
             }
             catch (Exception ex)
             {
+                Log($"Erreur Safe Close: {ex.Message}", "ERROR");
                 if (progressWindow != null)
                 {
-                    await progressWindow.ShowCompletionAsync($"❌ Erreur: {ex.Message}");
-                    await Task.Delay(2000);
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    try
                     {
+                        await progressWindow.ShowCompletionAsync($"❌ Erreur: {ex.Message}");
+                        await Task.Delay(2000);
                         progressWindow.CloseWindow();
-                    });
+                    }
+                    catch { /* Ignorer les erreurs de fermeture */ }
                 }
-                System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                {
-                    MessageBox.Show($"Erreur lors du Safe Close : {ex.Message}", "Erreur", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                });
-                Log($"Erreur lors de la fermeture: {ex.Message}", "ERROR");
+                MessageBox.Show($"Erreur lors du Safe Close : {ex.Message}", "Erreur", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

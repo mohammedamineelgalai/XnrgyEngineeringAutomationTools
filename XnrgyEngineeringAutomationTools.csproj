@@ -174,6 +174,16 @@
     <Reference Include="Microsoft.Web.WebView2.Wpf">
       <HintPath>packages\Microsoft.Web.WebView2.1.0.2478.35\lib\net45\Microsoft.Web.WebView2.Wpf.dll</HintPath>
     </Reference>
+    <!-- Emoji.Wpf for color emoji support -->
+    <Reference Include="Emoji.Wpf">
+      <HintPath>packages\Emoji.Wpf.0.3.4\lib\net40\Emoji.Wpf.dll</HintPath>
+    </Reference>
+    <Reference Include="Typography.OpenFont">
+      <HintPath>packages\Emoji.Wpf.0.3.4\lib\net40\Typography.OpenFont.dll</HintPath>
+    </Reference>
+    <Reference Include="Typography.GlyphLayout">
+      <HintPath>packages\Emoji.Wpf.0.3.4\lib\net40\Typography.GlyphLayout.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -236,6 +246,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Modules\SmartTools\Views\HtmlPopupWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\SmartTools\Views\IPropertiesWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -329,6 +343,10 @@
     </Compile>
     <Compile Include="Modules\SmartTools\Views\HtmlPopupWindow.xaml.cs">
       <DependentUpon>HtmlPopupWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\SmartTools\Views\IPropertiesWindow.xaml.cs">
+      <DependentUpon>IPropertiesWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Modules\SmartTools\Views\ProgressWindow.xaml.cs">

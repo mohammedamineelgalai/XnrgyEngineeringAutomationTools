@@ -1775,16 +1775,26 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 // - IDW (drawings - héritent du nom de leur assembly parent, ne pas modifier)
                 bool isFromExistingProject = _request.Source == CreateModuleSource.FromExistingProject;
                 
+                // [CRITIQUE] Detecter le Top Assembly - fichier master du module
+                // Pour templates: 000000000.iam est le seul fichier master
+                // Pour projets existants: fichier avec IsTopAssembly = true
                 var topAssemblyFile = _files.FirstOrDefault(f => f.IsTopAssembly);
-                if (topAssemblyFile == null && isFromExistingProject)
+                if (topAssemblyFile == null)
                 {
+                    // Fallback pour templates: chercher 000000000.iam specifiquement
                     topAssemblyFile = _files.FirstOrDefault(f => f.FileType == "IAM" && 
-                        string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)));
+                        f.OriginalFileName.Equals("000000000.iam", StringComparison.OrdinalIgnoreCase));
                 }
                 
+                // IPJ principal: 000000000.ipj pour templates, ou IPJ a la racine pour projets existants
                 var mainIpjFile = _files.FirstOrDefault(f => f.FileType == "IPJ" && 
-                    string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)) &&
-                    (isFromExistingProject || IsMainProjectFilePattern(f.OriginalFileName)));
+                    f.OriginalFileName.Equals("000000000.ipj", StringComparison.OrdinalIgnoreCase));
+                if (mainIpjFile == null && isFromExistingProject)
+                {
+                    // Pour projets existants: premier IPJ a la racine
+                    mainIpjFile = _files.FirstOrDefault(f => f.FileType == "IPJ" && 
+                        string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)));
+                }
 
                 foreach (var file in selectedFiles)
                 {
@@ -1795,7 +1805,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                     }
                     
                     // [!] EXCLURE du renommage avec options: TopAssy et IPJ principal SEULEMENT
-                    // Ces fichiers masters sont renommés avec le numéro de projet (infos projet)
+                    // Ces fichiers masters sont renommés avec le numéro de projet (sans préfixe)
                     if (file == topAssemblyFile || file == mainIpjFile)
                     {
                         continue;
@@ -1877,26 +1887,31 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 // Renommage automatique des fichiers Excel spécifiques
                 RenameSpecialExcelFiles();
 
-                // Toujours renommer le Top Assembly et IPJ avec le numéro de projet
-                // (isFromExistingProject deja declare plus haut)
+                // Toujours renommer le Top Assembly et IPJ principal avec le numéro de projet
+                // [CRITIQUE] Seuls les fichiers master specifiques (000000000.iam/ipj ou IsTopAssembly)
                 
-                // Top Assembly
+                // Top Assembly: 000000000.iam pour templates, ou IsTopAssembly pour projets existants
                 var topAssembly = _files.FirstOrDefault(f => f.IsTopAssembly);
-                if (topAssembly == null && isFromExistingProject)
+                if (topAssembly == null)
                 {
-                    // Pour projets existants: premier .iam à la racine
+                    // Fallback pour templates: 000000000.iam specifiquement
                     topAssembly = _files.FirstOrDefault(f => f.FileType == "IAM" && 
-                        string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)));
+                        f.OriginalFileName.Equals("000000000.iam", StringComparison.OrdinalIgnoreCase));
                 }
                 if (topAssembly != null && !string.IsNullOrEmpty(TxtProject?.Text))
                 {
                     topAssembly.NewFileName = $"{_request.FullProjectNumber}.iam";
                 }
                 
-                // IPJ principal
+                // IPJ principal: 000000000.ipj pour templates
                 var mainIpj = _files.FirstOrDefault(f => f.FileType == "IPJ" && 
-                    string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)) &&
-                    (isFromExistingProject || IsMainProjectFilePattern(f.OriginalFileName)));
+                    f.OriginalFileName.Equals("000000000.ipj", StringComparison.OrdinalIgnoreCase));
+                if (mainIpj == null && _request.Source == CreateModuleSource.FromExistingProject)
+                {
+                    // Pour projets existants: premier IPJ a la racine
+                    mainIpj = _files.FirstOrDefault(f => f.FileType == "IPJ" && 
+                        string.IsNullOrEmpty(Path.GetDirectoryName(f.RelativePath)));
+                }
                 if (mainIpj != null && !string.IsNullOrEmpty(TxtProject?.Text))
                 {
                     mainIpj.NewFileName = $"{_request.FullProjectNumber}.ipj";

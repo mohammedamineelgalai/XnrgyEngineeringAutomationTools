@@ -57,6 +57,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             _smartToolsService.SetHtmlPopupCallback(ShowHtmlPopup);
             _smartToolsService.SetExportOptionsCallback(ShowExportOptions);
             _smartToolsService.SetProgressWindowCallback(ShowProgressWindow);
+            _smartToolsService.SetIPropertiesPopupCallback(ShowIPropertiesPopup);
+            _smartToolsService.SetIPropertiesWindowCallback(ShowIPropertiesWindow);
             
             Loaded += SmartToolsWindow_Loaded;
             Closed += SmartToolsWindow_Closed;
@@ -525,6 +527,37 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             Dispatcher.Invoke(() =>
             {
                 HtmlPopupWindow.ShowHtml(title, htmlContent, this);
+            });
+        }
+        
+        /// <summary>
+        /// Callback pour afficher la fenêtre iProperties WPF avec les fonctions de modification
+        /// </summary>
+        private void ShowIPropertiesPopup(string title, string htmlContent, 
+            Func<string, string, bool> applyPropertyChange, 
+            Func<string, string, bool> addNewProperty)
+        {
+            // Note: htmlContent n'est plus utilisé - la nouvelle fenêtre WPF gère tout
+            // Ce callback sera remplacé par ShowIPropertiesWindow dans une prochaine mise à jour
+            Dispatcher.Invoke(() =>
+            {
+                var popup = new HtmlPopupWindow(title, htmlContent);
+                popup.SetPropertyCallbacks(applyPropertyChange, addNewProperty);
+                popup.ShowDialog();
+            });
+        }
+        
+        /// <summary>
+        /// Callback pour afficher la fenêtre iProperties WPF native
+        /// </summary>
+        private void ShowIPropertiesWindow(string fileName, string fullPath, 
+            Dictionary<string, string> properties,
+            Func<string, string, bool> applyPropertyChange, 
+            Func<string, string, bool> addNewProperty)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                IPropertiesWindow.ShowProperties(fileName, fullPath, properties, applyPropertyChange, addNewProperty);
             });
         }
 

@@ -36,6 +36,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
         private EquipmentItem? _selectedEquipment;
         private readonly string _defaultDestinationBase = @"C:\Vault\Engineering\Projects";
         
+        // Instance d'equipement selectionnee (suffixe _01, _02, etc.)
+        private string _selectedInstanceSuffix = "_01";
+        
         // Service Vault pour vérification admin (optionnel)
         private readonly VaultSdkService? _vaultService;
         private bool _isVaultAdmin = false;
@@ -429,6 +432,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 InitializeDesignerComboBoxes();
                 AddLog($"Liste des dessinateurs chargee ({_designerInitials.Count} initiales)", "INFO");
                 
+                // Initialiser le ComboBox Instance Equipement (1er par defaut)
+                CmbEquipmentInstance.SelectedIndex = 0;
+                AddLog("ComboBox Instance Equipement initialisee (1er par defaut)", "INFO");
+                
                 // Initialiser la date de creation avec DatePicker
                 var today = DateTime.Now;
                 DpCreationDate.SelectedDate = today;
@@ -601,6 +608,181 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 _files.Clear();
                 UpdateStatistics();
                 UpdateDestinationPreview();
+                
+                // [+] Detecter les instances existantes dans le module cible
+                DetectExistingEquipmentInstances();
+            }
+        }
+
+        /// <summary>
+        /// Gestionnaire de selection d'instance d'equipement (1er, 2e, 3e, 4e, Sans suffixe)
+        /// </summary>
+        private void CmbEquipmentInstance_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (CmbEquipmentInstance.SelectedItem is ComboBoxItem selectedItem)
+            {
+                // Tag peut etre null ou vide pour "Sans suffixe"
+                _selectedInstanceSuffix = selectedItem.Tag?.ToString() ?? "";
+                
+                if (string.IsNullOrEmpty(_selectedInstanceSuffix))
+                {
+                    AddLog($"[i] Instance selectionnee: {selectedItem.Content} (pas de suffixe)", "INFO");
+                }
+                else
+                {
+                    AddLog($"[i] Instance selectionnee: {selectedItem.Content} (suffixe: {_selectedInstanceSuffix})", "INFO");
+                }
+                
+                UpdateDestinationPreview();
+                
+                // [+] Mettre a jour les noms des fichiers dans le DataGrid avec le nouveau suffixe
+                ApplyInstanceSuffixToFileNames();
+            }
+        }
+
+        /// <summary>
+        /// Applique le suffixe d'instance (_01, _02, etc.) aux noms des fichiers dans le DataGrid
+        /// </summary>
+        private void ApplyInstanceSuffixToFileNames()
+        {
+            if (_files == null || _files.Count == 0) return;
+            
+            foreach (var file in _files)
+            {
+                // Recuperer le nom original sans extension (utiliser OriginalFileName, pas OriginalName)
+                var originalNameWithoutExt = Path.GetFileNameWithoutExtension(file.OriginalFileName);
+                var extension = Path.GetExtension(file.OriginalFileName);
+                
+                // Supprimer tout suffixe existant (_01, _02, _03, _04)
+                var cleanName = RemoveInstanceSuffix(originalNameWithoutExt);
+                
+                // Appliquer le nouveau suffixe (ou rien si "Sans suffixe")
+                if (!string.IsNullOrEmpty(_selectedInstanceSuffix))
+                {
+                    file.NewFileName = $"{cleanName}{_selectedInstanceSuffix}{extension}";
+                }
+                else
+                {
+                    file.NewFileName = $"{cleanName}{extension}";
+                }
+            }
+            
+            // Rafraichir le DataGrid
+            DgFiles?.Items.Refresh();
+            
+            AddLog($"[+] Noms mis a jour avec suffixe: {(_selectedInstanceSuffix == "" ? "(aucun)" : _selectedInstanceSuffix)}", "INFO");
+        }
+
+        /// <summary>
+        /// Supprime les suffixes d'instance existants (_01, _02, _03, _04) d'un nom de fichier
+        /// </summary>
+        private string RemoveInstanceSuffix(string name)
+        {
+            var suffixes = new[] { "_01", "_02", "_03", "_04" };
+            foreach (var suffix in suffixes)
+            {
+                if (name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    return name.Substring(0, name.Length - suffix.Length);
+                }
+            }
+            return name;
+        }
+
+        /// <summary>
+        /// Detecte les instances d'equipement existantes dans le dossier 1-Equipment du module cible
+        /// et selectionne automatiquement la prochaine instance disponible
+        /// </summary>
+        private void DetectExistingEquipmentInstances()
+        {
+            try
+            {
+                if (_selectedEquipment == null)
+                {
+                    TxtInstancesDetected.Text = "";
+                    return;
+                }
+                
+                // Construire le chemin du dossier 1-Equipment du module cible
+                var project = TxtProject?.Text?.Trim() ?? "";
+                var reference = CmbReference?.SelectedItem?.ToString() ?? "";
+                var module = CmbModule?.SelectedItem?.ToString() ?? "";
+                
+                if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(reference) || string.IsNullOrEmpty(module))
+                {
+                    TxtInstancesDetected.Text = "Selectionnez un module cible pour detecter les instances existantes";
+                    return;
+                }
+                
+                var modulePath = Path.Combine(_projectsBasePath, project, $"REF{reference}", $"M{module}");
+                var equipmentBasePath = Path.Combine(modulePath, "1-Equipment");
+                
+                if (!Directory.Exists(equipmentBasePath))
+                {
+                    TxtInstancesDetected.Text = "Dossier 1-Equipment inexistant - 1er equipement par defaut";
+                    CmbEquipmentInstance.SelectedIndex = 0; // 1er equipement (_01)
+                    return;
+                }
+                
+                // Chercher les dossiers existants avec le nom de l'equipement
+                var equipmentName = _selectedEquipment.Name;
+                var existingDirs = Directory.GetDirectories(equipmentBasePath)
+                    .Select(d => Path.GetFileName(d))
+                    .Where(name => name.StartsWith(equipmentName, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                
+                if (existingDirs.Count == 0)
+                {
+                    TxtInstancesDetected.Text = $"Aucun '{equipmentName}' existant - 1er equipement par defaut";
+                    CmbEquipmentInstance.SelectedIndex = 0; // 1er equipement (_01)
+                    return;
+                }
+                
+                // Identifier les suffixes existants
+                var existingSuffixes = new HashSet<string>();
+                foreach (var dir in existingDirs)
+                {
+                    // Ex: "Angular Filter_01" -> "_01"
+                    if (dir.Length > equipmentName.Length)
+                    {
+                        var suffix = dir.Substring(equipmentName.Length);
+                        existingSuffixes.Add(suffix);
+                    }
+                    else if (dir.Equals(equipmentName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Dossier sans suffixe = considere comme _01
+                        existingSuffixes.Add("_01");
+                    }
+                }
+                
+                // Determiner la prochaine instance disponible
+                var allSuffixes = new[] { "_01", "_02", "_03", "_04" };
+                var nextIndex = 0;
+                for (int i = 0; i < allSuffixes.Length; i++)
+                {
+                    if (!existingSuffixes.Contains(allSuffixes[i]))
+                    {
+                        nextIndex = i;
+                        break;
+                    }
+                    // Si tous sont pris, prendre le dernier (ecrasement)
+                    nextIndex = allSuffixes.Length - 1;
+                }
+                
+                // Afficher les instances detectees
+                TxtInstancesDetected.Text = $"Existants: {string.Join(", ", existingDirs)} - Suggestion: {(nextIndex + 1)}e";
+                
+                // Selectionner automatiquement la prochaine instance
+                CmbEquipmentInstance.SelectedIndex = nextIndex;
+                
+                AddLog($"[i] Instances detectees: {string.Join(", ", existingDirs)}", "DEBUG");
+                AddLog($"[i] Prochaine instance suggeree: {allSuffixes[nextIndex]}", "DEBUG");
+            }
+            catch (Exception ex)
+            {
+                Logger.Warning($"[!] Erreur detection instances: {ex.Message}");
+                TxtInstancesDetected.Text = "Erreur detection - 1er equipement par defaut";
+                CmbEquipmentInstance.SelectedIndex = 0;
             }
         }
 
@@ -874,6 +1056,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 UpdateProgress(95, "Chargement de la liste des fichiers...");
                 await Task.Delay(300);
                 LoadFilesFromPath(equipment.LocalPath);
+                
+                // [+] Appliquer le suffixe d'instance aux noms des fichiers
+                ApplyInstanceSuffixToFileNames();
                 
                 // Termine! (100%)
                 UpdateProgress(100, $"[+] {_files.Count} fichiers charges depuis {equipment.DisplayName}");
@@ -1528,6 +1713,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             UpdateDestinationPreview();
             UpdateFullProjectNumber();
             ValidateForm();
+            // [+] Re-detecter les instances quand reference/module change
+            DetectExistingEquipmentInstances();
         }
 
         private void CmbModule_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -1535,6 +1722,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             UpdateDestinationPreview();
             UpdateFullProjectNumber();
             ValidateForm();
+            // [+] Re-detecter les instances quand reference/module change
+            DetectExistingEquipmentInstances();
         }
 
         private void CmbInitialeDessinateur_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -2722,7 +2911,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             }
 
             AddLog($"[>] Demarrage placement equipement: {_selectedEquipment.DisplayName}", "START");
-            AddLog($"[i] Destination: {project}/REF{reference}/M{module}/1-Equipment/{_selectedEquipment.Name}", "INFO");
+            AddLog($"[i] Instance: {_selectedInstanceSuffix}", "INFO");
+            AddLog($"[i] Destination: {project}/REF{reference}/M{module}/1-Equipment/{_selectedEquipment.Name}{_selectedInstanceSuffix}", "INFO");
             
             ExecuteEquipmentPlacement();
         }
@@ -2788,6 +2978,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 Logger.Info("[>] PLACEMENT EQUIPEMENT - DEMARRAGE");
                 Logger.Info("═══════════════════════════════════════════════════════");
                 Logger.Info($"[i] Equipement: {_selectedEquipment.DisplayName}");
+                Logger.Info($"[i] Instance: {_selectedInstanceSuffix}");
                 Logger.Info($"[i] IPJ source: {_selectedEquipment.ProjectFileName}");
                 Logger.Info($"[i] IAM source: {_selectedEquipment.AssemblyFileName}");
 
@@ -2797,15 +2988,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 var module = CmbModule?.SelectedItem?.ToString() ?? "";
                 var fullProjectNumber = $"{project}{reference}{module}";
                 
-                // Construire les chemins
+                // Construire les chemins - INCLURE LE SUFFIXE D'INSTANCE
                 var modulePath = Path.Combine(_projectsBasePath, project, $"REF{reference}", $"M{module}");
-                var equipmentDestPath = Path.Combine(modulePath, "1-Equipment", _selectedEquipment.Name);
+                var equipmentFolderName = $"{_selectedEquipment.Name}{_selectedInstanceSuffix}";
+                var equipmentDestPath = Path.Combine(modulePath, "1-Equipment", equipmentFolderName);
                 moduleIpjPath = Path.Combine(modulePath, $"{fullProjectNumber}.ipj");
                 moduleTopAssemblyPath = Path.Combine(modulePath, $"{fullProjectNumber}.iam");
                 
                 AddLog($"[i] Module destination: {project}-REF{reference}-M{module}", "INFO");
+                AddLog($"[i] Dossier equipement: {equipmentFolderName}", "INFO");
                 AddLog($"[i] Destination equipement: {equipmentDestPath}", "INFO");
                 Logger.Info($"[i] Module: {project}-REF{reference}-M{module}");
+                Logger.Info($"[i] Dossier equipement: {equipmentFolderName}");
                 Logger.Info($"[i] Destination: {equipmentDestPath}");
                 Logger.Info($"[i] IPJ module: {moduleIpjPath}");
 

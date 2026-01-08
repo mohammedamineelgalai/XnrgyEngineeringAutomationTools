@@ -881,6 +881,22 @@
                                   ToolTip="Selectionner l'equipement a placer (charge depuis Vault)"/>
                     </StackPanel>
                     
+                    <!-- ComboBox Selection Instance Equipement (1er, 2e, 3e, 4e) -->
+                    <StackPanel Margin="0,0,0,10">
+                        <TextBlock Text="Instance Equipement *" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                        <ComboBox x:Name="CmbEquipmentInstance" Style="{StaticResource ModernComboBox}"
+                                  SelectionChanged="CmbEquipmentInstance_SelectionChanged"
+                                  ToolTip="Selectionner l'instance d'equipement (suffixe _01, _02, etc.). Detection automatique des equipements existants.">
+                            <ComboBoxItem Content="1er equipement (_01)" Tag="_01"/>
+                            <ComboBoxItem Content="2e equipement (_02)" Tag="_02"/>
+                            <ComboBoxItem Content="3e equipement (_03)" Tag="_03"/>
+                            <ComboBoxItem Content="4e equipement (_04)" Tag="_04"/>
+                            <ComboBoxItem Content="Sans suffixe" Tag=""/>
+                        </ComboBox>
+                        <!-- Info instances detectees -->
+                        <TextBlock x:Name="TxtInstancesDetected" Text="" Foreground="#888" FontSize="9" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    
                     <!-- Bouton Actualiser la liste des equipements -->
                     <Button x:Name="BtnRefreshEquipments" Content="Actualiser la liste" 
                             Style="{StaticResource SecondaryButton}"
