@@ -57,6 +57,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             _smartToolsService.SetHtmlPopupCallback(ShowHtmlPopup);
             _smartToolsService.SetExportOptionsCallback(ShowExportOptions);
             _smartToolsService.SetProgressWindowCallback(ShowProgressWindow);
+            _smartToolsService.SetSmartProgressWindowCallback(ShowSmartProgressWindow);
             _smartToolsService.SetIPropertiesPopupCallback(ShowIPropertiesPopup);
             _smartToolsService.SetIPropertiesWindowCallback(ShowIPropertiesWindow);
             
@@ -571,6 +572,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             {
                 var window = ProgressWindow.ShowProgress(title, htmlContent, this);
                 result = new ProgressWindowWrapper(window);
+            });
+            return result!;
+        }
+
+        /// <summary>
+        /// Callback pour afficher la fenêtre de progression WPF moderne (Smart Save/Close)
+        /// </summary>
+        private IProgressWindow ShowSmartProgressWindow(string operationType, int docType, string docName, string typeText)
+        {
+            IProgressWindow? result = null;
+            Dispatcher.Invoke(() =>
+            {
+                SmartProgressWindow window;
+                if (operationType == "save")
+                {
+                    window = SmartProgressWindow.CreateSmartSave(docType, docName, typeText);
+                }
+                else
+                {
+                    window = SmartProgressWindow.CreateSafeClose(docType, docName, typeText);
+                }
+                window.Show();
+                result = new SmartProgressWindowWrapper(window);
             });
             return result!;
         }

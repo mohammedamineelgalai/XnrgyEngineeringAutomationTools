@@ -2485,6 +2485,66 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
 
                         // Rafraîchir l'affichage des fichiers pour montrer le statut
                         DgFiles.Items.Refresh();
+                        
+                        // ═══════════════════════════════════════════════════════════════════════
+                        // [+] REMPLISSAGE PDFs DE COUVERTURE BATCHPRINT
+                        // Remplit automatiquement les 11 PDFs de couverture avec:
+                        // - Numero de projet (NUMBER)
+                        // - Reference REF (Dropdown7)
+                        // - Module MOD (Dropdown10)  
+                        // - Job Title (Nom of the job)
+                        // ═══════════════════════════════════════════════════════════════════════
+                        Logger.Info("═══════════════════════════════════════════════════════════════");
+                        Logger.Info("[>] APPEL PdfCoverService.FillAllCoverPdfs()");
+                        Logger.Info($"    DestinationPath: {_request.DestinationPath}");
+                        Logger.Info($"    Project: {_request.Project}");
+                        Logger.Info($"    Reference: {_request.Reference}");
+                        Logger.Info($"    Module: {_request.Module}");
+                        Logger.Info($"    JobTitle: {_request.JobTitle}");
+                        Logger.Info("═══════════════════════════════════════════════════════════════");
+                        
+                        // Verification du chemin PDF
+                        var pdfFolder = System.IO.Path.Combine(_request.DestinationPath, "6-Shop Drawing PDF", "Production");
+                        Logger.Info($"[DEBUG] Chemin PDF complet: {pdfFolder}");
+                        Logger.Info($"[DEBUG] Dossier existe: {System.IO.Directory.Exists(pdfFolder)}");
+                        
+                        if (System.IO.Directory.Exists(pdfFolder))
+                        {
+                            var pdfFiles = System.IO.Directory.GetFiles(pdfFolder, "*.pdf");
+                            Logger.Info($"[DEBUG] Nombre de PDFs trouves: {pdfFiles.Length}");
+                            foreach (var pdf in pdfFiles.Take(5))
+                            {
+                                Logger.Info($"[DEBUG]   - {System.IO.Path.GetFileName(pdf)}");
+                            }
+                        }
+                        
+                        try
+                        {
+                            AddLog("[>] Demarrage remplissage PDFs de couverture...", "START");
+                            Logger.Info("[>] Creation de PdfCoverService...");
+                            
+                            var pdfService = new Services.PdfCoverService((msg, lvl) => {
+                                AddLog(msg, lvl);
+                                Logger.Info($"[PdfCoverService] {msg}");
+                            });
+                            
+                            Logger.Info("[>] Appel FillAllCoverPdfs...");
+                            int pdfCount = pdfService.FillAllCoverPdfs(
+                                _request.DestinationPath,
+                                _request.Project,
+                                _request.Reference,
+                                _request.Module,
+                                _request.JobTitle);
+                            
+                            Logger.Info($"[+] PdfCoverService retourne: {pdfCount} PDFs remplis");
+                            AddLog($"[+] Resultat: {pdfCount} PDFs de couverture traites", pdfCount > 0 ? "SUCCESS" : "WARN");
+                        }
+                        catch (Exception pdfEx)
+                        {
+                            AddLog($"[-] Exception PDFs couverture: {pdfEx.Message}", "ERROR");
+                            Logger.Error($"[-] Exception PdfCoverService: {pdfEx}");
+                            Logger.Error($"    StackTrace: {pdfEx.StackTrace}");
+                        }
 
                         // Ouvrir automatiquement le dossier de destination
                         AddLog($"Ouverture du dossier: {_request.DestinationPath}", "INFO");

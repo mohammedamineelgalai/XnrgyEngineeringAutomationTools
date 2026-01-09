@@ -140,6 +140,14 @@
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.ValueTuple.4.5.0\lib\net47\System.ValueTuple.dll</HintPath>
     </Reference>
+    <!-- iTextSharp for PDF form filling -->
+    <Reference Include="itextsharp, Version=5.5.13.3, Culture=neutral, PublicKeyToken=8354ae6d2174ddca, processorArchitecture=MSIL">
+      <HintPath>packages\iTextSharp.5.5.13.3\lib\itextsharp.dll</HintPath>
+    </Reference>
+    <!-- BouncyCastle - Dependance de iTextSharp pour la cryptographie PDF -->
+    <Reference Include="BouncyCastle.Crypto, Version=1.8.9.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
+      <HintPath>packages\BouncyCastle.1.8.9\lib\BouncyCastle.Crypto.dll</HintPath>
+    </Reference>
     <Reference Include="UIAutomationClient" />
     <Reference Include="UIAutomationTypes" />
     <Reference Include="PresentationCore" />
@@ -253,6 +261,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Modules\SmartTools\Views\SmartProgressWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Modules\SmartTools\Views\ProgressWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -317,6 +329,7 @@
     <Compile Include="Modules\CreateModule\Models\CreateModuleSettings.cs" />
     <Compile Include="Modules\CreateModule\Services\InventorCopyDesignService.cs" />
     <Compile Include="Modules\CreateModule\Services\ModuleCopyService.cs" />
+    <Compile Include="Modules\CreateModule\Services\PdfCoverService.cs" />
     <!-- ========== CODE-BEHIND: MODULE PLACE EQUIPMENT ========== -->
     <Compile Include="Modules\PlaceEquipment\Views\PlaceEquipmentWindow.xaml.cs">
       <DependentUpon>PlaceEquipmentWindow.xaml</DependentUpon>
@@ -347,6 +360,10 @@
     </Compile>
     <Compile Include="Modules\SmartTools\Views\IPropertiesWindow.xaml.cs">
       <DependentUpon>IPropertiesWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\SmartTools\Views\SmartProgressWindow.xaml.cs">
+      <DependentUpon>SmartProgressWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Modules\SmartTools\Views\ProgressWindow.xaml.cs">

@@ -24,6 +24,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         private Action<string, string>? _htmlPopupCallback;
         private Func<string, string, ExportOptionsResult?>? _exportOptionsCallback;
         private Func<string, string, IProgressWindow>? _progressWindowCallback;
+        private Func<string, int, string, string, IProgressWindow>? _smartProgressWindowCallback; // operationType, docType, docName, typeText
         private Action<string, string, Func<string, string, bool>, Func<string, string, bool>>? _iPropertiesPopupCallback;
         private Action<string, string, System.Collections.Generic.Dictionary<string, string>, Func<string, string, bool>, Func<string, string, bool>>? _iPropertiesWindowCallback;
         
@@ -65,6 +66,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         public void SetProgressWindowCallback(Func<string, string, IProgressWindow>? callback)
         {
             _progressWindowCallback = callback;
+        }
+
+        /// <summary>
+        /// Définit le callback pour créer une fenêtre de progression WPF moderne (Smart Save/Close)
+        /// </summary>
+        public void SetSmartProgressWindowCallback(Func<string, int, string, string, IProgressWindow>? callback)
+        {
+            _smartProgressWindowCallback = callback;
         }
         
         /// <summary>
@@ -2195,23 +2204,39 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     return;
                 }
 
-                int docType = doc.DocumentType;
+                // Utiliser l'extension du fichier pour détecter le type (méthode fiable avec dynamic)
+                string fullFileName = doc.FullFileName;
+                string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
+                
+                bool isAssembly = extension == ".iam";
+                bool isPart = extension == ".ipt";
+                bool isDrawing = extension == ".idw" || extension == ".dwg";
+                
+                // Constantes pour compatibilité avec SmartProgressWindow
                 const int kAssemblyDocumentObject = 12290;
                 const int kPartDocumentObject = 12288;
-                const int kDrawingDocumentObject = 12291;
+                const int kDrawingDocumentObject = 12292;
+                const int kGenericDocument = 0;
+                
+                int docType = isAssembly ? kAssemblyDocumentObject :
+                             isPart ? kPartDocumentObject :
+                             isDrawing ? kDrawingDocumentObject : kGenericDocument;
 
-                string typeText = docType == kAssemblyDocumentObject ? "Assemblage" :
-                                 docType == kPartDocumentObject ? "Pièce" :
-                                 docType == kDrawingDocumentObject ? "Mise en plan" : "Document";
+                string typeText = isAssembly ? "Assemblage" :
+                                 isPart ? "Pièce" :
+                                 isDrawing ? "Mise en plan" : "Document";
 
                 string docName = doc.DisplayName ?? "Document";
-                Log($"Document: {docName} ({typeText})", "INFO");
+                Log($"Document: {docName} ({typeText}) - Extension: {extension}", "INFO");
                 
-                string htmlContent = GenerateSmartSaveHtml(docType, docName, typeText);
-
-                // Créer la fenêtre de progression sur le thread UI
-                if (_progressWindowCallback != null)
+                // Utiliser la nouvelle fenêtre WPF si disponible, sinon HTML
+                if (_smartProgressWindowCallback != null)
                 {
+                    progressWindow = _smartProgressWindowCallback("save", docType, docName, typeText);
+                }
+                else if (_progressWindowCallback != null)
+                {
+                    string htmlContent = GenerateSmartSaveHtml(docType, docName, typeText);
                     progressWindow = _progressWindowCallback("💾 Smart Save - V1.1 @2025 - By Mohammed Amine Elgalai", htmlContent);
                 }
 
@@ -2219,15 +2244,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 await Task.Yield();
 
                 // Exécuter les étapes avec mise à jour du HTML
-                if (docType == kAssemblyDocumentObject)
+                if (isAssembly)
                 {
                     await ExecuteAssemblyStepsWithProgressAsync(doc, inventorApp, progressWindow);
                 }
-                else if (docType == kPartDocumentObject)
+                else if (isPart)
                 {
                     await ExecutePartStepsWithProgressAsync(doc, inventorApp, progressWindow);
                 }
-                else if (docType == kDrawingDocumentObject)
+                else if (isDrawing)
                 {
                     await ExecuteDrawingStepsWithProgressAsync(doc, inventorApp, progressWindow);
                 }
@@ -2324,12 +2349,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// </summary>
         private async Task ExecuteAssemblyStepsWithProgressAsync(dynamic doc, dynamic inventorApp, IProgressWindow? progressWindow)
         {
-            // Étape 1: Activation représentation par défaut
+            // Étape 1: Activation représentation par défaut (POSITION 2 PRIORITAIRE)
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step1", "⏳ Étape 1: Activation représentation par défaut...", "info");
             try
             {
                 ActivateDefaultRepresentation(doc);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: Représentation par défaut activée", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: 'Default' activée (POSITION-2-PRIORITAIRE)", "completed");
             }
             catch (Exception ex)
             {
@@ -2338,6 +2365,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             }
 
             // Étape 2: Affichage de TOUS les composants
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step2", "⏳ Étape 2: Affichage des composants masqués...", "info");
             try
             {
                 dynamic cmdManager = inventorApp.CommandManager;
@@ -2363,11 +2392,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             }
 
             // Étape 3: Réduction de l'arborescence
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step3", "⏳ Étape 3: Réduction de l'arborescence...", "info");
             try
             {
                 CollapseTree(doc);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step3", "✅ Étape 3: Arborescence réduite", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step3", "✅ Étape 3: Réduction de l'arborescence du navigateur", "completed");
             }
             catch (Exception ex)
             {
@@ -2376,11 +2407,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             }
 
             // Étape 4: Mise à jour
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step4", "⏳ Étape 4: Mise à jour du document...", "info");
             try
             {
                 doc.Update2(true);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step4", "✅ Étape 4: Document mis à jour", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step4", "✅ Étape 4: Mise à jour du document", "completed");
             }
             catch (Exception ex)
             {
@@ -2389,11 +2422,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             }
 
             // Étape 5: Vue isométrique
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step5", "⏳ Étape 5: Application vue isométrique...", "info");
             try
             {
                 ApplyIsometricView(inventorApp);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step5", "✅ Étape 5: Vue isométrique appliquée", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step5", "✅ Étape 5: Application de la vue isométrique", "completed");
             }
             catch (Exception ex)
             {
@@ -2401,12 +2436,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.UpdateStepStatusAsync("step5", $"❌ Étape 5: Échec - {ex.Message}", "error");
             }
 
-            // Étape 6: Masquage intelligent des références
+            // Étape 6: Masquage intelligent des références (Dummy, Box, etc.)
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step6", "⏳ Étape 6: Masquage des références...", "info");
             try
             {
                 SmartHideReferences(doc);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step6", "✅ Étape 6: Références masquées", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step6", "✅ Étape 6: Masquage références (Dummy, Swing, PanFactice, AirFlow, Cut_Opening)", "completed");
             }
             catch (Exception ex)
             {
@@ -2414,17 +2451,64 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.UpdateStepStatusAsync("step6", $"❌ Étape 6: Échec - {ex.Message}", "error");
             }
 
-            // Étape 7: Sauvegarde
+            // Étape 7: Masquage des plans de référence (WorkPlanes, Axes, Points)
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step7", "⏳ Étape 7: Masquage des plans de référence...", "info");
             try
             {
-                SaveDocument(doc);
+                HideWorkFeatures(doc, inventorApp);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step7", "✅ Étape 7: Document sauvegardé", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step7", "✅ Étape 7: Masquage des plans de référence (WorkPlanes, Axes, Points)", "completed");
             }
             catch (Exception ex)
             {
                 if (progressWindow != null)
                     await progressWindow.UpdateStepStatusAsync("step7", $"❌ Étape 7: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 8: Masquage des esquisses
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step8", "⏳ Étape 8: Masquage des esquisses...", "info");
+            try
+            {
+                HideSketches(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step8", "✅ Étape 8: Masquage des esquisses (Sketches 2D/3D)", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step8", $"❌ Étape 8: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 9: Zoom All / Fit
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step9", "⏳ Étape 9: Zoom All / Fit...", "info");
+            try
+            {
+                ZoomToFit(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step9", "✅ Étape 9: Zoom All / Fit appliqué", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step9", $"❌ Étape 9: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 10: Sauvegarde
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step10", "⏳ Étape 10: Sauvegarde du document...", "info");
+            try
+            {
+                SaveDocument(doc);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step10", "✅ Étape 10: Sauvegarde du document actif", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step10", $"❌ Étape 10: Échec - {ex.Message}", "error");
             }
         }
 
@@ -2477,11 +2561,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             }
 
             // Étape 5
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step5", "⏳ Étape 5: Application vue isométrique...", "info");
             try
             {
                 ApplyIsometricView(inventorApp);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step5", "✅ Étape 5: Vue isométrique appliquée", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step5", "✅ Étape 5: Application de la vue isométrique", "completed");
             }
             catch (Exception ex)
             {
@@ -2489,21 +2575,64 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.UpdateStepStatusAsync("step5", $"❌ Étape 5: Échec - {ex.Message}", "error");
             }
 
-            // Étape 6
+            // Étape 6: Masquage des plans de référence
             if (progressWindow != null)
-                await progressWindow.UpdateStepStatusAsync("step6", "✅ Étape 6: Matériaux et apparences vérifiés", "completed");
-
-            // Étape 7
+                await progressWindow.UpdateStepStatusAsync("step6", "⏳ Étape 6: Masquage des plans de référence...", "info");
             try
             {
-                SaveDocument(doc);
+                HideWorkFeatures(doc, inventorApp);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step7", "✅ Étape 7: Document sauvegardé", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step6", "✅ Étape 6: Masquage des plans de référence (WorkPlanes, Axes, Points)", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step6", $"❌ Étape 6: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 7: Masquage des esquisses
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step7", "⏳ Étape 7: Masquage des esquisses...", "info");
+            try
+            {
+                HideSketches(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step7", "✅ Étape 7: Masquage des esquisses (Sketches 2D/3D)", "completed");
             }
             catch (Exception ex)
             {
                 if (progressWindow != null)
                     await progressWindow.UpdateStepStatusAsync("step7", $"❌ Étape 7: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 8: Zoom All / Fit
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step8", "⏳ Étape 8: Zoom All / Fit...", "info");
+            try
+            {
+                ZoomToFit(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step8", "✅ Étape 8: Zoom All / Fit appliqué", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step8", $"❌ Étape 8: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 9: Sauvegarde
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step9", "⏳ Étape 9: Sauvegarde du document...", "info");
+            try
+            {
+                SaveDocument(doc);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step9", "✅ Étape 9: Sauvegarde du document actif", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step9", $"❌ Étape 9: Échec - {ex.Message}", "error");
             }
         }
 
@@ -2512,16 +2641,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// </summary>
         private async Task ExecuteDrawingStepsWithProgressAsync(dynamic doc, dynamic inventorApp, IProgressWindow? progressWindow)
         {
-            // Étape 1
+            // Étape 1: Réduction arborescence
             if (progressWindow != null)
-                await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: Vues de mise en plan vérifiées", "completed");
-
-            // Étape 2
+                await progressWindow.UpdateStepStatusAsync("step1", "⏳ Étape 1: Réduction de l'arborescence...", "info");
             try
             {
                 CollapseTree(doc);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step2", "✅ Étape 2: Arborescence réduite", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: Réduction de l'arborescence du navigateur", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step1", $"❌ Étape 1: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 2: Mise à jour du document et des vues
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step2", "⏳ Étape 2: Mise à jour du document...", "info");
+            try
+            {
+                doc.Update2(true);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step2", "✅ Étape 2: Mise à jour du document et des vues", "completed");
             }
             catch (Exception ex)
             {
@@ -2529,12 +2671,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.UpdateStepStatusAsync("step2", $"❌ Étape 2: Échec - {ex.Message}", "error");
             }
 
-            // Étape 3
+            // Étape 3: Zoom All / Fit
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step3", "⏳ Étape 3: Zoom All / Fit...", "info");
             try
             {
-                doc.Update2(true);
+                ZoomToFit(doc, inventorApp);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step3", "✅ Étape 3: Document mis à jour", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step3", "✅ Étape 3: Zoom All / Fit appliqué", "completed");
             }
             catch (Exception ex)
             {
@@ -2542,25 +2686,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.UpdateStepStatusAsync("step3", $"❌ Étape 3: Échec - {ex.Message}", "error");
             }
 
-            // Étape 4
+            // Étape 4: Sauvegarde
             if (progressWindow != null)
-                await progressWindow.UpdateStepStatusAsync("step4", "✅ Étape 4: Cotations et annotations vérifiées", "completed");
-
-            // Étape 5
-            if (progressWindow != null)
-                await progressWindow.UpdateStepStatusAsync("step5", "✅ Étape 5: Cartouche et propriétés vérifiés", "completed");
-
-            // Étape 6
+                await progressWindow.UpdateStepStatusAsync("step4", "⏳ Étape 4: Sauvegarde du document...", "info");
             try
             {
                 SaveDocument(doc);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step6", "✅ Étape 6: Document sauvegardé", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step4", "✅ Étape 4: Sauvegarde du document actif", "completed");
             }
             catch (Exception ex)
             {
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step6", $"❌ Étape 6: Échec - {ex.Message}", "error");
+                    await progressWindow.UpdateStepStatusAsync("step4", $"❌ Étape 4: Échec - {ex.Message}", "error");
             }
         }
 
@@ -2569,16 +2707,25 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// </summary>
         private async Task ExecuteGenericStepsWithProgressAsync(dynamic doc, dynamic inventorApp, IProgressWindow? progressWindow)
         {
-            // Étape 1
-            if (progressWindow != null)
-                await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: Document vérifié", "completed");
-
-            // Étape 2
+            // Étape 1: Mise à jour du document
             try
             {
                 doc.Update2(true);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step2", "✅ Étape 2: Document mis à jour", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: Mise à jour du document", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step1", $"❌ Étape 1: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 2: Zoom All / Fit
+            try
+            {
+                ZoomToFit(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step2", "✅ Étape 2: Zoom All / Fit appliqué", "completed");
             }
             catch (Exception ex)
             {
@@ -2586,7 +2733,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.UpdateStepStatusAsync("step2", $"❌ Étape 2: Échec - {ex.Message}", "error");
             }
 
-            // Étape 3
+            // Étape 3: Sauvegarde
             try
             {
                 SaveDocument(doc);
@@ -2686,39 +2833,49 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         {
             try
             {
-                int docType = doc.DocumentType;
-                const int kAssemblyDocumentObject = 12290;
-                const int kPartDocumentObject = 12288;
+                // Utiliser l'extension du fichier pour détecter le type (méthode fiable avec dynamic)
+                string fullFileName = doc.FullFileName;
+                string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
+                
+                bool isAssembly = extension == ".iam";
+                bool isPart = extension == ".ipt";
 
-                if (docType == kAssemblyDocumentObject)
+                if (isAssembly)
                 {
                     dynamic asmDef = doc.ComponentDefinition;
                     dynamic designViewReps = asmDef.RepresentationsManager.DesignViewRepresentations;
 
                     dynamic targetRep = null;
+                    
+                    Log($"[ActivateDefaultRepresentation] Assemblage détecté - {designViewReps.Count} représentations trouvées", "INFO");
 
-                    // ASSEMBLAGES: POSITION 2 PRIORITAIRE
+                    // ASSEMBLAGES: POSITION 2 PRIORITAIRE (comme dans la règle iLogic)
                     if (designViewReps.Count >= 2)
                     {
                         targetRep = designViewReps.Item(2);
+                        Log($"[ActivateDefaultRepresentation] Position 2 sélectionnée: {targetRep.Name}", "INFO");
                     }
                     else if (designViewReps.Count >= 1)
                     {
                         targetRep = designViewReps.Item(1);
+                        Log($"[ActivateDefaultRepresentation] Position 1 sélectionnée: {targetRep.Name}", "INFO");
                     }
 
                     if (targetRep != null)
                     {
                         targetRep.Activate();
                         doc.Update();
+                        Log($"[ActivateDefaultRepresentation] Représentation '{targetRep.Name}' activée avec succès", "SUCCESS");
                     }
                 }
-                else if (docType == kPartDocumentObject)
+                else if (isPart)
                 {
                     dynamic partDef = doc.ComponentDefinition;
                     dynamic designViewReps = partDef.RepresentationsManager.DesignViewRepresentations;
 
                     dynamic targetRep = null;
+                    
+                    Log($"[ActivateDefaultRepresentation] Pièce détectée - {designViewReps.Count} représentations trouvées", "INFO");
 
                     // PIÈCES: Recherche mots-clés puis position 2
                     foreach (dynamic rep in designViewReps)
@@ -2728,6 +2885,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                             repNameLower.Contains("primary"))
                         {
                             targetRep = rep;
+                            Log($"[ActivateDefaultRepresentation] Représentation par mot-clé trouvée: {rep.Name}", "INFO");
                             break;
                         }
                     }
@@ -2735,21 +2893,25 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     if (targetRep == null && designViewReps.Count >= 2)
                     {
                         targetRep = designViewReps.Item(2);
+                        Log($"[ActivateDefaultRepresentation] Position 2 sélectionnée: {targetRep.Name}", "INFO");
                     }
                     else if (targetRep == null && designViewReps.Count >= 1)
                     {
                         targetRep = designViewReps.Item(1);
+                        Log($"[ActivateDefaultRepresentation] Position 1 sélectionnée: {targetRep.Name}", "INFO");
                     }
 
                     if (targetRep != null)
                     {
                         targetRep.Activate();
                         doc.Update();
+                        Log($"[ActivateDefaultRepresentation] Représentation '{targetRep.Name}' activée avec succès", "SUCCESS");
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                Log($"[ActivateDefaultRepresentation] Erreur: {ex.Message}", "ERROR");
                 // Continuer malgré l'erreur
             }
         }
@@ -2836,7 +2998,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 {
                     // Méthode 2: Alternative selon type
                     int docType = doc.DocumentType;
-                    const int kDrawingDocumentObject = 12291;
+                    const int kDrawingDocumentObject = 12292;
                     const int kPartDocumentObject = 12288;
                     const int kAssemblyDocumentObject = 12290;
 
@@ -2991,52 +3153,112 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             }
         }
 
+        /// <summary>
+        /// Masque les plans de référence (WorkPlanes, Axes, Points) - Utilise la logique de ToggleRefVisibility
+        /// </summary>
+        private void HideWorkFeatures(dynamic doc, dynamic inventorApp)
+        {
+            try
+            {
+                // Utiliser ObjectVisibility API (comme dans ToggleRefVisibility)
+                try
+                {
+                    dynamic objVis = doc.ObjectVisibility;
+                    try { objVis.OriginWorkFeatures = false; } catch { }
+                    try { objVis.WorkPlanes = false; } catch { }
+                    try { objVis.WorkAxes = false; } catch { }
+                    try { objVis.WorkPoints = false; } catch { }
+                }
+                catch { }
+
+                // Masquer récursivement les WorkFeatures (pattern de ToggleRefVisibility)
+                ToggleRefVisibility_Simplified(doc, false);
+            }
+            catch (Exception ex)
+            {
+                Log($"Erreur lors du masquage des WorkFeatures: {ex.Message}", "WARNING");
+            }
+        }
+
+        /// <summary>
+        /// Masque les esquisses (Sketches 2D/3D) - Utilise la logique de ToggleSketchVisibility
+        /// </summary>
+        private void HideSketches(dynamic doc, dynamic inventorApp)
+        {
+            try
+            {
+                // Utiliser ObjectVisibility API (comme dans ToggleSketchVisibility)
+                try
+                {
+                    dynamic objVis = doc.ObjectVisibility;
+                    try { objVis.Sketches = false; } catch { }
+                    try { objVis.Sketches3D = false; } catch { }
+                }
+                catch { }
+
+                // Masquer récursivement les sketches (pattern de ToggleSketchVisibility)
+                ToggleSketches_Simplified(doc, false);
+            }
+            catch (Exception ex)
+            {
+                Log($"Erreur lors du masquage des Sketches: {ex.Message}", "WARNING");
+            }
+        }
+
         private void SmartHideReferences(dynamic doc)
         {
             try
             {
-                const int kAssemblyDocumentObject = 12290;
-                if (doc.DocumentType == kAssemblyDocumentObject)
+                // Utiliser l'extension du fichier pour détecter le type (méthode fiable avec dynamic)
+                string fullFileName = doc.FullFileName;
+                string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
+                bool isAssembly = extension == ".iam";
+                
+                if (isAssembly)
                 {
+                    Log("[SmartHideReferences] Masquage des références dans l'assemblage...", "INFO");
                     dynamic asmDef = doc.ComponentDefinition;
-                    SmartHideReferencesRecursive(asmDef.Occurrences);
+                    int count = SmartHideReferencesRecursive(asmDef.Occurrences);
+                    Log($"[SmartHideReferences] {count} références masquées", "SUCCESS");
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Continuer
+                Log($"[SmartHideReferences] Erreur: {ex.Message}", "ERROR");
             }
         }
 
-        private void SmartHideReferencesRecursive(dynamic occurrences)
+        private int SmartHideReferencesRecursive(dynamic occurrences)
         {
+            int count = 0;
             foreach (dynamic occ in occurrences)
             {
                 try
                 {
+                    string occName = occ.Name;
+                    
                     if (EstReferenceAMasquer(occ))
                     {
                         if (occ.Visible)
                         {
                             occ.Visible = false;
+                            count++;
+                            Log($"[SmartHideReferences] Masqué: {occName}", "INFO");
                         }
                     }
 
-                    const int kAssemblyDocumentObject = 12290;
-                    if (occ.DefinitionDocumentType == kAssemblyDocumentObject)
+                    // Récursion pour les sous-assemblages (vérifier via SubOccurrences)
+                    try
                     {
-                        try
+                        dynamic subOccurrences = occ.SubOccurrences;
+                        if (subOccurrences != null && subOccurrences.Count > 0)
                         {
-                            dynamic subOccurrences = occ.SubOccurrences;
-                            if (subOccurrences != null)
-                            {
-                                SmartHideReferencesRecursive(subOccurrences);
-                            }
+                            count += SmartHideReferencesRecursive(subOccurrences);
                         }
-                        catch
-                        {
-                            // Continuer
-                        }
+                    }
+                    catch
+                    {
+                        // Pas de sous-occurrences - continuer
                     }
                 }
                 catch
@@ -3044,6 +3266,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     // Continuer
                 }
             }
+            return count;
         }
 
         private bool EstReferenceAMasquer(dynamic occ)
@@ -3134,23 +3357,39 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     return;
                 }
 
-                int docType = doc.DocumentType;
+                // Utiliser l'extension du fichier pour détecter le type (méthode fiable avec dynamic)
+                string fullFileName = doc.FullFileName;
+                string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
+                
+                bool isAssembly = extension == ".iam";
+                bool isPart = extension == ".ipt";
+                bool isDrawing = extension == ".idw" || extension == ".dwg";
+                
+                // Constantes pour compatibilité avec SmartProgressWindow
                 const int kAssemblyDocumentObject = 12290;
                 const int kPartDocumentObject = 12288;
-                const int kDrawingDocumentObject = 12291;
+                const int kDrawingDocumentObject = 12292;
+                const int kGenericDocument = 0;
+                
+                int docType = isAssembly ? kAssemblyDocumentObject :
+                             isPart ? kPartDocumentObject :
+                             isDrawing ? kDrawingDocumentObject : kGenericDocument;
 
-                string typeText = docType == kAssemblyDocumentObject ? "Assemblage" :
-                                 docType == kPartDocumentObject ? "Pièce" :
-                                 docType == kDrawingDocumentObject ? "Mise en plan" : "Document";
+                string typeText = isAssembly ? "Assemblage" :
+                                 isPart ? "Pièce" :
+                                 isDrawing ? "Mise en plan" : "Document";
 
                 string docName = doc.DisplayName ?? "Document";
-                Log($"Document: {docName} ({typeText})", "INFO");
+                Log($"Document: {docName} ({typeText}) - Extension: {extension}", "INFO");
                 
-                string htmlContent = GenerateSafeCloseHtml(docType, docName, typeText);
-
-                // Créer la fenêtre de progression sur le thread UI
-                if (_progressWindowCallback != null)
+                // Utiliser la nouvelle fenêtre WPF si disponible, sinon HTML
+                if (_smartProgressWindowCallback != null)
                 {
+                    progressWindow = _smartProgressWindowCallback("close", docType, docName, typeText);
+                }
+                else if (_progressWindowCallback != null)
+                {
+                    string htmlContent = GenerateSafeCloseHtml(docType, docName, typeText);
                     progressWindow = _progressWindowCallback("🔒 Safe Close V1.7 - Released on 2025-12-18 - By Mohammed Amine Elgalai - XNRGY Climate Systems ULC", htmlContent);
                 }
 
@@ -3158,15 +3397,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 await Task.Yield();
 
                 // Exécuter les étapes avec mise à jour du HTML
-                if (docType == kAssemblyDocumentObject)
+                if (isAssembly)
                 {
                     await ExecuteAssemblyStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
                 }
-                else if (docType == kPartDocumentObject)
+                else if (isPart)
                 {
                     await ExecutePartStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
                 }
-                else if (docType == kDrawingDocumentObject)
+                else if (isDrawing)
                 {
                     await ExecuteDrawingStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
                 }
@@ -3240,15 +3479,106 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// </summary>
         private async Task ExecuteAssemblyStepsForCloseWithProgressAsync(dynamic doc, dynamic inventorApp, IProgressWindow? progressWindow)
         {
-            // Étapes 1-6 identiques à Smart Save
-            await ExecuteAssemblyStepsWithProgressAsync(doc, inventorApp, progressWindow);
-
-            // Étape 7: Sauvegarde de tous les documents
+            // Étape 1: Activation représentation par défaut
             try
             {
-                SaveAllDocuments(inventorApp);
+                ActivateDefaultRepresentation(doc);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step7", "✅ Étape 7: Documents sauvegardés", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: 'Default' activée (POSITION-2-PRIORITAIRE)", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step1", $"❌ Étape 1: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 2: Affichage de TOUS les composants
+            try
+            {
+                try
+                {
+                    dynamic cmdManager = inventorApp.CommandManager;
+                    dynamic controlDefs = cmdManager.ControlDefinitions;
+                    dynamic cmd = controlDefs.Item("AssemblyShowAllComponentsCmd");
+                    cmd.Execute();
+                    doc.Update();
+                }
+                catch
+                {
+                    AfficherTousComposantsRecursive(doc.ComponentDefinition.Occurrences);
+                    doc.Update();
+                }
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step2", "✅ Étape 2: Tous les composants masqués affichés", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step2", $"❌ Étape 2: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 3: Réduction de l'arborescence
+            try
+            {
+                CollapseTree(doc);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step3", "✅ Étape 3: Réduction de l'arborescence du navigateur", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step3", $"❌ Étape 3: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 4: Mise à jour du document
+            try
+            {
+                doc.Update2(true);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step4", "✅ Étape 4: Mise à jour du document", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step4", $"❌ Étape 4: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 5: Application de la vue isométrique
+            try
+            {
+                ApplyIsometricView(inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step5", "✅ Étape 5: Application de la vue isométrique", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step5", $"❌ Étape 5: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 6: Masquage intelligent des références (Dummy, Box, etc.)
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step6", "⏳ Étape 6: Masquage des références...", "info");
+            try
+            {
+                SmartHideReferences(doc);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step6", "✅ Étape 6: Masquage références (Dummy, Swing, PanFactice, AirFlow, Cut_Opening)", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step6", $"❌ Étape 6: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 7: Masquage des plans de référence (WorkPlanes, Axes, Points)
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step7", "⏳ Étape 7: Masquage des plans de référence...", "info");
+            try
+            {
+                HideWorkFeatures(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step7", "✅ Étape 7: Masquage des plans de référence (WorkPlanes, Axes, Points)", "completed");
             }
             catch (Exception ex)
             {
@@ -3256,17 +3586,64 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.UpdateStepStatusAsync("step7", $"❌ Étape 7: Échec - {ex.Message}", "error");
             }
 
-            // Étape 8: Fermeture du document
+            // Étape 8: Masquage des esquisses
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step8", "⏳ Étape 8: Masquage des esquisses...", "info");
             try
             {
-                CloseDocument(doc);
+                HideSketches(doc, inventorApp);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step8", "✅ Étape 8: Document fermé", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step8", "✅ Étape 8: Masquage des esquisses (Sketches 2D/3D)", "completed");
             }
             catch (Exception ex)
             {
                 if (progressWindow != null)
                     await progressWindow.UpdateStepStatusAsync("step8", $"❌ Étape 8: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 9: Zoom All / Fit
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step9", "⏳ Étape 9: Zoom All / Fit...", "info");
+            try
+            {
+                ZoomToFit(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step9", "✅ Étape 9: Zoom All / Fit appliqué", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step9", $"❌ Étape 9: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 10: Sauvegarde de tous les documents
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step10", "⏳ Étape 10: Sauvegarde de tous les documents...", "info");
+            try
+            {
+                SaveAllDocuments(inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step10", "✅ Étape 10: Sauvegarde de tous les documents ouverts", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step10", $"❌ Étape 10: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 11: Fermeture du document
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step11", "⏳ Étape 11: Fermeture du document...", "info");
+            try
+            {
+                CloseDocument(doc);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step11", "✅ Étape 11: Fermeture du document actif", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step11", $"❌ Étape 11: Échec - {ex.Message}", "error");
             }
         }
 
@@ -3275,15 +3652,87 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// </summary>
         private async Task ExecutePartStepsForCloseWithProgressAsync(dynamic doc, dynamic inventorApp, IProgressWindow? progressWindow)
         {
-            // Étapes 1-6 identiques à Smart Save
-            await ExecutePartStepsWithProgressAsync(doc, inventorApp, progressWindow);
-
-            // Étape 7: Sauvegarde de tous les documents
+            // Étape 1: Activation représentation par défaut
             try
             {
-                SaveAllDocuments(inventorApp);
+                ActivateDefaultRepresentation(doc);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step7", "✅ Étape 7: Documents sauvegardés", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: Activation représentation par défaut", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step1", $"❌ Étape 1: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 2: Affichage des corps cachés
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step2", "✅ Étape 2: Affichage des corps cachés", "completed");
+
+            // Étape 3: Réduction arborescence
+            try
+            {
+                CollapseTree(doc);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step3", "✅ Étape 3: Réduction de l'arborescence du navigateur", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step3", $"❌ Étape 3: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 4: Mise à jour
+            try
+            {
+                doc.Update2(true);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step4", "✅ Étape 4: Mise à jour du document", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step4", $"❌ Étape 4: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 5: Vue isométrique
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step5", "⏳ Étape 5: Application vue isométrique...", "info");
+            try
+            {
+                ApplyIsometricView(inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step5", "✅ Étape 5: Application de la vue isométrique", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step5", $"❌ Étape 5: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 6: Masquage des plans de référence
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step6", "⏳ Étape 6: Masquage des plans de référence...", "info");
+            try
+            {
+                HideWorkFeatures(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step6", "✅ Étape 6: Masquage des plans de référence (WorkPlanes, Axes, Points)", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step6", $"❌ Étape 6: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 7: Masquage des esquisses
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step7", "⏳ Étape 7: Masquage des esquisses...", "info");
+            try
+            {
+                HideSketches(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step7", "✅ Étape 7: Masquage des esquisses (Sketches 2D/3D)", "completed");
             }
             catch (Exception ex)
             {
@@ -3291,17 +3740,49 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.UpdateStepStatusAsync("step7", $"❌ Étape 7: Échec - {ex.Message}", "error");
             }
 
-            // Étape 8: Fermeture du document
+            // Étape 8: Zoom All / Fit
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step8", "⏳ Étape 8: Zoom All / Fit...", "info");
             try
             {
-                CloseDocument(doc);
+                ZoomToFit(doc, inventorApp);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step8", "✅ Étape 8: Document fermé", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step8", "✅ Étape 8: Zoom All / Fit appliqué", "completed");
             }
             catch (Exception ex)
             {
                 if (progressWindow != null)
                     await progressWindow.UpdateStepStatusAsync("step8", $"❌ Étape 8: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 9: Sauvegarde de tous les documents
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step9", "⏳ Étape 9: Sauvegarde de tous les documents...", "info");
+            try
+            {
+                SaveAllDocuments(inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step9", "✅ Étape 9: Sauvegarde de tous les documents ouverts", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step9", $"❌ Étape 9: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 10: Fermeture du document
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step10", "⏳ Étape 10: Fermeture du document...", "info");
+            try
+            {
+                CloseDocument(doc);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step10", "✅ Étape 10: Fermeture du document actif", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step10", $"❌ Étape 10: Échec - {ex.Message}", "error");
             }
         }
 
@@ -3310,33 +3791,79 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// </summary>
         private async Task ExecuteDrawingStepsForCloseWithProgressAsync(dynamic doc, dynamic inventorApp, IProgressWindow? progressWindow)
         {
-            // Étapes 1-5 identiques à Smart Save
-            await ExecuteDrawingStepsWithProgressAsync(doc, inventorApp, progressWindow);
+            // Étape 1: Réduction arborescence
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step1", "⏳ Étape 1: Réduction de l'arborescence...", "info");
+            try
+            {
+                CollapseTree(doc);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: Réduction de l'arborescence du navigateur", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step1", $"❌ Étape 1: Échec - {ex.Message}", "error");
+            }
 
-            // Étape 6: Sauvegarde de tous les documents
+            // Étape 2: Mise à jour du document et des vues
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step2", "⏳ Étape 2: Mise à jour du document...", "info");
+            try
+            {
+                doc.Update2(true);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step2", "✅ Étape 2: Mise à jour du document et des vues", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step2", $"❌ Étape 2: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 3: Zoom All / Fit
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step3", "⏳ Étape 3: Zoom All / Fit...", "info");
+            try
+            {
+                ZoomToFit(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step3", "✅ Étape 3: Zoom All / Fit appliqué", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step3", $"❌ Étape 3: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 4: Sauvegarde de tous les documents
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step4", "⏳ Étape 4: Sauvegarde de tous les documents...", "info");
             try
             {
                 SaveAllDocuments(inventorApp);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step6", "✅ Étape 6: Documents sauvegardés", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step4", "✅ Étape 4: Sauvegarde de tous les documents ouverts", "completed");
             }
             catch (Exception ex)
             {
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step6", $"❌ Étape 6: Échec - {ex.Message}", "error");
+                    await progressWindow.UpdateStepStatusAsync("step4", $"❌ Étape 4: Échec - {ex.Message}", "error");
             }
 
-            // Étape 7: Fermeture du document
+            // Étape 5: Fermeture du document
+            if (progressWindow != null)
+                await progressWindow.UpdateStepStatusAsync("step5", "⏳ Étape 5: Fermeture du document...", "info");
             try
             {
                 CloseDocument(doc);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step7", "✅ Étape 7: Document fermé", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step5", "✅ Étape 5: Fermeture du document actif", "completed");
             }
             catch (Exception ex)
             {
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step7", $"❌ Étape 7: Échec - {ex.Message}", "error");
+                    await progressWindow.UpdateStepStatusAsync("step5", $"❌ Étape 5: Échec - {ex.Message}", "error");
             }
         }
 
@@ -3345,15 +3872,38 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// </summary>
         private async Task ExecuteGenericStepsForCloseWithProgressAsync(dynamic doc, dynamic inventorApp, IProgressWindow? progressWindow)
         {
-            // Étapes 1-2 identiques à Smart Save
-            await ExecuteGenericStepsWithProgressAsync(doc, inventorApp, progressWindow);
+            // Étape 1: Mise à jour du document
+            try
+            {
+                doc.Update2(true);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step1", "✅ Étape 1: Mise à jour du document", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step1", $"❌ Étape 1: Échec - {ex.Message}", "error");
+            }
+
+            // Étape 2: Zoom All / Fit
+            try
+            {
+                ZoomToFit(doc, inventorApp);
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step2", "✅ Étape 2: Zoom All / Fit appliqué", "completed");
+            }
+            catch (Exception ex)
+            {
+                if (progressWindow != null)
+                    await progressWindow.UpdateStepStatusAsync("step2", $"❌ Étape 2: Échec - {ex.Message}", "error");
+            }
 
             // Étape 3: Sauvegarde de tous les documents
             try
             {
                 SaveAllDocuments(inventorApp);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step3", "✅ Étape 3: Documents sauvegardés", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step3", "✅ Étape 3: Sauvegarde de tous les documents ouverts", "completed");
             }
             catch (Exception ex)
             {
@@ -3366,7 +3916,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             {
                 CloseDocument(doc);
                 if (progressWindow != null)
-                    await progressWindow.UpdateStepStatusAsync("step4", "✅ Étape 4: Document fermé", "completed");
+                    await progressWindow.UpdateStepStatusAsync("step4", "✅ Étape 4: Fermeture du document actif", "completed");
             }
             catch (Exception ex)
             {
@@ -3684,7 +4234,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     }
 
                     int docType = doc.DocumentType;
-                    const int kDrawingDocumentObject = 12291;
+                    const int kDrawingDocumentObject = 12292;
 
                     if (docType != kDrawingDocumentObject)
                     {
@@ -4557,7 +5107,7 @@ Date: 2026-01-02";
                     }
 
                     int docType = doc.DocumentType;
-                    const int kDrawingDocumentObject = 12291;
+                    const int kDrawingDocumentObject = 12292;
 
                     if (docType != kDrawingDocumentObject)
                     {
@@ -4736,7 +5286,7 @@ Date: 2026-01-02";
             var steps = new List<string>();
             const int kAssemblyDocumentObject = 12290;
             const int kPartDocumentObject = 12288;
-            const int kDrawingDocumentObject = 12291;
+            const int kDrawingDocumentObject = 12292;
 
             if (docType == kAssemblyDocumentObject)
             {
@@ -4785,7 +5335,7 @@ Date: 2026-01-02";
             var steps = new List<string>();
             const int kAssemblyDocumentObject = 12290;
             const int kPartDocumentObject = 12288;
-            const int kDrawingDocumentObject = 12291;
+            const int kDrawingDocumentObject = 12292;
 
             if (docType == kAssemblyDocumentObject)
             {
