@@ -1,0 +1,56 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Modules.SmartTools.Views.ProgressWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+        Title="Progression HTML - XNRGY Engineering Automation Tools"
+        Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
+        Height="700" Width="900"
+        MinHeight="500" MinWidth="700"
+        WindowStartupLocation="CenterScreen"
+        Background="#1E1E2E"
+        ResizeMode="CanResize"
+        ShowInTaskbar="True"
+        Topmost="True">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="XnrgyBlue" Color="#0078D4"/>
+        <SolidColorBrush x:Key="DarkBg" Color="#1E1E2E"/>
+        <SolidColorBrush x:Key="DarkBg2" Color="#252536"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#4A7FBF"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2A4A6F" Padding="12,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock x:Name="TxtTitle" Grid.Column="0" 
+                           Text="Progression"
+                           FontSize="16" FontWeight="Bold" Foreground="White"
+                           VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                
+                <Button x:Name="BtnClose" Grid.Column="1" Content="X" 
+                        Width="28" Height="28" FontWeight="Bold"
+                        Background="#DC2626" Foreground="White" 
+                        BorderThickness="0" Cursor="Hand"
+                        Click="BtnClose_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- WebView2 pour le contenu HTML -->
+        <Border Grid.Row="1" Background="#252536" Margin="8,4,8,8" CornerRadius="4"
+                BorderBrush="#4A7FBF" BorderThickness="1">
+            <wv2:WebView2 x:Name="WebViewContent" 
+                          DefaultBackgroundColor="Transparent"/>
+        </Border>
+    </Grid>
+</Window>

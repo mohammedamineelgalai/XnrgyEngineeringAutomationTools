@@ -382,6 +382,12 @@
       <DependentUpon>ChecklistHVACWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Modules\ChecklistHVAC\Services\ChecklistSyncService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\ChecklistHVAC\Models\ChecklistDataModel.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <!-- ========== CODE-BEHIND: MODULE SMART TOOLS ========== -->
     <Compile Include="Modules\SmartTools\Views\SmartToolsWindow.xaml.cs">
       <DependentUpon>SmartToolsWindow.xaml</DependentUpon>

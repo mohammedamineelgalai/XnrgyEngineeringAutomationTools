@@ -192,7 +192,7 @@
                                  Height="100" AcceptsReturn="True" TextWrapping="Wrap"
                                  VerticalScrollBarVisibility="Auto"
                                  ToolTip="Entrez les initiales des dessinateurs, une par ligne ou séparées par des virgules"/>
-                        <TextBlock Text="Exemple: N/A, AC, AM, AP, AR, BL, CC..." 
+                        <TextBlock Text="Exemple: N/A, AC, AM, AR, CC, DC, DL, FL..." 
                                    Foreground="#666666" FontSize="10" Margin="0,4,0,0"/>
                     </StackPanel>
                 </GroupBox>

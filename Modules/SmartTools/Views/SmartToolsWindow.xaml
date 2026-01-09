@@ -4,7 +4,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Smart Tools - Outils Automatisation Inventor - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Smart Tools - XNRGY Engineering Automation Tools" 
+        Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Height="900" Width="1400"
         MinHeight="700" MinWidth="1100"
         WindowStartupLocation="CenterOwner"
@@ -90,13 +91,11 @@
                 
                 <Viewbox Grid.Column="0" Stretch="Uniform" MaxWidth="600" MaxHeight="80" HorizontalAlignment="Left" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                        <Border Background="#FF8C00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
-                            <TextBlock Text="&#x1F527;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
+                        <Image Source="/Resources/XnrgyEngineeringAutomationTools.png" Width="50" Height="50" Margin="0,0,12,0" RenderOptions.BitmapScalingMode="HighQuality"/>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="🛠️ Smart Tools - Outils d'automatisation Inventor v1.7" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="Smart Tools - Outils d'automatisation Inventor" FontSize="20" FontWeight="Bold" Foreground="White"/>
                             <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
-                                <Run Text="💡 Suite d'outils d'automatisation pour Vault et Inventor"/>
+                                <Run Text="Suite d'outils d'automatisation pour Vault et Inventor"/>
                             </TextBlock>
                         </StackPanel>
                     </StackPanel>
@@ -145,7 +144,7 @@
                         <Button x:Name="BtnHideBox" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnHideBox_Click">
                             <StackPanel HorizontalAlignment="Center">
                                 <Image Source="pack://application:,,,/Modules/SmartTools/Resources/HideBox.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Text="HideBox V1.5" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="HideBox" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
                                 <TextBlock Text="Masquage intelligent" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>
@@ -198,7 +197,7 @@
                         <Button x:Name="BtnSafeClose" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnSafeClose_Click">
                             <StackPanel HorizontalAlignment="Center">
                                 <Image Source="pack://application:,,,/Modules/SmartTools/Resources/SafeClose.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Text="SafeClose V1.6" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="SafeClose" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
                                 <TextBlock Text="Fermeture sécurisée" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>
@@ -206,7 +205,7 @@
                         <Button x:Name="BtnSmartSave" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnSmartSave_Click">
                             <StackPanel HorizontalAlignment="Center">
                                 <Image Source="pack://application:,,,/Modules/SmartTools/Resources/SmartSave.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Text="SmartSave V1.0" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="SmartSave" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
                                 <TextBlock Text="Sauvegarde intelligente" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>
@@ -280,7 +279,7 @@
                         <Button x:Name="BtnExportIAMToIPT" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnExportIAMToIPT_Click">
                             <StackPanel HorizontalAlignment="Center">
                                 <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ExportIAMToIPT.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Text="Export IAM to IPT V1.1" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Export IAM to IPT" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
                                 <TextBlock Text="Export assemblage (.IAM)" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>
@@ -308,7 +307,7 @@
                         <Button x:Name="BtnExportIDWtoShopPDF" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnExportIDWtoShopPDF_Click">
                             <StackPanel HorizontalAlignment="Center">
                                 <Image Source="pack://application:,,,/Modules/SmartTools/Resources/ExportIDWtoShopPDF.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Text="Export IDW to PDF V1.1" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Export IDW to PDF" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
                                 <TextBlock Text="Export dessins PDF" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>
@@ -374,7 +373,7 @@
                         <Button x:Name="BtnInfoCommand" Style="{StaticResource SmartToolButton}" Width="260" Height="210" Click="BtnInfoCommand_Click">
                             <StackPanel HorizontalAlignment="Center">
                                 <Image Source="pack://application:,,,/Modules/SmartTools/Resources/InfoCommand.png" Width="95" Height="95" Margin="0,0,0,15" HorizontalAlignment="Center" VerticalAlignment="Center" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality"/>
-                                <TextBlock Text="Info Command V1.7" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
+                                <TextBlock Text="Info Command" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center" Foreground="White"/>
                                 <TextBlock Text="Informations Smart Tools" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center" Foreground="#E0E0E0" Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>

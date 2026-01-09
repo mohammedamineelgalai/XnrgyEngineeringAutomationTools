@@ -52,11 +52,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
         private TimeSpan _pausedTime = TimeSpan.Zero;
         private DateTime _pauseStartTime;
 
-        // Liste des initiales dessinateurs XNRGY (mise à jour 2025-12-30)
+        // Liste des initiales dessinateurs XNRGY (mise à jour 2026-01-09)
         private readonly List<string> _designerInitials = new List<string>
         {
-            "N/A", "AC", "AM", "AP", "AR", "BL", "CC", "CP", "DC", "DL", "DM", "FL", 
-            "IM", "KB", "KJ", "MAE", "MC", "NJ", "RO", "SB", "TG", "TV", "VK", "YS", "ZM",
+            "N/A", "AC", "AM", "AR", "CC", "DC", "DL", "FL", 
+            "IM", "KB", "KJ", "MAE", "MC", "NJ", "RO", "SB", "TG", "TV", "VK", "YS",
             "Autre..."
         };
 

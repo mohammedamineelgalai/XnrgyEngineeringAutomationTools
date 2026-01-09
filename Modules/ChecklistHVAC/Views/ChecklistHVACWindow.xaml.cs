@@ -1,21 +1,32 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using Microsoft.Web.WebView2.Core;
 using XnrgyEngineeringAutomationTools.Services;
+using XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Services;
+using XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Models;
 
 namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
 {
     /// <summary>
     /// Checklist HVAC Window - Affiche la checklist HTML comme une application native
     /// Utilise WebView2 (Edge/Chromium) pour supporter React et JavaScript moderne
+    /// Synchronisation bidirectionnelle avec Vault toutes les 4-5 minutes
     /// </summary>
     public partial class ChecklistHVACWindow : Window
     {
         private readonly string _htmlFilePath;
         private readonly VaultSdkService _vaultService;
+        private ChecklistSyncService? _syncService;
+        private System.Windows.Threading.DispatcherTimer? _syncStatusTimer;
+
+        // Module actuel (extrait depuis le chemin ou saisi par l'utilisateur)
+        private string _currentProjectNumber = "";
+        private string _currentReference = "";
+        private string _currentModule = "";
 
         public ChecklistHVACWindow(string htmlFilePath, VaultSdkService vaultService = null)
         {
@@ -23,12 +34,34 @@ namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
             _htmlFilePath = htmlFilePath;
             _vaultService = vaultService;
             
+            // Initialiser le service de synchronisation si Vault est connecté
+            if (_vaultService != null && _vaultService.IsConnected)
+            {
+                _syncService = new ChecklistSyncService(_vaultService);
+                _syncService.SyncStatusChanged += OnSyncStatusChanged;
+                
+                // Démarrer la synchronisation automatique
+                _syncService.StartAutoSync();
+                
+                // Timer pour mettre à jour le statut de sync toutes les 30 secondes
+                _syncStatusTimer = new System.Windows.Threading.DispatcherTimer();
+                _syncStatusTimer.Interval = TimeSpan.FromSeconds(30);
+                _syncStatusTimer.Tick += (s, e) => UpdateSyncStatus();
+                _syncStatusTimer.Start();
+            }
+            
             // Afficher statut Vault
             UpdateVaultStatus();
             
             // S'abonner aux changements de theme
             MainWindow.ThemeChanged += OnThemeChanged;
-            this.Closed += (s, e) => MainWindow.ThemeChanged -= OnThemeChanged;
+            this.Closed += (s, e) =>
+            {
+                MainWindow.ThemeChanged -= OnThemeChanged;
+                _syncService?.StopAutoSync();
+                _syncStatusTimer?.Stop();
+                _syncService?.Dispose();
+            };
             
             // Appliquer le theme actuel au demarrage
             ApplyTheme(MainWindow.CurrentThemeIsDark);
@@ -85,6 +118,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
 
         /// <summary>
         /// Initialise WebView2 avec le runtime Edge/Chromium
+        /// Configure le pont JavaScript ↔ C# pour la synchronisation
         /// </summary>
         private async void InitializeWebView()
         {
@@ -94,6 +128,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
                 
                 // S'assurer que WebView2 est prêt
                 await WebViewControl.EnsureCoreWebView2Async(null);
+                
+                // Ajouter le pont JavaScript ↔ C#
+                SetupJavaScriptBridge();
                 
                 // Charger le fichier HTML
                 LoadHtmlFile();
@@ -114,6 +151,98 @@ namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
                     "WebView2 requis", 
                     MessageBoxButton.OK, 
                     MessageBoxImage.Warning);
+            }
+        }
+
+        /// <summary>
+        /// Configure le pont JavaScript ↔ C# pour communication bidirectionnelle
+        /// Permet au HTML de sauvegarder/charger les données via C#
+        /// </summary>
+        private void SetupJavaScriptBridge()
+        {
+            try
+            {
+                if (WebViewControl.CoreWebView2 == null)
+                {
+                    Logger.Log("[ChecklistSync] WebView2 CoreWebView2 non initialisé", Logger.LogLevel.WARNING);
+                    return;
+                }
+
+                // Créer un objet hôte C# pour JavaScript (WebView2 utilise AddHostObjectToScript)
+                WebViewControl.CoreWebView2.AddHostObjectToScript("checklistHost", new ChecklistHostObject(this));
+                
+                // Injecter le script JavaScript pour exposer les fonctions
+                // Note: WebView2 utilise window.chrome.webview.hostObjects pour accéder aux objets C#
+                string bridgeScript = @"
+                    (function() {
+                        if (typeof window.checklistSync === 'undefined') {
+                            window.checklistSync = {
+                                saveData: function(moduleId, projectNumber, reference, module, data) {
+                                    try {
+                                        const host = window.chrome.webview.hostObjects.checklistHost;
+                                        if (!host) {
+                                            console.error('[ChecklistSync] Bridge C# non disponible');
+                                            return 'ERROR: Bridge non disponible';
+                                        }
+                                        const json = typeof data === 'string' ? data : JSON.stringify(data);
+                                        return host.SaveChecklistData(moduleId, projectNumber, reference, module, json);
+                                    } catch (e) {
+                                        console.error('[ChecklistSync] Erreur saveData:', e);
+                                        return 'ERROR: ' + e.message;
+                                    }
+                                },
+                                loadData: function(moduleId) {
+                                    try {
+                                        const host = window.chrome.webview.hostObjects.checklistHost;
+                                        if (!host) {
+                                            console.warn('[ChecklistSync] Bridge C# non disponible - utilisation localStorage');
+                                            const localData = localStorage.getItem('checklist_' + moduleId);
+                                            return localData ? JSON.parse(localData) : null;
+                                        }
+                                        const json = host.LoadChecklistData(moduleId);
+                                        return json ? JSON.parse(json) : null;
+                                    } catch (e) {
+                                        console.error('[ChecklistSync] Erreur loadData:', e);
+                                        return null;
+                                    }
+                                },
+                                syncNow: function(moduleId, projectNumber, reference, module) {
+                                    try {
+                                        const host = window.chrome.webview.hostObjects.checklistHost;
+                                        if (host) {
+                                            host.SyncNow(moduleId, projectNumber, reference, module);
+                                        }
+                                    } catch (e) {
+                                        console.error('[ChecklistSync] Erreur syncNow:', e);
+                                    }
+                                },
+                                getSyncStatus: function() {
+                                    try {
+                                        const host = window.chrome.webview.hostObjects.checklistHost;
+                                        if (host) {
+                                            return host.GetSyncStatus();
+                                        }
+                                        return '{""connected"": false, ""autoSync"": false}';
+                                    } catch (e) {
+                                        return '{""connected"": false, ""error"": ""' + e.message + '""}';
+                                    }
+                                }
+                            };
+                            console.log('[ChecklistSync] Bridge JavaScript initialisé');
+                        }
+                    })();
+                ";
+                
+                // Injecter le script après que le DOM soit chargé
+                WebViewControl.CoreWebView2.DOMContentLoaded += async (sender, e) =>
+                {
+                    await WebViewControl.CoreWebView2.ExecuteScriptAsync(bridgeScript);
+                    Logger.Log("[ChecklistSync] Script bridge JavaScript injecté", Logger.LogLevel.INFO);
+                };
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException("SetupJavaScriptBridge", ex, Logger.LogLevel.ERROR);
             }
         }
 
@@ -181,13 +310,204 @@ namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
         {
             if (e.IsSuccess)
             {
-                FilePathText.Text = "[+] Pret - " + _htmlFilePath;
+                FilePathText.Text = "[+] Pret - " + Path.GetFileName(_htmlFilePath);
+                
+                // Réinjecter le pont JavaScript après navigation
+                SetupJavaScriptBridge();
             }
             else
             {
                 FilePathText.Text = "[-] Erreur de navigation";
                 Logger.Log("WebView2 navigation error: " + e.WebErrorStatus, Logger.LogLevel.ERROR);
             }
+        }
+
+        /// <summary>
+        /// Gestionnaire d'événements de changement de statut de synchronisation
+        /// </summary>
+        private void OnSyncStatusChanged(string level, string message)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                string icon = level switch
+                {
+                    "SUCCESS" => "[+]",
+                    "ERROR" => "[-]",
+                    "WARN" => "[!]",
+                    _ => "[i]"
+                };
+                
+                FilePathText.Text = $"{icon} Sync: {message}";
+                
+                Logger.Log($"[ChecklistSync] {message}", 
+                    level == "ERROR" ? Logger.LogLevel.ERROR : 
+                    level == "WARN" ? Logger.LogLevel.WARNING : Logger.LogLevel.INFO);
+            });
+        }
+
+        /// <summary>
+        /// Met à jour le statut de synchronisation
+        /// </summary>
+        private void UpdateSyncStatus()
+        {
+            if (_syncService != null && _vaultService != null && _vaultService.IsConnected)
+            {
+                Dispatcher.Invoke(() =>
+                {
+                    RunStatus.Text = " Statut : Synchronisation auto active";
+                    VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(16, 124, 16)); // Vert
+                });
+            }
+        }
+
+        /// <summary>
+        /// Synchronise manuellement le module actuel
+        /// </summary>
+        private async void SyncNowButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (_syncService == null || string.IsNullOrEmpty(_currentProjectNumber))
+            {
+                MessageBox.Show(
+                    "Veuillez d'abord sélectionner un module dans la checklist.",
+                    "Module requis",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
+            await _syncService.SyncModuleAsync(_currentProjectNumber, _currentReference, _currentModule);
+        }
+
+        /// <summary>
+        /// Sauvegarde les données depuis JavaScript (appelé par le HTML)
+        /// </summary>
+        public string SaveChecklistData(string moduleId, string projectNumber, string reference, string module, string jsonData)
+        {
+            try
+            {
+                _currentProjectNumber = projectNumber;
+                _currentReference = reference;
+                _currentModule = module;
+
+                // Désérialiser les données
+                var data = System.Text.Json.JsonSerializer.Deserialize<ChecklistDataModel>(jsonData);
+                if (data == null) return "ERROR: Données invalides";
+
+                // Sauvegarder en cache local immédiatement
+                string localPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "XnrgyEngineeringAutomationTools",
+                    "ChecklistHVAC",
+                    $"Checklist_{moduleId}.json"
+                );
+
+                Directory.CreateDirectory(Path.GetDirectoryName(localPath));
+                File.WriteAllText(localPath, jsonData, System.Text.Encoding.UTF8);
+
+                // Synchroniser avec Vault en arrière-plan (non bloquant)
+                if (_syncService != null)
+                {
+                    Task.Run(async () => await _syncService.SyncModuleAsync(projectNumber, reference, module, data));
+                }
+
+                return "OK";
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException("SaveChecklistData", ex, Logger.LogLevel.ERROR);
+                return $"ERROR: {ex.Message}";
+            }
+        }
+
+        /// <summary>
+        /// Charge les données depuis Vault (appelé par le HTML)
+        /// </summary>
+        public string LoadChecklistData(string moduleId)
+        {
+            try
+            {
+                if (_syncService == null) return null;
+
+                // Charger depuis le cache local
+                string localPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    "XnrgyEngineeringAutomationTools",
+                    "ChecklistHVAC",
+                    $"Checklist_{moduleId}.json"
+                );
+
+                if (File.Exists(localPath))
+                {
+                    string json = File.ReadAllText(localPath, System.Text.Encoding.UTF8);
+                    return json;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException("LoadChecklistData", ex, Logger.LogLevel.ERROR);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Synchronise maintenant (appelé par le HTML)
+        /// </summary>
+        public void SyncNow(string moduleId, string projectNumber, string reference, string module)
+        {
+            if (_syncService != null)
+            {
+                Task.Run(async () => await _syncService.SyncModuleAsync(projectNumber, reference, module));
+            }
+        }
+
+        /// <summary>
+        /// Obtient le statut de synchronisation (appelé par le HTML)
+        /// </summary>
+        public string GetSyncStatus()
+        {
+            if (_syncService == null || _vaultService == null || !_vaultService.IsConnected)
+            {
+                return "{\"connected\": false, \"autoSync\": false}";
+            }
+
+            return "{\"connected\": true, \"autoSync\": true, \"interval\": 4}";
+        }
+    }
+
+    /// <summary>
+    /// Objet hôte pour communication JavaScript ↔ C#
+    /// Doit être public et utiliser ComVisible
+    /// </summary>
+    [System.Runtime.InteropServices.ComVisible(true)]
+    public class ChecklistHostObject
+    {
+        private readonly ChecklistHVACWindow _window;
+
+        public ChecklistHostObject(ChecklistHVACWindow window)
+        {
+            _window = window;
+        }
+
+        public string SaveChecklistData(string moduleId, string projectNumber, string reference, string module, string jsonData)
+        {
+            return _window.SaveChecklistData(moduleId, projectNumber, reference, module, jsonData);
+        }
+
+        public string LoadChecklistData(string moduleId)
+        {
+            return _window.LoadChecklistData(moduleId) ?? "";
+        }
+
+        public void SyncNow(string moduleId, string projectNumber, string reference, string module)
+        {
+            _window.SyncNow(moduleId, projectNumber, reference, module);
+        }
+
+        public string GetSyncStatus()
+        {
+            return _window.GetSyncStatus();
         }
     }
 }

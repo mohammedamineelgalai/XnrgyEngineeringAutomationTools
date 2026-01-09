@@ -36,7 +36,15 @@ namespace XnrgyEngineeringAutomationTools
         private readonly string _basePath = @"c:\Users\mohammedamine.elgala\source\repos";
         private string VaultUploadExePath => Path.Combine(_basePath, @"VaultAutomationTool\bin\Release\VaultAutomationTool.exe");
         private string DXFVerifierExePath => Path.Combine(_basePath, @"DXFVerifier\bin\Release\DXFVerifier.exe");
-        private string ChecklistHVACPath => Path.Combine(_basePath, @"ChecklistHVAC\Checklist HVACAHU - By Mohammed Amine Elgalai.html");
+        
+        // Checklist HVAC : Chemin dans le projet (migré)
+        private string ChecklistHVACPath => Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "Modules", "ChecklistHVAC", "Resources", "ChecklistHVAC.html"
+        );
+        
+        // Fallback vers l'ancien emplacement si le nouveau n'existe pas
+        private string ChecklistHVACPathFallback => Path.Combine(_basePath, @"ChecklistHVAC\Checklist HVACAHU - By Mohammed Amine Elgalai.html");
 
         private readonly string[] _workspaceFolders = new[]
         {
@@ -1347,25 +1355,42 @@ namespace XnrgyEngineeringAutomationTools
             StatusText.Text = "Ouverture de Checklist HVAC...";
             try
             {
-                if (File.Exists(ChecklistHVACPath))
+                // Essayer le nouveau chemin (dans le projet)
+                string htmlPath = ChecklistHVACPath;
+                
+                // Fallback vers l'ancien emplacement si nécessaire
+                if (!File.Exists(htmlPath))
                 {
-                    // Ouvrir dans une fenêtre intégrée avec le service Vault
-                    var checklistWindow = new ChecklistHVACWindow(ChecklistHVACPath, _vaultService);
-                    checklistWindow.Show();
-                    AddLog("Checklist HVAC ouvert dans l'application", "SUCCESS");
-                    AddLog("Fichier: " + ChecklistHVACPath, "INFO");
-                    StatusText.Text = "Checklist HVAC ouvert";
+                    htmlPath = ChecklistHVACPathFallback;
+                    if (!File.Exists(htmlPath))
+                    {
+                        AddLog("ERREUR: Fichier Checklist non trouve!", "CRITICAL");
+                        AddLog("Chemins testes:", "ERROR");
+                        AddLog("  1. " + ChecklistHVACPath, "ERROR");
+                        AddLog("  2. " + ChecklistHVACPathFallback, "ERROR");
+                        AddLog("ACTION REQUISE: Migrer le fichier HTML vers Modules/ChecklistHVAC/Resources/", "WARN");
+                        StatusText.Text = "Erreur: Fichier non trouve";
+                        return;
+                    }
+                    else
+                    {
+                        AddLog("[!] Utilisation de l'ancien emplacement (migration recommandée)", "WARN");
+                    }
                 }
-                else
-                {
-                    AddLog("ERREUR: Fichier non trouve!", "CRITICAL");
-                    AddLog("Chemin attendu: " + ChecklistHVACPath, "ERROR");
-                    StatusText.Text = "Erreur: Fichier non trouve";
-                }
+                
+                // Ouvrir dans une fenêtre intégrée avec le service Vault et synchronisation
+                var checklistWindow = new ChecklistHVACWindow(htmlPath, _isVaultConnected ? _vaultService : null);
+                checklistWindow.Show();
+                AddLog("Checklist HVAC ouvert avec synchronisation Vault", "SUCCESS");
+                AddLog("Fichier: " + Path.GetFileName(htmlPath), "INFO");
+                AddLog("Synchronisation automatique: " + (_isVaultConnected ? "Active (4 min)" : "Desactivee - Vault non connecte"), 
+                    _isVaultConnected ? "SUCCESS" : "WARN");
+                StatusText.Text = "Checklist HVAC ouvert";
             }
             catch (Exception ex)
             {
                 AddLog("Erreur ouverture ChecklistHVAC: " + ex.Message, "CRITICAL");
+                Logger.LogException("OpenChecklistHVAC", ex, Logger.LogLevel.ERROR);
                 StatusText.Text = "Erreur";
             }
         }

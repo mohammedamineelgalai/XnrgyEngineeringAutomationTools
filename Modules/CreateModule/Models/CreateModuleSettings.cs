@@ -12,8 +12,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Models
         /// </summary>
         public List<string> DesignerInitials { get; set; } = new List<string>
         {
-            "N/A", "AC", "AM", "AP", "AR", "BL", "CC", "CP", "DC", "DL", "DM", "FL",
-            "IM", "KB", "KJ", "MAE", "MC", "NJ", "RO", "SB", "TG", "TV", "VK", "YS", "ZM"
+            "N/A", "AC", "AM", "AR", "CC", "DC", "DL", "FL",
+            "IM", "KB", "KJ", "MAE", "MC", "NJ", "RO", "SB", "TG", "TV", "VK", "YS"
         };
 
         /// <summary>

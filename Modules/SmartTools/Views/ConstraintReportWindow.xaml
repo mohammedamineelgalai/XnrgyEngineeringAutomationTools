@@ -1,7 +1,8 @@
 <Window x:Class="XnrgyEngineeringAutomationTools.Modules.SmartTools.Views.ConstraintReportWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Smart Tools - Rapport des Contraintes - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Rapport des Contraintes - XNRGY Engineering Automation Tools" 
+        Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Width="1400" Height="900"
         MinWidth="1000" MinHeight="700"
         WindowStartupLocation="Manual"
@@ -244,7 +245,7 @@
                     <TextBlock Text="Partiel" Foreground="#ff6f00" FontWeight="SemiBold" Margin="0,0,15,0"/>
                 </StackPanel>
                 
-                <TextBlock Grid.Column="1" Text="🚀 Smart Tools V1.2 - By Mohammed Amine El Galai" 
+                <TextBlock Grid.Column="1" Text="XNRGY Engineering Automation Tools - Smart Tools" 
                            Foreground="#37474f" FontSize="12" VerticalAlignment="Center"/>
             </Grid>
         </Border>

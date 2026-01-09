@@ -25,6 +25,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         }
 
         /// <summary>
+        /// Gestionnaire du bouton fermer
+        /// </summary>
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            CloseWindow();
+        }
+
+        /// <summary>
         /// Constructeur avec titre et contenu HTML initial
         /// </summary>
         public ProgressWindow(string title, string htmlContent) : this()

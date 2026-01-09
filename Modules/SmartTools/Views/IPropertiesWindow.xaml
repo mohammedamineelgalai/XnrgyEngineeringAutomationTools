@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
-        Title="iProperties" 
+        Title="iProperties Summary - XNRGY Engineering Automation Tools" 
+        Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Height="1000" Width="880"
         MinHeight="700" MinWidth="750"
         MaxHeight="{x:Static SystemParameters.MaximizedPrimaryScreenHeight}"
@@ -450,7 +451,7 @@
                             <TextBlock Text="◆" Foreground="White" FontSize="10" 
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBlock Text="Smart iProperties Summary V2.0 - By Mohammed Amine Elgalai - XNRGY Climate Systems ULC"
+                        <TextBlock Text="XNRGY Engineering Automation Tools - Smart Tools - iProperties Summary"
                                    FontSize="11" Foreground="#95a5a6"/>
                     </StackPanel>
                 </Grid>
