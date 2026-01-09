@@ -1,0 +1,1720 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checklist HVAC/AHU - Modules 3D/2D</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .modal-backdrop { animation: fadeInBackdrop 0.2s ease-in; }
+        @keyframes fadeInBackdrop { from { opacity: 0; } to { opacity: 1; } }
+        .btn-hover { transition: all 0.2s ease; }
+        .btn-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .checkpoint-item { border-left: 4px solid #e5e7eb; padding-left: 1rem; margin-bottom: 0.5rem; transition: all 0.2s ease; }
+        .checkpoint-item:hover { border-left-color: #6366f1; background-color: #f9fafb; }
+        .checkpoint-item.selected { border-left-color: #818cf8; background-color: #eef2ff; }
+        .category-section { transition: all 0.3s ease; }
+        .category-header { cursor: pointer; user-select: none; }
+        .category-header:hover { background-color: #f3f4f6; }
+        .checkbox-custom { appearance: none; width: 20px; height: 20px; border: 2px solid #d1d5db; border-radius: 4px; cursor: pointer; position: relative; }
+        .checkbox-custom:checked { background-color: #6366f1; border-color: #6366f1; }
+        .checkbox-custom:checked::after { content: '✓'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 14px; font-weight: bold; }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Utilisateurs réels du système - TOUS les approbateurs peuvent gérer les checkpoints
+        const USERS = [
+            { initials: 'AC', name: 'Alexander Cayetano', role: 'admin', title: 'Concepteur lead CAD / Approbateur' },
+            { initials: 'AM', name: 'Amgad Mikhaiel', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'AR', name: 'Alex Rosier', role: 'user', title: 'Concepteur amélioration CAD' },
+            { initials: 'CC', name: 'Charles Chamberland', role: 'admin', title: 'Concepteur lead CAD' },
+            { initials: 'DC', name: 'David Correa', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'DLM', name: 'Damik Lamoureux-Brunet', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'IM', name: 'Iheb Manai', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'KJ', name: 'Kenny Jean', role: 'admin', title: 'Concepteur CAD / Approbateur' },
+            { initials: 'NJ', name: 'Nick Jean', role: 'admin', title: 'Superviseur Concepteur CAD / Approbateur' },
+            { initials: 'TG', name: 'Tiago Gargur', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'TV', name: 'Seuksavanh Vongsipraseuth', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'SB', name: 'Stephane Beck', role: 'admin', title: 'Concepteur amélioration CAD / Approbateur' },
+            { initials: 'VK', name: 'Vanessa Kokkoris', role: 'admin', title: 'Concepteur lead CAD' },
+            { initials: 'YS', name: 'Yassir Saoudi', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'MAE', name: 'Mohammed Amine Elgalai', role: 'admin', title: 'Développeur & Concepteur amélioration CAD' }
+        ];
+
+        // Checkpoints réels extraits du fichier Excel
+        const REAL_CHECKPOINTS = [
+            // 3D-Composantes
+            { id: 1, category: '3D-Composantes', question: 'Blank 18"+ de haut: renforcir avec un hat-shape ou un angle?', explanation: 'Si le blank a plus de 18" de hauteur, il doit être renforcé avec un hat-shape ou un angle. Si trop large, mettre des panneaux.' },
+            { id: 2, category: '3D-Composantes', question: 'Hauteur de rehausse mentionnée dans le submittal?', explanation: 'Vérifier que la hauteur de rehausse est bien spécifiée dans les documents de submittal.' },
+            { id: 3, category: '3D-Composantes', question: 'Supports d\'équipement même matériel que tôle de plancher?', explanation: 'Les supports d\'équipement doivent être du même matériel que la tôle de plancher EN TOUT TEMPS, exception ACKPL = ALUM.' },
+            { id: 4, category: '3D-Composantes', question: 'LAVABLE: masquer trous au sol dans supports d\'équipements?', explanation: 'Pour les unités lavables, masquer les trous au sol dans les supports d\'équipements et remplacer par une rainure (pour soudure).' },
+            { id: 5, category: '3D-Composantes', question: 'PANNE: valider le gage demandé et supports?', explanation: 'Valider le gage demandé (standard 16GA), et les supports de panne TOUJOURS en 14GA.' },
+            { id: 6, category: '3D-Composantes', question: 'PANNE: respecter 36" c/c pour supports?', explanation: 'Les supports de panne doivent être espacés à 36" centre à centre.' },
+            { id: 7, category: '3D-Composantes', question: 'GRILLAGE: supports aux extrémités à 4"?', explanation: 'Avoir des supports aux extrémités à 4" pour empêcher au grillage de faire l\'effet trampoline.' },
+            { id: 8, category: '3D-Composantes', question: 'GRILLAGE: aucun conflit avec supports verticaux?', explanation: 'Les grillages ne doivent pas rentrer en conflit avec les supports verticaux (rallonges de connections, UV lights).' },
+            { id: 9, category: '3D-Composantes', question: 'PANNEAUX AMOVIBLES: vérifier présence et diamètre de trou?', explanation: 'Vérifier la présence et le bon diamètre de trou pour connections.' },
+            { id: 10, category: '3D-Composantes', question: 'PANNEAUX AMOVIBLES: vérifier si requis sur les deux murs?', explanation: 'Vérifier sur dessin d\'approbation si les panneaux sont requis sur les deux murs (gauche ou droit).' },
+            { id: 11, category: '3D-Composantes', question: 'PANNEAUX AMOVIBLES: pièce pliée en métal solide?', explanation: 'La pièce pliée du panneau amovible doit être en métal solide: ex. int. de l\'unité alum .040" = panneau alum .063" (tout matériel confondu).' },
+            { id: 12, category: '3D-Composantes', question: 'PORTE: vérifier le sens d\'ouverture (swing door)?', explanation: 'Vérifier le sens d\'ouverture de la porte selon les plans.' },
+            { id: 13, category: '3D-Composantes', question: 'PORTE: valider si test port requis?', explanation: 'Vérifier dans les spécifications si un port de test est requis pour la porte.' },
+            { id: 14, category: '3D-Composantes', question: 'PORTE: maximiser dimensions si non mentionnées?', explanation: 'Maximiser les dimensions des portes si non mentionnées dans submittal (largeur min. 14", max 24", hauteur 72" max).' },
+            { id: 15, category: '3D-Composantes', question: 'PORTE: vérifier grandeur hublot et position?', explanation: 'Vérifier grandeur hublot et position, attention si demande spéciale dans dessin d\'approbation.' },
+            { id: 16, category: '3D-Composantes', question: 'PORTE: vérifier la présence ou non de la gouttière?', explanation: 'Confirmer si une gouttière est nécessaire sur la porte selon les spécifications.' },
+            { id: 17, category: '3D-Composantes', question: 'PORTE: valider nombre de poignées/charnières?', explanation: 'Valider le nombre de poignées/charnières (48" de haut et plus = 3x, sinon mettre 2x).' },
+            { id: 18, category: '3D-Composantes', question: 'PORTE: pièce pliée en métal solide?', explanation: 'La pièce pliée de la porte doit être en métal solide: ex. int. de l\'unité alum .040" = panneau alum .063" (tout matériel confondu).' },
+            { id: 19, category: '3D-Composantes', question: 'PORTE: attention matériel int. vs ext. et orientation hublot?', explanation: 'Vérifier le matériel intérieur vs extérieur, et l\'orientation du cadre de hublot.' },
+            { id: 20, category: '3D-Composantes', question: 'RELIEF DOOR: ouverture selon specs Ruskin?', explanation: 'L\'ouverture dans le mur doit avoir les valeurs X,Y des specs de Ruskin.' },
+            { id: 21, category: '3D-Composantes', question: 'CATWALK: Notcher rails lip en conflit avec tubes?', explanation: 'Notcher les rails lip qui rentrent en conflit avec les tubes du catwalk.' },
+            { id: 22, category: '3D-Composantes', question: 'TUBE DANS ÉQUIPEMENT: utiliser tag UST?', explanation: 'Utiliser le tag UST peu importe l\'équipement, en tout temps.' },
+
+            // 3D-Cabinet
+            { id: 23, category: '3D-Cabinet', question: 'Mesures X,Y,Z du module relatives au submittal?', explanation: 'Les mesures en X,Y,Z du module sont relatives au submittal (attention jeux de 0.1875").' },
+            { id: 24, category: '3D-Cabinet', question: 'Multi_Opening installées avec bonnes positions?', explanation: 'Multi_Opening installées dans leurs murs ou plafonds respectifs, avec bonnes positions et dimensions X,Y,Z.' },
+            { id: 25, category: '3D-Cabinet', question: 'Portes installées et bon sens d\'ouverture?', explanation: 'Portes installées dans le box et respectent le sens d\'ouverture (bon matériel int/ext, hublot du bon côté).' },
+            { id: 26, category: '3D-Cabinet', question: 'Portes installées à 3" du bas des murs?', explanation: 'Portes installées à 3\'\' du bas des murs (rail lip + rail 2\'\'), attention si hublot positionné en hauteur.' },
+            { id: 27, category: '3D-Cabinet', question: 'Aucun conflit portes et composantes intérieures?', explanation: 'Vérifier qu\'il n\'y a aucun conflit entre les portes et les composantes intérieures.' },
+            { id: 28, category: '3D-Cabinet', question: 'Confirmer informations "Design Info" dans Box?', explanation: 'Confirmer les bonnes informations de "Design Info" dans le Box.' },
+            { id: 29, category: '3D-Cabinet', question: 'Joint de panneaux pour blank d\'équipement?', explanation: 'Prévoir un joint de panneaux aux murs et plafond pour blank d\'équipement. Si pas possible, prévoir un liner solide (0.063\'\' d\'épaisseur et plus).' },
+            { id: 30, category: '3D-Cabinet', question: 'DRAINS: tous insérés et bon emplacement?', explanation: 'Tous les drains insérés et respectent l\'emplacement du dessin d\'approbation, et le bon diamètre.' },
+            { id: 31, category: '3D-Cabinet', question: 'PANNEAUX ÉLECTRIQUES: installés selon règles?', explanation: 'Panneaux électriques installés, respecter les règles d\'électricité.' },
+            { id: 32, category: '3D-Cabinet', question: 'DWYER GAGE: assez d\'espace pour panneau 7.5"?', explanation: 'Prévoir assez d\'espace dans le module pour panneau Dwyer de 7.5\'\'.' },
+            { id: 33, category: '3D-Cabinet', question: 'FIBERGLASS: pression statique au max?', explanation: 'Mettre pression statique au max pour avoir panneau moins large.' },
+            { id: 34, category: '3D-Cabinet', question: 'BELLMOUTH: augmenter ouverture 2X le rayon?', explanation: 'Augmenter l\'ouverture tout autour de 2X le rayon du bellmouth.' },
+            { id: 35, category: '3D-Cabinet', question: 'JOB ALUM 96" profond: structure aux joints?', explanation: 'Pour job alum 96\'\' de profond: prévoir de la structure aux joints de module (murs et plafonds).' },
+            { id: 36, category: '3D-Cabinet', question: 'JOB 60" et moins: pas d\'attaches de module?', explanation: 'Pour job 60\'\' et moins de haut: prévoir de ne pas fournir d\'attaches de module.' },
+
+            // Création du Plancher
+            { id: 37, category: 'Création Plancher', question: 'Confirmer épaisseur tubes et longueurs max?', explanation: 'Confirmer l\'épaisseur des tubes et leurs longueurs maximales (Kanban).' },
+            { id: 38, category: 'Création Plancher', question: 'Aucun conflit angles de levage?', explanation: 'Aucun conflit d\'angles de levages (pour soulever le module) avec hoods, connections coil, panneaux électriques, etc.' },
+            { id: 39, category: 'Création Plancher', question: 'Angles de levage: max 120" c/c?', explanation: 'Angle de levages: pas plus de 120\'\' c/c, et privilégier le côté le plus long du module.' },
+            { id: 40, category: 'Création Plancher', question: 'Suivre standard positions lifting lugs?', explanation: 'Suivre le standard de positions de lifting lugs. SI NÉCESSAIRE DE DESCENDRE À CAUSE DE DRAIN OU PANNE, AVISER LE MODULE D\'À COTÉ.' },
+            { id: 41, category: 'Création Plancher', question: 'Décaler FPS de 1/4" sur tubes?', explanation: 'Décaler FPS de 1/4\'\' sur les tubes à cause de l\'arrondi.' },
+            { id: 42, category: 'Création Plancher', question: 'FSL largeur max 48"?', explanation: 'Ne pas dépasser largeur maximale 48\'\' pour les FSL.' },
+            { id: 43, category: 'Création Plancher', question: 'Bonne hauteur de cross members?', explanation: 'S\'assurer d\'avoir la bonne hauteur de cross members, voir ACP au besoin.' },
+            { id: 44, category: 'Création Plancher', question: 'Respecter distance face/face cross members?', explanation: 'Respecter la bonne distance face/face des cross members (16\'\' ou 20\'\').' },
+            { id: 45, category: 'Création Plancher', question: 'Cross member solide et aligné?', explanation: 'Cross member solide (.108 & .125) et aligné sur chaque support d\'équipement et joint de tôle drainable.' },
+            { id: 46, category: 'Création Plancher', question: 'Cross member guides notchés?', explanation: 'Cross member guides notchés pour les cross members.' },
+            { id: 47, category: 'Création Plancher', question: 'Tubes ont perçage drains et pannes?', explanation: 'Les tubes ont bien leur perçage pour les drains et les pannes.' },
+            { id: 48, category: 'Création Plancher', question: 'Minimum 1.5" entre cross member et tube?', explanation: 'Avoir un minimum de 1.5" entre un cross member et un tube de périmètre.' },
+            { id: 49, category: 'Création Plancher', question: 'Jeu de 3/16" entre chaque FLI?', explanation: 'Respecter un jeu de 3/16\'\' entre chaque FLI.' },
+            { id: 50, category: 'Création Plancher', question: 'Bon jeu FLI et extérieur tube?', explanation: 'Bon jeu pour chaque FLI et extérieur tube (2\'\',3\'\',4\'\'). Jeu additionnel pour les pannes (0.094\'\').' },
+            { id: 51, category: 'Création Plancher', question: 'Trous lifting lugs présents sur tubes?', explanation: 'S\'assurer que tous les trous de lifting lugs soient présents sur les tubes.' },
+            { id: 52, category: 'Création Plancher', question: 'Trous lips de tôles présents?', explanation: 'S\'assurer que les trous des lips de tôles soient présents là où il y a des murs.' },
+            { id: 53, category: 'Création Plancher', question: 'Aucun conflit supports équipement avec lips?', explanation: 'Aucun conflit aux extrémités des supports d\'équipement avec les lips des tôles drainables.' },
+            { id: 54, category: 'Création Plancher', question: 'Tôle de sécurité pour ouvertures?', explanation: 'Tôle de sécurité fournie en tout temps pour les ouvertures au plancher.' },
+            { id: 55, category: 'Création Plancher', question: 'Notcher tôle drainable pour bonhommes?', explanation: 'Notcher tôle drainable pour accueillir les bonhommes (tubes d\'accès).' },
+            { id: 56, category: 'Création Plancher', question: 'Ouverture plancher: périmètre fermé?', explanation: 'Si ouverture au plancher, le périmètre de l\'ouverture doit être fermé et les cross members doivent être solides (.108 & .125).' },
+            { id: 57, category: 'Création Plancher', question: 'DRAIN: plaque entre deux cross members?', explanation: 'La plaque de drain rentre entre deux cross members.' },
+            { id: 58, category: 'Création Plancher', question: 'DRAIN: pas de conflit avec lifting lugs?', explanation: 'Le drain ne doit pas rentrer en conflit avec les lifting lugs.' },
+            { id: 59, category: 'Création Plancher', question: 'DRAIN: perçage 4.5" diamètre tôles?', explanation: 'Perçage de 4.5" de diamètre dans les tôles de plancher pour le drain.' },
+            { id: 60, category: 'Création Plancher', question: 'DRAIN: découper FPS en conflit?', explanation: 'Découper les FPS qui sont en conflit avec le drain.' },
+            { id: 61, category: 'Création Plancher', question: 'RALLONGE DRAIN: décaller 0.5" vers bas?', explanation: 'Décaller de 0.5\'\' vers le bas pour créer une pente descendante. Cross member ou tube interne percé à 3\'\' de diamètre.' },
+            { id: 62, category: 'Création Plancher', question: 'PANNE: jeux cross members corrects?', explanation: 'Jeu cross member de 1/2\'\' côté drain, jeu de 1/4\'\' l\'autre côté.' },
+            { id: 63, category: 'Création Plancher', question: 'PANNE: notcher extrémités tôles drainables?', explanation: 'Notcher les extrémités des tôles drainables pour les pannes.' },
+            { id: 64, category: 'Création Plancher', question: 'PLANCHER 8"+: superposer deux tubes?', explanation: 'Pour plancher plus de 8": superposer deux tubes ensembles.' },
+            { id: 65, category: 'Création Plancher', question: 'MUR INTERNE: perimeter strip présent?', explanation: 'Perimeter strip présent en dessous du futur mur interne.' },
+            { id: 66, category: 'Création Plancher', question: 'MUR INTERNE: jeu 1/4" entre lips?', explanation: 'Laisser un jeu de 1/4\'\' entre les lips de tôles (ex. mur 4\'\' = 4.25\'\').' },
+            { id: 67, category: 'Création Plancher', question: 'LAVABLE: cap drainable pour accumulation eau?', explanation: 'Mettre un cap drainable où qui peut avoir accumulation d\'eau.' },
+            { id: 68, category: 'Création Plancher', question: 'VESTIBULE: pas de lip aux joints modules?', explanation: 'Pas de lip dans les tôles de plancher aux joints de module, et modules pairs mettre bande plis 5 degrés.' },
+            { id: 69, category: 'Création Plancher', question: 'VESTIBULE: découper lip si panneau amovible?', explanation: 'Si panneau amovible intérieur, découper la lip de tôle drainable, avoir un minimum de 1" de pli.' },
+            { id: 70, category: 'Création Plancher', question: 'ROOF CURB: cross member à 1" mur?', explanation: 'Premier/dernier module doivent mettre un cross member ou tube à 1" du mur avant/arrière.' },
+            { id: 71, category: 'Création Plancher', question: 'ROOF CURB: tubes même hauteur cross members?', explanation: 'Les tubes de périmètres aux joints de modules ont la même hauteur que les cross members.' },
+            { id: 72, category: 'Création Plancher', question: 'CERTIFICATION: distance c/c tôles drainables?', explanation: 'Respecter la distance c/c demandée pour les trous de tôles drainables.' },
+            { id: 73, category: 'Création Plancher', question: 'MODULE PAIR: cap pour joints de module?', explanation: 'Fournir cap ou pièce spéciale pour joints de module.' },
+            { id: 74, category: 'Création Plancher', question: 'DOUBLE LARGEUR: lifting lugs à 2" tube central?', explanation: 'Mettre les lifting lugs à 2" du tube central pour double largeur.' },
+
+            // Création Murs & Plafonds
+            { id: 75, category: 'Création Murs/Plafonds', question: 'Respecter sens d\'air avec overlaps liners?', explanation: 'Respecter le sens d\'air avec les overlaps de liners (0.75\'\' d\'overlap).' },
+            { id: 76, category: 'Création Murs/Plafonds', question: 'Blanks équipements vissés sur lips panneaux?', explanation: 'Les blanks d\'équipements sont visser sur des lips de panneaux, si pas possible, prévoir un liner solide (0.063\'\' d\'épais et plus).' },
+            { id: 77, category: 'Création Murs/Plafonds', question: 'Liners largeur max 46"?', explanation: 'Les liners ne doivent pas dépasser une largeur maximale de 46".' },
+            { id: 78, category: 'Création Murs/Plafonds', question: 'Panneaux respectent largeur max pression?', explanation: 'Les panneaux ne dépassent pas leur largeur maximale de pression statique, attention si demande spéciale AllStructure.' },
+            { id: 79, category: 'Création Murs/Plafonds', question: 'Hublot porte respecte 62" du sol?', explanation: 'Le hublot de la porte respecte le 62\'\' du sol, ou respecte la position du submittal, si demandée (attention si porte à l\'intérieur dans un vestibule, ou dans un Catwalk).' },
+            { id: 80, category: 'Création Murs/Plafonds', question: 'Dwyer respecte 60" du sol?', explanation: 'L\'emplacement du dwyer respecte le 60\'\' du sol (attention si dwyer à l\'intérieur dans un vestibule). 6\'\' à partir du haut si pas assez d\'espace. 7" c/c si 2 dwyers requis.' },
+            { id: 81, category: 'Création Murs/Plafonds', question: 'Diamètre dwyer gage correct?', explanation: 'Diamètre dwyer gage 4.551\'\' (pour série 2000), 4,812" (pour série 3000 boîtier amovible "RMR"), Voir Stéphane ou Nick pour autres.' },
+            { id: 82, category: 'Création Murs/Plafonds', question: 'Notcher rail lips où lifting lugs?', explanation: 'Notcher les rail lips là où il y a des lifting lugs. ATTENTION min, 1" de pli, sinon, couper la rail lip au complet.' },
+            { id: 83, category: 'Création Murs/Plafonds', question: 'Panneau 5.5" avec tube: perçage présent?', explanation: 'Panneau 5.5\'\' et moins accompagné d\'un tube: il doit y avoir perçage dans le panneau pour pouvoir visser.' },
+            { id: 84, category: 'Création Murs/Plafonds', question: 'Ouverture accessoire: jeu 1/8" chaque côté?', explanation: 'Ouverture avec accessoire encastré: laisser un jeu de 1/8" chaque côté (Louver, Air Blender).' },
+            { id: 85, category: 'Création Murs/Plafonds', question: 'Coupure 3/8" avec Tee-Joint?', explanation: 'Avoir une coupure complète de 3/8" avec Tee-Joint (XnFan, filtres HEPA, mur interne).' },
+            { id: 86, category: 'Création Murs/Plafonds', question: 'Plusieurs panneaux: rail std 1" avec trous?', explanation: 'Si plusieurs panneaux verticaux, mettre une rail std 1" avec trous d\'accès.' },
+            { id: 87, category: 'Création Murs/Plafonds', question: 'Max 2 panneaux horizontaux ouverture/porte?', explanation: 'Maximum de 2 panneaux horizontaux en haut ou en bas d\'une ouverture ou une porte.' },
+            { id: 88, category: 'Création Murs/Plafonds', question: 'Plafond interne: pas de TALUM?', explanation: 'Plafond interne ou couvert par Vicwest: pas de TALUM pour les panneaux.' },
+            { id: 89, category: 'Création Murs/Plafonds', question: 'Attaches modules insérées selon standard?', explanation: 'Attaches de modules insérées dans le module selon le standard établi.' },
+            { id: 90, category: 'Création Murs/Plafonds', question: 'Job alum 96"+: structure joints module?', explanation: 'Job alum et 96" profond et plus: ajout de structure dans les murs/plafond aux joints de module.' },
+            { id: 91, category: 'Création Murs/Plafonds', question: 'Premier/dernier: fournir WJA et WTC?', explanation: 'Premier & dernier module: fournir WJA et WTC (jeu de 1/16" avec les WTE).' },
+            { id: 92, category: 'Création Murs/Plafonds', question: 'PANNEAUX AMOVIBLES: respecter standard?', explanation: 'Respecter le standard de conception, lip de haut toujours de type extérieur, notcher WTE et Vicwest au besoin.' },
+            { id: 93, category: 'Création Murs/Plafonds', question: 'PANNEAUX AMOVIBLES: installer strip?', explanation: 'Installer strip, si pas en conflit avec connexion, et faire fiter les trous en perçant .209".' },
+            { id: 94, category: 'Création Murs/Plafonds', question: 'TEST: tôles tests requises?', explanation: 'Vérifier le formulaire de test de Marshall pour voir si des tôles tests sont requises dans les ouvertures.' },
+            { id: 95, category: 'Création Murs/Plafonds', question: 'EMPILÉ: étage bas réduit T en hauteur?', explanation: 'L\'étage du bas réduit leurs "T" en hauteur, et l\'étage du haut fournissent des bande shippées loose.' },
+            { id: 96, category: 'Création Murs/Plafonds', question: 'CERTIFICATION: distance c/c pièces extérieures?', explanation: 'Respecter la distance c/c demandée pour toutes les pièces visibles de l\'extérieur (WRL,WTE,WTC,WJA,Metal Strip).' },
+            { id: 97, category: 'Création Murs/Plafonds', question: 'CERTIFICATION: distance c/c trous panneaux?', explanation: 'Respecter la distance c/c demandée pour les trous de panneaux.' },
+            { id: 98, category: 'Création Murs/Plafonds', question: 'NTM: tubes épaisseur réelle du mur?', explanation: 'Les tubes doivent mesurer l\'épaisseur réelle du mur (ex. mur 4" NTM = tube 4").' },
+            { id: 99, category: 'Création Murs/Plafonds', question: 'NTM: trous assemblage repositionnés?', explanation: 'Les trous d\'assemblage dans les tubes doivent être repositionnés pour être bien vissés dans les panneaux.' },
+            { id: 100, category: 'Création Murs/Plafonds', question: 'NTM: murs internes aussi en NTM?', explanation: 'Les murs internes seront aussi en NTM.' },
+            { id: 101, category: 'Création Murs/Plafonds', question: 'DOUBLE LARGEUR: couper rail lip murs?', explanation: 'Couper les rail lip aux murs pour que les tubes soient la hauteur pleine du mur.' },
+            { id: 102, category: 'Création Murs/Plafonds', question: 'DOUBLE LARGEUR: bande int/ext plafond?', explanation: 'Bande int/ext au plafond, laisser espace pour bandes joints de modules.' },
+            { id: 103, category: 'Création Murs/Plafonds', question: 'DOUBLE LARGEUR: plafond avec tube centre?', explanation: 'Concevoir le plafond selon le standard avec un tube au centre.' },
+            { id: 104, category: 'Création Murs/Plafonds', question: 'DOUBLE LARGEUR: structure aux joints?', explanation: 'Ajout de structure dans les murs/plafond aux joints de module, et ajout structure interne.' },
+            { id: 105, category: 'Création Murs/Plafonds', question: 'DOUBLE LARGEUR: attaches structure interne?', explanation: 'Prévoir des attaches de module sur la structure interne selon le standard établi.' },
+            { id: 106, category: 'Création Murs/Plafonds', question: 'DOUBLE LARGEUR plafond: bande 5" triple trous?', explanation: 'Plafond, bande externe 5" avec triple trous, et percer le tube central si plus de 2 assemblages FOAM.' },
+            { id: 107, category: 'Création Murs/Plafonds', question: 'MODULE PAIR: bandes joints modules?', explanation: 'Fournir bandes joints de modules selon le standard.' },
+            { id: 108, category: 'Création Murs/Plafonds', question: 'MODULE PAIR: espace attaches module?', explanation: 'Laisser espace pour attaches de module aux bandes joints de modules.' },
+            { id: 109, category: 'Création Murs/Plafonds', question: 'DAMPER: vérifier config vs structure?', explanation: 'Vérifier la configuration des dampers vs structure, pour voir si une rehausse 2" sera nécessaire.' },
+            { id: 110, category: 'Création Murs/Plafonds', question: 'DAMPER: rails nécessaires fixer mur?', explanation: 'Vérifier la configuration des dampers pour voir si des rails sont nécessaires pour fixer au mur.' },
+            { id: 111, category: 'Création Murs/Plafonds', question: 'DAMPER Smoke: remplacer rails par tubes?', explanation: 'Si "Smoke Damper", remplacer les rails par des tubes.' },
+            { id: 112, category: 'Création Murs/Plafonds', question: 'DAMPER: aucun conflit?', explanation: 'S\'assurer que le damper ne rentre en conflit avec rien, attention swing door en hauteur/largeur, si damper avec Jackshaft, prévoir plus d\'espace.' },
+            { id: 113, category: 'Création Murs/Plafonds', question: 'HOOD: rails nécessaires fixer mur?', explanation: 'Vérifier la configuration des hoods pour voir si des rails sont nécessaires pour fixer au mur.' },
+            { id: 114, category: 'Création Murs/Plafonds', question: 'HOOD: renforts si largeur 60"+?', explanation: 'L\'assemblage doit être renforci par des renforts si la largeur dépasse 60\'\'. Double renforts si plus de 96\'\', etc.' },
+            { id: 115, category: 'Création Murs/Plafonds', question: 'I-BEAM/STRUT: centré sur porte?', explanation: 'Centré sur la porte si représenté dans le submittal. Sinon, respecter distance de 12\'\'@15\'\' entre la fin de la cellule du XnFan et la pièce de soulevage.' },
+            { id: 116, category: 'Création Murs/Plafonds', question: 'I-BEAM/STRUT: distance profondeur correcte?', explanation: 'Distance en profondeur à partir de l\'intérieur des murs: I-Beam= 3\'\', Strut Channel=7\'\'.' },
+            { id: 117, category: 'Création Murs/Plafonds', question: 'I-BEAM/STRUT: tube percé plafond?', explanation: 'S\'assurer d\'avoir un tube percé au plafond centré sur la pièce de levage.' },
+            { id: 118, category: 'Création Murs/Plafonds', question: 'FOAM: assemblages maximisés?', explanation: 'Assemblage foam maximisés, respectant 78\'\'x150\'\', ne pas oublier bandes d\'assemblage.' },
+            { id: 119, category: 'Création Murs/Plafonds', question: 'FOAM: liners avec trous pour visser?', explanation: 'Les liners qui délimite les assemblages foam doivent avoir des trous pour visser.' },
+            { id: 120, category: 'Création Murs/Plafonds', question: 'FIBERGLASS: structure à chaque 72"?', explanation: 'Ajouter de la structure à chaque 72" de long.' },
+
+            // 2D-Cabinet
+            { id: 121, category: '2D-Cabinet', question: 'Mises en page assemblage: fractions 1/16?', explanation: 'MISES EN PAGE D\'ASSEMBLAGE: dimensions en fractions 1/16 de précision.' },
+            { id: 122, category: '2D-Cabinet', question: 'Cut lists: dimensions décimales millième?', explanation: 'MISES EN PAGE DE CUT LISTS: dimensions en décimales au millième près (0.123).' },
+            { id: 123, category: '2D-Cabinet', question: 'Vérifier matériaux sheet metal?', explanation: 'Vérifier matériaux, épaisseurs, longueur/largeur max disponible (sheet metal).' },
+            { id: 124, category: '2D-Cabinet', question: 'Vérifier matériaux structure?', explanation: 'Vérifier matériaux, épaisseurs, longueur/largeur max disponible (structure).' },
+            { id: 125, category: '2D-Cabinet', question: 'Sens d\'air représenté partout?', explanation: 'Sens d\'air représenté partout, même sur les vues isométriques.' },
+            { id: 126, category: '2D-Cabinet', question: 'Vérifier cartouches complets?', explanation: 'Vérifier cartouches: date, nom dessinateur, # job, titre de page, etc.' },
+            { id: 127, category: '2D-Cabinet', question: 'Vérifier tags ship loose?', explanation: 'Vérifier les tags, attention aux pièces ship loose. (SFA, SRA, SWA, SXA)' },
+            { id: 128, category: '2D-Cabinet', question: 'Dimensions hors tout cotées?', explanation: 'Toutes les dimensions hors tout cotées (assemblages).' },
+            { id: 129, category: '2D-Cabinet', question: 'Toutes pièces individuelles représentées?', explanation: 'Toutes les pièces individuelles sont représentées (assemblages).' },
+            { id: 130, category: '2D-Cabinet', question: 'Part lists fidèles aux cut lists?', explanation: 'Les part lists d\'assemblages sont fidèles aux cut lists de pièces (TAG visible, bonne quantité, bon matériel).' },
+            { id: 131, category: '2D-Cabinet', question: 'Dimensions plis cotées sur pièces?', explanation: 'Dimensions de chaque pli cotées sur les pièces (cutlists).' },
+            { id: 132, category: '2D-Cabinet', question: 'Note ingénierie sans erreurs?', explanation: 'La note d\'ingénierie ne comporte pas d\'erreurs et de cases vides.' },
+            { id: 133, category: '2D-Cabinet', question: 'Aucune pièce dépasse 142.5"?', explanation: 'Aucune pièce ne dépasse 142.5\'\' de long.' },
+            { id: 134, category: '2D-Cabinet', question: 'Coter drains gauche à droite?', explanation: 'Coter les drains de gauche à droite, et piquer les cotes à partir du dessus du tube.' },
+            { id: 135, category: '2D-Cabinet', question: 'Page assemblage supports équipements?', explanation: 'Créer une page d\'assemblage pour positionner les supports d\'équipements, identifier Tag ou Tag_Assy des supports.' },
+            { id: 136, category: '2D-Cabinet', question: 'Dessins séparés composantes?', explanation: 'Faire dessins séparés pour; assemblage des flashing, structure interne, attaches de module, pièces shipped loose, tôles tests (si applicable).' },
+            { id: 137, category: '2D-Cabinet', question: 'Portes identifiées Tag_Assy?', explanation: 'Les portes sont identifiées par leur Tag_Assy et leurs ouvertures et positions sont cotées en X,Y.' },
+            { id: 138, category: '2D-Cabinet', question: 'Cutlists pièces ship loose?', explanation: 'Ne pas oublier les cutlists des pièces ship loose.' },
+            { id: 139, category: '2D-Cabinet', question: 'Tee Joint: détail représenté?', explanation: 'Si Tee Joint, détail représenté pour comprendre son installation.' },
+            { id: 140, category: '2D-Cabinet', question: 'Ouvertures visibles avec X?', explanation: 'Si présence d\'ouverture, la rendre visible avec un X dans les dessins.' },
+            { id: 141, category: '2D-Cabinet', question: 'Pièce spéciale: emboss indiqué?', explanation: 'Si pièce spéciale, mettre en page manuellement et indiquer "l\'emboss" à l\'endroit voulu si c\'est le cas.' },
+            { id: 142, category: '2D-Cabinet', question: 'TUBE PERCÉ: mise en page et cotes?', explanation: 'Mettre en page et coter les trous dans la liste de coupe.' },
+            { id: 143, category: '2D-Cabinet', question: 'TUBE BONHOMME: représenté murs?', explanation: 'Représenter le bonhomme dans la mise en page des murs et dans la mise en page d\'attaches de modules.' },
+            { id: 144, category: '2D-Cabinet', question: 'TUBE BONHOMME: perçage liste coupe?', explanation: 'Montrer le perçage du tube bonhomme dans la liste de coupe structure.' },
+            { id: 145, category: '2D-Cabinet', question: 'TUBE BONHOMME: indiquer emplacement tôles?', explanation: 'Indiquer dans la mise en page des tôles drainables, l\'endroit voulu pour le bonhomme (exemple : bonhomme pour tube 2x4).' },
+            { id: 146, category: '2D-Cabinet', question: 'FOAM: assemblages cotés et ordonnés?', explanation: 'Assemblage foam cotés, et suivant l\'ordre 01-02-03-..., de page en page.' },
+            { id: 147, category: '2D-Cabinet', question: 'PANNEAUX AMOVIBLES: vue iso usine?', explanation: 'Les représenter en vue iso pour la compréhension de l\'usine.' }
+        ];
+
+        // Composant principal
+        function HVACChecklistApp() {
+            const [currentUser, setCurrentUser] = useState(() => {
+                const saved = localStorage.getItem('currentUser');
+                return saved ? JSON.parse(saved) : null;
+            });
+            const [allCheckpoints, setAllCheckpoints] = useState(() => {
+                const saved = localStorage.getItem('allCheckpoints');
+                return saved ? JSON.parse(saved) : REAL_CHECKPOINTS;
+            });
+            const [modules, setModules] = useState(() => {
+                const saved = localStorage.getItem('modules');
+                return saved ? JSON.parse(saved) : [];
+            });
+            const [currentModule, setCurrentModule] = useState(null);
+            const [currentCheckpointIndex, setCurrentCheckpointIndex] = useState(0);
+            const [showModuleList, setShowModuleList] = useState(true);
+            const [showNewModuleForm, setShowNewModuleForm] = useState(false);
+            const [showAdminPanel, setShowAdminPanel] = useState(false);
+            const [showApprovalView, setShowApprovalView] = useState(false);
+            
+            // NOUVEAUX ÉTATS pour multi-sélection et mode catégorie
+            const [viewMode, setViewMode] = useState('single'); // 'single' ou 'multi' ou 'category'
+            const [selectedCheckpoints, setSelectedCheckpoints] = useState([]);
+            const [collapsedCategories, setCollapsedCategories] = useState({});
+            const [showBatchToolbar, setShowBatchToolbar] = useState(false);
+
+            // Sauvegarder dans localStorage
+            useEffect(() => {
+                localStorage.setItem('allCheckpoints', JSON.stringify(allCheckpoints));
+            }, [allCheckpoints]);
+
+            useEffect(() => {
+                localStorage.setItem('modules', JSON.stringify(modules));
+            }, [modules]);
+
+            useEffect(() => {
+                if (currentUser) {
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                }
+            }, [currentUser]);
+
+            // Créer un nouveau module
+            const createNewModule = (projet, reference, moduleNum) => {
+                const newModule = {
+                    id: Date.now(),
+                    projet,
+                    reference,
+                    module: moduleNum,
+                    dateCreation: new Date().toISOString(),
+                    dessinateur: currentUser.initials,
+                    dessinateurName: currentUser.name,
+                    responses: {},
+                    status: 'en_cours',
+                    approvedBy: null,
+                    approvedByName: null,
+                    approvedDate: null
+                };
+                const updatedModules = [...modules, newModule];
+                setModules(updatedModules);
+                setCurrentModule(newModule);
+                setCurrentCheckpointIndex(0);
+                setShowNewModuleForm(false);
+                setShowModuleList(false);
+            };
+
+            // Sauvegarder une réponse
+            const saveResponse = (checkpointId, response, comment = '') => {
+                const updatedModule = {
+                    ...currentModule,
+                    responses: {
+                        ...currentModule.responses,
+                        [checkpointId]: {
+                            status: response,
+                            comment,
+                            date: new Date().toISOString(),
+                            user: currentUser.initials,
+                            userName: currentUser.name
+                        }
+                    }
+                };
+                
+                const updatedModules = modules.map(m => 
+                    m.id === currentModule.id ? updatedModule : m
+                );
+                setModules(updatedModules);
+                setCurrentModule(updatedModule);
+
+                // Auto-avancer au prochain checkpoint
+                if (currentCheckpointIndex < allCheckpoints.length - 1) {
+                    setTimeout(() => {
+                        setCurrentCheckpointIndex(currentCheckpointIndex + 1);
+                    }, 300);
+                } else {
+                    // Dernier checkpoint - retourner à la liste
+                    setTimeout(() => {
+                        setShowModuleList(true);
+                        setCurrentModule(null);
+                        setCurrentCheckpointIndex(0);
+                    }, 500);
+                }
+            };
+
+            // Approuver un module
+            const approveModule = (moduleId) => {
+                const updatedModules = modules.map(m => 
+                    m.id === moduleId 
+                        ? { 
+                            ...m, 
+                            status: 'approuve', 
+                            approvedBy: currentUser.initials,
+                            approvedByName: currentUser.name,
+                            approvedDate: new Date().toISOString() 
+                        }
+                        : m
+                );
+                setModules(updatedModules);
+            };
+
+            // Ajouter un nouveau checkpoint (Admin)
+            const addNewCheckpoint = (category, question, explanation, image) => {
+                const newCheckpoint = {
+                    id: Math.max(...allCheckpoints.map(c => c.id), 0) + 1,
+                    category,
+                    question,
+                    explanation,
+                    imageUrl: image
+                };
+                setAllCheckpoints([...allCheckpoints, newCheckpoint]);
+            };
+
+            // Modifier un checkpoint existant (Admin)
+            const updateCheckpoint = (id, category, question, explanation, image) => {
+                const updatedCheckpoints = allCheckpoints.map(cp => 
+                    cp.id === id 
+                        ? { ...cp, category, question, explanation, imageUrl: image || cp.imageUrl }
+                        : cp
+                );
+                setAllCheckpoints(updatedCheckpoints);
+            };
+
+            // Supprimer un checkpoint (Admin)
+            const deleteCheckpoint = (id) => {
+                if (confirm('Êtes-vous sûr de vouloir supprimer ce checkpoint?\n\nCette action est IRRÉVERSIBLE et supprimera aussi toutes les réponses associées dans tous les modules!')) {
+                    // Supprimer le checkpoint
+                    setAllCheckpoints(allCheckpoints.filter(cp => cp.id !== id));
+                    
+                    // Supprimer les réponses associées dans tous les modules
+                    const updatedModules = modules.map(m => {
+                        const { [id]: removed, ...remainingResponses } = m.responses;
+                        return { ...m, responses: remainingResponses };
+                    });
+                    setModules(updatedModules);
+                }
+            };
+
+            // NOUVELLES FONCTIONS pour multi-sélection
+            const toggleCheckpointSelection = (checkpointId) => {
+                setSelectedCheckpoints(prev => {
+                    if (prev.includes(checkpointId)) {
+                        return prev.filter(id => id !== checkpointId);
+                    } else {
+                        return [...prev, checkpointId];
+                    }
+                });
+            };
+
+            const selectAllInCategory = (category) => {
+                const categoryCheckpoints = allCheckpoints
+                    .filter(cp => cp.category === category)
+                    .map(cp => cp.id);
+                setSelectedCheckpoints(categoryCheckpoints);
+            };
+
+            const clearSelection = () => {
+                setSelectedCheckpoints([]);
+            };
+
+            const applyBatchAction = (status, comment = '') => {
+                if (selectedCheckpoints.length === 0) return;
+
+                const updatedResponses = { ...currentModule.responses };
+                selectedCheckpoints.forEach(checkpointId => {
+                    updatedResponses[checkpointId] = {
+                        status,
+                        comment,
+                        date: new Date().toISOString(),
+                        user: currentUser.initials,
+                        userName: currentUser.name
+                    };
+                });
+
+                const updatedModule = {
+                    ...currentModule,
+                    responses: updatedResponses
+                };
+
+                const updatedModules = modules.map(m => 
+                    m.id === currentModule.id ? updatedModule : m
+                );
+                setModules(updatedModules);
+                setCurrentModule(updatedModule);
+                clearSelection();
+            };
+
+            const toggleCategoryCollapse = (category) => {
+                setCollapsedCategories(prev => ({
+                    ...prev,
+                    [category]: !prev[category]
+                }));
+            };
+
+            // Calculer le progrès
+            const calculateProgress = (module) => {
+                const totalCheckpoints = allCheckpoints.length;
+                const answeredCheckpoints = Object.keys(module.responses).length;
+                return Math.round((answeredCheckpoints / totalCheckpoints) * 100);
+            };
+
+            // Si pas connecté
+            if (!currentUser) {
+                return <LoginForm onLogin={setCurrentUser} />;
+            }
+
+            // Panneau admin
+            if (showAdminPanel && currentUser.role === 'admin') {
+                return (
+                    <AdminPanel 
+                        checkpoints={allCheckpoints}
+                        onAddCheckpoint={addNewCheckpoint}
+                        onUpdateCheckpoint={updateCheckpoint}
+                        onDeleteCheckpoint={deleteCheckpoint}
+                        onClose={() => setShowAdminPanel(false)}
+                        currentUser={currentUser}
+                    />
+                );
+            }
+
+            // Formulaire nouveau module - AVANT la liste des modules
+            if (showNewModuleForm) {
+                return (
+                    <NewModuleForm
+                        onSubmit={createNewModule}
+                        onCancel={() => {
+                            setShowNewModuleForm(false);
+                            setShowModuleList(true);
+                        }}
+                    />
+                );
+            }
+
+            // Liste des modules
+            if (showModuleList) {
+                const canApprove = currentUser.role === 'admin';
+                
+                return (
+                    <ModuleListView
+                        modules={modules}
+                        currentUser={currentUser}
+                        onSelectModule={(module) => {
+                            setCurrentModule(module);
+                            setShowModuleList(false);
+                            // Si approbateur, ouvrir en mode catégorie automatiquement
+                            if (canApprove) {
+                                setViewMode('category');
+                            }
+                        }}
+                        onNewModule={() => {
+                            setShowNewModuleForm(true);
+                            setShowModuleList(false);
+                        }}
+                        onApprove={approveModule}
+                        onShowAdmin={() => setShowAdminPanel(true)}
+                        calculateProgress={calculateProgress}
+                        onLogout={() => {
+                            setCurrentUser(null);
+                            localStorage.removeItem('currentUser');
+                        }}
+                    />
+                );
+            }
+
+            // Vue checkpoint - seulement si on a un module courant
+            if (!currentModule) {
+                // Sécurité - retourner à la liste si pas de module
+                setShowModuleList(true);
+                return null;
+            }
+
+            const currentCheckpoint = allCheckpoints[currentCheckpointIndex];
+            const currentResponse = currentModule.responses[currentCheckpoint.id];
+
+            return (
+                <CheckpointView
+                    checkpoint={currentCheckpoint}
+                    currentIndex={currentCheckpointIndex}
+                    totalCheckpoints={allCheckpoints.length}
+                    currentResponse={currentResponse}
+                    module={currentModule}
+                    currentUser={currentUser}
+                    onSaveResponse={saveResponse}
+                    onBack={() => {
+                        if (currentCheckpointIndex > 0) {
+                            setCurrentCheckpointIndex(currentCheckpointIndex - 1);
+                        }
+                    }}
+                    onNext={() => {
+                        if (currentCheckpointIndex < allCheckpoints.length - 1) {
+                            setCurrentCheckpointIndex(currentCheckpointIndex + 1);
+                        }
+                    }}
+                    onExit={() => {
+                        setShowModuleList(true);
+                        setCurrentModule(null);
+                        setCurrentCheckpointIndex(0);
+                    }}
+                    onJumpTo={(index) => setCurrentCheckpointIndex(index)}
+                    onApprove={approveModule}
+                    calculateProgress={calculateProgress}
+                    allCheckpoints={allCheckpoints}
+                    // NOUVEAUX PROPS pour multi-sélection
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    selectedCheckpoints={selectedCheckpoints}
+                    onToggleSelection={toggleCheckpointSelection}
+                    onSelectAllCategory={selectAllInCategory}
+                    onClearSelection={clearSelection}
+                    onBatchAction={applyBatchAction}
+                    collapsedCategories={collapsedCategories}
+                    onToggleCategory={toggleCategoryCollapse}
+                />
+            );
+        }
+
+        // Composant de connexion
+        function LoginForm({ onLogin }) {
+            const [selectedUser, setSelectedUser] = useState('');
+            const [searchTerm, setSearchTerm] = useState('');
+
+            const filteredUsers = USERS.filter(user => 
+                user.initials.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                const user = USERS.find(u => u.initials === selectedUser);
+                if (user) {
+                    onLogin(user);
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+                    <div className="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full fade-in">
+                        <div className="text-center mb-8">
+                            <div className="bg-indigo-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <h1 className="text-3xl font-bold text-gray-800 mb-2">Checklist HVAC/AHU - By Mohammed Amine Elgalai</h1>
+                            <p className="text-gray-600">Système de vérification - Modules 3D/2D</p>
+                        </div>
+                        
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 font-semibold mb-2">Rechercher utilisateur</label>
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition"
+                                    placeholder="Initiales ou nom..."
+                                />
+                            </div>
+
+                            <div className="mb-6 max-h-96 overflow-y-auto border-2 border-gray-200 rounded-lg">
+                                {filteredUsers.map(user => (
+                                    <div
+                                        key={user.initials}
+                                        onClick={() => setSelectedUser(user.initials)}
+                                        className={`p-4 cursor-pointer transition border-b border-gray-100 hover:bg-indigo-50 ${
+                                            selectedUser === user.initials ? 'bg-indigo-100 border-l-4 border-l-indigo-600' : ''
+                                        }`}
+                                    >
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <div className="font-bold text-gray-800">{user.initials}</div>
+                                                <div className="text-sm text-gray-700">{user.name}</div>
+                                                <div className="text-xs text-gray-500 mt-1">{user.title}</div>
+                                            </div>
+                                            {selectedUser === user.initials && (
+                                                <div className="text-indigo-600">✓</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                type="submit"
+                                disabled={!selectedUser}
+                                className="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition btn-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                Se connecter
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // Vue liste des modules
+        function ModuleListView({ modules, currentUser, onSelectModule, onNewModule, onApprove, onShowAdmin, calculateProgress, onLogout }) {
+            const [filter, setFilter] = useState('tous');
+            const [searchTerm, setSearchTerm] = useState('');
+
+            let filteredModules = modules.filter(m => {
+                if (filter === 'en_cours') return m.status === 'en_cours';
+                if (filter === 'approuve') return m.status === 'approuve';
+                if (filter === 'mes_modules') return m.dessinateur === currentUser.initials;
+                return true;
+            });
+
+            if (searchTerm) {
+                filteredModules = filteredModules.filter(m =>
+                    m.projet.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    m.reference.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    m.module.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            const getStatusBadge = (status) => {
+                if (status === 'approuve') {
+                    return <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-semibold">✓ Approuvé</span>;
+                }
+                return <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm font-semibold">⏳ En cours</span>;
+            };
+
+            const canApprove = currentUser.role === 'approver' || currentUser.role === 'supervisor' || currentUser.role === 'lead_approver';
+            const canCreateModule = currentUser.role !== 'approver' && currentUser.role !== 'supervisor';
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <header className="bg-white shadow-sm border-b border-gray-200">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                <div>
+                                    <h1 className="text-2xl font-bold text-gray-800">Checklist HVAC/AHU - By Mohammed Amine Elgalai</h1>
+                                    <p className="text-gray-600 text-sm mt-1">
+                                        {currentUser.name} ({currentUser.initials}) - {currentUser.title}
+                                    </p>
+                                </div>
+                                <div className="flex gap-2 flex-wrap">
+                                    {currentUser.role === 'admin' && (
+                                        <button onClick={onShowAdmin} className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition btn-hover text-sm">
+                                            ⚙️ Admin
+                                        </button>
+                                    )}
+                                    <button onClick={onLogout} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition btn-hover text-sm">
+                                        Déconnexion
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
+                        <div className="mb-6">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                placeholder="Rechercher par projet, référence ou module..."
+                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition"
+                            />
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 mb-6">
+                            <button
+                                onClick={() => setFilter('tous')}
+                                className={`px-4 py-2 rounded-lg font-medium transition text-sm ${filter === 'tous' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                            >
+                                Tous ({modules.length})
+                            </button>
+                            <button
+                                onClick={() => setFilter('mes_modules')}
+                                className={`px-4 py-2 rounded-lg font-medium transition text-sm ${filter === 'mes_modules' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                            >
+                                Mes modules ({modules.filter(m => m.dessinateur === currentUser.initials).length})
+                            </button>
+                            <button
+                                onClick={() => setFilter('en_cours')}
+                                className={`px-4 py-2 rounded-lg font-medium transition text-sm ${filter === 'en_cours' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                            >
+                                En cours ({modules.filter(m => m.status === 'en_cours').length})
+                            </button>
+                            <button
+                                onClick={() => setFilter('approuve')}
+                                className={`px-4 py-2 rounded-lg font-medium transition text-sm ${filter === 'approuve' ? 'bg-indigo-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-100'}`}
+                            >
+                                Approuvés ({modules.filter(m => m.status === 'approuve').length})
+                            </button>
+                            {canCreateModule && (
+                                <button onClick={onNewModule} className="ml-auto px-6 py-2 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition btn-hover text-sm">
+                                    + Nouveau Module
+                                </button>
+                            )}
+                        </div>
+
+                        {filteredModules.length === 0 ? (
+                            <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+                                <div className="text-6xl mb-4">📋</div>
+                                <h3 className="text-xl font-semibold text-gray-700 mb-2">Aucun module trouvé</h3>
+                                <p className="text-gray-500 mb-6">
+                                    {searchTerm ? 'Essayez une autre recherche' : 'Commencez par créer votre premier module'}
+                                </p>
+                                {canCreateModule && !searchTerm && (
+                                    <button onClick={onNewModule} className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition btn-hover">
+                                        Créer un module
+                                    </button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {filteredModules.map(module => {
+                                    const progress = calculateProgress(module);
+                                    return (
+                                        <div key={module.id} className="bg-white rounded-xl shadow-sm hover:shadow-lg transition p-6 border border-gray-100 slide-in">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div className="flex-1">
+                                                    <h3 className="text-lg font-bold text-gray-800">{module.projet}-{module.reference}-{module.module}</h3>
+                                                    <p className="text-sm text-gray-600 mt-1">Module {module.module}</p>
+                                                </div>
+                                                {getStatusBadge(module.status)}
+                                            </div>
+
+                                            <div className="mb-4">
+                                                <div className="flex justify-between text-sm text-gray-600 mb-1">
+                                                    <span>Progression</span>
+                                                    <span className="font-semibold">{progress}%</span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div
+                                                        className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${progress}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+
+                                            <div className="text-sm text-gray-600 mb-4 space-y-1">
+                                                <p>👤 <strong>{module.dessinateur}</strong> - {module.dessinateurName}</p>
+                                                <p>📅 {new Date(module.dateCreation).toLocaleDateString('fr-CA')}</p>
+                                                {module.approvedBy && (
+                                                    <p className="text-green-600">✓ Approuvé par <strong>{module.approvedBy}</strong> le {new Date(module.approvedDate).toLocaleDateString('fr-CA')}</p>
+                                                )}
+                                            </div>
+
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => onSelectModule(module)}
+                                                    className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition btn-hover font-medium text-sm"
+                                                >
+                                                    {canApprove ? 'Réviser' : 'Ouvrir'}
+                                                </button>
+                                                {canApprove && module.status !== 'approuve' && progress === 100 && (
+                                                    <button
+                                                        onClick={() => onApprove(module.id)}
+                                                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition btn-hover font-medium text-sm"
+                                                    >
+                                                        ✓ Approuver
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // Formulaire nouveau module
+        function NewModuleForm({ onSubmit, onCancel }) {
+            const [projet, setProjet] = useState('');
+            const [reference, setReference] = useState('');
+            const [moduleNum, setModuleNum] = useState('');
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (projet.trim() && reference.trim() && moduleNum.trim()) {
+                    onSubmit(projet.trim(), reference.trim(), moduleNum.trim());
+                }
+            };
+
+            return (
+                <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 fade-in">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-2">Nouveau Module</h2>
+                        <p className="text-gray-600 text-sm mb-6">Format: PROJET-REF-MODULE (ex: 10381-13-M02)</p>
+                        
+                        <form onSubmit={handleSubmit}>
+                            <div className="mb-4">
+                                <label className="block text-gray-700 font-semibold mb-2">Numéro de Projet</label>
+                                <input
+                                    type="text"
+                                    value={projet}
+                                    onChange={(e) => setProjet(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition"
+                                    placeholder="Ex: 10381"
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="block text-gray-700 font-semibold mb-2">Référence</label>
+                                <input
+                                    type="text"
+                                    value={reference}
+                                    onChange={(e) => setReference(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition"
+                                    placeholder="Ex: 13"
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-gray-700 font-semibold mb-2">Numéro de Module</label>
+                                <input
+                                    type="text"
+                                    value={moduleNum}
+                                    onChange={(e) => setModuleNum(e.target.value)}
+                                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition"
+                                    placeholder="Ex: M02"
+                                    required
+                                />
+                            </div>
+
+                            <div className="p-4 bg-blue-50 rounded-lg mb-6">
+                                <p className="text-sm text-gray-700">
+                                    <strong>Aperçu:</strong> {projet || '____'}-{reference || '__'}-{moduleNum || '___'}
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={onCancel}
+                                    className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition"
+                                >
+                                    Annuler
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-4 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition btn-hover"
+                                >
+                                    Créer
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        // Vue checkpoint
+        function CheckpointView({ 
+            checkpoint, currentIndex, totalCheckpoints, currentResponse, module, currentUser, onSaveResponse, onBack, onNext, onExit, onJumpTo, onApprove, calculateProgress, allCheckpoints,
+            // Nouveaux props
+            viewMode, onViewModeChange, selectedCheckpoints, onToggleSelection, onSelectAllCategory, onClearSelection, onBatchAction, collapsedCategories, onToggleCategory
+        }) {
+            const [selectedResponse, setSelectedResponse] = useState(currentResponse?.status || '');
+            const [comment, setComment] = useState(currentResponse?.comment || '');
+            const [showExplanation, setShowExplanation] = useState(false);
+            const [showNavigator, setShowNavigator] = useState(false);
+            const [batchComment, setBatchComment] = useState('');
+            const [expandedDetails, setExpandedDetails] = useState({});
+            
+            const progress = calculateProgress(module);
+            const canApprove = currentUser.role === 'admin' && module.status !== 'approuve' && progress === 100;
+
+            useEffect(() => {
+                setSelectedResponse(currentResponse?.status || '');
+                setComment(currentResponse?.comment || '');
+                setShowExplanation(false);
+            }, [currentResponse, checkpoint.id]);
+
+            const handleSave = () => {
+                if (selectedResponse) {
+                    onSaveResponse(checkpoint.id, selectedResponse, comment);
+                    setSelectedResponse('');
+                    setComment('');
+                }
+            };
+
+            const responseOptions = [
+                { value: 'fait', label: '✓ Fait', color: 'bg-green-500', hoverColor: 'hover:bg-green-600' },
+                { value: 'non_applicable', label: '⊘ Non applicable', color: 'bg-blue-500', hoverColor: 'hover:bg-blue-600' },
+                { value: 'pas_fait', label: '✗ Empêchement technique', color: 'bg-red-500', hoverColor: 'hover:bg-red-600' }
+            ];
+
+            // Grouper par catégorie
+            const categories = {};
+            allCheckpoints.forEach((cp, idx) => {
+                if (!categories[cp.category]) {
+                    categories[cp.category] = [];
+                }
+                categories[cp.category].push({ ...cp, index: idx });
+            });
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+                    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
+                        <div className="max-w-5xl mx-auto px-4 py-3">
+                            <div className="flex justify-between items-center mb-2">
+                                <div className="flex-1 min-w-0">
+                                    <h1 className="text-lg sm:text-xl font-bold text-gray-800 truncate">
+                                        {module.projet}-{module.reference}-{module.module}
+                                    </h1>
+                                    <p className="text-xs sm:text-sm text-gray-600">{module.dessinateurName} ({module.dessinateur})</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => setShowNavigator(!showNavigator)} 
+                                        className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm"
+                                    >
+                                        📑
+                                    </button>
+                                    <button onClick={onExit} className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition text-sm">
+                                        ← Retour
+                                    </button>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="flex-1 bg-gray-200 rounded-full h-2">
+                                    <div
+                                        className="bg-indigo-600 h-2 rounded-full transition-all duration-300"
+                                        style={{ width: `${progress}%` }}
+                                    />
+                                </div>
+                                <span className="text-xs sm:text-sm font-semibold text-gray-700 whitespace-nowrap">{progress}%</span>
+                            </div>
+                        </div>
+                    </header>
+
+                    {showNavigator && (
+                        <div className="max-w-5xl mx-auto px-4 py-4">
+                            <div className="bg-white rounded-xl shadow-lg p-4 max-h-96 overflow-y-auto">
+                                <h3 className="font-bold text-gray-800 mb-3">Navigation rapide</h3>
+                                {Object.keys(categories).map(cat => (
+                                    <div key={cat} className="mb-3">
+                                        <h4 className="font-semibold text-sm text-gray-700 mb-1">{cat}</h4>
+                                        <div className="space-y-1">
+                                            {categories[cat].map(cp => {
+                                                const resp = module.responses[cp.id];
+                                                const isAnswered = !!resp;
+                                                const isCurrent = cp.index === currentIndex;
+                                                return (
+                                                    <button
+                                                        key={cp.id}
+                                                        onClick={() => {
+                                                            onJumpTo(cp.index);
+                                                            setShowNavigator(false);
+                                                        }}
+                                                        className={`w-full text-left px-3 py-2 rounded text-sm transition ${
+                                                            isCurrent 
+                                                                ? 'bg-indigo-600 text-white' 
+                                                                : isAnswered 
+                                                                    ? 'bg-green-50 text-green-700 hover:bg-green-100' 
+                                                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                                        }`}
+                                                    >
+                                                        <span className="font-medium">#{cp.index + 1}</span> {cp.question.substring(0, 60)}...
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* NOUVEAU: Sélecteur de mode de vue */}
+                    <div className="max-w-5xl mx-auto px-4 py-4">
+                        <div className="bg-white rounded-xl shadow-md p-4">
+                            <div className="flex items-center justify-between mb-3">
+                                <h3 className="font-semibold text-gray-800">Mode de travail</h3>
+                                {canApprove && (
+                                    <button
+                                        onClick={() => {
+                                            if (confirm(`Approuver le module ${module.projet}-${module.reference}-${module.module}?\n\nCette action est définitive.`)) {
+                                                onApprove(module.id);
+                                                onExit();
+                                            }
+                                        }}
+                                        className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-semibold btn-hover shadow-lg pulse"
+                                    >
+                                        ✅ APPROUVER LE MODULE
+                                    </button>
+                                )}
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                <button
+                                    onClick={() => onViewModeChange('single')}
+                                    className={`p-4 rounded-lg border-2 transition ${
+                                        viewMode === 'single' 
+                                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700' 
+                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <div className="text-2xl mb-2">🎯</div>
+                                    <div className="font-semibold">Point par Point</div>
+                                    <div className="text-xs text-gray-600 mt-1">Navigation classique</div>
+                                </button>
+                                
+                                <button
+                                    onClick={() => onViewModeChange('multi')}
+                                    className={`p-4 rounded-lg border-2 transition ${
+                                        viewMode === 'multi' 
+                                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700' 
+                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <div className="text-2xl mb-2">☑️</div>
+                                    <div className="font-semibold">Sélection Multiple</div>
+                                    <div className="text-xs text-gray-600 mt-1">Cocher plusieurs à la fois</div>
+                                </button>
+                                
+                                <button
+                                    onClick={() => onViewModeChange('category')}
+                                    className={`p-4 rounded-lg border-2 transition ${
+                                        viewMode === 'category' 
+                                            ? 'border-indigo-600 bg-indigo-50 text-indigo-700' 
+                                            : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                    }`}
+                                >
+                                    <div className="text-2xl mb-2">📋</div>
+                                    <div className="font-semibold">Vue par Catégorie</div>
+                                    <div className="text-xs text-gray-600 mt-1">Voir tous les checkpoints</div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    {/* MODE SINGLE: Vue checkpoint classique */}
+                    {viewMode === 'single' && (
+                    <div className="max-w-5xl mx-auto px-4 py-6">
+                        <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 fade-in">
+                            <div className="mb-6">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-4">
+                                    <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs sm:text-sm font-semibold">
+                                        {checkpoint.category}
+                                    </span>
+                                    <span className="text-xs sm:text-sm text-gray-500">
+                                        Question {currentIndex + 1} / {totalCheckpoints}
+                                    </span>
+                                </div>
+
+                                <h2 className="text-xl sm:text-2xl font-bold text-gray-800 mb-4">
+                                    {checkpoint.question}
+                                </h2>
+
+                                <button
+                                    onClick={() => setShowExplanation(!showExplanation)}
+                                    className="text-indigo-600 hover:text-indigo-700 font-medium text-sm flex items-center gap-2"
+                                >
+                                    {showExplanation ? '▼' : '▶'} Voir les explications
+                                </button>
+
+                                {showExplanation && (
+                                    <div className="mt-3 p-4 bg-blue-50 rounded-lg border border-blue-200 slide-in">
+                                        <p className="text-gray-700 leading-relaxed text-sm sm:text-base">{checkpoint.explanation}</p>
+                                        {checkpoint.imageUrl && (
+                                            <img src={checkpoint.imageUrl} alt="Référence" className="mt-3 rounded-lg max-w-full" />
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mb-6">
+                                <label className="block text-gray-700 font-semibold mb-3">Votre réponse:</label>
+                                <div className="space-y-2 sm:space-y-3">
+                                    {responseOptions.map(option => (
+                                        <button
+                                            key={option.value}
+                                            onClick={() => setSelectedResponse(option.value)}
+                                            className={`w-full p-3 sm:p-4 rounded-lg text-white font-semibold transition transform text-sm sm:text-base ${
+                                                selectedResponse === option.value
+                                                    ? `${option.color} scale-105 shadow-lg`
+                                                    : `${option.color} opacity-60 ${option.hoverColor}`
+                                            }`}
+                                        >
+                                            {option.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {selectedResponse && (
+                                <div className="mb-6 fade-in">
+                                    <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">Commentaire (optionnel):</label>
+                                    <textarea
+                                        value={comment}
+                                        onChange={(e) => setComment(e.target.value)}
+                                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition resize-none text-sm sm:text-base"
+                                        rows="3"
+                                        placeholder="Notes ou précisions..."
+                                    />
+                                </div>
+                            )}
+
+                            <div className="flex gap-2 sm:gap-3">
+                                <button
+                                    onClick={onBack}
+                                    disabled={currentIndex === 0}
+                                    className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-200 text-gray-700 rounded-lg font-semibold hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                                >
+                                    ← Préc.
+                                </button>
+                                
+                                <button
+                                    onClick={handleSave}
+                                    disabled={!selectedResponse}
+                                    className="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition btn-hover disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
+                                >
+                                    {currentIndex === totalCheckpoints - 1 ? '✓ Terminer' : 'Sauvegarder →'}
+                                </button>
+                            </div>
+
+                            {currentResponse && (
+                                <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                                    <p className="text-xs sm:text-sm text-gray-600">
+                                        <strong>Réponse précédente:</strong> {currentResponse.userName} ({currentResponse.user}) le {new Date(currentResponse.date).toLocaleString('fr-CA')}
+                                    </p>
+                                    {currentResponse.comment && (
+                                        <p className="text-xs sm:text-sm text-gray-600 mt-1">
+                                            <strong>Commentaire:</strong> {currentResponse.comment}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    )}
+                    
+                    {/* MODE MULTI: Liste avec checkboxes */}
+                    {viewMode === 'multi' && (
+                    <div className="max-w-5xl mx-auto px-4 py-6">
+                        <div className="space-y-4">
+                            {Object.keys(categories).map(cat => {
+                                const categoryCheckpoints = categories[cat];
+                                const selectedInCategory = categoryCheckpoints.filter(cp => selectedCheckpoints.includes(cp.id));
+                                const allSelected = categoryCheckpoints.every(cp => selectedCheckpoints.includes(cp.id));
+                                const hasSelection = selectedInCategory.length > 0;
+                                
+                                return (
+                                    <div key={cat} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                                        <div className="bg-indigo-50 px-4 py-3 flex items-center justify-between">
+                                            <h3 className="font-bold text-indigo-900">{cat}</h3>
+                                            <button
+                                                onClick={() => onSelectAllCategory(cat)}
+                                                className="px-3 py-1 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700"
+                                            >
+                                                {allSelected ? 'Tout désélectionner' : 'Tout sélectionner'}
+                                            </button>
+                                        </div>
+                                        
+                                        {/* Barre d'outils batch pour cette catégorie */}
+                                        {hasSelection && (
+                                            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-3">
+                                                <div className="text-sm font-semibold mb-3">
+                                                    ✓ {selectedInCategory.length} sélectionné(s) dans cette catégorie
+                                                </div>
+                                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+                                                    <button
+                                                        onClick={() => {
+                                                            onBatchAction('fait', batchComment);
+                                                        }}
+                                                        className="px-4 py-3 bg-green-500 hover:bg-green-600 rounded-lg font-semibold transition text-sm"
+                                                    >
+                                                        ✓ Marquer FAIT
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            onBatchAction('non_applicable', batchComment);
+                                                        }}
+                                                        className="px-4 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold transition text-sm"
+                                                    >
+                                                        ⊘ NON APPLICABLE
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            onBatchAction('pas_fait', batchComment);
+                                                        }}
+                                                        className="px-4 py-3 bg-red-500 hover:bg-red-600 rounded-lg font-semibold transition text-sm"
+                                                    >
+                                                        ✗ EMPÊCHEMENT
+                                                    </button>
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={batchComment}
+                                                    onChange={(e) => setBatchComment(e.target.value)}
+                                                    placeholder="Commentaire pour tous (optionnel)..."
+                                                    className="w-full px-3 py-2 rounded-lg text-gray-800 text-sm"
+                                                />
+                                            </div>
+                                        )}
+                                        
+                                        <div className="p-4 space-y-2">
+                                            {categoryCheckpoints.map(cp => {
+                                                const resp = module.responses[cp.id];
+                                                const isSelected = selectedCheckpoints.includes(cp.id);
+                                                const isExpanded = expandedDetails[cp.id];
+                                                const statusColor = resp?.status === 'fait' ? 'bg-green-50 border-green-200' : 
+                                                                   resp?.status === 'non_applicable' ? 'bg-blue-50 border-blue-200' : 
+                                                                   resp?.status === 'pas_fait' ? 'bg-red-50 border-red-200' : '';
+                                                
+                                                return (
+                                                    <div
+                                                        key={cp.id}
+                                                        className={`checkpoint-item rounded-lg border transition ${
+                                                            isSelected ? 'selected' : statusColor || 'border-gray-200'
+                                                        }`}
+                                                    >
+                                                        <div 
+                                                            onClick={() => onToggleSelection(cp.id)}
+                                                            className="flex items-start gap-3 p-3 cursor-pointer"
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isSelected}
+                                                                onChange={() => {}}
+                                                                className="checkbox-custom mt-1"
+                                                            />
+                                                            <div className="flex-1">
+                                                                <div className="font-medium text-gray-800">{cp.question}</div>
+                                                                {resp && (
+                                                                    <div className="text-xs text-gray-600 mt-1">
+                                                                        {resp.status === 'fait' && '✓ Fait'}
+                                                                        {resp.status === 'non_applicable' && '⊘ Non applicable'}
+                                                                        {resp.status === 'pas_fait' && '✗ Empêchement'}
+                                                                        {resp.comment && ` - ${resp.comment}`}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setExpandedDetails(prev => ({
+                                                                        ...prev,
+                                                                        [cp.id]: !prev[cp.id]
+                                                                    }));
+                                                                }}
+                                                                className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition text-xs font-semibold"
+                                                            >
+                                                                {isExpanded ? '▲ Masquer' : '▼ Détails'}
+                                                            </button>
+                                                        </div>
+                                                        
+                                                        {/* Détails expandables */}
+                                                        {isExpanded && (
+                                                            <div className="px-3 pb-3 pt-0 border-t border-gray-200 mt-2 slide-in">
+                                                                <div className="mt-3 p-4 bg-blue-50 rounded-lg">
+                                                                    <h4 className="font-semibold text-indigo-900 mb-2 text-sm">📖 Explications:</h4>
+                                                                    <p className="text-gray-700 text-sm leading-relaxed">{cp.explanation}</p>
+                                                                    {cp.imageUrl && (
+                                                                        <div className="mt-3">
+                                                                            <img src={cp.imageUrl} alt="Référence" className="rounded-lg max-w-full border-2 border-indigo-200" />
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    )}
+                    
+                    {/* MODE CATEGORY: Vue complète avec collapse */}
+                    {viewMode === 'category' && (
+                    <div className="max-w-5xl mx-auto px-4 py-6">
+                        <div className="space-y-4">
+                            {Object.keys(categories).map(cat => {
+                                const categoryCheckpoints = categories[cat];
+                                const isCollapsed = collapsedCategories[cat];
+                                const completed = categoryCheckpoints.filter(cp => module.responses[cp.id]).length;
+                                const total = categoryCheckpoints.length;
+                                const percentage = Math.round((completed / total) * 100);
+                                
+                                return (
+                                    <div key={cat} className="bg-white rounded-xl shadow-lg overflow-hidden category-section">
+                                        <div 
+                                            onClick={() => onToggleCategory(cat)}
+                                            className="category-header bg-gradient-to-r from-indigo-50 to-blue-50 px-4 py-4 flex items-center justify-between"
+                                        >
+                                            <div className="flex-1">
+                                                <h3 className="font-bold text-indigo-900 text-lg">{cat}</h3>
+                                                <div className="text-sm text-gray-600 mt-1">
+                                                    {completed}/{total} complétés ({percentage}%)
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-24 bg-gray-200 rounded-full h-2">
+                                                    <div className="bg-indigo-600 h-2 rounded-full" style={{width: `${percentage}%`}}></div>
+                                                </div>
+                                                <div className="text-2xl text-indigo-600">
+                                                    {isCollapsed ? '▶' : '▼'}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {!isCollapsed && (
+                                            <div className="p-4 space-y-2">
+                                                {categoryCheckpoints.map(cp => {
+                                                    const resp = module.responses[cp.id];
+                                                    
+                                                    return (
+                                                        <div
+                                                            key={cp.id}
+                                                            onClick={() => onJumpTo(cp.index)}
+                                                            className={`checkpoint-item p-4 rounded-lg border cursor-pointer ${
+                                                                resp?.status === 'fait' ? 'bg-green-50 border-green-300' : 
+                                                                resp?.status === 'non_applicable' ? 'bg-blue-50 border-blue-300' : 
+                                                                resp?.status === 'pas_fait' ? 'bg-red-50 border-red-300' : 
+                                                                'bg-white border-gray-200 hover:border-indigo-300'
+                                                            }`}
+                                                        >
+                                                            <div className="flex items-start justify-between gap-3">
+                                                                <div className="flex-1">
+                                                                    <div className="font-medium text-gray-800 mb-1">
+                                                                        #{cp.index + 1}. {cp.question}
+                                                                    </div>
+                                                                    <div className="text-sm text-gray-600">
+                                                                        {cp.explanation}
+                                                                    </div>
+                                                                    {resp && (
+                                                                        <div className="mt-2 text-xs">
+                                                                            <span className={`px-2 py-1 rounded font-semibold ${
+                                                                                resp.status === 'fait' ? 'bg-green-200 text-green-800' :
+                                                                                resp.status === 'non_applicable' ? 'bg-blue-200 text-blue-800' :
+                                                                                'bg-red-200 text-red-800'
+                                                                            }`}>
+                                                                                {resp.status === 'fait' && '✓ Fait'}
+                                                                                {resp.status === 'non_applicable' && '⊘ Non applicable'}
+                                                                                {resp.status === 'pas_fait' && '✗ Empêchement'}
+                                                                            </span>
+                                                                            {resp.comment && (
+                                                                                <span className="ml-2 text-gray-600">
+                                                                                    {resp.comment}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                                {resp && (
+                                                                    <div className="text-2xl">
+                                                                        {resp.status === 'fait' && '✅'}
+                                                                        {resp.status === 'non_applicable' && '⊘'}
+                                                                        {resp.status === 'pas_fait' && '❌'}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    )}
+                </div>
+            );
+        }
+
+        // Panneau admin
+        function AdminPanel({ checkpoints, onAddCheckpoint, onUpdateCheckpoint, onDeleteCheckpoint, onClose, currentUser }) {
+            const [showAddForm, setShowAddForm] = useState(false);
+            const [editingId, setEditingId] = useState(null);
+            const [category, setCategory] = useState('');
+            const [question, setQuestion] = useState('');
+            const [explanation, setExplanation] = useState('');
+            const [imageFile, setImageFile] = useState(null);
+            const [imagePreview, setImagePreview] = useState(null);
+            const [filterCategory, setFilterCategory] = useState('all');
+            const [searchTerm, setSearchTerm] = useState('');
+            const fileInputRef = useRef(null);
+
+            const handleImageChange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    setImageFile(file);
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setImagePreview(reader.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (category.trim() && question.trim() && explanation.trim()) {
+                    if (editingId) {
+                        // Mode édition
+                        onUpdateCheckpoint(editingId, category.trim(), question.trim(), explanation.trim(), imagePreview);
+                    } else {
+                        // Mode ajout
+                        onAddCheckpoint(category.trim(), question.trim(), explanation.trim(), imagePreview);
+                    }
+                    resetForm();
+                }
+            };
+
+            const resetForm = () => {
+                setCategory('');
+                setQuestion('');
+                setExplanation('');
+                setImageFile(null);
+                setImagePreview(null);
+                setShowAddForm(false);
+                setEditingId(null);
+            };
+
+            const startEdit = (checkpoint) => {
+                setEditingId(checkpoint.id);
+                setCategory(checkpoint.category);
+                setQuestion(checkpoint.question);
+                setExplanation(checkpoint.explanation);
+                setImagePreview(checkpoint.imageUrl || null);
+                setShowAddForm(true);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            const handleDelete = (id) => {
+                onDeleteCheckpoint(id);
+            };
+
+            const categories = [...new Set(checkpoints.map(c => c.category))];
+            
+            // Filtrage
+            let filteredCheckpoints = checkpoints;
+            if (filterCategory !== 'all') {
+                filteredCheckpoints = filteredCheckpoints.filter(cp => cp.category === filterCategory);
+            }
+            if (searchTerm) {
+                filteredCheckpoints = filteredCheckpoints.filter(cp => 
+                    cp.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    cp.explanation.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gray-50">
+                    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+                            <div>
+                                <h1 className="text-2xl font-bold text-gray-800">Panneau d'Administration</h1>
+                                <p className="text-gray-600 text-sm mt-1">Gérer les {checkpoints.length} points de contrôle - {currentUser.name}</p>
+                            </div>
+                            <button onClick={onClose} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition btn-hover">
+                                ← Retour
+                            </button>
+                        </div>
+                    </header>
+
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+                        {/* Boutons d'action */}
+                        <div className="mb-6 flex gap-3">
+                            <button
+                                onClick={() => {
+                                    if (editingId) resetForm();
+                                    setShowAddForm(!showAddForm);
+                                }}
+                                className={`px-6 py-3 rounded-lg font-semibold transition btn-hover ${
+                                    showAddForm 
+                                        ? 'bg-gray-500 text-white hover:bg-gray-600' 
+                                        : 'bg-indigo-600 text-white hover:bg-indigo-700'
+                                }`}
+                            >
+                                {showAddForm ? '❌ Annuler' : '➕ Ajouter un checkpoint'}
+                            </button>
+                            {editingId && (
+                                <span className="px-4 py-3 bg-yellow-100 text-yellow-800 rounded-lg font-semibold">
+                                    ✏️ Mode édition - Checkpoint #{checkpoints.findIndex(c => c.id === editingId) + 1}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Formulaire Ajout/Édition */}
+                        {showAddForm && (
+                            <div className="bg-white rounded-xl shadow-lg p-8 mb-8 fade-in">
+                                <h3 className="text-xl font-bold text-gray-800 mb-6">
+                                    {editingId ? '✏️ Modifier le checkpoint' : '➕ Nouveau checkpoint'}
+                                </h3>
+                                <form onSubmit={handleSubmit}>
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700 font-semibold mb-2">Catégorie</label>
+                                        <input
+                                            type="text"
+                                            value={category}
+                                            onChange={(e) => setCategory(e.target.value)}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition"
+                                            placeholder="Ex: 3D-Composantes"
+                                            list="categories"
+                                            required
+                                        />
+                                        <datalist id="categories">
+                                            {categories.map(cat => (
+                                                <option key={cat} value={cat} />
+                                            ))}
+                                        </datalist>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700 font-semibold mb-2">Question</label>
+                                        <input
+                                            type="text"
+                                            value={question}
+                                            onChange={(e) => setQuestion(e.target.value)}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition"
+                                            placeholder="Ex: PORTE: vérifier le sens d'ouverture?"
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-gray-700 font-semibold mb-2">Explication</label>
+                                        <textarea
+                                            value={explanation}
+                                            onChange={(e) => setExplanation(e.target.value)}
+                                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition resize-none"
+                                            rows="4"
+                                            placeholder="Détails sur comment effectuer cette vérification..."
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <label className="block text-gray-700 font-semibold mb-2">Image (optionnel)</label>
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            onChange={handleImageChange}
+                                            accept="image/png,image/jpeg,image/jpg"
+                                            className="hidden"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current.click()}
+                                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
+                                        >
+                                            📷 {imagePreview ? 'Changer l\'image' : 'Choisir une image'}
+                                        </button>
+                                        {imagePreview && (
+                                            <div className="mt-3 relative inline-block">
+                                                <img src={imagePreview} alt="Aperçu" className="max-w-xs rounded-lg shadow-md" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setImagePreview(null);
+                                                        setImageFile(null);
+                                                    }}
+                                                    className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white rounded-lg text-xs hover:bg-red-600"
+                                                >
+                                                    ✗
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="flex gap-3">
+                                        <button
+                                            type="submit"
+                                            className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 transition btn-hover"
+                                        >
+                                            {editingId ? '✅ Sauvegarder les modifications' : '➕ Ajouter le checkpoint'}
+                                        </button>
+                                        {editingId && (
+                                            <button
+                                                type="button"
+                                                onClick={resetForm}
+                                                className="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition"
+                                            >
+                                                Annuler
+                                            </button>
+                                        )}
+                                    </div>
+                                </form>
+                            </div>
+                        )}
+
+                        {/* Filtres et recherche */}
+                        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2 text-sm">Rechercher</label>
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Rechercher dans questions ou explications..."
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-gray-700 font-semibold mb-2 text-sm">Filtrer par catégorie</label>
+                                    <select
+                                        value={filterCategory}
+                                        onChange={(e) => setFilterCategory(e.target.value)}
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none transition"
+                                    >
+                                        <option value="all">Toutes les catégories ({checkpoints.length})</option>
+                                        {categories.map(cat => (
+                                            <option key={cat} value={cat}>
+                                                {cat} ({checkpoints.filter(c => c.category === cat).length})
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Liste des checkpoints */}
+                        <div className="bg-white rounded-xl shadow-lg p-8">
+                            <h3 className="text-xl font-bold text-gray-800 mb-6">
+                                Checkpoints ({filteredCheckpoints.length}{filteredCheckpoints.length !== checkpoints.length ? ` sur ${checkpoints.length}` : ''})
+                            </h3>
+                            <div className="space-y-3">
+                                {filteredCheckpoints.map((cp, index) => {
+                                    const globalIndex = checkpoints.findIndex(c => c.id === cp.id);
+                                    return (
+                                        <div key={cp.id} className="border-2 border-gray-200 rounded-lg p-4 hover:border-indigo-300 transition">
+                                            <div className="flex justify-between items-start gap-4">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <span className="text-sm font-bold text-gray-500">#{globalIndex + 1}</span>
+                                                        <span className="px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold">
+                                                            {cp.category}
+                                                        </span>
+                                                    </div>
+                                                    <h4 className="font-bold text-gray-800 mb-2">{cp.question}</h4>
+                                                    <p className="text-sm text-gray-600 mb-2">{cp.explanation}</p>
+                                                    {cp.imageUrl && (
+                                                        <div className="mt-2">
+                                                            <img src={cp.imageUrl} alt="Référence" className="max-w-xs rounded-lg border-2 border-gray-200" />
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="flex flex-col gap-2 min-w-[120px]">
+                                                    <button
+                                                        onClick={() => startEdit(cp)}
+                                                        className="px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition font-semibold text-sm"
+                                                    >
+                                                        ✏️ Modifier
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(cp.id)}
+                                                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition font-semibold text-sm"
+                                                    >
+                                                        🗑️ Supprimer
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {filteredCheckpoints.length === 0 && (
+                                    <div className="text-center py-12 text-gray-500">
+                                        <div className="text-4xl mb-3">🔍</div>
+                                        <p>Aucun checkpoint trouvé</p>
+                                        {searchTerm && <p className="text-sm mt-2">Essayez une autre recherche</p>}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Rendu
+        ReactDOM.render(<HVACChecklistApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>

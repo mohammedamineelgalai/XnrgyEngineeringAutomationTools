@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACP - Assistant de Conception de Projet</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-in { animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
+        .modal-backdrop { animation: fadeInBackdrop 0.2s ease-in; }
+        @keyframes fadeInBackdrop { from { opacity: 0; } to { opacity: 1; } }
+        .btn-hover { transition: all 0.2s ease; }
+        .btn-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+        .step-card { border-left: 4px solid #e5e7eb; padding-left: 1rem; margin-bottom: 1rem; transition: all 0.2s ease; }
+        .step-card:hover { border-left-color: #f97316; background-color: #fff7ed; }
+        .step-card.completed { border-left-color: #22c55e; background-color: #f0fdf4; }
+        .step-card.in-progress { border-left-color: #3b82f6; background-color: #eff6ff; }
+        .checkpoint-item { border-left: 4px solid #e5e7eb; padding-left: 1rem; margin-bottom: 0.5rem; transition: all 0.2s ease; }
+        .checkpoint-item:hover { border-left-color: #f97316; background-color: #fefce8; }
+        .checkpoint-item.validated { border-left-color: #22c55e; background-color: #dcfce7; }
+        .checkbox-custom { appearance: none; width: 22px; height: 22px; border: 2px solid #d1d5db; border-radius: 4px; cursor: pointer; position: relative; transition: all 0.2s; }
+        .checkbox-custom:checked { background-color: #22c55e; border-color: #22c55e; }
+        .checkbox-custom:checked::after { content: '\2713'; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 14px; font-weight: bold; }
+        .pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+        .progress-bar { transition: width 0.5s ease-in-out; }
+        .glow-orange { box-shadow: 0 0 20px rgba(249, 115, 22, 0.4); }
+        .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        // Utilisateurs du systeme - Lead CAD et Dessinateurs
+        const USERS = [
+            { initials: 'AC', name: 'Alexander Cayetano', role: 'lead', title: 'Concepteur Lead CAD' },
+            { initials: 'AM', name: 'Amgad Mikhaiel', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'AR', name: 'Alex Rosier', role: 'user', title: 'Concepteur amelioration CAD' },
+            { initials: 'CC', name: 'Charles Chamberland', role: 'lead', title: 'Concepteur Lead CAD' },
+            { initials: 'DC', name: 'David Correa', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'DLM', name: 'Damik Lamoureux-Brunet', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'IM', name: 'Iheb Manai', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'KJ', name: 'Kenny Jean', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'NJ', name: 'Nick Jean', role: 'lead', title: 'Superviseur Concepteur CAD' },
+            { initials: 'TG', name: 'Tiago Gargur', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'TV', name: 'Seuksavanh Vongsipraseuth', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'SB', name: 'Stephane Beck', role: 'lead', title: 'Concepteur amelioration CAD' },
+            { initials: 'VK', name: 'Vanessa Kokkoris', role: 'lead', title: 'Concepteur Lead CAD' },
+            { initials: 'YS', name: 'Yassir Saoudi', role: 'user', title: 'Concepteur CAD' },
+            { initials: 'MAE', name: 'Mohammed Amine Elgalai', role: 'admin', title: 'Developpeur & Concepteur amelioration CAD' }
+        ];
+
+        // Structure des etapes ACP basee sur le fichier Excel reel
+        const ACP_STEPS = [
+            {
+                id: 1,
+                title: "1 - Prise de Connaissance",
+                icon: "📋",
+                color: "blue",
+                checkpoints: [
+                    { id: "1a", label: "Verification des commandes speciales", description: "J'ai pris connaissance des commandes speciales" },
+                    { id: "1b", label: "Creation du formulaire du CO", description: "J'ai pris Connaissance du C.O." }
+                ]
+            },
+            {
+                id: 2,
+                title: "2 - Etape de Verification de Projet",
+                icon: "🔍",
+                color: "indigo",
+                checkpoints: [
+                    { id: "2a", label: "Validation des Points Important du ACP", description: "J'ai surligne les points se retrouvant dans le ACP" },
+                    { id: "2b", label: "Validation avec le dessin d'approbation", description: "Valide avec le dessin d'approbation" },
+                    { id: "2c", label: "Point de Controle Completer", description: "Points de controle verifies" },
+                    { id: "2d", label: "Verification par le Concepteur Lead", description: "Verification par le Lead CAD" },
+                    { id: "2e", label: "Verification des dessins 2D", description: "Dessins 2D verifies" }
+                ]
+            },
+            {
+                id: 3,
+                title: "3 - Etape de l'Exportation",
+                icon: "📤",
+                color: "amber",
+                checkpoints: [
+                    { id: "3a", label: "Verifier la qtee de pieces et DXF a exporter", description: "Je me suis assure que le compte est bon" },
+                    { id: "3b", label: "DXF de pans & pans auxiliaires corriges", description: "J'ai verifie que les DXF sont bons!" },
+                    { id: "3c", label: "Mettre le compte des pieces sur le PDF Machine", description: "Le compte de pieces a ete inscrit" },
+                    { id: "3d", label: "Transfert des DXF sur le O:", description: "Le transfert de pieces est fait!" },
+                    { id: "3e", label: "Transfert du module complet dans le X:", description: "J'ai transfere la version la plus a jour" }
+                ]
+            },
+            {
+                id: 4,
+                title: "4 - Etape Finale de Production",
+                icon: "🏭",
+                color: "emerald",
+                checkpoints: [
+                    { id: "4a", label: "Transfert des Batchprints dans Usine", description: "J'ai transfere la version la plus a jour" },
+                    { id: "4b", label: "Transferer les dessins d'assemblage des pieces a expedier", description: "Ils sont sur SharePoint Engineering/Projet/__/Expedition" },
+                    { id: "4c", label: "Ajout des pieces et/ou assemblage ship loose dans la liste d'expedition", description: "J'ai valide que toutes mes pieces sont presentes dans la liste d'expedition" },
+                    { id: "4d", label: "Transfert des dessins Knock Down", description: "Mon Projet n'est pas KD / KD transfere" },
+                    { id: "4e", label: "Cedule remplie et completee", description: "Cedule completee et remise au Concepteur Lead" }
+                ]
+            },
+            {
+                id: 5,
+                title: "5 - Etape Finale",
+                icon: "✅",
+                color: "green",
+                checkpoints: [
+                    { id: "5a", label: "Confirmation de l'Envoi du CO", description: "CO envoye ou Je ne suis pas le Responsable du C.O." }
+                ]
+            }
+        ];
+
+        // Informations du projet (structure basee sur l'onglet Unit Infos)
+        const PROJECT_INFO_TEMPLATE = {
+            general: [
+                { id: "type_unite", label: "Type d'unite", options: ["Interieur", "Exterieur", "Rooftop"] },
+                { id: "option_unite", label: "Option d'Unite", options: ["Standard", "Custom", "Special"] },
+                { id: "pression_statique", label: "Pression Statique", type: "number" },
+                { id: "configuration", label: "Configuration d'Unite", options: ["Standard", "Stacked", "Split"] },
+                { id: "unite_testee", label: "Unite Testee", options: ["Test de Fuite", "Test Complet", "Aucun Test"] },
+                { id: "certification", label: "Certification", options: ["Oui", "Non"] },
+                { id: "knock_down", label: "Knock Down", options: ["Oui", "Non"] }
+            ],
+            plancher: [
+                { id: "hauteur_bas", label: "Hauteur du plancher du bas", type: "number" },
+                { id: "hauteur_haut", label: "Hauteur du plancher du haut", type: "number" },
+                { id: "materiau_tubes", label: "Materiaux des tubes", options: ["Aluminium", "Galvanise", "Acier Inox"] },
+                { id: "roof_curb", label: "Type de Roof Curb", options: ["Concrete Pad", "Roof Curb Standard", "Custom"] },
+                { id: "cross_member", label: "Hauteur des cross Member", options: ["4''", "6''", "8''"] },
+                { id: "isolant_plancher", label: "Type d'isolant au plancher", options: ["Polyurethane Foam", "Fiberglass", "Mineral Wool"] },
+                { id: "bris_thermique_plancher", label: "Type de Bris Thermique", options: ["No Thru Metal", "Thermal Break", "Standard"] }
+            ],
+            boitier: [
+                { id: "bris_thermique_boitier", label: "Type de Bris Thermique", options: ["No Thru Metal", "Thermal Break", "Standard"] },
+                { id: "epaisseur_murs", label: "Epaisseur des Murs", options: ["2''", "3''", "4''"] },
+                { id: "isolant_unite", label: "Type d'isolant (Unite)", options: ["Polyurethane Foam", "Fiberglass", "Mineral Wool"] },
+                { id: "peinture", label: "Unite peinturee", options: ["Oui", "Non"] },
+                { id: "materiel_ext", label: "Materiel exterieur", type: "text" },
+                { id: "materiel_int", label: "Materiel interieur", type: "text" }
+            ]
+        };
+
+        // Composant principal ACP
+        function ACPApp() {
+            // Etats principaux
+            const [currentUser, setCurrentUser] = useState(null);
+            const [showLoginModal, setShowLoginModal] = useState(true);
+            const [projectNumber, setProjectNumber] = useState('');
+            const [moduleNumber, setModuleNumber] = useState('M01');
+            const [responsableProjet, setResponsableProjet] = useState('');
+            const [faitPar, setFaitPar] = useState('');
+            const [dateDebut, setDateDebut] = useState(new Date().toISOString().split('T')[0]);
+            const [dateFin, setDateFin] = useState('');
+            
+            // Etats des etapes et checkpoints
+            const [stepValidations, setStepValidations] = useState({});
+            const [projectInfo, setProjectInfo] = useState({});
+            const [notes, setNotes] = useState({});
+            const [expandedSteps, setExpandedSteps] = useState([1, 2]);
+            
+            // Etat de synchronisation Vault
+            const [vaultStatus, setVaultStatus] = useState('disconnected');
+            const [lastSync, setLastSync] = useState(null);
+            const [isSyncing, setIsSyncing] = useState(false);
+
+            // Charger les donnees sauvegardees au demarrage
+            useEffect(() => {
+                const savedData = localStorage.getItem('acp_data');
+                if (savedData) {
+                    try {
+                        const data = JSON.parse(savedData);
+                        setStepValidations(data.stepValidations || {});
+                        setProjectInfo(data.projectInfo || {});
+                        setNotes(data.notes || {});
+                        setProjectNumber(data.projectNumber || '');
+                        setModuleNumber(data.moduleNumber || 'M01');
+                        setResponsableProjet(data.responsableProjet || '');
+                        setFaitPar(data.faitPar || '');
+                        setDateDebut(data.dateDebut || new Date().toISOString().split('T')[0]);
+                        setDateFin(data.dateFin || '');
+                    } catch (e) {
+                        console.error('Erreur chargement donnees:', e);
+                    }
+                }
+                
+                // Ecouter les messages du bridge C#
+                window.addEventListener('message', handleBridgeMessage);
+                
+                // Verifier si connecte a Vault
+                if (window.chrome && window.chrome.webview) {
+                    window.chrome.webview.postMessage({ type: 'GET_VAULT_STATUS' });
+                }
+                
+                return () => window.removeEventListener('message', handleBridgeMessage);
+            }, []);
+
+            // Sauvegarder automatiquement les donnees
+            useEffect(() => {
+                const dataToSave = {
+                    stepValidations,
+                    projectInfo,
+                    notes,
+                    projectNumber,
+                    moduleNumber,
+                    responsableProjet,
+                    faitPar,
+                    dateDebut,
+                    dateFin,
+                    lastModified: new Date().toISOString()
+                };
+                localStorage.setItem('acp_data', JSON.stringify(dataToSave));
+            }, [stepValidations, projectInfo, notes, projectNumber, moduleNumber, responsableProjet, faitPar, dateDebut, dateFin]);
+
+            // Gestion des messages du bridge C#
+            const handleBridgeMessage = useCallback((event) => {
+                const message = event.data;
+                if (!message || !message.type) return;
+
+                switch (message.type) {
+                    case 'VAULT_STATUS':
+                        setVaultStatus(message.connected ? 'connected' : 'disconnected');
+                        break;
+                    case 'SYNC_STARTED':
+                        setIsSyncing(true);
+                        break;
+                    case 'SYNC_COMPLETED':
+                        setIsSyncing(false);
+                        setLastSync(new Date().toLocaleTimeString());
+                        break;
+                    case 'LOAD_ACP_DATA':
+                        if (message.data) {
+                            setStepValidations(message.data.stepValidations || {});
+                            setProjectInfo(message.data.projectInfo || {});
+                            setNotes(message.data.notes || {});
+                        }
+                        break;
+                }
+            }, []);
+
+            // Login utilisateur
+            const handleLogin = (user) => {
+                setCurrentUser(user);
+                setFaitPar(user.initials);
+                setShowLoginModal(false);
+            };
+
+            // Toggle validation d'un checkpoint
+            const toggleCheckpoint = (checkpointId) => {
+                setStepValidations(prev => ({
+                    ...prev,
+                    [checkpointId]: {
+                        validated: !prev[checkpointId]?.validated,
+                        validatedBy: currentUser?.initials,
+                        validatedAt: new Date().toISOString()
+                    }
+                }));
+            };
+
+            // Toggle expansion d'une etape
+            const toggleStep = (stepId) => {
+                setExpandedSteps(prev => 
+                    prev.includes(stepId) 
+                        ? prev.filter(id => id !== stepId)
+                        : [...prev, stepId]
+                );
+            };
+
+            // Calculer la progression
+            const calculateProgress = () => {
+                const totalCheckpoints = ACP_STEPS.reduce((acc, step) => acc + step.checkpoints.length, 0);
+                const validatedCheckpoints = Object.values(stepValidations).filter(v => v?.validated).length;
+                return totalCheckpoints > 0 ? Math.round((validatedCheckpoints / totalCheckpoints) * 100) : 0;
+            };
+
+            // Calculer la progression d'une etape
+            const getStepProgress = (step) => {
+                const total = step.checkpoints.length;
+                const validated = step.checkpoints.filter(cp => stepValidations[cp.id]?.validated).length;
+                return { validated, total, percent: total > 0 ? Math.round((validated / total) * 100) : 0 };
+            };
+
+            // Synchroniser avec Vault
+            const syncWithVault = () => {
+                if (window.chrome && window.chrome.webview) {
+                    setIsSyncing(true);
+                    window.chrome.webview.postMessage({
+                        type: 'SYNC_ACP_DATA',
+                        data: {
+                            stepValidations,
+                            projectInfo,
+                            notes,
+                            projectNumber,
+                            moduleNumber,
+                            responsableProjet,
+                            faitPar,
+                            dateDebut,
+                            dateFin
+                        }
+                    });
+                }
+            };
+
+            const progress = calculateProgress();
+
+            // Modal de connexion
+            if (showLoginModal) {
+                return (
+                    <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 modal-backdrop">
+                        <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md fade-in">
+                            <div className="text-center mb-6">
+                                <div className="w-20 h-20 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg glow-orange">
+                                    <span className="text-4xl">📋</span>
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-800">ACP - Assistant de Conception</h2>
+                                <p className="text-gray-500 mt-2">Selectionnez votre profil pour continuer</p>
+                            </div>
+                            
+                            <div className="max-h-80 overflow-y-auto space-y-2">
+                                {USERS.map(user => (
+                                    <button
+                                        key={user.initials}
+                                        onClick={() => handleLogin(user)}
+                                        className="w-full flex items-center gap-4 p-3 rounded-xl hover:bg-orange-50 transition-all border border-transparent hover:border-orange-200 group"
+                                    >
+                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white shadow-md transition-transform group-hover:scale-105 ${
+                                            user.role === 'admin' ? 'bg-gradient-to-br from-purple-500 to-indigo-600' :
+                                            user.role === 'lead' ? 'bg-gradient-to-br from-orange-500 to-amber-600' :
+                                            'bg-gradient-to-br from-blue-500 to-cyan-600'
+                                        }`}>
+                                            {user.initials}
+                                        </div>
+                                        <div className="text-left flex-1">
+                                            <div className="font-semibold text-gray-800">{user.name}</div>
+                                            <div className="text-sm text-gray-500">{user.title}</div>
+                                        </div>
+                                        {user.role === 'lead' && <span className="text-orange-500 text-xl">⭐</span>}
+                                        {user.role === 'admin' && <span className="text-purple-500 text-xl">👑</span>}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50">
+                    {/* Header */}
+                    <header className="bg-gradient-to-r from-orange-600 to-amber-600 text-white shadow-xl">
+                        <div className="container mx-auto px-6 py-4">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-14 h-14 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                        <span className="text-3xl">📋</span>
+                                    </div>
+                                    <div>
+                                        <h1 className="text-2xl font-bold">ACP - Assistant de Conception de Projet</h1>
+                                        <p className="text-orange-100 text-sm">Points Critiques de Verification - XNRGY Climate Systems</p>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center gap-6">
+                                    {/* Statut Vault */}
+                                    <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${vaultStatus === 'connected' ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
+                                        <div className={`w-3 h-3 rounded-full ${vaultStatus === 'connected' ? 'bg-green-400' : 'bg-red-400'} ${isSyncing ? 'pulse' : ''}`}></div>
+                                        <span className="text-sm font-medium">
+                                            {vaultStatus === 'connected' ? 'Vault Connecte' : 'Vault Deconnecte'}
+                                        </span>
+                                        {lastSync && <span className="text-xs text-orange-200">Sync: {lastSync}</span>}
+                                    </div>
+                                    
+                                    {/* Bouton Sync */}
+                                    <button 
+                                        onClick={syncWithVault}
+                                        disabled={isSyncing || vaultStatus !== 'connected'}
+                                        className={`px-4 py-2 rounded-lg font-medium transition-all btn-hover ${
+                                            isSyncing ? 'bg-gray-400 cursor-wait' : 
+                                            vaultStatus === 'connected' ? 'bg-white text-orange-600 hover:bg-orange-50' : 
+                                            'bg-gray-400 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        {isSyncing ? '🔄 Synchronisation...' : '🔄 Sync Vault'}
+                                    </button>
+                                    
+                                    {/* Utilisateur */}
+                                    <div className="flex items-center gap-3 bg-white/10 rounded-xl px-4 py-2">
+                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm ${
+                                            currentUser?.role === 'admin' ? 'bg-purple-500' :
+                                            currentUser?.role === 'lead' ? 'bg-orange-500' : 'bg-blue-500'
+                                        }`}>
+                                            {currentUser?.initials}
+                                        </div>
+                                        <div>
+                                            <div className="font-semibold text-sm">{currentUser?.name}</div>
+                                            <div className="text-xs text-orange-200">{currentUser?.title}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Barre d'informations projet */}
+                    <div className="bg-white border-b border-orange-100 shadow-sm">
+                        <div className="container mx-auto px-6 py-4">
+                            <div className="grid grid-cols-6 gap-4">
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Projet</label>
+                                    <input 
+                                        type="text" 
+                                        value={projectNumber}
+                                        onChange={(e) => setProjectNumber(e.target.value)}
+                                        placeholder="10516"
+                                        className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Module</label>
+                                    <select 
+                                        value={moduleNumber}
+                                        onChange={(e) => setModuleNumber(e.target.value)}
+                                        className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    >
+                                        {Array.from({length: 30}, (_, i) => `M${String(i + 1).padStart(2, '0')}`).map(m => (
+                                            <option key={m} value={m}>{m}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Responsable</label>
+                                    <select 
+                                        value={responsableProjet}
+                                        onChange={(e) => setResponsableProjet(e.target.value)}
+                                        className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    >
+                                        <option value="">-- Selectionner --</option>
+                                        {USERS.filter(u => u.role === 'lead' || u.role === 'admin').map(u => (
+                                            <option key={u.initials} value={u.initials}>{u.name} ({u.initials})</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Fait par</label>
+                                    <input 
+                                        type="text" 
+                                        value={faitPar}
+                                        readOnly
+                                        className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Date debut</label>
+                                    <input 
+                                        type="date" 
+                                        value={dateDebut}
+                                        onChange={(e) => setDateDebut(e.target.value)}
+                                        className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Date fin</label>
+                                    <input 
+                                        type="date" 
+                                        value={dateFin}
+                                        onChange={(e) => setDateFin(e.target.value)}
+                                        className="w-full mt-1 px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Barre de progression globale */}
+                    <div className="bg-white border-b border-orange-100">
+                        <div className="container mx-auto px-6 py-3">
+                            <div className="flex items-center gap-4">
+                                <span className="text-sm font-semibold text-gray-600">Progression globale:</span>
+                                <div className="flex-1 h-4 bg-gray-200 rounded-full overflow-hidden">
+                                    <div 
+                                        className={`h-full progress-bar ${progress === 100 ? 'bg-gradient-to-r from-green-500 to-emerald-500 glow-green' : 'bg-gradient-to-r from-orange-500 to-amber-500'}`}
+                                        style={{ width: `${progress}%` }}
+                                    ></div>
+                                </div>
+                                <span className={`text-lg font-bold ${progress === 100 ? 'text-green-600' : 'text-orange-600'}`}>{progress}%</span>
+                                {progress === 100 && <span className="text-2xl">🎉</span>}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Contenu principal - Etapes */}
+                    <main className="container mx-auto px-6 py-8">
+                        <div className="space-y-6">
+                            {ACP_STEPS.map((step) => {
+                                const stepProgress = getStepProgress(step);
+                                const isExpanded = expandedSteps.includes(step.id);
+                                const isComplete = stepProgress.percent === 100;
+                                
+                                return (
+                                    <div 
+                                        key={step.id} 
+                                        className={`bg-white rounded-2xl shadow-lg overflow-hidden border-2 transition-all ${
+                                            isComplete ? 'border-green-300' : 'border-gray-100 hover:border-orange-200'
+                                        }`}
+                                    >
+                                        {/* Header de l'etape */}
+                                        <div 
+                                            className={`p-5 cursor-pointer transition-colors ${
+                                                isComplete ? 'bg-gradient-to-r from-green-50 to-emerald-50' : 'hover:bg-orange-50'
+                                            }`}
+                                            onClick={() => toggleStep(step.id)}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl shadow-md ${
+                                                        isComplete ? 'bg-gradient-to-br from-green-500 to-emerald-600' :
+                                                        `bg-gradient-to-br from-${step.color}-500 to-${step.color}-600`
+                                                    }`}>
+                                                        {isComplete ? '✅' : step.icon}
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="text-lg font-bold text-gray-800">{step.title}</h3>
+                                                        <p className="text-sm text-gray-500">
+                                                            {stepProgress.validated}/{stepProgress.total} points valides
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex items-center gap-4">
+                                                    {/* Mini barre de progression */}
+                                                    <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                                        <div 
+                                                            className={`h-full progress-bar ${isComplete ? 'bg-green-500' : 'bg-orange-500'}`}
+                                                            style={{ width: `${stepProgress.percent}%` }}
+                                                        ></div>
+                                                    </div>
+                                                    <span className={`font-bold ${isComplete ? 'text-green-600' : 'text-orange-600'}`}>
+                                                        {stepProgress.percent}%
+                                                    </span>
+                                                    <span className={`transform transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
+                                                        ▼
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        {/* Contenu de l'etape (checkpoints) */}
+                                        {isExpanded && (
+                                            <div className="border-t border-gray-100 p-5 space-y-3 fade-in">
+                                                {step.checkpoints.map((checkpoint) => {
+                                                    const validation = stepValidations[checkpoint.id];
+                                                    const isValidated = validation?.validated;
+                                                    
+                                                    return (
+                                                        <div 
+                                                            key={checkpoint.id}
+                                                            className={`checkpoint-item p-4 rounded-xl ${isValidated ? 'validated' : 'bg-gray-50'}`}
+                                                        >
+                                                            <div className="flex items-start gap-4">
+                                                                <input 
+                                                                    type="checkbox"
+                                                                    checked={isValidated || false}
+                                                                    onChange={() => toggleCheckpoint(checkpoint.id)}
+                                                                    className="checkbox-custom mt-1"
+                                                                />
+                                                                <div className="flex-1">
+                                                                    <div className="font-semibold text-gray-800">{checkpoint.label}</div>
+                                                                    <div className="text-sm text-gray-500 mt-1">{checkpoint.description}</div>
+                                                                    {isValidated && (
+                                                                        <div className="text-xs text-green-600 mt-2 flex items-center gap-1">
+                                                                            <span>✓</span>
+                                                                            <span>Valide par {validation.validatedBy}</span>
+                                                                            <span className="text-gray-400">
+                                                                                le {new Date(validation.validatedAt).toLocaleDateString('fr-CA')}
+                                                                            </span>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="bg-gray-800 text-white py-4 mt-8">
+                        <div className="container mx-auto px-6 text-center">
+                            <p className="text-sm text-gray-400">
+                                ACP - Assistant de Conception de Projet v1.0 | Developpe par Mohammed Amine Elgalai - XNRGY Climate Systems ULC
+                            </p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        }
+
+        // Rendu de l'application
+        ReactDOM.render(<ACPApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>

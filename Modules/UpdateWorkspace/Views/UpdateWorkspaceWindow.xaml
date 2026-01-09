@@ -9,80 +9,86 @@
         Background="#1E1E1E">
 
     <Window.Resources>
-        <!-- Style bouton standard -->
-        <Style x:Key="ModernButton" TargetType="Button">
-            <Setter Property="Background" Value="#0078D4"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="20,10"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="4" 
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#1084D8"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Background" Value="#006CC1"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter Property="Background" Value="#555555"/>
-                                <Setter Property="Foreground" Value="#888888"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/XnrgyStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Style bouton standard -->
+            <Style x:Key="ModernButton" TargetType="Button">
+                <Setter Property="Background" Value="#0078D4"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="Padding" Value="20,10"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border Background="{TemplateBinding Background}" 
+                                    CornerRadius="4" 
+                                    Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#1084D8"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
+                                    <Setter Property="Background" Value="#006CC1"/>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Background" Value="#555555"/>
+                                    <Setter Property="Foreground" Value="#888888"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
-        <!-- Style bouton secondaire -->
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
-            <Setter Property="Background" Value="#3C3C3C"/>
-        </Style>
+            <!-- Style bouton secondaire -->
+            <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                <Setter Property="Background" Value="#3C3C3C"/>
+            </Style>
 
-        <!-- Style bouton annuler -->
-        <Style x:Key="CancelButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
-            <Setter Property="Background" Value="#C42B1C"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#D83B2B"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+            <!-- Style bouton annuler -->
+            <Style x:Key="CancelButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+                <Setter Property="Background" Value="#C42B1C"/>
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#D83B2B"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
 
-        <!-- Style etape checklist -->
-        <Style x:Key="ChecklistItem" TargetType="StackPanel">
-            <Setter Property="Orientation" Value="Horizontal"/>
-            <Setter Property="Margin" Value="0,4"/>
-        </Style>
+            <!-- Style etape checklist -->
+            <Style x:Key="ChecklistItem" TargetType="StackPanel">
+                <Setter Property="Orientation" Value="Horizontal"/>
+                <Setter Property="Margin" Value="0,4"/>
+            </Style>
 
-        <Style x:Key="ChecklistIcon" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="16"/>
-            <Setter Property="Width" Value="24"/>
-            <Setter Property="TextAlignment" Value="Center"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-        </Style>
+            <Style x:Key="ChecklistIcon" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="16"/>
+                <Setter Property="Width" Value="24"/>
+                <Setter Property="TextAlignment" Value="Center"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+            </Style>
 
-        <Style x:Key="ChecklistText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="#CCCCCC"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="8,0,0,0"/>
-        </Style>
+            <Style x:Key="ChecklistText" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Foreground" Value="#CCCCCC"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="8,0,0,0"/>
+            </Style>
 
-        <Style x:Key="ChecklistDetail" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11"/>
-            <Setter Property="Foreground" Value="#888888"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Margin" Value="8,0,0,0"/>
-        </Style>
+            <Style x:Key="ChecklistDetail" TargetType="TextBlock">
+                <Setter Property="FontSize" Value="11"/>
+                <Setter Property="Foreground" Value="#888888"/>
+                <Setter Property="VerticalAlignment" Value="Center"/>
+                <Setter Property="Margin" Value="8,0,0,0"/>
+            </Style>
+        </ResourceDictionary>
     </Window.Resources>
 
     <Grid Margin="20">
@@ -90,6 +96,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -283,5 +290,21 @@
                     Grid.Column="3"
                     Click="BtnCancel_Click"/>
         </Grid>
+
+        <!-- ========== COPYRIGHT BAR - Utilise styles centralises ========== -->
+        <Border Grid.Row="6" Style="{StaticResource CopyrightBarBorder}" Margin="-20,15,-20,-20">
+            <Grid>
+                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0} - {1} - By {2} - {3}">
+                            <Binding Source="{StaticResource CopyrightUpdateWS}"/>
+                            <Binding Source="{StaticResource AppVersion}"/>
+                            <Binding Source="{StaticResource AppAuthor}"/>
+                            <Binding Source="{StaticResource AppCompany}"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

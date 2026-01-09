@@ -463,6 +463,7 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="180"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <!-- HEADER -->
@@ -1166,6 +1167,23 @@
                         </Style>
                     </ListBox.ItemContainerStyle>
                 </ListBox>
+            </Grid>
+        </Border>
+
+        <!-- ========== COPYRIGHT BAR - Utilise styles centralises ========== -->
+        <Border Grid.Row="5" Style="{StaticResource CopyrightBarBorder}">
+            <Grid>
+                <TextBlock Text="Pret" Style="{StaticResource StatusTextStyle}"/>
+                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0} - {1} - By {2} - {3}">
+                            <Binding Source="{StaticResource CopyrightCreateModule}"/>
+                            <Binding Source="{StaticResource AppVersion}"/>
+                            <Binding Source="{StaticResource AppAuthor}"/>
+                            <Binding Source="{StaticResource AppCompany}"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
             </Grid>
         </Border>
     </Grid>

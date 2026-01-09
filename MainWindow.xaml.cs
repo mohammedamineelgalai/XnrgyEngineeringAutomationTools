@@ -1395,6 +1395,27 @@ namespace XnrgyEngineeringAutomationTools
             }
         }
 
+        private void OpenACP_Click(object sender, RoutedEventArgs e)
+        {
+            AddLog("Ouverture de ACP (Assistant de Conception de Projet)...", "START");
+            StatusText.Text = "Ouverture de ACP...";
+            try
+            {
+                var acpWindow = new XnrgyEngineeringAutomationTools.Modules.ACP.Views.ACPWindow(_isVaultConnected ? _vaultService : null);
+                acpWindow.Show();
+                AddLog("ACP ouvert avec synchronisation Vault", "SUCCESS");
+                AddLog("Synchronisation automatique: " + (_isVaultConnected ? "Active (4 min)" : "Desactivee - Vault non connecte"), 
+                    _isVaultConnected ? "SUCCESS" : "WARN");
+                StatusText.Text = "ACP ouvert";
+            }
+            catch (Exception ex)
+            {
+                AddLog("Erreur ouverture ACP: " + ex.Message, "CRITICAL");
+                Logger.LogException("OpenACP", ex, Logger.LogLevel.ERROR);
+                StatusText.Text = "Erreur";
+            }
+        }
+
         private async void UpdateWorkspace_Click(object sender, RoutedEventArgs e)
         {
             if (!CheckVaultConnection()) return;

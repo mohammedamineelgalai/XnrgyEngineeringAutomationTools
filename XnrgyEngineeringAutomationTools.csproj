@@ -263,6 +263,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <!-- ========== MODULE: ACP ========== -->
+    <Page Include="Modules\ACP\Views\ACPWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <!-- ========== MODULE: CHECKLIST HVAC ========== -->
     <Page Include="Modules\ChecklistHVAC\Views\ChecklistHVACWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -375,6 +380,20 @@
     <!-- ========== CODE-BEHIND: MODULE UPLOAD TEMPLATE ========== -->
     <Compile Include="Modules\UploadTemplate\Views\UploadTemplateWindow.xaml.cs">
       <DependentUpon>UploadTemplateWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <!-- ========== CODE-BEHIND: MODULE ACP ========== -->
+    <Compile Include="Modules\ACP\Views\ACPWindow.xaml.cs">
+      <DependentUpon>ACPWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\ACP\Services\ACPExcelService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\ACP\Services\ACPSyncService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\ACP\Models\ACPDataModel.cs">
       <SubType>Code</SubType>
     </Compile>
     <!-- ========== CODE-BEHIND: MODULE CHECKLIST HVAC ========== -->
@@ -523,6 +542,17 @@
     <Content Include="$(ProgramW6432)\Autodesk\Autodesk Vault 2026 SDK\bin\x64\AdskIdentitySDK.config">
       <Link>AdskIdentitySDK.config</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <!-- Checklist HVAC HTML -->
+    <Content Include="Modules\ChecklistHVAC\Resources\ChecklistHVAC.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Modules\ChecklistHVAC\Resources\ChecklistSyncBridge.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <!-- ACP HTML -->
+    <Content Include="Modules\ACP\Resources\ACP - Assistant de Conception de Projet.html">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

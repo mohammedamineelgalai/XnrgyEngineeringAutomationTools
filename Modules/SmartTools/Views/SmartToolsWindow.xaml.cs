@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using System.Windows.Media;
@@ -22,6 +23,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         private readonly InventorService _inventorService;
         private readonly VaultSdkService? _vaultService;
         private System.Windows.Threading.DispatcherTimer? _inventorStatusTimer;
+        private Stopwatch? _progressStopwatch;
+        private int _totalProgressItems;
         
         /// <summary>
         /// Callback pour propager les logs vers le journal principal de MainWindow
@@ -456,10 +459,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             Dispatcher.Invoke(() =>
             {
-                TxtProgressLabel.Text = $"⏳ {message}";
-                TxtProgressLabel.Visibility = Visibility.Visible;
-                PbProgress.Visibility = Visibility.Visible;
-                TxtProgressPercent.Visibility = Visibility.Visible;
+                _totalProgressItems = total;
+                _progressStopwatch = Stopwatch.StartNew();
+                
+                // Barre toujours visible - juste mettre a jour les valeurs
+                TxtProgressLabel.Text = message;
+                TxtProgressTimeElapsed.Text = "00:00";
+                TxtProgressTimeEstimated.Text = "--:--";
+                TxtProgressPercent.Text = "0%";
+                ProgressBarFill.Width = 0;
+                
                 UpdateProgress(message, current, total);
             });
         }
@@ -474,16 +483,40 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
                 if (total > 0)
                 {
                     int percentage = (int)((double)current / total * 100);
-                    PbProgress.Value = percentage;
+                    
+                    // Calculer la largeur de la barre (max 350px - padding)
+                    double maxWidth = 340;
+                    ProgressBarFill.Width = (percentage / 100.0) * maxWidth;
+                    
                     TxtProgressPercent.Text = $"{percentage}%";
                     if (!string.IsNullOrEmpty(message))
                     {
-                        TxtProgressLabel.Text = $"⏳ {message} ({current}/{total})";
+                        TxtProgressLabel.Text = $"{message} ({current}/{total})";
+                    }
+                    
+                    // Mettre a jour le temps ecoule et estime
+                    if (_progressStopwatch != null)
+                    {
+                        var elapsed = _progressStopwatch.Elapsed;
+                        TxtProgressTimeElapsed.Text = $"{elapsed.Minutes:00}:{elapsed.Seconds:00}";
+                        
+                        // Estimer le temps restant
+                        if (current > 0 && percentage < 100)
+                        {
+                            var timePerItem = elapsed.TotalSeconds / current;
+                            var remainingItems = total - current;
+                            var estimatedRemaining = TimeSpan.FromSeconds(timePerItem * remainingItems);
+                            TxtProgressTimeEstimated.Text = $"{estimatedRemaining.Minutes:00}:{estimatedRemaining.Seconds:00}";
+                        }
+                        else if (percentage >= 100)
+                        {
+                            TxtProgressTimeEstimated.Text = "00:00";
+                        }
                     }
                 }
                 else
                 {
-                    TxtProgressLabel.Text = $"⏳ {message}";
+                    TxtProgressLabel.Text = message;
                 }
             });
         }
@@ -495,10 +528,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             Dispatcher.Invoke(() =>
             {
-                TxtProgressLabel.Visibility = Visibility.Collapsed;
-                PbProgress.Visibility = Visibility.Collapsed;
-                TxtProgressPercent.Visibility = Visibility.Collapsed;
-                PbProgress.Value = 0;
+                _progressStopwatch?.Stop();
+                
+                // Afficher 100% pendant 1 seconde avant de masquer
+                ProgressBarFill.Width = 340;
+                TxtProgressPercent.Text = "100%";
+                TxtProgressTimeEstimated.Text = "00:00";
+                TxtProgressLabel.Text = "Termine";
+                
+                // Utiliser un timer pour reinitialiser apres 1.5s (barre reste visible)
+                var resetTimer = new System.Windows.Threading.DispatcherTimer();
+                resetTimer.Interval = TimeSpan.FromMilliseconds(1500);
+                resetTimer.Tick += (s, e) =>
+                {
+                    resetTimer.Stop();
+                    // Reinitialiser a l'etat "Pret" - barre reste visible
+                    ProgressBarFill.Width = 0;
+                    TxtProgressPercent.Text = "0%";
+                    TxtProgressTimeElapsed.Text = "00:00";
+                    TxtProgressTimeEstimated.Text = "--:--";
+                    TxtProgressLabel.Text = "Pret";
+                    TxtCurrentFile.Text = "";
+                };
+                resetTimer.Start();
             });
         }
 

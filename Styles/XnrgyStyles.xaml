@@ -115,6 +115,86 @@
     <BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
     <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
+         ║                    SECTION 1.5: VERSION ET COPYRIGHT (CENTRALISES)                         ║
+         ║                                                                                            ║
+         ║  MODIFIER ICI POUR METTRE A JOUR TOUTES LES FENETRES EN UNE SEULE FOIS                    ║
+         ║                                                                                            ║
+         ║  Variables:                                                                                ║
+         ║    - AppVersion: Version de l'application (ex: v1.0.0)                                    ║
+         ║    - AppAuthor: Auteur du logiciel                                                        ║
+         ║    - AppCompany: Nom de l'entreprise                                                      ║
+         ║                                                                                            ║
+         ║  Titres des Modules (pour reference):                                                     ║
+         ║    - CopyrightHub          → MainWindow (Hub principal)                                   ║
+         ║    - CopyrightSmartTools   → SmartToolsWindow                                             ║
+         ║    - CopyrightChecklist    → ChecklistHVACWindow                                          ║
+         ║    - CopyrightACP          → ACPWindow                                                    ║
+         ║    - CopyrightUploadModule → UploadModuleWindow                                           ║
+         ║    - CopyrightUploadTpl    → UploadTemplateWindow                                         ║
+         ║    - CopyrightCreateModule → CreateModuleWindow                                           ║
+         ║    - CopyrightPlaceEquip   → PlaceEquipmentWindow                                         ║
+         ║    - CopyrightUpdateWS     → UpdateWorkspaceWindow                                        ║
+         ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
+
+    <!-- ═══════════ VARIABLES GLOBALES - MODIFIER ICI UNIQUEMENT ═══════════ -->
+    <sys:String x:Key="AppVersion" xmlns:sys="clr-namespace:System;assembly=mscorlib">v1.0.0</sys:String>
+    <sys:String x:Key="AppAuthor" xmlns:sys="clr-namespace:System;assembly=mscorlib">Mohammed Amine Elgalai</sys:String>
+    <sys:String x:Key="AppCompany" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    
+    <!-- ═══════════ TEXTES COPYRIGHT PAR MODULE ═══════════ -->
+    <!-- Hub Principal (MainWindow) -->
+    <sys:String x:Key="CopyrightHub" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY Engineering Automation Tools</sys:String>
+    
+    <!-- Smart Tools -->
+    <sys:String x:Key="CopyrightSmartTools" xmlns:sys="clr-namespace:System;assembly=mscorlib">Smart Tools</sys:String>
+    
+    <!-- Checklist HVAC -->
+    <sys:String x:Key="CopyrightChecklist" xmlns:sys="clr-namespace:System;assembly=mscorlib">Checklist HVAC</sys:String>
+    
+    <!-- ACP - Assistant Conception Projet -->
+    <sys:String x:Key="CopyrightACP" xmlns:sys="clr-namespace:System;assembly=mscorlib">ACP</sys:String>
+    
+    <!-- Upload Module -->
+    <sys:String x:Key="CopyrightUploadModule" xmlns:sys="clr-namespace:System;assembly=mscorlib">Upload Module</sys:String>
+    
+    <!-- Upload Template -->
+    <sys:String x:Key="CopyrightUploadTpl" xmlns:sys="clr-namespace:System;assembly=mscorlib">Upload Template</sys:String>
+    
+    <!-- Creer Module -->
+    <sys:String x:Key="CopyrightCreateModule" xmlns:sys="clr-namespace:System;assembly=mscorlib">Creer Module</sys:String>
+    
+    <!-- Place Equipment -->
+    <sys:String x:Key="CopyrightPlaceEquip" xmlns:sys="clr-namespace:System;assembly=mscorlib">Place Equipment</sys:String>
+    
+    <!-- Update Workspace -->
+    <sys:String x:Key="CopyrightUpdateWS" xmlns:sys="clr-namespace:System;assembly=mscorlib">Update Workspace</sys:String>
+    
+    <!-- DXF Verifier -->
+    <sys:String x:Key="CopyrightDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">DXF Verifier</sys:String>
+
+    <!-- ═══════════ STYLE BARRE COPYRIGHT (Hauteur reduite ~22px) ═══════════ -->
+    <Style x:Key="CopyrightBarBorder" TargetType="Border">
+        <Setter Property="Background" Value="#252536"/>
+        <Setter Property="Padding" Value="10,5"/>
+    </Style>
+    
+    <!-- Style TextBlock Copyright - Blanc fonce gras -->
+    <Style x:Key="CopyrightTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="#CCCCCC"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    
+    <!-- Style TextBlock Status (Pret) - Blanc fonce gras -->
+    <Style x:Key="StatusTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="#CCCCCC"/>
+        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
          ║                           SECTION 2: STYLES BOUTONS                                        ║
          ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
 
@@ -1033,6 +1113,10 @@
             </Trigger>
         </Style.Triggers>
     </Style>
+    
+    <!-- Alias ModernListBox pour compatibilite -->
+    <Style x:Key="ModernListBox" TargetType="ListBox" BasedOn="{StaticResource XnrgyListBox}"/>
+    <Style x:Key="ModernListBoxItem" TargetType="ListBoxItem" BasedOn="{StaticResource XnrgyListBoxItem}"/>
 
     <!-- ╔═══════════════════════════════════════════════════════════════════════════════════════════╗
          ║                           SECTION 10: STYLES SPECIAUX                                      ║
