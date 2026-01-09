@@ -1,0 +1,410 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views.DXFVerifierWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="DXF-CSV vs PDF Verifier v1.2 - XNRGY Engineering Automation Tools - By Mohammed Amine Elgalai" 
+        Height="1000" Width="1450"
+        MinHeight="800" MinWidth="1200"
+        WindowStartupLocation="CenterOwner"
+        WindowState="Maximized"
+        Background="#1E1E2E"
+        Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <!-- Couleurs XNRGY -->
+        <SolidColorBrush x:Key="XnrgyBlue" Color="#0078D4"/>
+        <SolidColorBrush x:Key="XnrgyGreen" Color="#107C10"/>
+        <SolidColorBrush x:Key="XnrgyOrange" Color="#FF8C00"/>
+        <SolidColorBrush x:Key="XnrgyRed" Color="#E81123"/>
+        <SolidColorBrush x:Key="DarkBg" Color="#1E1E2E"/>
+        <SolidColorBrush x:Key="DarkBg2" Color="#252536"/>
+        <SolidColorBrush x:Key="DarkBg3" Color="#2D2D44"/>
+        <SolidColorBrush x:Key="BorderColor" Color="#4A7FBF"/>
+        <SolidColorBrush x:Key="TextLight" Color="#E0E0E0"/>
+        <SolidColorBrush x:Key="TextMuted" Color="#888888"/>
+
+        <!-- Style TextBox moderne -->
+        <Style x:Key="ModernTextBox" TargetType="TextBox">
+            <Setter Property="Background" Value="#2D2D44"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="2"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="BorderBrush" Value="#0078D4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style Label moderne -->
+        <Style x:Key="ModernLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,0,5"/>
+        </Style>
+
+        <!-- Style Bouton principal -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#0078D4"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="20,12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" 
+                                BorderBrush="#4A7FBF" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#1E90FF"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#00D4FF" BlurRadius="25" ShadowDepth="0" Opacity="0.8"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
+                                <Setter Property="Foreground" Value="#666"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style Bouton secondaire -->
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#2D2D44"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="5" 
+                                BorderBrush="#4A7FBF" BorderThickness="1" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#3D3D56"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#0078D4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style Bouton Vert (Verifier) -->
+        <Style x:Key="GreenButton" TargetType="Button">
+            <Setter Property="Background" Value="#107C10"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="25,15"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6" 
+                                BorderBrush="#20A020" BorderThickness="2" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#20A020"/>
+                                <Setter TargetName="border" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#00FF00" BlurRadius="25" ShadowDepth="0" Opacity="0.6"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#555"/>
+                                <Setter Property="Foreground" Value="#888"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style GroupBox moderne -->
+        <Style x:Key="ModernGroupBox" TargetType="GroupBox">
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Foreground" Value="#E0E0E0"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Margin" Value="0,0,0,15"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GroupBox">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" Grid.RowSpan="2" Background="#252536" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="8"/>
+                            <Border Grid.Row="0" Background="#2D2D44" CornerRadius="6,6,0,0" Margin="2,2,2,0" Padding="15,8">
+                                <ContentPresenter ContentSource="Header" RecognizesAccessKey="True"/>
+                            </Border>
+                            <ContentPresenter Grid.Row="1" Margin="{TemplateBinding Padding}"/>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style DataGrid moderne -->
+        <Style x:Key="ModernDataGrid" TargetType="DataGrid">
+            <Setter Property="Background" Value="#252536"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="#3D3D56"/>
+            <Setter Property="RowBackground" Value="#252536"/>
+            <Setter Property="AlternatingRowBackground" Value="#2D2D44"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+
+        <!-- Style ProgressBar -->
+        <Style x:Key="ModernProgressBar" TargetType="ProgressBar">
+            <Setter Property="Height" Value="25"/>
+            <Setter Property="Background" Value="#2D2D44"/>
+            <Setter Property="Foreground" Value="#0078D4"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="200"/>
+        </Grid.RowDefinitions>
+
+        <!-- SECTION 1: Detection Automatique et Configuration -->
+        <GroupBox Grid.Row="0" Header="📋 Detection Automatique de Projet et Configuration" Style="{StaticResource ModernGroupBox}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- Ligne 1 -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Numero de projet:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox x:Name="ProjectNumberTextBox" Grid.Row="0" Grid.Column="1" Style="{StaticResource ModernTextBox}" Margin="0,5"/>
+                
+                <Button x:Name="DetectPdfButton" Grid.Row="0" Grid.Column="2" Content="🔍 Detecter PDF" Style="{StaticResource PrimaryButton}" 
+                        Margin="15,5,5,5" Click="DetectPdfButton_Click"/>
+                
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="Chemin de base:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                <TextBox x:Name="BasePathTextBox" Grid.Row="0" Grid.Column="4" Style="{StaticResource ModernTextBox}" Width="400" Margin="0,5"
+                         Text="C:\Vault\Engineering\Projects"/>
+                
+                <Button x:Name="BrowsePathButton" Grid.Row="0" Grid.Column="5" Content="..." Style="{StaticResource SecondaryButton}" 
+                        Width="40" Margin="5" Click="BrowsePathButton_Click"/>
+
+                <!-- Ligne 2 -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Reference:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox x:Name="ReferenceTextBox" Grid.Row="1" Grid.Column="1" Style="{StaticResource ModernTextBox}" Margin="0,5"/>
+                
+                <Button x:Name="SelectProjectButton" Grid.Row="1" Grid.Column="2" Content="📁 Choisir Projet" Style="{StaticResource SecondaryButton}" 
+                        Margin="15,5,5,5" Click="SelectProjectButton_Click"/>
+
+                <!-- Ligne 3 -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Numero Module:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <TextBox x:Name="ModuleNumberTextBox" Grid.Row="2" Grid.Column="1" Style="{StaticResource ModernTextBox}" Margin="0,5"/>
+                
+                <Button x:Name="InfoButton" Grid.Row="2" Grid.Column="2" Content="ℹ️ Info" Style="{StaticResource SecondaryButton}" 
+                        Margin="15,5,5,5" Click="InfoButton_Click"/>
+
+                <!-- Bouton Verifier (grand, a droite) -->
+                <Button x:Name="VerifyButton" Grid.Row="0" Grid.RowSpan="3" Grid.Column="3" Grid.ColumnSpan="3" 
+                        Content="✅ Verifier le PDF" Style="{StaticResource GreenButton}" 
+                        HorizontalAlignment="Right" VerticalAlignment="Center" Margin="20,0,0,0"
+                        Click="VerifyButton_Click"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- SECTION 2: Informations Fichiers -->
+        <GroupBox Grid.Row="1" Header="📄 Informations sur les fichiers detectes" Style="{StaticResource ModernGroupBox}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="40"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- CSV -->
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Fichier CSV:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
+                <Border Grid.Row="0" Grid.Column="1" Background="#2D2D44" BorderBrush="#4A7FBF" BorderThickness="1" CornerRadius="4" Margin="5" Padding="10,5">
+                    <TextBlock x:Name="CsvPathLabel" Text="Non detecte" Foreground="#888" FontSize="11"/>
+                </Border>
+                <Button Grid.Row="0" Grid.Column="2" Content="..." Style="{StaticResource SecondaryButton}" Click="CsvBrowseButton_Click"/>
+
+                <!-- Excel -->
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="Fichier Excel:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
+                <Border Grid.Row="1" Grid.Column="1" Background="#2D2D44" BorderBrush="#4A7FBF" BorderThickness="1" CornerRadius="4" Margin="5" Padding="10,5">
+                    <TextBlock x:Name="ExcelPathLabel" Text="Non detecte" Foreground="#888" FontSize="11"/>
+                </Border>
+                <Button Grid.Row="1" Grid.Column="2" Content="..." Style="{StaticResource SecondaryButton}" Click="ExcelBrowseButton_Click"/>
+
+                <!-- PDF -->
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="Fichier PDF:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
+                <Border Grid.Row="2" Grid.Column="1" Background="#2D2D44" BorderBrush="#4A7FBF" BorderThickness="1" CornerRadius="4" Margin="5" Padding="10,5">
+                    <TextBlock x:Name="PdfPathLabel" Text="Non detecte" Foreground="#888" FontSize="11"/>
+                </Border>
+                <Button Grid.Row="2" Grid.Column="2" Content="..." Style="{StaticResource SecondaryButton}" Click="PdfBrowseButton_Click"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- SECTION 3: Progression et Statut -->
+        <Grid Grid.Row="2" Margin="0,0,0,15">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <ProgressBar x:Name="ProgressBar" Grid.Column="0" Style="{StaticResource ModernProgressBar}" Minimum="0" Maximum="100"/>
+            <Button x:Name="ViewLogButton" Grid.Column="1" Content="📋 Voir Log" Style="{StaticResource SecondaryButton}" 
+                    Margin="10,0,0,0" Click="ViewLogButton_Click"/>
+        </Grid>
+
+        <!-- Statut -->
+        <TextBlock x:Name="StatusLabel" Grid.Row="3" Text="Pret - DXF-CSV vs PDF Verifier v1.2 - XNRGY Climate Systems ULC" 
+                   Foreground="#E0E0E0" FontSize="13" Margin="0,0,0,10"/>
+
+        <!-- SECTION 4: Statistiques des Totaux -->
+        <GroupBox Grid.Row="4" Header="📊 Statistiques des Totaux" Style="{StaticResource ModernGroupBox}" VerticalAlignment="Top" Height="80">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Total Qty CSV -->
+                <TextBlock Grid.Column="0" Text="Total Qte pieces CSV/DXF:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                <Border Grid.Column="1" Background="#90EE90" CornerRadius="4" Padding="10,5">
+                    <TextBlock x:Name="TotalCsvQtyLabel" Text="0" Foreground="Black" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Total Tags CSV -->
+                <TextBlock Grid.Column="2" Text="Total Tags CSV/DXF:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                <Border Grid.Column="3" Background="#90EE90" CornerRadius="4" Padding="10,5">
+                    <TextBlock x:Name="TotalCsvTagsLabel" Text="0" Foreground="Black" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Total Qty PDF -->
+                <TextBlock Grid.Column="4" Text="Total Qte pieces PDF:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                <Border x:Name="TotalPdfQtyBorder" Grid.Column="5" Background="#D3D3D3" CornerRadius="4" Padding="10,5">
+                    <TextBlock x:Name="TotalPdfQtyLabel" Text="0" Foreground="Black" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Total Tags PDF -->
+                <TextBlock Grid.Column="6" Text="Total Tags PDF:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                <Border x:Name="TotalPdfTagsBorder" Grid.Column="7" Background="#D3D3D3" CornerRadius="4" Padding="10,5">
+                    <TextBlock x:Name="TotalPdfTagsLabel" Text="0" Foreground="Black" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </Border>
+
+                <!-- Total Pages PDF -->
+                <TextBlock Grid.Column="8" Text="Total Pages PDF:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                <Border Grid.Column="9" Background="#ADD8E6" CornerRadius="4" Padding="10,5">
+                    <TextBlock x:Name="TotalPdfPagesLabel" Text="0" Foreground="Black" FontWeight="Bold" HorizontalAlignment="Center"/>
+                </Border>
+            </Grid>
+        </GroupBox>
+
+        <!-- SECTION 5: Resultats DataGrid -->
+        <DataGrid x:Name="ResultDataGrid" Grid.Row="4" Style="{StaticResource ModernDataGrid}" 
+                  Margin="0,90,0,10" AutoGenerateColumns="False" IsReadOnly="True"
+                  CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Qte pieces CSV/DXF" Binding="{Binding Quantity}" Width="*"/>
+                <DataGridTextColumn Header="Tag CSV/DXF" Binding="{Binding Tag}" Width="2*"/>
+                <DataGridTextColumn Header="Materiau CSV/DXF" Binding="{Binding Material}" Width="*"/>
+                <DataGridTextColumn Header="Qte trouvee dans PDF" Binding="{Binding PdfQuantity}" Width="*"/>
+                <DataGridTextColumn Header="Resultat d'analyse PDF" Binding="{Binding Status}" Width="2*"/>
+            </DataGrid.Columns>
+            <DataGrid.ColumnHeaderStyle>
+                <Style TargetType="DataGridColumnHeader">
+                    <Setter Property="Background" Value="#1A1A2E"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Padding" Value="10,8"/>
+                    <Setter Property="BorderBrush" Value="#4A7FBF"/>
+                    <Setter Property="BorderThickness" Value="0,0,1,2"/>
+                </Style>
+            </DataGrid.ColumnHeaderStyle>
+        </DataGrid>
+
+        <!-- SECTION 6: Journal (Log) -->
+        <GroupBox Grid.Row="5" Header="📜 Journal des operations" Style="{StaticResource ModernGroupBox}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBox x:Name="LogTextBox" Background="#1A1A2E" Foreground="#00FF00" FontFamily="Consolas" FontSize="11"
+                         IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" AcceptsReturn="True"/>
+            </ScrollViewer>
+        </GroupBox>
+    </Grid>
+</Window>

@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Smart Tools - Outils d'automatisation Inventor v1.7 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Smart Tools - Outils Automatisation Inventor - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="900" Width="1400"
         MinHeight="700" MinWidth="1100"
         WindowStartupLocation="CenterOwner"
@@ -389,6 +389,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
@@ -404,8 +405,77 @@
                     </Grid>
                 </Border>
                 
+                <!-- Barre de progression -->
+                <Border Grid.Row="1" Background="#1a1a2e" Padding="12,8" BorderThickness="0,0,0,1" BorderBrush="#4A7FBF">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        
+                        <TextBlock x:Name="TxtProgressLabel" 
+                                   Grid.Column="0"
+                                   Text="⏳ Traitement en cours..." 
+                                   FontSize="12" 
+                                   Foreground="#0078D4"
+                                   FontWeight="SemiBold"
+                                   Margin="0,0,10,0"
+                                   VerticalAlignment="Center"
+                                   Visibility="Collapsed"/>
+                        
+                        <ProgressBar x:Name="PbProgress" 
+                                     Grid.Column="1"
+                                     Height="6"
+                                     Minimum="0"
+                                     Maximum="100"
+                                     Value="0"
+                                     Margin="0,0,10,0"
+                                     Visibility="Collapsed">
+                            <ProgressBar.Style>
+                                <Style TargetType="ProgressBar">
+                                    <Setter Property="Background" Value="#e0e0e0"/>
+                                    <Setter Property="BorderThickness" Value="0"/>
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="ProgressBar">
+                                                <Border Background="{TemplateBinding Background}" 
+                                                        CornerRadius="3"
+                                                        BorderThickness="0">
+                                                    <Grid>
+                                                        <Border x:Name="PART_Track" 
+                                                                Background="{TemplateBinding Background}" 
+                                                                CornerRadius="3"/>
+                                                        <Border x:Name="PART_Indicator" 
+                                                                Background="#0078D4" 
+                                                                CornerRadius="3"
+                                                                HorizontalAlignment="Left">
+                                                            <Border.Effect>
+                                                                <DropShadowEffect Color="#0078D4" BlurRadius="8" ShadowDepth="0" Opacity="0.6"/>
+                                                            </Border.Effect>
+                                                        </Border>
+                                                    </Grid>
+                                                </Border>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </ProgressBar.Style>
+                        </ProgressBar>
+                        
+                        <TextBlock x:Name="TxtProgressPercent" 
+                                   Grid.Column="2"
+                                   Text="0%" 
+                                   FontSize="11" 
+                                   Foreground="#0078D4"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Visibility="Collapsed"/>
+                    </Grid>
+                </Border>
+                
                 <!-- Contenu Journal avec couleurs -->
-                <RichTextBox x:Name="TxtLog" Grid.Row="1" Background="Transparent" 
+                <RichTextBox x:Name="TxtLog" Grid.Row="2" Background="Transparent" 
                              BorderThickness="0" IsReadOnly="True" 
                              FontFamily="Consolas" FontSize="14" Padding="10,5"
                              VerticalScrollBarVisibility="Auto"

@@ -30,7 +30,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
     public static class ExcelManagerService
     {
         // Événement pour le logging (sera connecté au journal de l'UI)
-        public static event Action<string, string>? OnLog;
+        public static event Action<string, string> OnLog;
 
         #region Lecture CSV
 

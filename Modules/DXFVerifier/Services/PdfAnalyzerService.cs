@@ -111,7 +111,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
         public static int LastAnalyzedPageCount => _lastAnalyzedPageCount;
 
         // Événement pour le logging (sera connecté au journal de l'UI)
-        public static event Action<string, string>? OnLog;
+        public static event Action<string, string> OnLog;
 
         #endregion
 
@@ -185,7 +185,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
         /// Version simple compatible avec MainForm
         /// AVEC stratégie de recherche CSV → PDF en deux étapes
         /// </summary>
-        public static Dictionary<string, int> ExtractTablesFromPdfSimple(string pdfPath, Dictionary<string, CsvRow>? csvReference = null)
+        public static Dictionary<string, int> ExtractTablesFromPdfSimple(string pdfPath, Dictionary<string, CsvRow> csvReference = null)
         {
             if (string.IsNullOrWhiteSpace(pdfPath))
             {

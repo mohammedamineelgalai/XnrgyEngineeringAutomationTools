@@ -199,10 +199,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                await _smartToolsService.ExecuteConstraintReportAsync((msg, level) => Log(msg, level));
+                ShowProgress("Analyse des contraintes...", 0, 100);
+                await _smartToolsService.ExecuteConstraintReportAsync(
+                    (msg, level) => Log(msg, level),
+                    (msg, current, total) => UpdateProgress(msg, current, total)
+                );
+                HideProgress();
             }
             catch (Exception ex)
             {
+                HideProgress();
                 Log($"Erreur lors de la génération du rapport: {ex.Message}", LogLevel.ERROR);
             }
         }
@@ -355,11 +361,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             try
             {
-                await _smartToolsService.ExecuteIPropertyCustomBatchAsync((msg, level) => Log(msg, level));
+                await _smartToolsService.ExecuteCustomPropertyBatchAsync((msg, level) => Log(msg, level));
             }
             catch (Exception ex)
             {
-                Log($"Erreur lors de la modification: {ex.Message}", LogLevel.ERROR);
+                Log($"Erreur lors de la gestion des propriétés personnalisées: {ex.Message}", LogLevel.ERROR);
             }
         }
 
@@ -441,6 +447,59 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         private void BtnClearLog_Click(object sender, RoutedEventArgs e)
         {
             TxtLog.Document.Blocks.Clear();
+        }
+
+        /// <summary>
+        /// Affiche la barre de progression avec un message et une valeur
+        /// </summary>
+        private void ShowProgress(string message, int current, int total)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                TxtProgressLabel.Text = $"⏳ {message}";
+                TxtProgressLabel.Visibility = Visibility.Visible;
+                PbProgress.Visibility = Visibility.Visible;
+                TxtProgressPercent.Visibility = Visibility.Visible;
+                UpdateProgress(message, current, total);
+            });
+        }
+
+        /// <summary>
+        /// Met à jour la barre de progression
+        /// </summary>
+        private void UpdateProgress(string message, int current, int total)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (total > 0)
+                {
+                    int percentage = (int)((double)current / total * 100);
+                    PbProgress.Value = percentage;
+                    TxtProgressPercent.Text = $"{percentage}%";
+                    if (!string.IsNullOrEmpty(message))
+                    {
+                        TxtProgressLabel.Text = $"⏳ {message} ({current}/{total})";
+                    }
+                }
+                else
+                {
+                    TxtProgressLabel.Text = $"⏳ {message}";
+                }
+            });
+        }
+
+        /// <summary>
+        /// Cache la barre de progression
+        /// </summary>
+        private void HideProgress()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                TxtProgressLabel.Visibility = Visibility.Collapsed;
+                PbProgress.Visibility = Visibility.Collapsed;
+                TxtProgressPercent.Visibility = Visibility.Collapsed;
+                PbProgress.Value = 0;
+            });
         }
 
         private enum LogLevel

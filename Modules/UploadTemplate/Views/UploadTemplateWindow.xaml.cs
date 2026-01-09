@@ -25,12 +25,22 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
     {
         private bool _isSelected = true;
         private string _status = "En attente";
+        private string _vaultPath = string.Empty;
 
         public string FileName { get; set; } = string.Empty;
         public string FileExtension { get; set; } = string.Empty;
         public string FileSizeFormatted { get; set; } = string.Empty;
         public string FullPath { get; set; } = string.Empty;
         public string RelativePath { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Chemin de destination dans Vault (ex: $/Engineering/Library/Template/SubFolder)
+        /// </summary>
+        public string VaultPath
+        {
+            get => _vaultPath;
+            set { _vaultPath = value; OnPropertyChanged(); }
+        }
 
         public bool IsSelected
         {
@@ -280,6 +290,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
             // Capturer les options AVANT le Task.Run (thread UI)
             bool excludeOldVersions = ChkExcludeOldVersions.IsChecked == true;
             bool excludeTempFiles = ChkExcludeTempFiles.IsChecked == true;
+            string baseVaultPath = TxtVaultPath.Text.Replace("-> ", "").TrimEnd('/');
 
             try
             {
@@ -305,6 +316,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
                         var fileInfo = new FileInfo(filePath);
                         var relativePath = filePath.Substring(localPath.Length).TrimStart('\\');
                         var relativeDir = Path.GetDirectoryName(relativePath) ?? "";
+                        
+                        // Calculer le chemin Vault de destination pour ce fichier
+                        string fileVaultPath = string.IsNullOrEmpty(relativeDir) 
+                            ? baseVaultPath 
+                            : $"{baseVaultPath}/{relativeDir.Replace("\\", "/")}";
 
                         fileItems.Add(new TemplateFileItem
                         {
@@ -313,6 +329,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
                             FileSizeFormatted = FormatFileSize(fileInfo.Length),
                             FullPath = filePath,
                             RelativePath = relativeDir,
+                            VaultPath = fileVaultPath,
                             IsSelected = true,
                             Status = "En attente"
                         });

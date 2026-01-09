@@ -599,9 +599,10 @@
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn Header="✅" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
                         <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileType}" Width="70" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileType}" Width="90" IsReadOnly="True"/>
                         <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="80" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📁 Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📁 Chemin local" Binding="{Binding FullPath}" Width="350" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="🗄️ Chemin Vault" Binding="{Binding VaultPath}" Width="*" IsReadOnly="True"/>
                         <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="150" IsReadOnly="True"/>
                     </DataGrid.Columns>
                 </DataGrid>

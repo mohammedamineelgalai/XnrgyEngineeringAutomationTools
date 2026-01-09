@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
+using Newtonsoft.Json;
 
 namespace XnrgyEngineeringAutomationTools.Services
 {
@@ -54,7 +54,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 byte[] decryptedData = ProtectedData.Unprotect(encryptedData, EntropyBytes, DataProtectionScope.CurrentUser);
                 string json = Encoding.UTF8.GetString(decryptedData);
 
-                var credentials = JsonSerializer.Deserialize<VaultCredentials>(json);
+                var credentials = JsonConvert.DeserializeObject<VaultCredentials>(json);
                 if (credentials != null)
                 {
                     Logger.Log($"[+] Credentials chargés (Serveur: {credentials.Server}, Vault: {credentials.VaultName})", Logger.LogLevel.DEBUG);
@@ -86,7 +86,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 credentials.LastSaved = DateTime.Now;
 
                 // Sérialiser et chiffrer
-                string json = JsonSerializer.Serialize(credentials, new JsonSerializerOptions { WriteIndented = true });
+                string json = JsonConvert.SerializeObject(credentials, Formatting.Indented);
                 byte[] data = Encoding.UTF8.GetBytes(json);
                 byte[] encryptedData = ProtectedData.Protect(data, EntropyBytes, DataProtectionScope.CurrentUser);
 

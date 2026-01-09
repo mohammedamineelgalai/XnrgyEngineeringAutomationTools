@@ -148,6 +148,26 @@
     <Reference Include="BouncyCastle.Crypto, Version=1.8.9.0, Culture=neutral, PublicKeyToken=0e99375e54769942, processorArchitecture=MSIL">
       <HintPath>packages\BouncyCastle.1.8.9\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
+    <!-- EPPlus for Excel file manipulation (DXF Verifier) -->
+    <Reference Include="EPPlus, Version=4.5.3.3, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>packages\EPPlus.4.5.3.3\lib\net40\EPPlus.dll</HintPath>
+    </Reference>
+    <!-- UglyToad.PdfPig for PDF text extraction (DXF Verifier) -->
+    <Reference Include="UglyToad.PdfPig">
+      <HintPath>packages\PdfPig.0.1.13\lib\net471\UglyToad.PdfPig.dll</HintPath>
+    </Reference>
+    <Reference Include="UglyToad.PdfPig.Core">
+      <HintPath>packages\PdfPig.0.1.13\lib\net471\UglyToad.PdfPig.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="UglyToad.PdfPig.Tokens">
+      <HintPath>packages\PdfPig.0.1.13\lib\net471\UglyToad.PdfPig.Tokens.dll</HintPath>
+    </Reference>
+    <Reference Include="UglyToad.PdfPig.Fonts">
+      <HintPath>packages\PdfPig.0.1.13\lib\net471\UglyToad.PdfPig.Fonts.dll</HintPath>
+    </Reference>
+    <Reference Include="UglyToad.PdfPig.Tokenization">
+      <HintPath>packages\PdfPig.0.1.13\lib\net471\UglyToad.PdfPig.Tokenization.dll</HintPath>
+    </Reference>
     <Reference Include="UIAutomationClient" />
     <Reference Include="UIAutomationTypes" />
     <Reference Include="PresentationCore" />
@@ -265,6 +285,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Modules\SmartTools\Views\ConstraintReportWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\SmartTools\Views\CustomPropertyBatchWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Modules\SmartTools\Views\ProgressWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -278,6 +306,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <!-- ========== MODULE: DXF VERIFIER (DISABLED - Missing NuGet packages) ========== -->
+    <!-- <Page Include="Modules\DXFVerifier\Views\DXFVerifierWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page> -->
     <!-- ========== STYLES ========== -->
     <Page Include="Styles\XnrgyStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -366,6 +399,14 @@
       <DependentUpon>SmartProgressWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Modules\SmartTools\Views\ConstraintReportWindow.xaml.cs">
+      <DependentUpon>ConstraintReportWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\SmartTools\Views\CustomPropertyBatchWindow.xaml.cs">
+      <DependentUpon>CustomPropertyBatchWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Modules\SmartTools\Views\ProgressWindow.xaml.cs">
       <DependentUpon>ProgressWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -380,6 +421,14 @@
       <DependentUpon>UpdateWorkspaceWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <!-- ========== CODE-BEHIND: MODULE DXF VERIFIER (DISABLED - Missing NuGet packages) ========== -->
+    <!-- <Compile Include="Modules\DXFVerifier\Views\DXFVerifierWindow.xaml.cs">
+      <DependentUpon>DXFVerifierWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\DXFVerifier\Services\PdfAnalyzerService.cs" />
+    <Compile Include="Modules\DXFVerifier\Services\ExcelManagerService.cs" />
+    <Compile Include="Modules\DXFVerifier\Services\PdfFormFillerService.cs" /> -->
     <!-- ========== CORE CODE ========== -->
     <Compile Include="ViewModels\*.cs" />
     <Compile Include="Models\*.cs" />

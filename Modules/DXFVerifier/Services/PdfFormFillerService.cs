@@ -34,7 +34,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
         };
 
         // Événement pour le logging (sera connecté au journal de l'UI)
-        public static event Action<string, string>? OnLog;
+        public static event Action<string, string> OnLog;
 
         /// <summary>
         /// Remplit les champs de quantités dans le PDF 02-Machines.pdf

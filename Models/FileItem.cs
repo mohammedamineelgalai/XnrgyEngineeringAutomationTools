@@ -11,6 +11,8 @@ public class FileItem : INotifyPropertyChanged
 
 	private string _status = "En attente";
 
+	private string _vaultPath = "";
+
 	public string FileName { get; set; }
 
 	public string FileType { get; set; }
@@ -20,6 +22,19 @@ public class FileItem : INotifyPropertyChanged
 	public string FullPath { get; set; }
 
 	public string FileExtension { get; set; }
+
+	public string VaultPath
+	{
+		get
+		{
+			return _vaultPath;
+		}
+		set
+		{
+			_vaultPath = value;
+			OnPropertyChanged("VaultPath");
+		}
+	}
 
 	public bool IsSelected
 	{

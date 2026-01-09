@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Net;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using Inventor; // Pour accès typé à ComponentOccurrence.DegreesOfFreedom
 using XnrgyEngineeringAutomationTools.Services;
 using XnrgyEngineeringAutomationTools.Modules.SmartTools.Views;
 using IProgressWindow = XnrgyEngineeringAutomationTools.Modules.SmartTools.Views.IProgressWindow;
@@ -1704,16 +1707,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         #region ConstraintReport - Rapport de contraintes d'assemblage
 
         /// <summary>
-        /// Génère un rapport de contraintes d'assemblage
-        /// Code converti depuis AssemblyConstraintStatusReport.vb
+        /// Génère un rapport de contraintes d'assemblage avec fenêtre WPF moderne
+        /// Code converti depuis ConstraintReport.vb de l'addin iLogic
+        /// Analyse chaque composant pour déterminer son état de contrainte
         /// </summary>
-        public async Task ExecuteConstraintReportAsync(Action<string, string>? logCallback = null)
+        public async Task ExecuteConstraintReportAsync(Action<string, string>? logCallback = null, Action<string, int, int>? progressCallback = null)
         {
             if (logCallback != null)
                 SetLogCallback(logCallback);
 
-            await Task.Run(() =>
-            {
                 try
                 {
                     dynamic inventorApp = GetInventorApplication();
@@ -1722,121 +1724,474 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     if (doc == null)
                     {
                         Log("Aucun document actif n'est ouvert.", "ERROR");
+                    System.Windows.MessageBox.Show("⚠️ Aucun document actif n'est ouvert.", "Erreur", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
-                    int docType = doc.DocumentType;
-                    const int kAssemblyDocumentObject = 12290;
+                // Vérifier le type de document via l'extension
+                string fullFileName = doc.FullFileName;
+                string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
 
-                    if (docType != kAssemblyDocumentObject)
+                if (extension != ".iam")
                     {
                         Log("Ce rapport fonctionne uniquement sur des assemblages (.iam)", "WARNING");
+                    System.Windows.MessageBox.Show("⚠️ Le document actif n'est pas un assemblage (.iam).", "Erreur", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
                         return;
                     }
 
                     Log("Analyse des contraintes d'assemblage...", "INFO");
+                var startTime = DateTime.Now;
 
                     dynamic asmDef = doc.ComponentDefinition;
+                dynamic occurrences = asmDef.Occurrences;
                     dynamic constraints = asmDef.Constraints;
                     
-                    var constraintList = new System.Collections.Generic.List<Views.ConstraintInfo>();
-                    int totalCount = 0;
-                    int healthyCount = 0;
-                    int suppressedCount = 0;
-                    int failedCount = 0;
-
-                    foreach (dynamic constraint in constraints)
+                // Compter le nombre total d'occurrences pour la progression
+                int totalOccurrences = 0;
+                try
+                {
+                    totalOccurrences = occurrences.Count;
+                }
+                catch
+                {
+                    // Si Count n'est pas disponible, compter manuellement
+                    foreach (dynamic _ in occurrences)
                     {
-                        try
+                        totalOccurrences++;
+                    }
+                }
+                
+                var componentList = new System.Collections.Generic.List<Views.ComponentConstraintInfo>();
+                int groundedCount = 0;
+                int fullyConstrainedCount = 0;
+                int underConstrainedCount = 0;
+                int currentIndex = 0;
+
+                foreach (dynamic occ in occurrences)
+                {
+                    currentIndex++;
+                    try
+                    {
+                        string occName = occ.Name ?? "Inconnu";
+                        progressCallback?.Invoke($"Analyse de {occName}...", currentIndex, totalOccurrences);
+                        
+                        var componentInfo = AnalyzeComponentConstraints(occ, constraints);
+                        componentList.Add(componentInfo);
+
+                        switch (componentInfo.Status)
                         {
-                            totalCount++;
-                            var info = new Views.ConstraintInfo();
-                            
-                            // Nom du type de contrainte
+                            case Views.ConstraintStatus.Grounded:
+                                groundedCount++;
+                                break;
+                            case Views.ConstraintStatus.FullyConstrained:
+                                fullyConstrainedCount++;
+                                break;
+                            default:
+                                underConstrainedCount++;
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"Erreur analyse composant: {ex.Message}", "WARNING");
+                        componentList.Add(new Views.ComponentConstraintInfo
+                        {
+                            Name = "Erreur",
+                            Status = Views.ConstraintStatus.UnderConstrained,
+                            StatusText = "Erreur d'analyse",
+                            AnalysisMethod = "Échec"
+                        });
+                        underConstrainedCount++;
+                    }
+                }
+
+                var endTime = DateTime.Now;
+                Log($"Analyse terminée en {(endTime - startTime).TotalSeconds:F2}s - {componentList.Count} composants", "INFO");
+                Log($"Ancrés: {groundedCount}, Contraints: {fullyConstrainedCount}, Partiels: {underConstrainedCount}", "INFO");
+
+                // Afficher la fenêtre WPF
+                string assemblyName = System.IO.Path.GetFileName(fullFileName);
+                
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    var window = new Views.ConstraintReportWindow();
+                    window.SetDocumentInfo(assemblyName, componentList.Count, DateTime.Now);
+                    window.SetStatistics(groundedCount, fullyConstrainedCount, underConstrainedCount);
+                    window.SetComponents(componentList);
+                    window.Show();
+                });
+
+                Log("Rapport de contraintes WPF affiché avec succès", "SUCCESS");
+            }
+            catch (Exception ex)
+            {
+                Log($"Erreur lors de la génération du rapport: {ex.Message}", "ERROR");
+                System.Windows.MessageBox.Show($"❌ Erreur: {ex.Message}", "Erreur", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Analyse les contraintes d'un composant en utilisant l'API GetDegreesOfFreedom
+        /// Cette méthode retourne le nombre exact de DoF en translation et rotation
+        /// Converti depuis AnalyzeComponent() de ConstraintReport.vb
+        /// </summary>
+        private Views.ComponentConstraintInfo AnalyzeComponentConstraints(dynamic occ, dynamic constraints)
+        {
+            var info = new Views.ComponentConstraintInfo();
+            string occName = "";
+            
+            try
+            {
+                occName = occ.Name;
+                info.Name = occName;
+                
+                // Convertir dynamic en ComponentOccurrence typé pour accéder à DegreesOfFreedom
+                ComponentOccurrence? typedOcc = null;
+                try
+                {
+                    typedOcc = occ as ComponentOccurrence;
+                    if (typedOcc == null && occ != null)
+                    {
+                        // Essayer un cast direct via Marshal
+                        typedOcc = Marshal.GetObjectForIUnknown(Marshal.GetIUnknownForObject(occ)) as ComponentOccurrence;
+                    }
+                            }
+                catch (Exception ex)
+                {
+                    Log($"[ConstraintReport] Erreur conversion ComponentOccurrence pour {occName}: {ex.Message}", "DEBUG");
+                }
+                
+                // Déterminer le type de composant via l'extension du fichier de définition
+                try
+                {
+                    // Méthode 1: Via ReferencedFileDescriptor
                             try
                             {
-                                int constraintType = constraint.Type;
-                                info.ConstraintType = GetConstraintTypeName(constraintType);
+                        dynamic refFileDesc = occ.ReferencedFileDescriptor;
+                        if (refFileDesc != null)
+                        {
+                            string fullPath = refFileDesc.FullFileName;
+                            string ext = System.IO.Path.GetExtension(fullPath).ToLowerInvariant();
+                            
+                            if (ext == ".ipt")
+                                info.ComponentType = "🔧 Pièce";
+                            else if (ext == ".iam")
+                                info.ComponentType = "🏗️ Sous-assemblage";
+                            else
+                                info.ComponentType = "❓ Autre";
+                                }
+                    }
+                    catch
+                                {
+                        // Méthode 2: Via Definition.Document
+                                    try
+                                    {
+                            dynamic definition = occ.Definition;
+                            if (definition != null)
+                            {
+                                dynamic document = definition.Document;
+                                if (document != null)
+                                {
+                                    string fullPath = document.FullFileName;
+                                    string ext = System.IO.Path.GetExtension(fullPath).ToLowerInvariant();
+                                    
+                                    if (ext == ".ipt")
+                                        info.ComponentType = "🔧 Pièce";
+                                    else if (ext == ".iam")
+                                        info.ComponentType = "🏗️ Sous-assemblage";
+                                        else
+                                        info.ComponentType = "❓ Autre";
+                                }
+                            }
+                                    }
+                                    catch
+                                    {
+                            info.ComponentType = "❓ Indéterminé";
+                                    }
+                                }
                             }
                             catch
                             {
-                                info.ConstraintType = "Inconnu";
-                            }
+                    info.ComponentType = "❓ Indéterminé";
+                }
 
-                            // Composants impliqués
+                // Étape 1 : Vérification si ancré (Grounded)
+                try
+                {
+                    bool isGrounded = occ.Grounded;
+                    if (isGrounded)
+                    {
+                        info.Status = Views.ConstraintStatus.Grounded;
+                        info.StatusText = "Composant ancré";
+                        info.AnalysisMethod = "⚓ Grounded = True";
+                        return info;
+                    }
+                        }
+                        catch (Exception ex)
+                        {
+                    Log($"[ConstraintReport] Erreur Grounded pour {occName}: {ex.Message}", "DEBUG");
+                        }
+
+                // Étape 2 : Utiliser GetDegreesOfFreedom - LA MÉTHODE OFFICIELLE DE L'API INVENTOR
+                // Cette méthode retourne les DoF en translation et rotation séparément
+                bool dofSuccess = false;
+                int totalDof = -1;
+                
+                // Méthode 1: Utiliser le type typé ComponentOccurrence pour accéder directement à GetDegreesOfFreedom
+                if (typedOcc != null)
+                {
+                    try
+                    {
+                        int transDof = 0;
+                        int rotDof = 0;
+                        ObjectsEnumerator transVectors = null;
+                        ObjectsEnumerator rotVectors = null;
+                        Inventor.Point dofCenter = null;
+                        
+                        // Appel direct à l'API typée
+                        typedOcc.GetDegreesOfFreedom(out transDof, out transVectors, out rotDof, out rotVectors, out dofCenter);
+                        
+                        totalDof = transDof + rotDof;
+                        info.DegreesOfFreedom = totalDof;
+                        dofSuccess = true;
+                        
+                        Log($"[ConstraintReport] {occName} - GetDegreesOfFreedom (API typée): Trans={transDof}, Rot={rotDof}, Total={totalDof}", "INFO");
+                        
+                        if (totalDof == 0)
+                        {
+                            info.Status = Views.ConstraintStatus.FullyConstrained;
+                            info.StatusText = "Entièrement contraint";
+                            info.AnalysisMethod = "🎯 DoF = 0 (T:0 R:0)";
+                            return info;
+                        }
+                        else
+                        {
+                            info.Status = Views.ConstraintStatus.UnderConstrained;
+                            info.StatusText = "Partiellement contraint";
+                            info.AnalysisMethod = $"🔢 DoF = {totalDof} (T:{transDof} R:{rotDof})";
+                            return info;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"[ConstraintReport] Erreur GetDegreesOfFreedom (API typée) pour {occName}: {ex.Message}", "DEBUG");
+                    }
+                }
+                
+                // Méthode 2: Essayer GetDegreesOfFreedom via InvokeMember avec paramètres out (fallback)
+                if (!dofSuccess)
+                {
+                    try
+                    {
+                        Type occType = occ.GetType();
+                        
+                        // Préparer les paramètres pour GetDegreesOfFreedom(out int transDof, out ObjectsEnumerator transVectors, 
+                        //                                                  out int rotDof, out ObjectsEnumerator rotVectors, out Point dofCenter)
+                        object[] parameters = new object[5];
+                        System.Reflection.ParameterModifier[] modifiers = new System.Reflection.ParameterModifier[1];
+                        modifiers[0] = new System.Reflection.ParameterModifier(5);
+                        modifiers[0][0] = true; // out
+                        modifiers[0][1] = true; // out
+                        modifiers[0][2] = true; // out
+                        modifiers[0][3] = true; // out
+                        modifiers[0][4] = true; // out
+                        
+                        object result = occType.InvokeMember("GetDegreesOfFreedom",
+                            System.Reflection.BindingFlags.InvokeMethod | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance,
+                            null, occ, parameters, modifiers, null, null);
+                        
+                        int transDof = Convert.ToInt32(parameters[0]);
+                        int rotDof = Convert.ToInt32(parameters[2]);
+                        totalDof = transDof + rotDof;
+                        info.DegreesOfFreedom = totalDof;
+                        dofSuccess = true;
+                        
+                        Log($"[ConstraintReport] {occName} - GetDegreesOfFreedom (InvokeMember): Trans={transDof}, Rot={rotDof}, Total={totalDof}", "INFO");
+                        
+                        if (totalDof == 0)
+                        {
+                            info.Status = Views.ConstraintStatus.FullyConstrained;
+                            info.StatusText = "Entièrement contraint";
+                            info.AnalysisMethod = "🎯 DoF = 0 (T:0 R:0)";
+                            return info;
+                        }
+                        else
+                        {
+                            info.Status = Views.ConstraintStatus.UnderConstrained;
+                            info.StatusText = "Partiellement contraint";
+                            info.AnalysisMethod = $"🔢 DoF = {totalDof} (T:{transDof} R:{rotDof})";
+                            return info;
+                        }
+                }
+                catch (Exception ex)
+                {
+                        Log($"[ConstraintReport] Erreur GetDegreesOfFreedom (InvokeMember) pour {occName}: {ex.Message}", "DEBUG");
+                    }
+                }
+
+                // Étape 4 : Analyse des contraintes critiques (fallback si DoF échoue)
+                int activeConstraints = 0;
+                int criticalConstraints = 0;
+                int suppressedConstraints = 0;
+
+                foreach (dynamic constraint in constraints)
+                {
+                    try
+                    {
+                        bool involvesOcc = false;
+                        
+                        // Méthode 1: Vérifier via OccurrenceOne/OccurrenceTwo
+                        try
+                        {
+                            dynamic occOne = constraint.OccurrenceOne;
+                            dynamic occTwo = constraint.OccurrenceTwo;
+                            
+                            string nameOne = "";
+                            string nameTwo = "";
+                            
+                            try { if (occOne != null) nameOne = occOne.Name; } catch { }
+                            try { if (occTwo != null) nameTwo = occTwo.Name; } catch { }
+                            
+                            if (!string.IsNullOrEmpty(nameOne) && nameOne == occName)
+                                involvesOcc = true;
+                            else if (!string.IsNullOrEmpty(nameTwo) && nameTwo == occName)
+                                involvesOcc = true;
+                        }
+                        catch { }
+
+                        // Méthode 2: Vérifier via EntityOne/EntityTwo.ContainingOccurrence
+                        if (!involvesOcc)
+                        {
                             try
                             {
                                 dynamic entityOne = constraint.EntityOne;
                                 dynamic entityTwo = constraint.EntityTwo;
                                 
-                                info.Component1 = GetComponentNameFromEntity(entityOne);
-                                info.Component2 = GetComponentNameFromEntity(entityTwo);
+                                try
+                                {
+                                    if (entityOne != null)
+                                    {
+                                        dynamic containingOcc = entityOne.ContainingOccurrence;
+                                        if (containingOcc != null && containingOcc.Name == occName)
+                                            involvesOcc = true;
+                                    }
+                                }
+                                catch { }
+                                
+                                if (!involvesOcc)
+                                {
+                                    try
+                                    {
+                                        if (entityTwo != null)
+                                        {
+                                            dynamic containingOcc = entityTwo.ContainingOccurrence;
+                                            if (containingOcc != null && containingOcc.Name == occName)
+                                                involvesOcc = true;
+                                        }
+                                    }
+                                    catch { }
+                                }
                             }
-                            catch
-                            {
-                                info.Component1 = "[Composant 1]";
-                                info.Component2 = "[Composant 2]";
-                            }
+                            catch { }
+                        }
 
-                            // Statut
+                        if (involvesOcc)
+                        {
                             try
                             {
-                                info.IsSuppressed = constraint.Suppressed;
-                                if (info.IsSuppressed)
+                                bool isSuppressed = constraint.Suppressed;
+                                if (isSuppressed)
                                 {
-                                    suppressedCount++;
+                                    suppressedConstraints++;
                                 }
                                 else
                                 {
-                                    // Vérifier la santé de la contrainte
+                                    activeConstraints++;
+                                    
+                                    // Vérifier si c'est une contrainte critique
                                     try
                                     {
-                                        int healthStatus = constraint.HealthStatus;
-                                        // 0 = Healthy, autres = problème
-                                        info.IsHealthy = (healthStatus == 0);
-                                        if (info.IsHealthy)
-                                            healthyCount++;
-                                        else
-                                            failedCount++;
+                                        int constraintType = constraint.Type;
+                                        // Types critiques: Mate(59137), Angle(59138), Insert(59140), Flush(59141)
+                                        if (constraintType == 59137 || // Mate
+                                            constraintType == 59138 || // Angle
+                                            constraintType == 59140 || // Insert
+                                            constraintType == 59141)   // Flush
+                                        {
+                                            criticalConstraints++;
+                                        }
                                     }
-                                    catch
-                                    {
-                                        info.IsHealthy = true;
-                                        healthyCount++;
-                                    }
+                                    catch { }
                                 }
                             }
-                            catch
-                            {
-                                info.IsSuppressed = false;
-                                info.IsHealthy = true;
-                                healthyCount++;
-                            }
-
-                            constraintList.Add(info);
-                        }
-                        catch (Exception ex)
-                        {
-                            Log($"Erreur lecture contrainte: {ex.Message}", "WARNING");
+                            catch { }
                         }
                     }
-
-                    Log($"Contraintes analysées: {totalCount} (OK: {healthyCount}, Supprimées: {suppressedCount}, Erreurs: {failedCount})", "INFO");
-
-                    // Générer et afficher le rapport HTML
-                    string assemblyName = System.IO.Path.GetFileName(doc.FullFileName);
-                    string htmlContent = Views.HtmlPopupWindow.GenerateConstraintReportHtml(assemblyName, constraintList);
-                    
-                    // Afficher via le callback
-                    ShowHtmlPopup($"Rapport de contraintes - {assemblyName}", htmlContent);
-                    
-                    Log("Rapport de contraintes généré avec succès", "SUCCESS");
+                    catch { }
                 }
-                catch (Exception ex)
+
+                info.ActiveConstraints = activeConstraints;
+                info.CriticalConstraints = criticalConstraints;
+
+                Log($"[ConstraintReport] {occName} - Active: {activeConstraints}, Critical: {criticalConstraints}, Suppressed: {suppressedConstraints} (DoF methods failed)", "DEBUG");
+
+                // ═══════════════════════════════════════════════════════════════════════
+                // HEURISTIQUE BASÉE SUR LES CONTRAINTES (puisque DoF n'est pas accessible via COM)
+                // En pratique, un composant avec ≥3 contraintes est généralement entièrement contraint
+                // C'est cohérent avec l'addin original qui utilise la même règle en fallback
+                // ═══════════════════════════════════════════════════════════════════════
+
+                // Cas 1: Contraintes supprimées avec peu de contraintes actives
+                if (suppressedConstraints > 0 && activeConstraints < 2)
                 {
-                    Log($"Erreur lors de la génération du rapport: {ex.Message}", "ERROR");
+                    info.Status = Views.ConstraintStatus.UnderConstrained;
+                    info.StatusText = "Contraintes supprimées";
+                    info.AnalysisMethod = $"🚫 {suppressedConstraints} supprimées";
+                    return info;
                 }
-            });
+
+                // Cas 2: Aucune contrainte = Non contraint
+                if (activeConstraints == 0)
+                {
+                    info.Status = Views.ConstraintStatus.UnderConstrained;
+                    info.StatusText = "Non contraint";
+                    info.AnalysisMethod = "⚠️ 0 contrainte";
+                    return info;
+                }
+
+                // Cas 3: ≥3 contraintes = Entièrement contraint (règle standard HVAC)
+                // Dans les assemblages HVAC typiques, 3 contraintes suffisent (X, Y, Z ou équivalent)
+                if (activeConstraints >= 3)
+                {
+                    info.Status = Views.ConstraintStatus.FullyConstrained;
+                    info.StatusText = "Entièrement contraint";
+                    info.AnalysisMethod = $"✅ {activeConstraints} contraintes";
+                    return info;
+                }
+
+                // Cas 4: 2 contraintes = Partiellement contraint (peut encore bouger)
+                if (activeConstraints == 2)
+                {
+                    info.Status = Views.ConstraintStatus.UnderConstrained;
+                    info.StatusText = "Partiellement contraint";
+                    info.AnalysisMethod = $"⚠️ {activeConstraints} contraintes";
+                    return info;
+                }
+
+                // Cas 5: 1 contrainte = Sous-contraint
+                info.Status = Views.ConstraintStatus.UnderConstrained;
+                info.StatusText = "Sous-contraint";
+                info.AnalysisMethod = $"⚠️ {activeConstraints} contrainte";
+            }
+            catch (Exception ex)
+            {
+                info.Status = Views.ConstraintStatus.UnderConstrained;
+                info.StatusText = "Erreur";
+                info.AnalysisMethod = $"❌ {ex.Message.Substring(0, Math.Min(20, ex.Message.Length))}";
+                Log($"[ConstraintReport] Erreur analyse {occName}: {ex.Message}", "ERROR");
+                }
+
+            return info;
         }
 
         private string GetConstraintTypeName(int constraintType)
@@ -1897,27 +2252,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 SetLogCallback(logCallback);
 
             // Exécuter sur le thread principal (pas de Task.Run) car COM Inventor nécessite le thread STA
-            try
-            {
+                try
+                {
                 Log("Démarrage iProperties Summary...", "INFO");
                 
-                dynamic inventorApp = GetInventorApplication();
-                dynamic doc = inventorApp.ActiveDocument;
+                    dynamic inventorApp = GetInventorApplication();
+                    dynamic doc = inventorApp.ActiveDocument;
 
-                if (doc == null)
-                {
-                    Log("Aucun document actif n'est ouvert.", "ERROR");
+                    if (doc == null)
+                    {
+                        Log("Aucun document actif n'est ouvert.", "ERROR");
                     MessageBox.Show("Aucun document actif n'est ouvert.", "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                        return;
+                    }
 
-                // Vérifier s'il y a une sélection
-                dynamic selectSet = doc.SelectSet;
+                    // Vérifier s'il y a une sélection
+                    dynamic selectSet = doc.SelectSet;
                 dynamic compDoc = null;
                 string componentName = "";
 
                 if (selectSet.Count > 0)
-                {
+                    {
                     // Obtenir l'objet sélectionné
                     dynamic selObj = selectSet[1];
 
@@ -1943,40 +2298,40 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     compDoc = doc;
                     componentName = System.IO.Path.GetFileName(doc.FullFileName);
                     Log($"Document actif utilisé (pas de sélection): {componentName}", "INFO");
-                }
+                    }
 
-                if (compDoc == null)
-                {
-                    Log("Impossible d'accéder au document du composant.", "ERROR");
-                    return;
-                }
+                    if (compDoc == null)
+                    {
+                        Log("Impossible d'accéder au document du composant.", "ERROR");
+                        return;
+                    }
 
                 Log("Lecture de TOUTES les propriétés...", "INFO");
 
                 // Récupérer TOUTES les propriétés (même vides)
-                var properties = new System.Collections.Generic.Dictionary<string, string>();
+                    var properties = new System.Collections.Generic.Dictionary<string, string>();
 
-                try
-                {
-                    dynamic propSets = compDoc.PropertySets;
-                    
-                    // === 1. CUSTOM PROPERTIES (Propriétés personnalisées) - EN PREMIER ===
                     try
                     {
-                        dynamic customProps = propSets["Inventor User Defined Properties"];
+                        dynamic propSets = compDoc.PropertySets;
+                        
+                    // === 1. CUSTOM PROPERTIES (Propriétés personnalisées) - EN PREMIER ===
+                        try
+                        {
+                            dynamic customProps = propSets["Inventor User Defined Properties"];
                         Log("  [Custom] Lecture des propriétés personnalisées...", "DEBUG");
                         
                         foreach (dynamic prop in customProps)
-                        {
-                            try
                             {
+                                try
+                                {
                                 string propName = prop.Name;
                                 if (propName != "Sheet Metal StyleName")
                                 {
                                     string val = prop.Value?.ToString() ?? "";
                                     properties[$"Custom:{propName}"] = val;
+                                    }
                                 }
-                            }
                             catch { }
                         }
                     }
@@ -2010,33 +2365,33 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         
                         var summaryPropNames = new[] { "Title", "Subject", "Author", "Keywords", "Comments", "Last Saved By", "Revision Number" };
                         foreach (string propName in summaryPropNames)
-                        {
-                            try
-                            {
+                                {
+                                    try
+                                    {
                                 dynamic prop = summaryProps[propName];
                                 string val = prop?.Value?.ToString() ?? "";
                                 properties[$"Summary:{propName}"] = val;
+                                    }
+                                    catch { }
+                                }
                             }
-                            catch { }
-                        }
-                    }
                     catch { }
 
                     // Document Summary (aussi dans Summary)
-                    try
-                    {
+                        try
+                        {
                         dynamic docProps = propSets["Inventor Document Summary Information"];
                         var docPropNames = new[] { "Company", "Manager", "Category" };
                         foreach (string propName in docPropNames)
-                        {
-                            try
                             {
+                                try
+                                {
                                 dynamic prop = docProps[propName];
                                 string val = prop?.Value?.ToString() ?? "";
                                 properties[$"Summary:{propName}"] = val;
+                                }
+                                catch { }
                             }
-                            catch { }
-                        }
                     }
                     catch { }
 
@@ -2051,21 +2406,21 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                             "Creation Date", "WEB Link" };
                         
                         foreach (string propName in projectPropNames)
-                        {
-                            try
                             {
+                                try
+                                {
                                 dynamic prop = designProps[propName];
                                 string val = prop?.Value?.ToString() ?? "";
                                 properties[$"Project:{propName}"] = val;
+                                }
+                                catch { }
                             }
-                            catch { }
-                        }
                     }
                     catch { }
 
                     // === 5. STATUS ===
-                    try
-                    {
+                            try
+                            {
                         dynamic designProps = propSets["Design Tracking Properties"];
                         Log("  [Status] Lecture des propriétés statut...", "DEBUG");
                         
@@ -2082,8 +2437,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                             }
                             catch { }
                         }
-                    }
-                    catch { }
+                        }
+                        catch { }
 
                     // === 6. SAVE (Informations de sauvegarde) ===
                     try
@@ -2097,10 +2452,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                             dynamic summaryProps = propSets["Inventor Summary Information"];
                             dynamic lastSavedBy = summaryProps["Last Saved By"];
                             properties["Save:Last Saved By"] = lastSavedBy?.Value?.ToString() ?? "";
+                            }
+                            catch { }
                         }
                         catch { }
-                    }
-                    catch { }
 
                     // === 7. PHYSICAL PROPERTIES ===
                     try
@@ -2113,8 +2468,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                             dynamic designProps = propSets["Design Tracking Properties"];
                             dynamic matProp = designProps["Material"];
                             properties["Physical:Material"] = matProp?.Value?.ToString() ?? "";
-                        }
-                        catch { }
+                            }
+                            catch { }
 
                         // Propriétés de masse (si disponibles)
                         try
@@ -2130,21 +2485,21 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                             properties["Physical:Area"] = "N/A";
                             properties["Physical:Volume"] = "N/A";
                         }
+                        }
+                        catch { }
                     }
-                    catch { }
-                }
-                catch (Exception ex)
-                {
-                    Log($"Erreur accès PropertySets: {ex.Message}", "ERROR");
-                }
+                    catch (Exception ex)
+                    {
+                        Log($"Erreur accès PropertySets: {ex.Message}", "ERROR");
+                    }
 
                 Log($"Total propriétés lues: {properties.Count}", "INFO");
 
                 // Stocker le document pour les modifications ultérieures
                 _currentPropertiesDocument = compDoc;
 
-                string fileName = System.IO.Path.GetFileName(compDoc.FullFileName);
-                string fullPath = compDoc.FullFileName;
+                    string fileName = System.IO.Path.GetFileName(compDoc.FullFileName);
+                    string fullPath = compDoc.FullFileName;
                 
                 // Afficher la fenêtre WPF native
                 if (_iPropertiesWindowCallback != null)
@@ -2161,16 +2516,183 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     string htmlContent = Views.HtmlPopupWindow.GenerateIPropertiesHtml(fileName, fullPath, properties);
                     ShowHtmlPopup($"iProperties - {componentName}", htmlContent);
                 }
-                
-                Log("Résumé iProperties affiché avec succès", "SUCCESS");
-            }
-            catch (Exception ex)
-            {
-                Log($"Erreur lors de la génération du résumé: {ex.Message}", "ERROR");
+                    
+                    Log("Résumé iProperties affiché avec succès", "SUCCESS");
+                }
+                catch (Exception ex)
+                {
+                    Log($"Erreur lors de la génération du résumé: {ex.Message}", "ERROR");
                 MessageBox.Show($"Erreur: {ex.Message}", "Erreur iProperties", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             
             await Task.CompletedTask; // Pour satisfaire le compilateur async
+        }
+
+        /// <summary>
+        /// Gestionnaire batch des propriétés personnalisées
+        /// Permet d'éditer, ajouter et gérer les propriétés personnalisées d'un document Inventor
+        /// Converti depuis iPropertyCustomBatch.iLogicVb
+        /// </summary>
+        public async Task ExecuteCustomPropertyBatchAsync(Action<string, string>? logCallback = null)
+        {
+            if (logCallback != null)
+                SetLogCallback(logCallback);
+
+            try
+            {
+                Log("Démarrage Gestionnaire de Propriétés Personnalisées...", "INFO");
+                
+                dynamic inventorApp = GetInventorApplication();
+                dynamic doc = inventorApp.ActiveDocument;
+
+                if (doc == null)
+                {
+                    Log("Aucun document actif n'est ouvert.", "ERROR");
+                    System.Windows.MessageBox.Show("⚠️ Aucun document actif n'est ouvert.", "Erreur", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Warning);
+                    return;
+                }
+
+                string fullFileName = doc.FullFileName;
+                string documentName = System.IO.Path.GetFileName(fullFileName);
+                
+                Log($"Document: {documentName}", "INFO");
+
+                // Récupérer les propriétés personnalisées existantes
+                var existingProps = new System.Collections.Generic.Dictionary<string, string>();
+                
+                try
+                {
+                    dynamic propSets = doc.PropertySets;
+                    dynamic customProps = propSets["Inventor User Defined Properties"];
+                    
+                    foreach (dynamic prop in customProps)
+                    {
+                        try
+                        {
+                            string propName = prop.Name;
+                            if (propName != "Sheet Metal StyleName")
+                            {
+                                string val = prop.Value?.ToString() ?? "";
+                                existingProps[propName] = val;
+                            }
+                        }
+                        catch { }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log($"Erreur lecture propriétés: {ex.Message}", "WARNING");
+                }
+
+                Log($"Propriétés existantes trouvées: {existingProps.Count}", "INFO");
+
+                // Afficher la fenêtre WPF
+                Views.CustomPropertyBatchWindow? window = null;
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    window = new Views.CustomPropertyBatchWindow();
+                    window.InitializeProperties(existingProps, fullFileName, documentName);
+                    
+                    if (window.ShowDialog() == true)
+                    {
+                        // Appliquer les modifications avec progression
+                        var updatedProps = window.GetProperties();
+                        ApplyCustomPropertiesWithProgress(doc, updatedProps, existingProps, window);
+                    }
+                });
+
+                Log("Gestionnaire de propriétés personnalisées terminé", "SUCCESS");
+            }
+            catch (Exception ex)
+            {
+                Log($"Erreur lors de la gestion des propriétés personnalisées: {ex.Message}", "ERROR");
+                System.Windows.MessageBox.Show($"❌ Erreur: {ex.Message}", "Erreur", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+            }
+            
+            await Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Applique les propriétés personnalisées au document Inventor avec progression et journal
+        /// </summary>
+        private void ApplyCustomPropertiesWithProgress(dynamic doc, System.Collections.Generic.Dictionary<string, string> updatedProps, 
+            System.Collections.Generic.Dictionary<string, string> existingProps, Views.CustomPropertyBatchWindow window)
+        {
+            try
+            {
+                window.ShowProgress("⏳ Application des propriétés...");
+                window.AddOperationLog("Démarrage de l'application des propriétés", "INFO");
+                
+                dynamic propSets = doc.PropertySets;
+                dynamic customProps = propSets["Inventor User Defined Properties"];
+                
+                int addedCount = 0;
+                int updatedCount = 0;
+                int errorCount = 0;
+                int total = updatedProps.Count;
+                int current = 0;
+
+                foreach (var prop in updatedProps)
+                {
+                    current++;
+                    string propName = prop.Key.Trim();
+                    string propValue = prop.Value?.Trim() ?? "";
+
+                    if (string.IsNullOrWhiteSpace(propName))
+                    {
+                        window.UpdateProgress(current, total, $"⏳ Traitement: {current}/{total}");
+                        continue;
+                    }
+
+                    try
+                    {
+                        // Vérifier si la propriété existe déjà
+                        bool exists = existingProps.ContainsKey(propName);
+                        
+                        if (exists)
+                        {
+                            // Mettre à jour la valeur seulement si elle n'est pas vide
+                            if (!string.IsNullOrWhiteSpace(propValue))
+                            {
+                                dynamic existingProp = customProps[propName];
+                                existingProp.Value = propValue;
+                                updatedCount++;
+                                window.AddOperationLog($"Mise à jour: {propName}", "SUCCESS");
+                            }
+                        }
+                        else
+                        {
+                            // Créer la propriété seulement si la valeur n'est pas vide
+                            if (!string.IsNullOrWhiteSpace(propValue))
+                            {
+                                customProps.Add(propValue, propName);
+                                addedCount++;
+                                window.AddOperationLog($"Ajout: {propName}", "SUCCESS");
+                            }
+                        }
+                        
+                        window.UpdateProgress(current, total, $"⏳ Traitement: {current}/{total} - {propName}");
+                    }
+                    catch (Exception ex)
+                    {
+                        errorCount++;
+                        window.AddOperationLog($"Erreur pour '{propName}': {ex.Message}", "ERROR");
+                        Log($"Erreur pour propriété '{propName}': {ex.Message}", "WARNING");
+                    }
+                }
+
+                // Afficher le résultat dans la barre de statut
+                window.ShowResult(addedCount, updatedCount, errorCount);
+                
+                Log($"Propriétés appliquées: {addedCount} ajoutées, {updatedCount} mises à jour, {errorCount} erreurs", "INFO");
+            }
+            catch (Exception ex)
+            {
+                window.HideProgress();
+                window.AddOperationLog($"Erreur critique: {ex.Message}", "ERROR");
+                window.ShowResult(0, 0, 1);
+                Log($"Erreur lors de l'application des propriétés: {ex.Message}", "ERROR");
+            }
         }
 
         #endregion
@@ -2189,20 +2711,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 SetLogCallback(logCallback);
 
             IProgressWindow? progressWindow = null;
-            try
-            {
+                try
+                {
                 Log("Démarrage Smart Save...", "INFO");
                 
-                dynamic inventorApp = GetInventorApplication();
-                dynamic doc = inventorApp.ActiveDocument;
+                    dynamic inventorApp = GetInventorApplication();
+                    dynamic doc = inventorApp.ActiveDocument;
 
-                if (doc == null)
-                {
+                    if (doc == null)
+                    {
                     Log("Aucun document actif n'est ouvert.", "WARNING");
-                    MessageBox.Show("⚠️ Aucun document actif n'est ouvert.", "Erreur", 
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                        MessageBox.Show("⚠️ Aucun document actif n'est ouvert.", "Erreur", 
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
 
                 // Utiliser l'extension du fichier pour détecter le type (méthode fiable avec dynamic)
                 string fullFileName = doc.FullFileName;
@@ -2213,11 +2735,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 bool isDrawing = extension == ".idw" || extension == ".dwg";
                 
                 // Constantes pour compatibilité avec SmartProgressWindow
-                const int kAssemblyDocumentObject = 12290;
-                const int kPartDocumentObject = 12288;
+                    const int kAssemblyDocumentObject = 12290;
+                    const int kPartDocumentObject = 12288;
                 const int kDrawingDocumentObject = 12292;
                 const int kGenericDocument = 0;
-                
+
                 int docType = isAssembly ? kAssemblyDocumentObject :
                              isPart ? kPartDocumentObject :
                              isDrawing ? kDrawingDocumentObject : kGenericDocument;
@@ -2233,7 +2755,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 if (_smartProgressWindowCallback != null)
                 {
                     progressWindow = _smartProgressWindowCallback("save", docType, docName, typeText);
-                }
+                    }
                 else if (_progressWindowCallback != null)
                 {
                     string htmlContent = GenerateSmartSaveHtml(docType, docName, typeText);
@@ -2247,17 +2769,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 if (isAssembly)
                 {
                     await ExecuteAssemblyStepsWithProgressAsync(doc, inventorApp, progressWindow);
-                }
+                    }
                 else if (isPart)
                 {
                     await ExecutePartStepsWithProgressAsync(doc, inventorApp, progressWindow);
                 }
                 else if (isDrawing)
-                {
+                    {
                     await ExecuteDrawingStepsWithProgressAsync(doc, inventorApp, progressWindow);
-                }
-                else
-                {
+                    }
+                    else
+                    {
                     await ExecuteGenericStepsWithProgressAsync(doc, inventorApp, progressWindow);
                 }
 
@@ -2267,12 +2789,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.ShowCompletionAsync("✅ Sauvegarde effectuée avec succès !");
                     await Task.Delay(1500);
                     progressWindow.CloseWindow();
-                }
+                    }
                 
                 Log("Smart Save terminé avec succès", "SUCCESS");
-            }
-            catch (Exception ex)
-            {
+                }
+                catch (Exception ex)
+                {
                 Log($"Erreur Smart Save: {ex.Message}", "ERROR");
                 if (progressWindow != null)
                 {
@@ -2284,9 +2806,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     }
                     catch { /* Ignorer les erreurs de fermeture */ }
                 }
-                MessageBox.Show($"❌ Erreur lors du Smart Save : {ex.Message}", "Erreur", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+                    MessageBox.Show($"❌ Erreur lors du Smart Save : {ex.Message}", "Erreur", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
         }
 
         private void ExecuteAssemblySteps(dynamic doc, dynamic inventorApp)
@@ -2846,7 +3368,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     dynamic designViewReps = asmDef.RepresentationsManager.DesignViewRepresentations;
 
                     dynamic targetRep = null;
-                    
+
                     Log($"[ActivateDefaultRepresentation] Assemblage détecté - {designViewReps.Count} représentations trouvées", "INFO");
 
                     // ASSEMBLAGES: POSITION 2 PRIORITAIRE (comme dans la règle iLogic)
@@ -3248,16 +3770,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     }
 
                     // Récursion pour les sous-assemblages (vérifier via SubOccurrences)
-                    try
-                    {
-                        dynamic subOccurrences = occ.SubOccurrences;
-                        if (subOccurrences != null && subOccurrences.Count > 0)
+                        try
                         {
+                            dynamic subOccurrences = occ.SubOccurrences;
+                        if (subOccurrences != null && subOccurrences.Count > 0)
+                            {
                             count += SmartHideReferencesRecursive(subOccurrences);
+                            }
                         }
-                    }
-                    catch
-                    {
+                        catch
+                        {
                         // Pas de sous-occurrences - continuer
                     }
                 }
@@ -3342,20 +3864,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 SetLogCallback(logCallback);
 
             IProgressWindow? progressWindow = null;
-            try
-            {
+                try
+                {
                 Log("Démarrage Safe Close...", "INFO");
                 
-                dynamic inventorApp = GetInventorApplication();
-                dynamic doc = inventorApp.ActiveDocument;
+                    dynamic inventorApp = GetInventorApplication();
+                    dynamic doc = inventorApp.ActiveDocument;
 
-                if (doc == null)
-                {
+                    if (doc == null)
+                    {
                     Log("Aucun document actif n'est ouvert.", "WARNING");
-                    MessageBox.Show("Aucun document actif n'est ouvert.", "Erreur", 
-                        MessageBoxButton.OK, MessageBoxImage.Warning);
-                    return;
-                }
+                        MessageBox.Show("Aucun document actif n'est ouvert.", "Erreur", 
+                            MessageBoxButton.OK, MessageBoxImage.Warning);
+                        return;
+                    }
 
                 // Utiliser l'extension du fichier pour détecter le type (méthode fiable avec dynamic)
                 string fullFileName = doc.FullFileName;
@@ -3366,11 +3888,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 bool isDrawing = extension == ".idw" || extension == ".dwg";
                 
                 // Constantes pour compatibilité avec SmartProgressWindow
-                const int kAssemblyDocumentObject = 12290;
-                const int kPartDocumentObject = 12288;
+                    const int kAssemblyDocumentObject = 12290;
+                    const int kPartDocumentObject = 12288;
                 const int kDrawingDocumentObject = 12292;
                 const int kGenericDocument = 0;
-                
+
                 int docType = isAssembly ? kAssemblyDocumentObject :
                              isPart ? kPartDocumentObject :
                              isDrawing ? kDrawingDocumentObject : kGenericDocument;
@@ -3386,7 +3908,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 if (_smartProgressWindowCallback != null)
                 {
                     progressWindow = _smartProgressWindowCallback("close", docType, docName, typeText);
-                }
+                    }
                 else if (_progressWindowCallback != null)
                 {
                     string htmlContent = GenerateSafeCloseHtml(docType, docName, typeText);
@@ -3400,17 +3922,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 if (isAssembly)
                 {
                     await ExecuteAssemblyStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
-                }
+                    }
                 else if (isPart)
                 {
                     await ExecutePartStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
                 }
                 else if (isDrawing)
-                {
+                    {
                     await ExecuteDrawingStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
-                }
-                else
-                {
+                    }
+                    else
+                    {
                     await ExecuteGenericStepsForCloseWithProgressAsync(doc, inventorApp, progressWindow);
                 }
 
@@ -3420,12 +3942,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     await progressWindow.ShowCompletionAsync("🎉 Toutes les étapes sont terminées avec succès !");
                     await Task.Delay(1500);
                     progressWindow.CloseWindow();
-                }
+                    }
                 
                 Log("Safe Close terminé avec succès", "SUCCESS");
-            }
-            catch (Exception ex)
-            {
+                }
+                catch (Exception ex)
+                {
                 Log($"Erreur Safe Close: {ex.Message}", "ERROR");
                 if (progressWindow != null)
                 {
@@ -3437,9 +3959,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     }
                     catch { /* Ignorer les erreurs de fermeture */ }
                 }
-                MessageBox.Show($"Erreur lors du Safe Close : {ex.Message}", "Erreur", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+                    MessageBox.Show($"Erreur lors du Safe Close : {ex.Message}", "Erreur", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
         }
 
         private void ExecuteAssemblyStepsForClose(dynamic doc, dynamic inventorApp)

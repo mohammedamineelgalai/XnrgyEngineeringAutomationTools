@@ -573,6 +573,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                             ? f.Substring(_projectPath.Length).TrimStart('\\') 
                             : fi.Directory?.Name ?? "";
 
+                        // Calculer le chemin Vault de destination
+                        var vaultPath = CalculateVaultPath(fi.FullName);
+
                         var item = new VaultUploadFileItem
                         {
                             FileName = fi.Name,
@@ -583,7 +586,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                             FileSizeFormatted = FormatSize(fi.Length),
                             IsInventorFile = InventorExtensions.Contains(fi.Extension),
                             IsSelected = true,
-                            Status = "En attente"
+                            Status = "En attente",
+                            VaultPath = vaultPath
                         };
 
                         _allFilesMaster.Add(item);
@@ -694,6 +698,43 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
 
             CmbExtension.SelectedIndex = 0;
             Log($"[i] Filtre extension: {uniqueExtensions.Count} extensions detectees", LogLevel.INFO);
+        }
+
+        /// <summary>
+        /// Calcule le chemin Vault de destination a partir du chemin local
+        /// Pattern: C:\Vault\Engineering\Projects\... -> $/Engineering/Projects/...
+        /// </summary>
+        private string CalculateVaultPath(string localPath)
+        {
+            try
+            {
+                // Detecter si c'est dans C:\Vault\Engineering
+                string vaultRoot = @"C:\Vault\";
+                if (localPath.StartsWith(vaultRoot, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Extraire le chemin relatif apres C:\Vault\
+                    string relativePath = localPath.Substring(vaultRoot.Length);
+                    
+                    // Convertir en chemin Vault (remplacer \ par / et ajouter $/)
+                    // Retirer le nom du fichier pour avoir juste le dossier
+                    string directory = Path.GetDirectoryName(relativePath) ?? relativePath;
+                    string vaultPath = "$/" + directory.Replace('\\', '/');
+                    
+                    return vaultPath;
+                }
+                
+                // Si pas dans C:\Vault, essayer de construire depuis les proprietes du projet
+                if (_projectProperties != null)
+                {
+                    return $"$/Engineering/Projects/{_projectProperties.ProjectNumber}/{_projectProperties.Reference}/{_projectProperties.Module}";
+                }
+                
+                return "$/Engineering";
+            }
+            catch
+            {
+                return "$/Engineering";
+            }
         }
 
         /// <summary>

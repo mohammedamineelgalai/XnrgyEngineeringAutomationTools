@@ -626,11 +626,12 @@
                           MouseLeftButtonUp="DataGrid_MouseLeftButtonUp">
                     <DataGrid.Columns>
                         <DataGridCheckBoxColumn Header="✓" Binding="{Binding IsSelected, UpdateSourceTrigger=PropertyChanged}" Width="40"/>
-                        <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="200" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileExtension}" Width="90" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📄 Nom du fichier" Binding="{Binding FileName}" Width="180" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📐 Extension" Binding="{Binding FileExtension}" Width="100" IsReadOnly="True"/>
                         <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="80" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="📁 Chemin complet" Binding="{Binding FullPath}" Width="*" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="120" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📁 Chemin local" Binding="{Binding FullPath}" Width="500" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="🗄️ Chemin Vault" Binding="{Binding VaultPath}" Width="*" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="100" IsReadOnly="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -659,11 +660,11 @@
                 <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" Height="34" ClipToBounds="True" Margin="0,0,15,0"
                         BorderBrush="#4A7FBF" BorderThickness="2">
                     <Grid>
-                        <!-- Fond de progression (rempli par le code) -->
+                        <!-- Fond de progression (rempli par le code) - Brillance reduite -->
                         <Border x:Name="ProgressBarFill" Background="#28A745" CornerRadius="6" 
                                 HorizontalAlignment="Left" Width="0">
                             <Border.Effect>
-                                <DropShadowEffect Color="#00FF7F" BlurRadius="20" ShadowDepth="0" Opacity="0.85"/>
+                                <DropShadowEffect Color="#00FF7F" BlurRadius="15" ShadowDepth="0" Opacity="0.45"/>
                             </Border.Effect>
                         </Border>
                         
@@ -679,13 +680,13 @@
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
                                    Margin="220,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
                         
-                        <!-- Temps écoulé et estimé à droite - TOUT EN BLANC GRAS -->
+                        <!-- Temps écoulé et estimé à droite - AVEC LABELS -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0">
-                            <TextBlock Text="⏱️ " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text="⏱️ Ecoulé: " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtProgressTimeElapsed" 
                                        Text="00:00" 
                                        Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <TextBlock Text=" / " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            <TextBlock Text=" / Estimé: " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,0,0"/>
                             <TextBlock x:Name="TxtProgressTimeEstimated" 
                                        Text="00:00" 
                                        Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>

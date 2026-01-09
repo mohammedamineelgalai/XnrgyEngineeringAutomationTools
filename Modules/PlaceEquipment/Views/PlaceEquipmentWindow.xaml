@@ -1071,10 +1071,10 @@
                         Height="34" Margin="0,0,15,0" ClipToBounds="True"
                         BorderBrush="#4A7FBF" BorderThickness="2">
                     <Grid>
-                        <!-- Barre de progression verte avec effet unique -->
+                        <!-- Barre de progression verte avec effet - Brillance reduite -->
                         <Border x:Name="ProgressBarFill" Background="#28A745" CornerRadius="6" HorizontalAlignment="Left" Width="0">
                             <Border.Effect>
-                                <DropShadowEffect Color="#00FF7F" BlurRadius="20" ShadowDepth="0" Opacity="0.85"/>
+                                <DropShadowEffect Color="#00FF7F" BlurRadius="15" ShadowDepth="0" Opacity="0.45"/>
                             </Border.Effect>
                         </Border>
                         
@@ -1092,11 +1092,11 @@
                                    VerticalAlignment="Center" HorizontalAlignment="Left"
                                    Margin="220,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
                         
-                        <!-- Temps écoulé et pourcentage - TOUT EN BLANC GRAS -->
+                        <!-- Temps écoulé et pourcentage - AVEC LABELS -->
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0">
-                            <TextBlock x:Name="TxtTimeLabel" Text="⏱️ " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtTimeLabel" Text="⏱️ Ecoulé: " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtProgressTimeElapsed" Text="00:00" Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtEstimatedLabel" Text=" / " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            <TextBlock x:Name="TxtEstimatedLabel" Text=" / Estimé: " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,0,0"/>
                             <TextBlock x:Name="TxtProgressTimeEstimated" Text="00:00" Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtSeparator" Text=" | " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,8,0"/>
                             <TextBlock x:Name="TxtProgressPercent" Text="0%" Foreground="White" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>

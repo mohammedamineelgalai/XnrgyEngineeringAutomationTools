@@ -12,6 +12,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Models
         private bool _isSelected = true;
         private bool _isInventorFile;
         private string _status = "En attente";
+        private string _vaultPath = string.Empty;
 
         public string FileName { get; set; } = string.Empty;
         public string FileType { get; set; } = string.Empty;
@@ -19,6 +20,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Models
         public string FullPath { get; set; } = string.Empty;
         public string RelativePath { get; set; } = string.Empty;
         public string FileExtension { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Chemin de destination dans Vault (ex: $/Engineering/Projects/12345/REF01/M01)
+        /// </summary>
+        public string VaultPath
+        {
+            get => _vaultPath;
+            set
+            {
+                _vaultPath = value;
+                OnPropertyChanged();
+            }
+        }
 
         public bool IsSelected
         {
