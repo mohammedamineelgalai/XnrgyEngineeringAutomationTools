@@ -480,9 +480,11 @@
                 <TextBlock x:Name="StatusText" Text="Pret" Style="{StaticResource StatusTextStyle}"/>
                 <TextBlock x:Name="CopyrightText" Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right">
                     <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} - {1} - By {2} - {3}">
+                        <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
                             <Binding Source="{StaticResource CopyrightSmartTools}"/>
+                            <Binding Source="{StaticResource AppShortName}"/>
                             <Binding Source="{StaticResource AppVersion}"/>
+                            <Binding Source="{StaticResource AppReleaseDate}"/>
                             <Binding Source="{StaticResource AppAuthor}"/>
                             <Binding Source="{StaticResource AppCompany}"/>
                         </MultiBinding>

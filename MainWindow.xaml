@@ -339,9 +339,9 @@
                 <TextBlock x:Name="StatusText" Text="Pret" Style="{StaticResource StatusTextStyle}"/>
                 <TextBlock x:Name="CopyrightText" Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right">
                     <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} - {1} - By {2} - {3}">
-                            <Binding Source="{StaticResource CopyrightHub}"/>
+                        <MultiBinding StringFormat="{}XNRGY Engineering Automation Tools - {0} - {1} - By {2} - {3}">
                             <Binding Source="{StaticResource AppVersion}"/>
+                            <Binding Source="{StaticResource AppReleaseDate}"/>
                             <Binding Source="{StaticResource AppAuthor}"/>
                             <Binding Source="{StaticResource AppCompany}"/>
                         </MultiBinding>

@@ -146,9 +146,11 @@
                 <TextBlock x:Name="FilePathText" Text="Chargement..." Style="{StaticResource StatusTextStyle}"/>
                 <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right">
                     <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} - {1} - By {2} - {3}">
+                        <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
                             <Binding Source="{StaticResource CopyrightChecklist}"/>
+                            <Binding Source="{StaticResource AppShortName}"/>
                             <Binding Source="{StaticResource AppVersion}"/>
+                            <Binding Source="{StaticResource AppReleaseDate}"/>
                             <Binding Source="{StaticResource AppAuthor}"/>
                             <Binding Source="{StaticResource AppCompany}"/>
                         </MultiBinding>

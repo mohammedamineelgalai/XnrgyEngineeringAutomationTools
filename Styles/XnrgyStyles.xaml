@@ -119,13 +119,18 @@
          ║                                                                                            ║
          ║  MODIFIER ICI POUR METTRE A JOUR TOUTES LES FENETRES EN UNE SEULE FOIS                    ║
          ║                                                                                            ║
-         ║  Variables:                                                                                ║
-         ║    - AppVersion: Version de l'application (ex: v1.0.0)                                    ║
-         ║    - AppAuthor: Auteur du logiciel                                                        ║
-         ║    - AppCompany: Nom de l'entreprise                                                      ║
+         ║  Variables globales:                                                                       ║
+         ║    - AppVersion     : Version de l'application (ex: v1.0.0)                               ║
+         ║    - AppReleaseDate : Date de release (format: R YYYY-MM-DD)                              ║
+         ║    - AppAuthor      : Auteur du logiciel                                                  ║
+         ║    - AppCompany     : Nom de l'entreprise                                                 ║
+         ║    - AppShortName   : Acronyme XEAT (XNRGY Engineering Automation Tools)                  ║
          ║                                                                                            ║
-         ║  Titres des Modules (pour reference):                                                     ║
-         ║    - CopyrightHub          → MainWindow (Hub principal)                                   ║
+         ║  FORMAT COPYRIGHT:                                                                         ║
+         ║    - Master (MainWindow): XNRGY Engineering Automation Tools - v1.0.0 - R 2026-01-09 - By..║
+         ║    - Modules: [Module] - XEAT - v1.0.0 - R 2026-01-09 - By Mohammed Amine Elgalai - XNRGY..║
+         ║                                                                                            ║
+         ║  Noms des modules pour la barre copyright (PAS les titres de fenetre avec emoji):         ║
          ║    - CopyrightSmartTools   → SmartToolsWindow                                             ║
          ║    - CopyrightChecklist    → ChecklistHVACWindow                                          ║
          ║    - CopyrightACP          → ACPWindow                                                    ║
@@ -134,17 +139,17 @@
          ║    - CopyrightCreateModule → CreateModuleWindow                                           ║
          ║    - CopyrightPlaceEquip   → PlaceEquipmentWindow                                         ║
          ║    - CopyrightUpdateWS     → UpdateWorkspaceWindow                                        ║
+         ║    - CopyrightDXFVerifier  → DXFVerifierWindow                                            ║
          ╚═══════════════════════════════════════════════════════════════════════════════════════════╝ -->
 
     <!-- ═══════════ VARIABLES GLOBALES - MODIFIER ICI UNIQUEMENT ═══════════ -->
     <sys:String x:Key="AppVersion" xmlns:sys="clr-namespace:System;assembly=mscorlib">v1.0.0</sys:String>
+    <sys:String x:Key="AppReleaseDate" xmlns:sys="clr-namespace:System;assembly=mscorlib">R 2026-01-09</sys:String>
     <sys:String x:Key="AppAuthor" xmlns:sys="clr-namespace:System;assembly=mscorlib">Mohammed Amine Elgalai</sys:String>
     <sys:String x:Key="AppCompany" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="AppShortName" xmlns:sys="clr-namespace:System;assembly=mscorlib">XEAT</sys:String>
     
-    <!-- ═══════════ TEXTES COPYRIGHT PAR MODULE ═══════════ -->
-    <!-- Hub Principal (MainWindow) -->
-    <sys:String x:Key="CopyrightHub" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY Engineering Automation Tools</sys:String>
-    
+    <!-- ═══════════ NOMS DES MODULES POUR BARRE COPYRIGHT ═══════════ -->
     <!-- Smart Tools -->
     <sys:String x:Key="CopyrightSmartTools" xmlns:sys="clr-namespace:System;assembly=mscorlib">Smart Tools</sys:String>
     
@@ -178,19 +183,19 @@
         <Setter Property="Padding" Value="10,5"/>
     </Style>
     
-    <!-- Style TextBlock Copyright - Blanc fonce gras -->
+    <!-- Style TextBlock Copyright - BLANC GRAS -->
     <Style x:Key="CopyrightTextStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="#CCCCCC"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
         <Setter Property="FontSize" Value="11"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
     
-    <!-- Style TextBlock Status (Pret) - Blanc fonce gras -->
+    <!-- Style TextBlock Status (Pret) - BLANC GRAS -->
     <Style x:Key="StatusTextStyle" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="#CCCCCC"/>
+        <Setter Property="Foreground" Value="#FFFFFF"/>
         <Setter Property="FontSize" Value="11"/>
-        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 

@@ -296,9 +296,11 @@
             <Grid>
                 <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center">
                     <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} - {1} - By {2} - {3}">
+                        <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
                             <Binding Source="{StaticResource CopyrightUpdateWS}"/>
+                            <Binding Source="{StaticResource AppShortName}"/>
                             <Binding Source="{StaticResource AppVersion}"/>
+                            <Binding Source="{StaticResource AppReleaseDate}"/>
                             <Binding Source="{StaticResource AppAuthor}"/>
                             <Binding Source="{StaticResource AppCompany}"/>
                         </MultiBinding>
