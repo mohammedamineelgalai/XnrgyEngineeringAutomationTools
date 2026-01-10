@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Smart Tools - XNRGY Engineering Automation Tools" 
+        Title="Smart Tools - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Height="900" Width="1400"
         MinHeight="700" MinWidth="1100"

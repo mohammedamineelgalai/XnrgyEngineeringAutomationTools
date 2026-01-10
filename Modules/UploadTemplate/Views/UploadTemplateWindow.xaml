@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Upload Template vers Vault - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Upload Template - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="800" Width="1200"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterOwner"
@@ -467,7 +467,7 @@
                             <TextBlock Text="&#x1F4E4;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="📤 Upload Template vers Vault v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="📤 Upload Template vers Vault" FontSize="24" FontWeight="Bold" Foreground="White"/>
                             <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
                                 <Run Text="💡 Upload massif de fichiers vers Vault Production avec structure automatique"/>
                             </TextBlock>

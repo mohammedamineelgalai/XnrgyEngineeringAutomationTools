@@ -144,7 +144,7 @@
 
     <!-- ═══════════ VARIABLES GLOBALES - MODIFIER ICI UNIQUEMENT ═══════════ -->
     <sys:String x:Key="AppVersion" xmlns:sys="clr-namespace:System;assembly=mscorlib">v1.0.0</sys:String>
-    <sys:String x:Key="AppReleaseDate" xmlns:sys="clr-namespace:System;assembly=mscorlib">R 2026-01-09</sys:String>
+    <sys:String x:Key="AppReleaseDate" xmlns:sys="clr-namespace:System;assembly=mscorlib">R 2026-01-10</sys:String>
     <sys:String x:Key="AppAuthor" xmlns:sys="clr-namespace:System;assembly=mscorlib">Mohammed Amine Elgalai</sys:String>
     <sys:String x:Key="AppCompany" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY CLIMATE SYSTEMS ULC</sys:String>
     <sys:String x:Key="AppShortName" xmlns:sys="clr-namespace:System;assembly=mscorlib">XEAT</sys:String>

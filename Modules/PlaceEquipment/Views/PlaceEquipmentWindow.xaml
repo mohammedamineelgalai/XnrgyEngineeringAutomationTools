@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Place Equipment - Copy Design - v1.0.0 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Place Equipment - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="900" Width="1400"
         MinHeight="700" MinWidth="1100"
         WindowStartupLocation="CenterOwner"
@@ -494,7 +494,7 @@
                             </Grid>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="🧊 Place Equipment - Copy Design v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="🧊 Place Equipment - Copy Design" FontSize="24" FontWeight="Bold" Foreground="White"/>
                             <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
                                 <Run Text="Copie et placement d'equipements dans les modules Inventor"/>
                             </TextBlock>

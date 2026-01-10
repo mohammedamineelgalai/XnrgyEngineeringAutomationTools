@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
-        Title="iProperties Summary - XNRGY Engineering Automation Tools" 
+        Title="iProperties Summary - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Height="1000" Width="880"
         MinHeight="700" MinWidth="750"
@@ -15,12 +15,17 @@
         ResizeMode="CanResizeWithGrip">
     
     <Window.Resources>
-        <!-- Couleurs -->
-        <Color x:Key="PrimaryColor">#667eea</Color>
-        <Color x:Key="SecondaryColor">#764ba2</Color>
-        <Color x:Key="SuccessColor">#27ae60</Color>
-        <Color x:Key="DangerColor">#e74c3c</Color>
-        <Color x:Key="InfoColor">#3498db</Color>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/XnrgyStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Couleurs -->
+            <Color x:Key="PrimaryColor">#667eea</Color>
+            <Color x:Key="SecondaryColor">#764ba2</Color>
+            <Color x:Key="SuccessColor">#27ae60</Color>
+            <Color x:Key="DangerColor">#e74c3c</Color>
+            <Color x:Key="InfoColor">#3498db</Color>
         
         <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
         <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
@@ -206,6 +211,7 @@
             <Setter Property="BorderBrush" Value="#dee2e6"/>
             <Setter Property="BorderThickness" Value="2"/>
         </Style>
+        </ResourceDictionary>
     </Window.Resources>
     
     <!-- Contenu principal avec fond gradient -->
@@ -446,14 +452,20 @@
                     </Border>
                     
                     <!-- Footer -->
-                    <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
-                        <Border Width="16" Height="16" CornerRadius="3" Background="#f39c12" Margin="0,0,6,0">
-                            <TextBlock Text="◆" Foreground="White" FontSize="10" 
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <TextBlock Text="XNRGY Engineering Automation Tools - Smart Tools - iProperties Summary"
-                                   FontSize="11" Foreground="#95a5a6"/>
-                    </StackPanel>
+                    <Border Grid.Row="6" Style="{StaticResource CopyrightBarBorder}" Margin="0,10,0,0" CornerRadius="0,0,8,8">
+                        <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center">
+                            <TextBlock.Text>
+                                <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
+                                    <Binding Source="iProperties Summary"/>
+                                    <Binding Source="{StaticResource AppShortName}"/>
+                                    <Binding Source="{StaticResource AppVersion}"/>
+                                    <Binding Source="{StaticResource AppReleaseDate}"/>
+                                    <Binding Source="{StaticResource AppAuthor}"/>
+                                    <Binding Source="{StaticResource AppCompany}"/>
+                                </MultiBinding>
+                            </TextBlock.Text>
+                        </TextBlock>
+                    </Border>
                 </Grid>
             </Border>
         </Grid>

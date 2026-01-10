@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Upload Module vers Vault - v1.0.0 - Released on 2026-01-02 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="Upload Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="950" Width="1550"
         MinWidth="1400"
         MinHeight="800"
@@ -377,13 +377,13 @@
                 </Grid.ColumnDefinitions>
                 
                 <!-- Logo + Titre + Description -->
-                <Viewbox Grid.Column="0" Stretch="Uniform" MaxWidth="600" MaxHeight="80" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Viewbox Grid.Column="0" Stretch="Uniform" MaxWidth="700" MaxHeight="80" HorizontalAlignment="Left" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Border Background="#AEEA00" CornerRadius="8" Width="50" Height="50" Margin="0,0,12,0">
                             <TextBlock Text="&#x1F4E4;" FontSize="28" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock Text="📤 Upload Module - Vault Check-In v1.0.0" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock Text="📤 Upload Module - Vault Check-In" FontSize="26" FontWeight="Bold" Foreground="White"/>
                             <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
                                 <Run Text="💡 Upload des fichiers Inventor et documents vers Autodesk Vault avec les proprietes XNRGY automatiques"/>
                             </TextBlock>

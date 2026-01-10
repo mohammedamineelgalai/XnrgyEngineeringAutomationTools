@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
-        Title="Gestionnaire Proprietes - XNRGY Engineering Automation Tools" 
+        Title="Gestionnaire Proprietes - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Height="900" Width="1200"
         MinHeight="700" MinWidth="1000"
@@ -14,14 +14,19 @@
         ResizeMode="CanResizeWithGrip">
     
     <Window.Resources>
-        <!-- Couleurs -->
-        <Color x:Key="PrimaryColor">#667eea</Color>
-        <Color x:Key="SecondaryColor">#764ba2</Color>
-        <Color x:Key="SuccessColor">#27ae60</Color>
-        <Color x:Key="DangerColor">#e74c3c</Color>
-        <Color x:Key="WarningColor">#f39c12</Color>
-        <Color x:Key="InfoColor">#3498db</Color>
-        <Color x:Key="BoxModuleColor">#e67e22</Color>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/XnrgyStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <!-- Couleurs -->
+            <Color x:Key="PrimaryColor">#667eea</Color>
+            <Color x:Key="SecondaryColor">#764ba2</Color>
+            <Color x:Key="SuccessColor">#27ae60</Color>
+            <Color x:Key="DangerColor">#e74c3c</Color>
+            <Color x:Key="WarningColor">#f39c12</Color>
+            <Color x:Key="InfoColor">#3498db</Color>
+            <Color x:Key="BoxModuleColor">#e67e22</Color>
         
         <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
         <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
@@ -357,6 +362,7 @@
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
         </Style>
+        </ResourceDictionary>
     </Window.Resources>
     
     <Border CornerRadius="12" Background="White" BorderThickness="0">
@@ -369,6 +375,7 @@
                 <RowDefinition Height="60"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
@@ -748,6 +755,22 @@
                         </StackPanel>
                     </Grid>
                 </Grid>
+            </Border>
+
+            <!-- COPYRIGHT BAR -->
+            <Border Grid.Row="5" Style="{StaticResource CopyrightBarBorder}" CornerRadius="0,0,12,12">
+                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
+                            <Binding Source="Gestionnaire Proprietes"/>
+                            <Binding Source="{StaticResource AppShortName}"/>
+                            <Binding Source="{StaticResource AppVersion}"/>
+                            <Binding Source="{StaticResource AppReleaseDate}"/>
+                            <Binding Source="{StaticResource AppAuthor}"/>
+                            <Binding Source="{StaticResource AppCompany}"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
             </Border>
         </Grid>
     </Border>

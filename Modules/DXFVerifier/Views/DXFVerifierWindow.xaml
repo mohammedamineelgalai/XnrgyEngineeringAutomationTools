@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="DXF-CSV vs PDF Verifier v1.2 - XNRGY Engineering Automation Tools - By Mohammed Amine Elgalai" 
+        Title="DXF Verifier - XEAT - v1.2.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
         Height="1000" Width="1450"
         MinHeight="800" MinWidth="1200"
         WindowStartupLocation="CenterOwner"
