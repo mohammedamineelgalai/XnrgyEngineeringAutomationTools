@@ -1,411 +1,1223 @@
-﻿# XNRGY Engineering Automation Tools
+﻿# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools
 
-> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
+
+
+> **Suite d'outils d'automatisation engineering unifiee** pour Autodesk Vault Professional 2026 et Inventor Professional 2026.2
+
 >
-> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC
 
----
+> Developpe par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
 
-## Description
+>
 
-**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+> **Version**: v1.0.0 | **Release**: R 2026-01-10>>
+
+
+
+---> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC
+
+
+
+## Description>
+
+
+
+**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisee (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering developpes pour XNRGY Climate Systems. Cette suite vise a simplifier et accelerer les workflows des equipes de design en integrant la gestion Vault, les manipulations Inventor, et les validations qualite dans une interface unifiee.> **Version**: v1.0.0 | **Release**: R 2026-01-10---
+
+
 
 ### Objectif Principal
 
-Remplacer les multiples applications standalone par une **plateforme unique** avec :
-- Connexion centralisée à Vault & Inventor
-- Interface utilisateur moderne et cohérente (thèmes sombre/clair)
-- Partage de services communs (logging, configuration chiffrée AES-256)
-- Déploiement multi-sites et maintenance simplifiée
-- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
+
+
+Remplacer les multiples applications standalone par une **plateforme unique** avec :---## Description
+
+- Connexion centralisee a Vault et Inventor
+
+- Interface utilisateur moderne et coherente (themes sombre/clair)
+
+- Partage de services communs (logging, configuration chiffree AES-256)
+
+- Deploiement multi-sites et maintenance simplifiee## Description**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+
+- Parametres centralises via Vault (50+ utilisateurs, 3 sites)
+
+
 
 ---
 
-## Modules Intégrés
+**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.### Objectif Principal
+
+## Modules Integres (9 Modules)
+
+
 
 | Module | Description | Statut |
-|--------|-------------|--------|
-| **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |
-| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
-| **Réglages Admin** | Configuration centralisée et synchronisée via Vault (AES-256) | [+] 100% |
-| **Upload Template** | Upload templates vers Vault (réservé Admin) | [+] 100% |
-| **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |
-| **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | [~] Planifié |
-| **DXF Verifier** | Validation des fichiers DXF avant envoi | [~] Migration |
-| **Time Tracker** | Analyse temps de travail modules HVAC | [~] Migration |
-| **Update Workspace** | Synchronisation librairies depuis Vault | [~] Planifié |
+
+|--------|-------------|--------|### Objectif PrincipalRemplacer les multiples applications standalone par une **plateforme unique** avec :
+
+| **Upload Module** | Upload automatise vers Vault avec proprietes (Project/Ref/Module) | 100% |
+
+| **Creer Module** | Copy Design natif depuis template Library ou projet existant | 100% |- Connexion centralisée à Vault & Inventor
+
+| **Place Equipment** | Placement equipements avec Copy Design automatise | 100% |
+
+| **Smart Tools** | 25+ outils: creation IPT/STEP, generation PDF, iLogic Forms, BOM, etc. | 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :- Interface utilisateur moderne et cohérente (thèmes sombre/clair)
+
+| **Checklist HVAC** | Validation modules AHU avec stockage Vault | 100% |
+
+| **ACP** | Assistant Conception Projet - validation points critiques | 100% |- Connexion centralisée à Vault & Inventor- Partage de services communs (logging, configuration chiffrée AES-256)
+
+| **Upload Template** | Upload templates vers Vault (reserve Admin) | 100% |
+
+| **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% precision) | 100% |- Interface utilisateur moderne et cohérente (thèmes sombre/clair)- Déploiement multi-sites et maintenance simplifiée
+
+| **Update Workspace** | Synchronisation librairies et outils depuis Vault | 100% |
+
+- Partage de services communs (logging, configuration chiffrée AES-256)- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
 
 ---
 
-## Architecture du Projet
+- Déploiement multi-sites et maintenance simplifiée
+
+## Fonctionnalites Cles
+
+- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)---
+
+### Centralisation UI (NOUVEAU - Janvier 2026)
+
+
+
+Toutes les metadonnees de l'application sont centralisees dans `Styles/XnrgyStyles.xaml` :
+
+---## Modules Intégrés
+
+```xml
+
+<!-- Variables globales - MODIFIER ICI UNIQUEMENT -->
+
+<sys:String x:Key="AppVersion">v1.0.0</sys:String>
+
+<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>## Modules Intégrés (9 Modules)| Module | Description | Statut |
+
+<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
+
+<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>|--------|-------------|--------|
+
+<sys:String x:Key="AppShortName">XEAT</sys:String>
+
+<sys:String x:Key="AppFullName">XNRGY Engineering Automation Tools</sys:String>| Module | Description | Statut || **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |
 
 ```
+
+|--------|-------------|--------|| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
+
+**Avantages:**
+
+- Mise a jour de version/date en **un seul endroit**| **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | ✅ 100% || **Réglages Admin** | Configuration centralisée et synchronisée via Vault (AES-256) | [+] 100% |
+
+- Tous les titres de fenetres utilisent `StaticResource`
+
+- Toutes les barres copyright utilisent `StaticResource`| **Créer Module** | Copy Design natif depuis template Library ou projet existant | ✅ 100% || **Upload Template** | Upload templates vers Vault (réservé Admin) | [+] 100% |
+
+- 22+ fenetres synchronisees automatiquement
+
+| **Place Equipment** | Placement équipements avec Copy Design automatisé | ✅ 100% || **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |
+
+### Configuration Centralisee via Vault
+
+| **Smart Tools** | 25+ outils: création IPT/STEP, génération PDF, iLogic Forms, BOM, etc. | ✅ 100% || **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | [~] Planifié |
+
+- Chiffrement AES-256 des fichiers de configuration
+
+- Synchronisation automatique au demarrage| **Checklist HVAC** | Validation modules AHU avec stockage Vault | ✅ 100% || **DXF Verifier** | Validation des fichiers DXF avant envoi | [~] Migration |
+
+- Acces administrateur verifie via Vault API
+
+- Support 50+ utilisateurs sur 3 sites| **ACP** | Assistant Conception Projet - validation points critiques | ✅ 100% || **Time Tracker** | Analyse temps de travail modules HVAC | [~] Migration |
+
+
+
+### Smart Tools (25+ Outils)| **Upload Template** | Upload templates vers Vault (réservé Admin) | ✅ 100% || **Update Workspace** | Synchronisation librairies depuis Vault | [~] Planifié |
+
+
+
+| Categorie | Outils || **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% précision) | ✅ 100% |
+
+|-----------|--------|
+
+| **Creation** | Creer IPT, Creer STEP/IPT, Creer PDF, Creer PNG || **Update Workspace** | Synchronisation librairies et outils depuis Vault | ✅ 100% |---
+
+| **Export** | Export IAM, Export Drawing, Export BOM |
+
+| **iProperties** | Gestionnaire Proprietes Batch, iProperties Summary |
+
+| **Analyse** | Rapport Contraintes, Analyse Assembly |
+
+| **Utilitaires** | Rename Files, Copy Files, Delete Backup Files |---## Architecture du Projet
+
+
+
+---
+
+
+
+## Architecture du Projet## Fonctionnalités Clés```
+
+
+
+```XnrgyEngineeringAutomationTools/
+
 XnrgyEngineeringAutomationTools/
-├── App.xaml(.cs)                    # Point d'entrée application
-├── MainWindow.xaml(.cs)             # Dashboard principal (hub)
-├── appsettings.json                 # Configuration utilisateur
-│
-├── Modules/                         # Modules fonctionnels isolés
-│   ├── UploadModule/                # Module Upload Vault
-│   │   ├── Models/
-│   │   │   ├── VaultUploadFileItem.cs
-│   │   │   └── VaultUploadModels.cs
-│   │   └── Views/
-│   │       └── UploadModuleWindow.xaml(.cs)
-│   │
-│   ├── CreateModule/                # Module Pack & Go / Copy Design
-│   │   ├── Models/
-│   │   │   ├── CreateModuleRequest.cs
-│   │   │   └── CreateModuleSettings.cs
-│   │   ├── Services/
-│   │   │   ├── InventorCopyDesignService.cs
-│   │   │   └── ModuleCopyService.cs
-│   │   └── Views/
-│   │       ├── CreateModuleWindow.xaml(.cs)
-│   │       └── CreateModuleSettingsWindow.xaml(.cs)
-│   │
-│   ├── UploadTemplate/              # Module Upload Template
-│   │   └── Views/
-│   │       └── UploadTemplateWindow.xaml(.cs)
-│   │
-│   └── ChecklistHVAC/              # Module Checklist HVAC
-│       └── Views/
-│           └── ChecklistHVACWindow.xaml(.cs)
-│
-├── Shared/                          # Composants partagés
-│   ├── Views/                       # Fenêtres partagées
-│   │   ├── LoginWindow.xaml(.cs)    # Connexion Vault
-│   │   ├── ModuleSelectionWindow.xaml(.cs)  # Sélection module
-│   │   ├── PreviewWindow.xaml(.cs)  # Prévisualisation
-│   │   └── XnrgyMessageBox.xaml(.cs)  # MessageBox moderne
-│   ├── Models/                      # Modèles partagés (vide pour l'instant)
-│   └── Services/                    # Services partagés (vide pour l'instant)
-│
-├── Services/                        # Services métier partagés
-│   ├── VaultSDKService.cs           # SDK Vault v31.0.84 (~1200 lignes)
-│   ├── VaultSettingsService.cs      # Config chiffrée + sync Vault
-│   ├── InventorService.cs           # Connexion Inventor COM
-│   ├── InventorPropertyService.cs   # iProperties via Inventor COM
-│   ├── ApprenticePropertyService.cs # Lecture iProperties via Apprentice
-│   ├── OlePropertyService.cs         # Lecture OLE via OpenMCDF
-│   ├── NativeOlePropertyService.cs  # Lecture OLE native
-│   ├── WindowsPropertyService.cs    # Lecture propriétés Windows Shell
-│   ├── Logger.cs                    # Logging NLog UTF-8
-│   ├── SimpleLogger.cs              # Logger simple
-│   ├── JournalColorService.cs       # Couleurs journal (succès/erreur)
-│   ├── ThemeHelper.cs               # Gestion thèmes sombre/clair
-│   ├── UserPreferencesManager.cs   # Préférences utilisateur
-│   ├── SettingsService.cs           # Gestion settings app
-│   └── CredentialsManager.cs        # Gestion credentials chiffrées
-│
-├── Models/                          # Modèles de données partagés
-│   ├── ApplicationConfiguration.cs  # Configuration application
-│   ├── CategoryItem.cs              # Item catégorie pour ComboBox
-│   ├── FileItem.cs                  # Item fichier pour DataGrid
-│   ├── FileToUpload.cs              # Fichier à uploader
-│   ├── LifecycleDefinitionItem.cs  # Lifecycle Definition
-│   ├── LifecycleStateItem.cs        # Lifecycle State
-│   ├── ModuleInfo.cs                # Informations module
-│   ├── ProjectInfo.cs               # Informations projet
-│   ├── ProjectProperties.cs         # Propriétés Project/Ref/Module
-│   └── VaultConfiguration.cs        # Configuration Vault
-│
-├── ViewModels/                      # MVVM ViewModels
-│   └── AppMainViewModel.cs          # ViewModel principal
-│
-├── Converters/                      # Convertisseurs WPF
-│   ├── AnyOperationActiveConverter.cs
-│   ├── BooleanToColorConverter.cs
-│   ├── BooleanToTextConverter.cs
-│   ├── InverseBooleanConverter.cs
-│   ├── InverseBooleanToVisibilityConverter.cs
-│   ├── NullToVisibilityConverter.cs
-│   └── ProgressToWidthConverter.cs
-│
-├── Styles/                          # Styles centralisés
-│   └── XnrgyStyles.xaml             # 50+ styles partagés (couleurs, boutons, inputs)
-│
-├── Resources/                       # Images et icônes
-│   ├── XnrgyEngineeringAutomationTools.ico
-│   └── XnrgyEngineeringAutomationTools.png
-│
-├── Assets/                          # Assets visuels
-│   └── Icons/
-│       ├── ChecklistHVAC.png
-│       ├── DXFVerifier.ico
-│       ├── DXFVerifier.png
-│       ├── VaultUpload.ico
-│       ├── VaultUpload.png
-│       └── XnrgyTools.ico
-│
-├── Tools/                           # Outils utilitaires
-│   └── VaultBulkUploader/           # Outil console upload massif
-│
-├── Scripts/                          # Scripts PowerShell
-│   ├── CleanInventor2023Registry.ps1
-│   ├── Prepare-TemplateFiles.ps1
-│   └── Upload-ToVaultProd.ps1
-│
-├── Temp&Test/                       # Fichiers temporaires/test (exclus du build)
-│   ├── DiagnoseOleProperties.cs
-│   └── TestWindowsPropertyService.cs
-│
-├── Backups/                         # Sauvegardes locales
-│   └── BACKUP_YYYYMMDD_HHMMSS/
-│
-└── build-and-run.ps1                # Script compilation MSBuild automatique
-```
+
++-- App.xaml(.cs)                    # Point d'entree application### Centralisation UI (NOUVEAU - Janvier 2026)├── App.xaml(.cs)                    # Point d'entrée application
+
++-- MainWindow.xaml(.cs)             # Dashboard principal (hub)
+
++-- appsettings.json                 # Configuration utilisateur├── MainWindow.xaml(.cs)             # Dashboard principal (hub)
+
+|
+
++-- Modules/                         # === MODULES FONCTIONNELS ===Toutes les métadonnées de l'application sont centralisées dans `Styles/XnrgyStyles.xaml` :├── appsettings.json                 # Configuration utilisateur
+
+|   +-- UploadModule/                # Upload vers Vault
+
+|   |   +-- Models/│
+
+|   |   |   +-- VaultUploadFileItem.cs
+
+|   |   |   +-- VaultUploadModels.cs```xml├── Modules/                         # Modules fonctionnels isolés
+
+|   |   +-- Views/
+
+|   |       +-- UploadModuleWindow.xaml(.cs)<!-- Variables globales - MODIFIER ICI UNIQUEMENT -->│   ├── UploadModule/                # Module Upload Vault
+
+|   |
+
+|   +-- CreateModule/                # Pack and Go / Copy Design<sys:String x:Key="AppVersion">v1.0.0</sys:String>│   │   ├── Models/
+
+|   |   +-- Models/
+
+|   |   |   +-- CreateModuleRequest.cs<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>│   │   │   ├── VaultUploadFileItem.cs
+
+|   |   |   +-- CreateModuleSettings.cs
+
+|   |   +-- Services/<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>│   │   │   └── VaultUploadModels.cs
+
+|   |   |   +-- InventorCopyDesignService.cs  # ~3000 lignes
+
+|   |   |   +-- ModuleCopyService.cs<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>│   │   └── Views/
+
+|   |   |   +-- PdfCoverService.cs
+
+|   |   +-- Views/<sys:String x:Key="AppShortName">XEAT</sys:String>│   │       └── UploadModuleWindow.xaml(.cs)
+
+|   |       +-- CreateModuleWindow.xaml(.cs)
+
+|   |       +-- CreateModuleSettingsWindow.xaml(.cs)<sys:String x:Key="AppFullName">XNRGY Engineering Automation Tools</sys:String>│   │
+
+|   |
+
+|   +-- PlaceEquipment/              # Placement equipements (NOUVEAU)```│   ├── CreateModule/                # Module Pack & Go / Copy Design
+
+|   |   +-- Models/
+
+|   |   |   +-- EquipmentPlacementModels.cs│   │   ├── Models/
+
+|   |   +-- Services/
+
+|   |   |   +-- EquipmentPlacementService.cs**Avantages:**│   │   │   ├── CreateModuleRequest.cs
+
+|   |   |   +-- EquipmentCopyDesignService.cs
+
+|   |   +-- Views/- Mise à jour de version/date en **un seul endroit**│   │   │   └── CreateModuleSettings.cs
+
+|   |       +-- PlaceEquipmentWindow.xaml(.cs)  # ~4200 lignes
+
+|   |- Tous les titres de fenêtres utilisent `StaticResource`│   │   ├── Services/
+
+|   +-- SmartTools/                  # 25+ outils Inventor (COMPLET)
+
+|   |   +-- Resources/- Toutes les barres copyright utilisent `StaticResource`│   │   │   ├── InventorCopyDesignService.cs
+
+|   |   +-- Services/
+
+|   |   |   +-- SmartToolsService.cs  # ~5700 lignes- 22+ fenêtres synchronisées automatiquement│   │   │   └── ModuleCopyService.cs
+
+|   |   +-- Views/
+
+|   |       +-- SmartToolsWindow.xaml(.cs)│   │   └── Views/
+
+|   |       +-- ConstraintReportWindow.xaml(.cs)
+
+|   |       +-- CustomPropertyBatchWindow.xaml(.cs)### Configuration Centralisée via Vault│   │       ├── CreateModuleWindow.xaml(.cs)
+
+|   |       +-- ExportOptionsWindow.xaml(.cs)
+
+|   |       +-- HtmlPopupWindow.xaml(.cs)│   │       └── CreateModuleSettingsWindow.xaml(.cs)
+
+|   |       +-- IPropertiesWindow.xaml(.cs)
+
+|   |       +-- ProgressWindow.xaml(.cs)- Chiffrement AES-256 des fichiers de configuration│   │
+
+|   |       +-- SmartProgressWindow.xaml(.cs)
+
+|   |- Synchronisation automatique au démarrage│   ├── UploadTemplate/              # Module Upload Template
+
+|   +-- ChecklistHVAC/               # Validation AHU
+
+|   |   +-- Services/- Accès administrateur vérifié via Vault API│   │   └── Views/
+
+|   |   |   +-- ChecklistSyncService.cs
+
+|   |   +-- Views/- Support 50+ utilisateurs sur 3 sites│   │       └── UploadTemplateWindow.xaml(.cs)
+
+|   |       +-- ChecklistHVACWindow.xaml(.cs)
+
+|   |│   │
+
+|   +-- ACP/                         # Assistant Conception Projet
+
+|   |   +-- Services/### Smart Tools (25+ Outils)│   └── ChecklistHVAC/              # Module Checklist HVAC
+
+|   |   |   +-- ACPExcelService.cs
+
+|   |   |   +-- ACPSyncService.cs│       └── Views/
+
+|   |   +-- Views/
+
+|   |       +-- ACPWindow.xaml(.cs)| Catégorie | Outils |│           └── ChecklistHVACWindow.xaml(.cs)
+
+|   |
+
+|   +-- UploadTemplate/              # Upload Template (Admin)|-----------|--------|│
+
+|   |   +-- Views/
+
+|   |       +-- UploadTemplateWindow.xaml(.cs)| **Création** | Créer IPT, Créer STEP/IPT, Créer PDF, Créer PNG |├── Shared/                          # Composants partagés
+
+|   |
+
+|   +-- DXFVerifier/                 # Validation DXF (MIGRE)| **Export** | Export IAM, Export Drawing, Export BOM |│   ├── Views/                       # Fenêtres partagées
+
+|   |   +-- Services/
+
+|   |   |   +-- PdfAnalyzer.cs| **iProperties** | Gestionnaire Propriétés Batch, iProperties Summary |│   │   ├── LoginWindow.xaml(.cs)    # Connexion Vault
+
+|   |   |   +-- ExcelManager.cs
+
+|   |   +-- Views/| **Analyse** | Rapport Contraintes, Analyse Assembly |│   │   ├── ModuleSelectionWindow.xaml(.cs)  # Sélection module
+
+|   |       +-- DXFVerifierWindow.xaml(.cs)
+
+|   || **Utilitaires** | Rename Files, Copy Files, Delete Backup Files |│   │   ├── PreviewWindow.xaml(.cs)  # Prévisualisation
+
+|   +-- UpdateWorkspace/             # Sync Workspace
+
+|       +-- Views/│   │   └── XnrgyMessageBox.xaml(.cs)  # MessageBox moderne
+
+|           +-- UpdateWorkspaceWindow.xaml(.cs)
+
+|---│   ├── Models/                      # Modèles partagés (vide pour l'instant)
+
++-- Shared/                          # === COMPOSANTS PARTAGES ===
+
+|   +-- Views/│   └── Services/                    # Services partagés (vide pour l'instant)
+
+|       +-- LoginWindow.xaml(.cs)         # Connexion Vault
+
+|       +-- ModuleSelectionWindow.xaml(.cs)## Architecture du Projet│
+
+|       +-- PreviewWindow.xaml(.cs)
+
+|       +-- XnrgyMessageBox.xaml(.cs)     # MessageBox moderne├── Services/                        # Services métier partagés
+
+|
+
++-- Services/                        # === SERVICES METIER ===```│   ├── VaultSDKService.cs           # SDK Vault v31.0.84 (~1200 lignes)
+
+|   +-- VaultSDKService.cs           # SDK Vault v31.0.84 (~3200 lignes)
+
+|   +-- VaultSettingsService.cs      # Config chiffree AES-256XnrgyEngineeringAutomationTools/│   ├── VaultSettingsService.cs      # Config chiffrée + sync Vault
+
+|   +-- InventorService.cs           # Connexion Inventor COM
+
+|   +-- InventorPropertyService.cs   # iProperties via Inventor├── App.xaml(.cs)                    # Point d'entrée application│   ├── InventorService.cs           # Connexion Inventor COM
+
+|   +-- ApprenticePropertyService.cs # iProperties via Apprentice
+
+|   +-- UpdateWorkspaceService.cs    # Service sync workspace├── MainWindow.xaml(.cs)             # Dashboard principal (hub)│   ├── InventorPropertyService.cs   # iProperties via Inventor COM
+
+|   +-- Logger.cs                    # Logging NLog UTF-8
+
+|   +-- ThemeHelper.cs               # Gestion themes├── appsettings.json                 # Configuration utilisateur│   ├── ApprenticePropertyService.cs # Lecture iProperties via Apprentice
+
+|
+
++-- Models/                          # === MODELES PARTAGES ===││   ├── OlePropertyService.cs         # Lecture OLE via OpenMCDF
+
+|   +-- ApplicationConfiguration.cs
+
+|   +-- FileItem.cs├── Modules/                         # ═══ MODULES FONCTIONNELS ═══│   ├── NativeOlePropertyService.cs  # Lecture OLE native
+
+|   +-- ModuleInfo.cs
+
+|   +-- ProjectInfo.cs│   ├── UploadModule/                # Upload vers Vault│   ├── WindowsPropertyService.cs    # Lecture propriétés Windows Shell
+
+|   +-- ProjectProperties.cs
+
+|   +-- VaultConfiguration.cs│   │   ├── Models/│   ├── Logger.cs                    # Logging NLog UTF-8
+
+|
+
++-- Styles/                          # === STYLES CENTRALISES ===│   │   │   ├── VaultUploadFileItem.cs│   ├── SimpleLogger.cs              # Logger simple
+
+|   +-- XnrgyStyles.xaml             # 1350+ lignes (12 sections)
+
+|       +-- Section 1: Palettes couleurs│   │   │   └── VaultUploadModels.cs│   ├── JournalColorService.cs       # Couleurs journal (succès/erreur)
+
+|       +-- Section 1.5: Version/Copyright (CENTRALISES)
+
+|       +-- Section 2: Styles boutons│   │   └── Views/│   ├── ThemeHelper.cs               # Gestion thèmes sombre/clair
+
+|       +-- Section 3: Styles inputs
+
+|       +-- Section 4: Styles DataGrid│   │       └── UploadModuleWindow.xaml(.cs)│   ├── UserPreferencesManager.cs   # Préférences utilisateur
+
+|       +-- Section 5: Styles GroupBox
+
+|       +-- Section 6: Styles ComboBox│   ││   ├── SettingsService.cs           # Gestion settings app
+
+|       +-- Section 7: Styles ScrollBar
+
+|       +-- Section 8: Styles CheckBox/Radio│   ├── CreateModule/                # Pack & Go / Copy Design│   └── CredentialsManager.cs        # Gestion credentials chiffrées
+
+|       +-- Section 9: Styles Progress
+
+|       +-- Section 10: Styles Tooltip│   │   ├── Models/│
+
+|       +-- Section 11: Animations
+
+|│   │   │   ├── CreateModuleRequest.cs├── Models/                          # Modèles de données partagés
+
++-- Converters/                      # Convertisseurs WPF
+
++-- Resources/                       # Images et icones│   │   │   └── CreateModuleSettings.cs│   ├── ApplicationConfiguration.cs  # Configuration application
+
++-- Logs/                            # Fichiers logs
+
+```│   │   ├── Services/│   ├── CategoryItem.cs              # Item catégorie pour ComboBox
+
+
+
+---│   │   │   ├── InventorCopyDesignService.cs  # ~3000 lignes│   ├── FileItem.cs                  # Item fichier pour DataGrid
+
+
+
+## Prerequis│   │   │   ├── ModuleCopyService.cs│   ├── FileToUpload.cs              # Fichier à uploader
+
+
+
+| Composant | Version |│   │   │   └── PdfCoverService.cs│   ├── LifecycleDefinitionItem.cs  # Lifecycle Definition
+
+|-----------|---------|
+
+| Autodesk Inventor Professional | 2026.2 |│   │   └── Views/│   ├── LifecycleStateItem.cs        # Lifecycle State
+
+| Autodesk Vault Professional | 2026 |
+
+| Vault SDK | v31.0.84 |│   │       ├── CreateModuleWindow.xaml(.cs)│   ├── ModuleInfo.cs                # Informations module
+
+| .NET Framework | 4.8 |
+
+| Visual Studio | 2022 (MSBuild 18.0.0+) |│   │       └── CreateModuleSettingsWindow.xaml(.cs)│   ├── ProjectInfo.cs               # Informations projet
+
+| Windows | 10/11 x64 |
+
+│   ││   ├── ProjectProperties.cs         # Propriétés Project/Ref/Module
 
 ---
 
-## Fonctionnalités Implémentées
+│   ├── PlaceEquipment/              # Placement équipements (NOUVEAU)│   └── VaultConfiguration.cs        # Configuration Vault
 
-### 1. Upload Module (100%)
+## Installation
 
-Module intégré pour l'upload de fichiers vers Vault avec gestion complète des propriétés :
+│   │   ├── Models/│
 
-- **Connexion centralisée** - Utilise la connexion Vault de l'app principale
-- **Scan automatique** des modules engineering avec extraction propriétés
-- **Séparation Inventor/Non-Inventor** dans deux DataGrids avec headers visibles
-- **Application automatique** des propriétés métier:
-  - Project (ID=112)
-  - Reference (ID=121)
-  - Module (ID=122)
-- **Assignation complète**:
-  - Catégories Vault
-  - Lifecycle Definitions et States
-  - Révisions
-- **Synchronisation Vault vers iProperties** via `IExplorerUtil`
-- **Journal des opérations** avec barre de progression style Créer Module
-- **Contrôles**: Pause/Stop/Annuler pendant l'upload
-- **Styles DataGrid** avec headers fond sombre et texte bleu XNRGY
-- **Interface moderne** avec thèmes sombre/clair
+### Build depuis les sources
 
-### 2. Créer Module - Copy Design (100%)
+│   │   │   └── EquipmentPlacementModels.cs├── ViewModels/                      # MVVM ViewModels
 
-**Sources disponibles :**
-- Depuis Template : `$/Engineering/Library/Xnrgy_Module` (1083 fichiers Inventor)
-- Depuis Projet Existant : Sélection d'un projet local ou Vault
+```powershell
 
-**Workflow automatisé :**
-1. Switch vers projet source (IPJ)
-2. Ouverture Top Assembly (Module_.iam)
-3. Application iProperties sur le template
-4. Collecte de toutes les références (bottom-up)
-5. Copy Design natif avec SaveAs (IPT -> IAM -> Top Assembly)
-6. Traitement des dessins (.idw) avec mise à jour des références
-7. **Mise à jour des références des composants suppressed** (v1.1)
-8. Copie des fichiers orphelins (1059 fichiers non-référencés)
-9. Copie des fichiers non-Inventor (Excel, PDF, Word, etc.)
-10. Renommage du fichier .ipj
-11. Switch vers le nouveau projet
-12. Application des iProperties finales et paramètres Inventor
-13. Design View -> "Default", masquage Workfeatures
-14. Vue ISO + Zoom All (Fit)
-15. Update All (rebuild) + Save All
+# Cloner le repository│   │   ├── Services/│   └── AppMainViewModel.cs          # ViewModel principal
+
+git clone https://github.com/mohammedamineelgalai/VaultAutomationTool.git
+
+cd XnrgyEngineeringAutomationTools│   │   │   ├── EquipmentPlacementService.cs│
+
+
+
+# METHODE OBLIGATOIRE - Script build-and-run.ps1│   │   │   └── EquipmentCopyDesignService.cs├── Converters/                      # Convertisseurs WPF
+
+.\build-and-run.ps1
+
+│   │   └── Views/│   ├── AnyOperationActiveConverter.cs
+
+# Options disponibles:
+
+.\build-and-run.ps1 -Clean      # Nettoyer avant compilation│   │       └── PlaceEquipmentWindow.xaml(.cs)  # ~4200 lignes│   ├── BooleanToColorConverter.cs
+
+.\build-and-run.ps1 -NoBuild    # Lancer sans recompiler
+
+```│   ││   ├── BooleanToTextConverter.cs
+
+
+
+> **IMPORTANT**: Toujours utiliser `build-and-run.ps1`. Ne JAMAIS utiliser `dotnet build` pour les projets .NET Framework 4.8 WPF.│   ├── SmartTools/                  # 25+ outils Inventor (COMPLET)│   ├── InverseBooleanConverter.cs
+
+
+
+### Executable│   │   ├── Resources/│   ├── InverseBooleanToVisibilityConverter.cs
+
+
+
+L'application compilee se trouve dans:│   │   ├── Services/│   ├── NullToVisibilityConverter.cs
+
+```
+
+bin\Release\XnrgyEngineeringAutomationTools.exe│   │   │   └── SmartToolsService.cs  # ~5700 lignes│   └── ProgressToWidthConverter.cs
+
+```
+
+│   │   └── Views/│
+
+---
+
+│   │       ├── SmartToolsWindow.xaml(.cs)├── Styles/                          # Styles centralisés
+
+## Centralisation des Metadonnees
+
+│   │       ├── ConstraintReportWindow.xaml(.cs)│   └── XnrgyStyles.xaml             # 50+ styles partagés (couleurs, boutons, inputs)
+
+### Fichier: `Styles/XnrgyStyles.xaml`
+
+│   │       ├── CustomPropertyBatchWindow.xaml(.cs)│
+
+#### Variables Globales (modifier ici uniquement)
+
+```xml│   │       ├── ExportOptionsWindow.xaml(.cs)├── Resources/                       # Images et icônes
+
+<sys:String x:Key="AppVersion">v1.0.0</sys:String>
+
+<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>│   │       ├── HtmlPopupWindow.xaml(.cs)│   ├── XnrgyEngineeringAutomationTools.ico
+
+<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
+
+<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>│   │       ├── IPropertiesWindow.xaml(.cs)│   └── XnrgyEngineeringAutomationTools.png
+
+```
+
+│   │       ├── ProgressWindow.xaml(.cs)│
+
+#### Titres de Fenetres (22 ressources)
+
+```xml│   │       └── SmartProgressWindow.xaml(.cs)├── Assets/                          # Assets visuels
+
+<!-- Utilisation dans XAML: Title="{StaticResource WindowTitleXXX}" -->
+
+<sys:String x:Key="WindowTitleMain">XNRGY Engineering Automation Tools - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>│   ││   └── Icons/
+
+<sys:String x:Key="WindowTitleUploadModule">Upload Module - XEAT - v1.0.0 - ...</sys:String>
+
+<sys:String x:Key="WindowTitleSmartTools">Smart Tools - XEAT - v1.0.0 - ...</sys:String>│   ├── ChecklistHVAC/               # Validation AHU│       ├── ChecklistHVAC.png
+
+<!-- ... 19 autres titres -->
+
+```│   │   ├── Services/│       ├── DXFVerifier.ico
+
+
+
+#### Barres Copyright (16 ressources)│   │   │   └── ChecklistSyncService.cs│       ├── DXFVerifier.png
+
+```xml
+
+<!-- Utilisation dans XAML: Text="{StaticResource CopyrightXXX}" -->│   │   └── Views/│       ├── VaultUpload.ico
+
+<sys:String x:Key="CopyrightMain">XNRGY Engineering Automation Tools - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+
+<sys:String x:Key="CopyrightSmartTools">Smart Tools - XEAT - v1.0.0 - ...</sys:String>│   │       └── ChecklistHVACWindow.xaml(.cs)│       ├── VaultUpload.png
+
+<!-- ... 14 autres copyrights -->
+
+```│   ││       └── XnrgyTools.ico
+
+
+
+---│   ├── ACP/                         # Assistant Conception Projet│
+
+
+
+## Configuration│   │   ├── Services/├── Tools/                           # Outils utilitaires
+
+
+
+### Configuration Vault via fichier centralise│   │   │   ├── ACPExcelService.cs│   └── VaultBulkUploader/           # Outil console upload massif
+
+
+
+**Chemin Vault:**│   │   │   └── ACPSyncService.cs│
+
+```
+
+$/Engineering/Inventor_Standards/Automation_Standard/Configuration_Files/│   │   └── Views/├── Scripts/                          # Scripts PowerShell
+
+  XnrgyEngineeringAutomationToolsApp/XnrgyEngineeringAutomationToolsSettings.config
+
+```│   │       └── ACPWindow.xaml(.cs)│   ├── CleanInventor2023Registry.ps1
+
+
+
+**Chemin Local:**│   ││   ├── Prepare-TemplateFiles.ps1
+
+```
+
+C:\Vault\Engineering\Inventor_Standards\Automation_Standard\Configuration_Files\│   ├── UploadTemplate/              # Upload Template (Admin)│   └── Upload-ToVaultProd.ps1
+
+  XnrgyEngineeringAutomationToolsApp\XnrgyEngineeringAutomationToolsSettings.config
+
+```│   │   └── Views/│
+
+
+
+### Proprietes Vault (IDs fixes)│   │       └── UploadTemplateWindow.xaml(.cs)├── Temp&Test/                       # Fichiers temporaires/test (exclus du build)
+
+
+
+| Propriete | ID | Description |│   ││   ├── DiagnoseOleProperties.cs
+
+|-----------|-----|-------------|
+
+| Project | 112 | Numero de projet (ex: 10359) |│   ├── DXFVerifier/                 # Validation DXF (MIGRÉ)│   └── TestWindowsPropertyService.cs
+
+| Reference | 121 | Numero de reference (ex: 09) |
+
+| Module | 122 | Numero de module (ex: 03) |│   │   ├── Services/│
+
+
+
+### Pattern de chemin standard│   │   │   ├── PdfAnalyzer.cs├── Backups/                         # Sauvegardes locales
+
+
+
+```│   │   │   └── ExcelManager.cs│   └── BACKUP_YYYYMMDD_HHMMSS/
+
+C:\Vault\Engineering\Projects\[PROJECT]\REF[XX]\M[XX]
+
+                              |         |       |│   │   └── Views/│
+
+Exemple:                   10359      REF09     M03
+
+```│   │       └── DXFVerifierWindow.xaml(.cs)└── build-and-run.ps1                # Script compilation MSBuild automatique
+
+
+
+---│   │```
+
+
+
+## Logs│   └── UpdateWorkspace/             # Sync Workspace
+
+
+
+| Module | Emplacement |│       └── Views/---
+
+|--------|-------------|
+
+| Application | `bin\Release\Logs\XEAT_*.log` |│           └── UpdateWorkspaceWindow.xaml(.cs)
+
+| Vault Upload | `bin\Release\Logs\VaultUpload_*.log` |
+
+| Copy Design | `bin\Release\Logs\CopyDesign_*.log` |│## Fonctionnalités Implémentées
+
+| Smart Tools | `bin\Release\Logs\SmartTools_*.log` |
+
+├── Shared/                          # ═══ COMPOSANTS PARTAGÉS ═══
+
+### Format de log
+
+```│   └── Views/### 1. Upload Module (100%)
+
+[YYYY-MM-DD HH:MM:SS.mmm] [LEVEL] [+] Message
+
+```│       ├── LoginWindow.xaml(.cs)         # Connexion Vault
+
+
+
+---│       ├── ModuleSelectionWindow.xaml(.cs)Module intégré pour l'upload de fichiers vers Vault avec gestion complète des propriétés :
+
+
+
+## Regles de Developpement│       ├── PreviewWindow.xaml(.cs)
+
+
+
+### Emojis dans le Code│       └── XnrgyMessageBox.xaml(.cs)     # MessageBox moderne- **Connexion centralisée** - Utilise la connexion Vault de l'app principale
+
+
+
+#### INTERDITS (code C#, logs):│- **Scan automatique** des modules engineering avec extraction propriétés
+
+Tous les emojis sont interdits dans le code source et les logs.
+
+├── Services/                        # ═══ SERVICES MÉTIER ═══- **Séparation Inventor/Non-Inventor** dans deux DataGrids avec headers visibles
+
+#### AUTORISES (interfaces XAML uniquement):
+
+checkmark, X, warning, info, refresh, file, folder, search, list, hourglass│   ├── VaultSDKService.cs           # SDK Vault v31.0.84 (~3200 lignes)- **Application automatique** des propriétés métier:
+
+
+
+#### Marqueurs ASCII pour logs:│   ├── VaultSettingsService.cs      # Config chiffrée AES-256  - Project (ID=112)
+
+| Symbole | Remplacement | Usage |
+
+|---------|--------------|-------|│   ├── InventorService.cs           # Connexion Inventor COM  - Reference (ID=121)
+
+| X | [-] | Erreur |
+
+| checkmark | [+] | Succes |│   ├── InventorPropertyService.cs   # iProperties via Inventor  - Module (ID=122)
+
+| warning | [!] | Avertissement |
+
+| refresh | [>] | Traitement |│   ├── ApprenticePropertyService.cs # iProperties via Apprentice- **Assignation complète**:
+
+
+
+### Build Tool│   ├── UpdateWorkspaceService.cs    # Service sync workspace  - Catégories Vault
+
+
+
+```powershell│   ├── Logger.cs                    # Logging NLog UTF-8  - Lifecycle Definitions et States
+
+# TOUJOURS utiliser:
+
+.\build-and-run.ps1│   └── ThemeHelper.cs               # Gestion thèmes  - Révisions
+
+
+
+# JAMAIS utiliser:│- **Synchronisation Vault vers iProperties** via `IExplorerUtil`
+
+dotnet build  # Ne genere pas les .g.cs pour WPF
+
+```├── Models/                          # ═══ MODÈLES PARTAGÉS ═══- **Journal des opérations** avec barre de progression style Créer Module
+
+
+
+---│   ├── ApplicationConfiguration.cs- **Contrôles**: Pause/Stop/Annuler pendant l'upload
+
+
+
+## Changelog Recent│   ├── FileItem.cs- **Styles DataGrid** avec headers fond sombre et texte bleu XNRGY
+
+
+
+### v1.0.0 (R 2026-01-10)│   ├── ModuleInfo.cs- **Interface moderne** avec thèmes sombre/clair
+
+
+
+#### Centralisation UI│   ├── ProjectInfo.cs
+
+- [+] Toutes les metadonnees centralisees dans `XnrgyStyles.xaml`
+
+- [+] 22 titres de fenetres via `StaticResource`│   ├── ProjectProperties.cs### 2. Créer Module - Copy Design (100%)
+
+- [+] 16 textes copyright via `StaticResource`
+
+- [+] Grand titre MainWindow centralise│   └── VaultConfiguration.cs
+
+- [+] Suppression de tous les `MultiBinding` redondants
+
+│**Sources disponibles :**
+
+#### Smart Tools
+
+- [+] 25+ outils Inventor complets├── Styles/                          # ═══ STYLES CENTRALISÉS ═══- Depuis Template : `$/Engineering/Library/Xnrgy_Module` (1083 fichiers Inventor)
+
+- [+] Service SmartToolsService (~5700 lignes)
+
+- [+] Fenetres: ConstraintReport, CustomPropertyBatch, IProperties, etc.│   └── XnrgyStyles.xaml             # 1350+ lignes (12 sections)- Depuis Projet Existant : Sélection d'un projet local ou Vault
+
+
+
+#### Place Equipment│       ├── Section 1: Palettes couleurs
+
+- [+] Module complet avec Copy Design automatise
+
+- [+] PlaceEquipmentWindow (~4200 lignes)│       ├── Section 1.5: Version/Copyright (CENTRALISÉS)**Workflow automatisé :**
+
+- [+] Services: EquipmentPlacementService, EquipmentCopyDesignService
+
+│       ├── Section 2: Styles boutons1. Switch vers projet source (IPJ)
+
+#### DXF Verifier
+
+- [+] Migration complete vers XEAT│       ├── Section 3: Styles inputs2. Ouverture Top Assembly (Module_.iam)
+
+- [+] Validation DXF/CSV vs PDF (~97% precision)
+
+- [+] Version specifique: v1.2.0│       ├── Section 4: Styles DataGrid3. Application iProperties sur le template
+
+
+
+#### Architecture│       ├── Section 5: Styles GroupBox4. Collecte de toutes les références (bottom-up)
+
+- [+] 9 modules fonctionnels complets
+
+- [+] Structure modulaire Modules/{Module}/Views|Services|Models│       ├── Section 6: Styles ComboBox5. Copy Design natif avec SaveAs (IPT -> IAM -> Top Assembly)
+
+- [+] Styles centralises (1350+ lignes, 12 sections)
+
+│       ├── Section 7: Styles ScrollBar6. Traitement des dessins (.idw) avec mise à jour des références
+
+---
+
+│       ├── Section 8: Styles CheckBox/Radio7. **Mise à jour des références des composants suppressed** (v1.1)
+
+## Auteur
+
+│       ├── Section 9: Styles Progress8. Copie des fichiers orphelins (1059 fichiers non-référencés)
+
+**Mohammed Amine Elgalai**  
+
+XNRGY Climate Systems ULC  │       ├── Section 10: Styles Tooltip9. Copie des fichiers non-Inventor (Excel, PDF, Word, etc.)
+
+2025-2026
+
+│       └── Section 11: Animations10. Renommage du fichier .ipj
+
+---
+
+│11. Switch vers le nouveau projet
+
+## Licence
+
+├── Converters/                      # Convertisseurs WPF12. Application des iProperties finales et paramètres Inventor
+
+Proprietaire - XNRGY Climate Systems ULC. Tous droits reserves.
+
+├── Resources/                       # Images et icônes13. Design View -> "Default", masquage Workfeatures
+
+└── Logs/                            # Fichiers logs14. Vue ISO + Zoom All (Fit)
+
+```15. Update All (rebuild) + Save All
+
 16. Module reste ouvert pour le dessinateur
 
-**Gestion intelligente des références :**
-- Fichiers Library (IPT_Typical_Drawing) : Liens préservés
-- Fichiers Module : Copies avec références mises à jour
-- Fichiers IDW : Références corrigées via `PutLogicalFileNameUsingFull`
-- **Composants suppressed** : Références mises à jour même si supprimés
+---
 
-**Options de renommage (v1.1) :**
-- Rechercher/Remplacer (cumulatif sur NewFileName)
-- Préfixe/Suffixe (appliqué sur OriginalFileName)
-- **Checkbox "Inclure fichiers non-Inventor"**
+**Gestion intelligente des références :**
+
+## Prérequis- Fichiers Library (IPT_Typical_Drawing) : Liens préservés
+
+- Fichiers Module : Copies avec références mises à jour
+
+| Composant | Version |- Fichiers IDW : Références corrigées via `PutLogicalFileNameUsingFull`
+
+|-----------|---------|- **Composants suppressed** : Références mises à jour même si supprimés
+
+| Autodesk Inventor Professional | 2026.2 |
+
+| Autodesk Vault Professional | 2026 |**Options de renommage (v1.1) :**
+
+| Vault SDK | v31.0.84 |- Rechercher/Remplacer (cumulatif sur NewFileName)
+
+| .NET Framework | 4.8 |- Préfixe/Suffixe (appliqué sur OriginalFileName)
+
+| Visual Studio | 2022 (MSBuild 18.0.0+) |- **Checkbox "Inclure fichiers non-Inventor"**
+
+| Windows | 10/11 x64 |
 
 ### 3. Réglages Admin (100%)
 
-**Système de configuration centralisée :**
-- Chiffrement AES-256 des fichiers de configuration
-- Synchronisation automatique via Vault au démarrage
-- Accès restreint aux administrateurs (Role "Administrator" ou Groupe "Admin_Designer")
-- Déploiement multi-sites : Saint-Hubert QC + Arizona US (2 usines) = 50+ utilisateurs
-
-**Chemin Vault :**
-```
-$/Engineering/Inventor_Standards/Automation_Standard/Configuration_Files/XnrgyEngineeringAutomationToolsApp/
-```
-
-**Sections configurables :**
-- Liste des initiales designers (26 entrées + "Autre...")
-- Chemins templates et projets
-- Extensions Inventor supportées
-- Dossiers/fichiers exclus
-- Noms des iProperties
-
-**Interface moderne :**
-- Styles uniformisés avec effets glow sur boutons
-- GroupBox avec titres orange (#FF8C00)
-- Thèmes sombre/clair cohérents
-
-### 4. Upload Template (100%)
-
-- **Réservé aux administrateurs** - Message XnrgyMessageBox si non-admin
-- **Upload templates** depuis Library vers Vault
-- **Utilise la connexion partagée** de l'app principale
-- **Journal intégré** avec barre de progression
-- **Interface alignée** avec Upload Module (hauteurs, styles, thèmes)
-
-### 5. Checklist HVAC (100%)
-
-- Validation des modules AHU
-- Checklist interactive avec critères XNRGY
-- Stockage des validations dans Vault
-- Interface WebView2 pour affichage HTML
-
-### 6. Connexions Automatiques
-
-- **Vault Professional 2026** - SDK v31.0.84 avec reconnexion automatique
-- **Inventor Professional 2026.2** - COM avec détection d'instance active
-- **Throttling intelligent** pour éviter spam logs (v1.1)
-- **Vérification fenêtre Inventor** prête avant connexion COM
-- **Update Workspace** - Synchronisation dossiers au démarrage :
-  - `$/Content Center Files`
-  - `$/Engineering/Inventor_Standards`
-  - `$/Engineering/Library/Cabinet`
-  - `$/Engineering/Library/Xnrgy_M99`
-  - `$/Engineering/Library/Xnrgy_Module`
-
 ---
 
-## Services Principaux
+**Système de configuration centralisée :**
 
-### VaultSDKService.cs
+## Installation- Chiffrement AES-256 des fichiers de configuration
+
+- Synchronisation automatique via Vault au démarrage
+
+### Build depuis les sources- Accès restreint aux administrateurs (Role "Administrator" ou Groupe "Admin_Designer")
+
+- Déploiement multi-sites : Saint-Hubert QC + Arizona US (2 usines) = 50+ utilisateurs
+
+```powershell
+
+# Cloner le repository**Chemin Vault :**
+
+git clone https://github.com/mohammedamineelgalai/VaultAutomationTool.git```
+
+cd XnrgyEngineeringAutomationTools$/Engineering/Inventor_Standards/Automation_Standard/Configuration_Files/XnrgyEngineeringAutomationToolsApp/
+
+```
+
+# MÉTHODE OBLIGATOIRE - Script build-and-run.ps1
+
+.\build-and-run.ps1**Sections configurables :**
+
+- Liste des initiales designers (26 entrées + "Autre...")
+
+# Options disponibles:- Chemins templates et projets
+
+.\build-and-run.ps1 -Clean      # Nettoyer avant compilation- Extensions Inventor supportées
+
+.\build-and-run.ps1 -NoBuild    # Lancer sans recompiler- Dossiers/fichiers exclus
+
+```- Noms des iProperties
+
+
+
+> ⚠️ **IMPORTANT**: Toujours utiliser `build-and-run.ps1`. Ne JAMAIS utiliser `dotnet build` pour les projets .NET Framework 4.8 WPF.**Interface moderne :**
+
+- Styles uniformisés avec effets glow sur boutons
+
+### Exécutable- GroupBox avec titres orange (#FF8C00)
+
+- Thèmes sombre/clair cohérents
+
+L'application compilée se trouve dans:
+
+```### 4. Upload Template (100%)
+
+bin\Release\XnrgyEngineeringAutomationTools.exe
+
+```- **Réservé aux administrateurs** - Message XnrgyMessageBox si non-admin
+
+- **Upload templates** depuis Library vers Vault
+
+---- **Utilise la connexion partagée** de l'app principale
+
+- **Journal intégré** avec barre de progression
+
+## Centralisation des Métadonnées- **Interface alignée** avec Upload Module (hauteurs, styles, thèmes)
+
+
+
+### Fichier: `Styles/XnrgyStyles.xaml`### 5. Checklist HVAC (100%)
+
+
+
+#### Variables Globales (modifier ici uniquement)- Validation des modules AHU
+
+```xml- Checklist interactive avec critères XNRGY
+
+<sys:String x:Key="AppVersion">v1.0.0</sys:String>- Stockage des validations dans Vault
+
+<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>- Interface WebView2 pour affichage HTML
+
+<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
+
+<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>### 6. Connexions Automatiques
+
+```
+
+- **Vault Professional 2026** - SDK v31.0.84 avec reconnexion automatique
+
+#### Titres de Fenêtres (22 ressources)- **Inventor Professional 2026.2** - COM avec détection d'instance active
+
+```xml- **Throttling intelligent** pour éviter spam logs (v1.1)
+
+<!-- Utilisation dans XAML: Title="{StaticResource WindowTitleXXX}" -->- **Vérification fenêtre Inventor** prête avant connexion COM
+
+<sys:String x:Key="WindowTitleMain">XNRGY Engineering Automation Tools - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>- **Update Workspace** - Synchronisation dossiers au démarrage :
+
+<sys:String x:Key="WindowTitleUploadModule">Upload Module - XEAT - v1.0.0 - ...</sys:String>  - `$/Content Center Files`
+
+<sys:String x:Key="WindowTitleSmartTools">Smart Tools - XEAT - v1.0.0 - ...</sys:String>  - `$/Engineering/Inventor_Standards`
+
+<!-- ... 19 autres titres -->  - `$/Engineering/Library/Cabinet`
+
+```  - `$/Engineering/Library/Xnrgy_M99`
+
+  - `$/Engineering/Library/Xnrgy_Module`
+
+#### Barres Copyright (16 ressources)
+
+```xml---
+
+<!-- Utilisation dans XAML: Text="{StaticResource CopyrightXXX}" -->
+
+<sys:String x:Key="CopyrightMain">XNRGY Engineering Automation Tools - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>## Services Principaux
+
+<sys:String x:Key="CopyrightSmartTools">Smart Tools - XEAT - v1.0.0 - ...</sys:String>
+
+<!-- ... 14 autres copyrights -->### VaultSDKService.cs
+
+```
 
 Service principal pour l'interaction avec Vault SDK (~1200 lignes).
 
-**Responsabilités :**
-- Connexion/déconnexion Vault
-- Chargement des Property Definitions
-- Chargement des Catégories
-- Chargement des Lifecycle Definitions
-- Upload de fichiers avec `FileManager.AddFile`
-- Application des propriétés via `UpdateFileProperties`
-- Synchronisation Vault -> iProperties via `IExplorerUtil.UpdateFileProperties`
-- Assignation de catégories via `UpdateFileCategories`
-- Assignation de lifecycle via `UpdateFileLifeCycleDefinitions` (reflection)
-- Assignation de révisions via `UpdateFileRevisionNumbers`
-- Gestion des erreurs Vault (1003, 1013, 1136, etc.)
-
-### InventorService.cs
-
-Service pour la connexion COM à Inventor.
-
-**Améliorations v1.1 :**
-- Throttling intelligent (minimum 2 sec entre tentatives)
-- Vérification fenêtre Inventor prête (MainWindowHandle != IntPtr.Zero)
-- Logs silencieux pour COMException 0x800401E3
-- Compteur d'échecs consécutifs avec log périodique
-
-### InventorCopyDesignService.cs
-
-Service pour Copy Design natif avec gestion des références.
-
-**Méthode principale :**
-```csharp
-Task<bool> ExecuteRealPackAndGoAsync(
-    string templatePath,
-    string destinationPath,
-    string projectNumber,
-    string reference,
-    string module,
-    IProgress<string> progress
-)
-```
-
-### Services de Propriétés
-
-- **InventorPropertyService** : iProperties via Inventor COM
-- **ApprenticePropertyService** : Lecture iProperties via Apprentice (sans Inventor ouvert)
-- **OlePropertyService** : Lecture OLE via OpenMCDF
-- **NativeOlePropertyService** : Lecture OLE native (Windows API)
-- **WindowsPropertyService** : Lecture propriétés Windows Shell
-
-### Autres Services
-
-- **Logger.cs** : Logging NLog avec fichiers UTF-8
-- **ThemeHelper.cs** : Gestion thèmes sombre/clair
-- **UserPreferencesManager.cs** : Persistance préférences utilisateur
-- **VaultSettingsService.cs** : Configuration chiffrée + sync Vault
-- **JournalColorService.cs** : Couleurs uniformes pour journal
-- **CredentialsManager.cs** : Gestion credentials chiffrées AES-256
-
 ---
 
-## Propriétés XNRGY
+**Responsabilités :**
 
-Le système extrait automatiquement les propriétés depuis le chemin de fichier:
+## Configuration- Connexion/déconnexion Vault
+
+- Chargement des Property Definitions
+
+### Configuration Vault via fichier centralisé- Chargement des Catégories
+
+- Chargement des Lifecycle Definitions
+
+**Chemin Vault:**- Upload de fichiers avec `FileManager.AddFile`
+
+```- Application des propriétés via `UpdateFileProperties`
+
+$/Engineering/Inventor_Standards/Automation_Standard/Configuration_Files/- Synchronisation Vault -> iProperties via `IExplorerUtil.UpdateFileProperties`
+
+  XnrgyEngineeringAutomationToolsApp/XnrgyEngineeringAutomationToolsSettings.config- Assignation de catégories via `UpdateFileCategories`
+
+```- Assignation de lifecycle via `UpdateFileLifeCycleDefinitions` (reflection)
+
+- Assignation de révisions via `UpdateFileRevisionNumbers`
+
+**Chemin Local:**- Gestion des erreurs Vault (1003, 1013, 1136, etc.)
 
 ```
-C:\Vault\Engineering\Projects\[PROJECT]\REF[XX]\M[XX]
+
+C:\Vault\Engineering\Inventor_Standards\Automation_Standard\Configuration_Files\### InventorService.cs
+
+  XnrgyEngineeringAutomationToolsApp\XnrgyEngineeringAutomationToolsSettings.config
+
+```Service pour la connexion COM à Inventor.
+
+
+
+### Propriétés Vault (IDs fixes)**Améliorations v1.1 :**
+
+- Throttling intelligent (minimum 2 sec entre tentatives)
+
+| Propriété | ID | Description |- Vérification fenêtre Inventor prête (MainWindowHandle != IntPtr.Zero)
+
+|-----------|-----|-------------|- Logs silencieux pour COMException 0x800401E3
+
+| Project | 112 | Numéro de projet (ex: 10359) |- Compteur d'échecs consécutifs avec log périodique
+
+| Reference | 121 | Numéro de référence (ex: 09) |
+
+| Module | 122 | Numéro de module (ex: 03) |### InventorCopyDesignService.cs
+
+
+
+### Pattern de chemin standardService pour Copy Design natif avec gestion des références.
+
+
+
+```**Méthode principale :**
+
+C:\Vault\Engineering\Projects\[PROJECT]\REF[XX]\M[XX]```csharp
+
+                              ↓         ↓       ↓Task<bool> ExecuteRealPackAndGoAsync(
+
+Exemple:                   10359      REF09     M03    string templatePath,
+
+```    string destinationPath,
+
+    string projectNumber,
+
+---    string reference,
+
+    string module,
+
+## Logs    IProgress<string> progress
+
+)
+
+| Module | Emplacement |```
+
+|--------|-------------|
+
+| Application | `bin\Release\Logs\XEAT_*.log` |### Services de Propriétés
+
+| Vault Upload | `bin\Release\Logs\VaultUpload_*.log` |
+
+| Copy Design | `bin\Release\Logs\CopyDesign_*.log` |- **InventorPropertyService** : iProperties via Inventor COM
+
+| Smart Tools | `bin\Release\Logs\SmartTools_*.log` |- **ApprenticePropertyService** : Lecture iProperties via Apprentice (sans Inventor ouvert)
+
+- **OlePropertyService** : Lecture OLE via OpenMCDF
+
+### Format de log- **NativeOlePropertyService** : Lecture OLE native (Windows API)
+
+```- **WindowsPropertyService** : Lecture propriétés Windows Shell
+
+[YYYY-MM-DD HH:MM:SS.mmm] [LEVEL] [+] Message
+
+```### Autres Services
+
+
+
+---- **Logger.cs** : Logging NLog avec fichiers UTF-8
+
+- **ThemeHelper.cs** : Gestion thèmes sombre/clair
+
+## Règles de Développement- **UserPreferencesManager.cs** : Persistance préférences utilisateur
+
+- **VaultSettingsService.cs** : Configuration chiffrée + sync Vault
+
+### Emojis dans le Code- **JournalColorService.cs** : Couleurs uniformes pour journal
+
+- **CredentialsManager.cs** : Gestion credentials chiffrées AES-256
+
+#### INTERDITS (code C#, logs):
+
+```---
+
+😊 🙂 😄 👍 ❤️ 🔥 💯 ⭐ 🚀 etc.
+
+```## Propriétés XNRGY
+
+
+
+#### AUTORISÉS (interfaces XAML):Le système extrait automatiquement les propriétés depuis le chemin de fichier:
+
+```
+
+✅ ❌ ⚠️ ℹ️ 🔄 📄 📁 📊 🔍 📋 ⏳```
+
+```C:\Vault\Engineering\Projects\[PROJECT]\REF[XX]\M[XX]
+
                               |         |       |
-Vault Property IDs:        ID=112    ID=121  ID=122
-```
 
-| Propriété | ID Vault | Description |
-|-----------|----------|-------------|
-| Project | 112 | Numéro de projet (5 chiffres) |
-| Reference | 121 | Numéro de référence (2 chiffres) |
+#### Marqueurs ASCII pour logs:Vault Property IDs:        ID=112    ID=121  ID=122
+
+| Emoji | Remplacement | Usage |```
+
+|-------|--------------|-------|
+
+| ❌ | [-] | Erreur || Propriété | ID Vault | Description |
+
+| ✅ | [+] | Succès ||-----------|----------|-------------|
+
+| ⚠️ | [!] | Avertissement || Project | 112 | Numéro de projet (5 chiffres) |
+
+| 🔄 | [>] | Traitement || Reference | 121 | Numéro de référence (2 chiffres) |
+
 | Module | 122 | Numéro de module (2 chiffres) |
+
+### Build Tool
 
 ### Mapping Catégorie -> Lifecycle Definition
 
-| Catégorie | Lifecycle Definition |
-|-----------|---------------------|
+```powershell
+
+# TOUJOURS utiliser:| Catégorie | Lifecycle Definition |
+
+.\build-and-run.ps1|-----------|---------------------|
+
 | Engineering | Flexible Release Process |
-| Office | Simple Release Process |
-| Standard | Basic Release Process |
-| Base | (aucun) |
 
----
+# JAMAIS utiliser:| Office | Simple Release Process |
 
-## Interface Utilisateur
+dotnet build  # Ne génère pas les .g.cs pour WPF| Standard | Basic Release Process |
 
-### Thèmes
+```| Base | (aucun) |
 
-L'application supporte deux thèmes avec propagation automatique vers toutes les fenêtres :
 
-- **Thème Sombre** (défaut) : Fond #1E1E2E, panneaux #252536
-- **Thème Clair** : Fond #F5F7FA, panneaux #FCFDFF
 
-**Éléments à fond FIXE** (même en thème clair) :
+------
+
+
+
+## Changelog Récent## Interface Utilisateur
+
+
+
+### v1.0.0 (R 2026-01-10)### Thèmes
+
+
+
+#### Centralisation UIL'application supporte deux thèmes avec propagation automatique vers toutes les fenêtres :
+
+- [+] Toutes les métadonnées centralisées dans `XnrgyStyles.xaml`
+
+- [+] 22 titres de fenêtres via `StaticResource`- **Thème Sombre** (défaut) : Fond #1E1E2E, panneaux #252536
+
+- [+] 16 textes copyright via `StaticResource`- **Thème Clair** : Fond #F5F7FA, panneaux #FCFDFF
+
+- [+] Grand titre MainWindow centralisé
+
+- [+] Suppression de tous les `MultiBinding` redondants**Éléments à fond FIXE** (même en thème clair) :
+
 - Journal : #1A1A28 (noir)
-- Panneaux statistiques : #1A1A28 (noir)
-- Headers GroupBox : #2A4A6F (bleu marine) avec texte blanc
 
-### Styles Centralisés
+#### Smart Tools- Panneaux statistiques : #1A1A28 (noir)
 
-Le fichier `Styles/XnrgyStyles.xaml` contient 50+ styles partagés :
+- [+] 25+ outils Inventor complets- Headers GroupBox : #2A4A6F (bleu marine) avec texte blanc
 
-- **Couleurs** : Palette XNRGY officielle
-- **Boutons** : PrimaryButton, SecondaryButton, SuccessButton, WarningButton, DangerButton avec effets glow
+- [+] Service SmartToolsService (~5700 lignes)
+
+- [+] Fenêtres: ConstraintReport, CustomPropertyBatch, IProperties, etc.### Styles Centralisés
+
+
+
+#### Place EquipmentLe fichier `Styles/XnrgyStyles.xaml` contient 50+ styles partagés :
+
+- [+] Module complet avec Copy Design automatisé
+
+- [+] PlaceEquipmentWindow (~4200 lignes)- **Couleurs** : Palette XNRGY officielle
+
+- [+] Services: EquipmentPlacementService, EquipmentCopyDesignService- **Boutons** : PrimaryButton, SecondaryButton, SuccessButton, WarningButton, DangerButton avec effets glow
+
 - **Inputs** : ModernTextBox, ModernComboBox avec bordures #4A7FBF
-- **DataGrid** : Headers fond sombre #1A1A28, texte bleu #0078D4
-- **Containers** : XnrgyGroupBox avec header bleu marine
-- **ProgressBar** : Style personnalisé avec fill et shine
-- **Labels** : ModernLabel avec tailles et poids uniformisés
 
-### Effets Visuels
+#### DXF Verifier- **DataGrid** : Headers fond sombre #1A1A28, texte bleu #0078D4
 
-- **Glow Effects** : DropShadowEffect bleu brillant (#00D4FF) sur hover des boutons
-- **Animations** : Scale animations sur press des boutons
+- [+] Migration complète vers XEAT- **Containers** : XnrgyGroupBox avec header bleu marine
+
+- [+] Validation DXF/CSV vs PDF (~97% précision)- **ProgressBar** : Style personnalisé avec fill et shine
+
+- [+] Version spécifique: v1.2.0- **Labels** : ModernLabel avec tailles et poids uniformisés
+
+
+
+#### Architecture### Effets Visuels
+
+- [+] 9 modules fonctionnels complets
+
+- [+] Structure modulaire Modules/{Module}/Views|Services|Models- **Glow Effects** : DropShadowEffect bleu brillant (#00D4FF) sur hover des boutons
+
+- [+] Styles centralisés (1350+ lignes, 12 sections)- **Animations** : Scale animations sur press des boutons
+
 - **Bordures** : #4A7FBF (bleu brillant) sur tous les éléments interactifs
 
 ---
 
+---
+
+## Auteur
+
 ## Prérequis
 
-- **Windows 10/11 x64**
-- **.NET Framework 4.8**
-- **Autodesk Vault Professional 2026** (SDK v31.0.84)
-- **Autodesk Inventor Professional 2026.2**
-- **Visual Studio 2022** (pour compilation)
-- **MSBuild 18.0.0+** (REQUIS - `dotnet build` ne fonctionne PAS pour WPF)
+**Mohammed Amine Elgalai**  
 
----
+XNRGY Climate Systems ULC  - **Windows 10/11 x64**
+
+2025-2026- **.NET Framework 4.8**
+
+- **Autodesk Vault Professional 2026** (SDK v31.0.84)
+
+---- **Autodesk Inventor Professional 2026.2**
+
+- **Visual Studio 2022** (pour compilation)
+
+## Licence- **MSBuild 18.0.0+** (REQUIS - `dotnet build` ne fonctionne PAS pour WPF)
+
+
+
+Propriétaire - XNRGY Climate Systems ULC. Tous droits réservés.---
+
 
 ## Compilation et Exécution
 

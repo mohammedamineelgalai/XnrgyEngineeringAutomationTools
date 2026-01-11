@@ -1,7 +1,7 @@
 <Window x:Class="XnrgyEngineeringAutomationTools.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="XNRGY Engineering Automation Tools - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="{StaticResource WindowTitleMain}" 
         Height="850" Width="1300"
         MinWidth="900" MinHeight="600"
         WindowStartupLocation="CenterScreen"
@@ -138,7 +138,7 @@
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <Image Source="/Resources/XnrgyEngineeringAutomationTools.png" Width="64" Height="64" Margin="0,0,15,0" RenderOptions.BitmapScalingMode="HighQuality"/>
                         <StackPanel VerticalAlignment="Center">
-                            <TextBlock x:Name="TitleText" Text="XNRGY Engineering Automation Tools v1.0.0" 
+                            <TextBlock x:Name="TitleText" Text="{StaticResource MainTitleWithVersion}" 
                                        FontSize="22" FontWeight="Bold" Foreground="White"/>
                             <TextBlock FontSize="14" Foreground="#FFB74D" Margin="0,3,0,0" FontWeight="SemiBold">
                                 <Run Text="💡 Suite d'outils d'automatisation pour Vault et Inventor"/>
@@ -337,16 +337,8 @@
         <Border x:Name="StatusBorder" Grid.Row="3" Style="{StaticResource CopyrightBarBorder}" Margin="0,10,0,0">
             <Grid>
                 <TextBlock x:Name="StatusText" Text="Pret" Style="{StaticResource StatusTextStyle}"/>
-                <TextBlock x:Name="CopyrightText" Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat="{}XNRGY Engineering Automation Tools - {0} - {1} - By {2} - {3}">
-                            <Binding Source="{StaticResource AppVersion}"/>
-                            <Binding Source="{StaticResource AppReleaseDate}"/>
-                            <Binding Source="{StaticResource AppAuthor}"/>
-                            <Binding Source="{StaticResource AppCompany}"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
+                <TextBlock x:Name="CopyrightText" Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right"
+                           Text="{StaticResource CopyrightMain}"/>
             </Grid>
         </Border>
     </Grid>

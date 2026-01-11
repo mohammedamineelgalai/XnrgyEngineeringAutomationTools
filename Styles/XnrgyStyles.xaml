@@ -148,34 +148,91 @@
     <sys:String x:Key="AppAuthor" xmlns:sys="clr-namespace:System;assembly=mscorlib">Mohammed Amine Elgalai</sys:String>
     <sys:String x:Key="AppCompany" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY CLIMATE SYSTEMS ULC</sys:String>
     <sys:String x:Key="AppShortName" xmlns:sys="clr-namespace:System;assembly=mscorlib">XEAT</sys:String>
+    <sys:String x:Key="AppFullName" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY Engineering Automation Tools</sys:String>
     
-    <!-- ═══════════ NOMS DES MODULES POUR BARRE COPYRIGHT ═══════════ -->
+    <!-- ═══════════ GRANDS TITRES INTERNES (affichés dans l'interface) ═══════════ -->
+    <!-- Titre principal MainWindow (avec version) -->
+    <sys:String x:Key="MainTitleWithVersion" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY Engineering Automation Tools v1.0.0</sys:String>
+    
+    <!-- Suffixe complet pour titres de fenetres modules: " - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" -->
+    <sys:String x:Key="AppTitleSuffix" xmlns:sys="clr-namespace:System;assembly=mscorlib"> - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <!-- Suffixe pour MainWindow (sans XEAT car nom complet): " - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" -->
+    <sys:String x:Key="AppMainTitleSuffix" xmlns:sys="clr-namespace:System;assembly=mscorlib"> - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    
+    <!-- ═══════════ TITRES COMPLETS DES FENETRES (CENTRALISES) ═══════════ -->
+    <!-- Utilisation: Title="{StaticResource WindowTitleXXX}" dans chaque fenetre -->
+    <!-- MainWindow -->
+    <sys:String x:Key="WindowTitleMain" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY Engineering Automation Tools - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <!-- Modules principaux -->
+    <sys:String x:Key="WindowTitleUploadModule" xmlns:sys="clr-namespace:System;assembly=mscorlib">Upload Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleUploadTemplate" xmlns:sys="clr-namespace:System;assembly=mscorlib">Upload Template - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleCreateModule" xmlns:sys="clr-namespace:System;assembly=mscorlib">Creer Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitlePlaceEquipment" xmlns:sys="clr-namespace:System;assembly=mscorlib">Place Equipment - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleSmartTools" xmlns:sys="clr-namespace:System;assembly=mscorlib">Smart Tools - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleChecklistHVAC" xmlns:sys="clr-namespace:System;assembly=mscorlib">Checklist HVAC - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleACP" xmlns:sys="clr-namespace:System;assembly=mscorlib">ACP - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleUpdateWorkspace" xmlns:sys="clr-namespace:System;assembly=mscorlib">Update Workspace - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <!-- Fenetres secondaires -->
+    <sys:String x:Key="WindowTitleLogin" xmlns:sys="clr-namespace:System;assembly=mscorlib">Connexion Vault - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitlePreview" xmlns:sys="clr-namespace:System;assembly=mscorlib">Previsualisation - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleModuleSelection" xmlns:sys="clr-namespace:System;assembly=mscorlib">Selection Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleCreateModuleSettings" xmlns:sys="clr-namespace:System;assembly=mscorlib">Reglages Creer Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <!-- Petites fenetres SmartTools -->
+    <sys:String x:Key="WindowTitleExportOptions" xmlns:sys="clr-namespace:System;assembly=mscorlib">Export IAM Options - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleProgress" xmlns:sys="clr-namespace:System;assembly=mscorlib">Progression - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleProgressHtml" xmlns:sys="clr-namespace:System;assembly=mscorlib">Progression HTML - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleHtmlPopup" xmlns:sys="clr-namespace:System;assembly=mscorlib">Popup HTML - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleConstraintReport" xmlns:sys="clr-namespace:System;assembly=mscorlib">Rapport Contraintes - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleIProperties" xmlns:sys="clr-namespace:System;assembly=mscorlib">iProperties Summary - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleCustomPropertyBatch" xmlns:sys="clr-namespace:System;assembly=mscorlib">Gestionnaire Proprietes - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleSmartProgress" xmlns:sys="clr-namespace:System;assembly=mscorlib">Progression - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <!-- DXF Verifier (version 1.2.0 specifique) -->
+    <sys:String x:Key="WindowTitleDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">DXF Verifier - XEAT - v1.2.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    
+    <!-- ═══════════ TEXTES COPYRIGHT COMPLETS POUR BARRE COPYRIGHT ═══════════ -->
+    <!-- Format: "[Module] - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" -->
+    <!-- Utilisation: Text="{StaticResource CopyrightXXX}" (pas de MultiBinding) -->
+    
+    <!-- MainWindow (nom complet sans XEAT) -->
+    <sys:String x:Key="CopyrightMain" xmlns:sys="clr-namespace:System;assembly=mscorlib">XNRGY Engineering Automation Tools - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    
     <!-- Smart Tools -->
-    <sys:String x:Key="CopyrightSmartTools" xmlns:sys="clr-namespace:System;assembly=mscorlib">Smart Tools</sys:String>
+    <sys:String x:Key="CopyrightSmartTools" xmlns:sys="clr-namespace:System;assembly=mscorlib">Smart Tools - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- Checklist HVAC -->
-    <sys:String x:Key="CopyrightChecklist" xmlns:sys="clr-namespace:System;assembly=mscorlib">Checklist HVAC</sys:String>
+    <sys:String x:Key="CopyrightChecklist" xmlns:sys="clr-namespace:System;assembly=mscorlib">Checklist HVAC - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- ACP - Assistant Conception Projet -->
-    <sys:String x:Key="CopyrightACP" xmlns:sys="clr-namespace:System;assembly=mscorlib">ACP</sys:String>
+    <sys:String x:Key="CopyrightACP" xmlns:sys="clr-namespace:System;assembly=mscorlib">ACP - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- Upload Module -->
-    <sys:String x:Key="CopyrightUploadModule" xmlns:sys="clr-namespace:System;assembly=mscorlib">Upload Module</sys:String>
+    <sys:String x:Key="CopyrightUploadModule" xmlns:sys="clr-namespace:System;assembly=mscorlib">Upload Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- Upload Template -->
-    <sys:String x:Key="CopyrightUploadTpl" xmlns:sys="clr-namespace:System;assembly=mscorlib">Upload Template</sys:String>
+    <sys:String x:Key="CopyrightUploadTpl" xmlns:sys="clr-namespace:System;assembly=mscorlib">Upload Template - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- Creer Module -->
-    <sys:String x:Key="CopyrightCreateModule" xmlns:sys="clr-namespace:System;assembly=mscorlib">Creer Module</sys:String>
+    <sys:String x:Key="CopyrightCreateModule" xmlns:sys="clr-namespace:System;assembly=mscorlib">Creer Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- Place Equipment -->
-    <sys:String x:Key="CopyrightPlaceEquip" xmlns:sys="clr-namespace:System;assembly=mscorlib">Place Equipment</sys:String>
+    <sys:String x:Key="CopyrightPlaceEquip" xmlns:sys="clr-namespace:System;assembly=mscorlib">Place Equipment - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- Update Workspace -->
-    <sys:String x:Key="CopyrightUpdateWS" xmlns:sys="clr-namespace:System;assembly=mscorlib">Update Workspace</sys:String>
+    <sys:String x:Key="CopyrightUpdateWS" xmlns:sys="clr-namespace:System;assembly=mscorlib">Update Workspace - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
-    <!-- DXF Verifier -->
-    <sys:String x:Key="CopyrightDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">DXF Verifier</sys:String>
+    <!-- DXF Verifier (version specifique 1.2.0) -->
+    <sys:String x:Key="CopyrightDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">DXF Verifier - XEAT - v1.2.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    
+    <!-- Sous-fenetres SmartTools -->
+    <sys:String x:Key="CopyrightExportOptions" xmlns:sys="clr-namespace:System;assembly=mscorlib">Export Options - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="CopyrightProgress" xmlns:sys="clr-namespace:System;assembly=mscorlib">Progression - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="CopyrightHtmlPopup" xmlns:sys="clr-namespace:System;assembly=mscorlib">Popup HTML - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="CopyrightConstraintReport" xmlns:sys="clr-namespace:System;assembly=mscorlib">Rapport Contraintes - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="CopyrightIProperties" xmlns:sys="clr-namespace:System;assembly=mscorlib">iProperties Summary - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="CopyrightCustomPropertyBatch" xmlns:sys="clr-namespace:System;assembly=mscorlib">Gestionnaire Proprietes - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    
+    <!-- Status DXF Verifier -->
+    <sys:String x:Key="StatusDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">Pret - DXF-CSV vs PDF Verifier v1.2 - XNRGY Climate Systems ULC</sys:String>
 
     <!-- ═══════════ STYLE BARRE COPYRIGHT (Hauteur reduite ~22px) ═══════════ -->
     <Style x:Key="CopyrightBarBorder" TargetType="Border">

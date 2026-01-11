@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
-        Title="Gestionnaire Proprietes - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="{StaticResource WindowTitleCustomPropertyBatch}" 
         Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Height="900" Width="1200"
         MinHeight="700" MinWidth="1000"
@@ -759,18 +759,8 @@
 
             <!-- COPYRIGHT BAR -->
             <Border Grid.Row="5" Style="{StaticResource CopyrightBarBorder}" CornerRadius="0,0,12,12">
-                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
-                            <Binding Source="Gestionnaire Proprietes"/>
-                            <Binding Source="{StaticResource AppShortName}"/>
-                            <Binding Source="{StaticResource AppVersion}"/>
-                            <Binding Source="{StaticResource AppReleaseDate}"/>
-                            <Binding Source="{StaticResource AppAuthor}"/>
-                            <Binding Source="{StaticResource AppCompany}"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
+                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center"
+                           Text="{StaticResource CopyrightCustomPropertyBatch}"/>
             </Border>
         </Grid>
     </Border>

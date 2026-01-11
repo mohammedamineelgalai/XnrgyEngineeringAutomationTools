@@ -1,7 +1,7 @@
 <Window x:Class="XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views.UpdateWorkspaceWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Update Workspace - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC"
+        Title="{StaticResource WindowTitleUpdateWorkspace}"
         Height="750" Width="700"
         WindowStartupLocation="CenterScreen"
         WindowStyle="SingleBorderWindow"
@@ -294,18 +294,8 @@
         <!-- ========== COPYRIGHT BAR - Utilise styles centralises ========== -->
         <Border Grid.Row="6" Style="{StaticResource CopyrightBarBorder}" Margin="-20,15,-20,-20">
             <Grid>
-                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
-                            <Binding Source="{StaticResource CopyrightUpdateWS}"/>
-                            <Binding Source="{StaticResource AppShortName}"/>
-                            <Binding Source="{StaticResource AppVersion}"/>
-                            <Binding Source="{StaticResource AppReleaseDate}"/>
-                            <Binding Source="{StaticResource AppAuthor}"/>
-                            <Binding Source="{StaticResource AppCompany}"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
+                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center"
+                           Text="{StaticResource CopyrightUpdateWS}"/>
             </Grid>
         </Border>
     </Grid>

@@ -1,7 +1,7 @@
 <Window x:Class="XnrgyEngineeringAutomationTools.Modules.SmartTools.Views.ConstraintReportWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Rapport Contraintes - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="{StaticResource WindowTitleConstraintReport}" 
         Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Width="1400" Height="900"
         MinWidth="1000" MinHeight="700"
@@ -257,18 +257,8 @@
 
         <!-- COPYRIGHT BAR -->
         <Border Grid.Row="5" Style="{StaticResource CopyrightBarBorder}">
-            <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center">
-                <TextBlock.Text>
-                    <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
-                        <Binding Source="Rapport Contraintes"/>
-                        <Binding Source="{StaticResource AppShortName}"/>
-                        <Binding Source="{StaticResource AppVersion}"/>
-                        <Binding Source="{StaticResource AppReleaseDate}"/>
-                        <Binding Source="{StaticResource AppAuthor}"/>
-                        <Binding Source="{StaticResource AppCompany}"/>
-                    </MultiBinding>
-                </TextBlock.Text>
-            </TextBlock>
+            <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center"
+                       Text="{StaticResource CopyrightConstraintReport}"/>
         </Border>
     </Grid>
 </Window>

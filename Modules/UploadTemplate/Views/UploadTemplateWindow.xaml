@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Upload Template - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="{StaticResource WindowTitleUploadTemplate}" 
         Height="800" Width="1200"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterOwner"
@@ -763,18 +763,8 @@
         <Border Grid.Row="6" Style="{StaticResource CopyrightBarBorder}">
             <Grid>
                 <TextBlock Text="Pret" Style="{StaticResource StatusTextStyle}"/>
-                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
-                            <Binding Source="{StaticResource CopyrightUploadTpl}"/>
-                            <Binding Source="{StaticResource AppShortName}"/>
-                            <Binding Source="{StaticResource AppVersion}"/>
-                            <Binding Source="{StaticResource AppReleaseDate}"/>
-                            <Binding Source="{StaticResource AppAuthor}"/>
-                            <Binding Source="{StaticResource AppCompany}"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
+                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right"
+                           Text="{StaticResource CopyrightUploadTpl}"/>
             </Grid>
         </Border>
     </Grid>

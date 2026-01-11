@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="DXF Verifier - XEAT - v1.2.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="{StaticResource WindowTitleDXFVerifier}" 
         Height="1000" Width="1450"
         MinHeight="800" MinWidth="1200"
         WindowStartupLocation="CenterOwner"
@@ -324,7 +324,7 @@
         </Grid>
 
         <!-- Statut -->
-        <TextBlock x:Name="StatusLabel" Grid.Row="3" Text="Pret - DXF-CSV vs PDF Verifier v1.2 - XNRGY Climate Systems ULC" 
+        <TextBlock x:Name="StatusLabel" Grid.Row="3" Text="{StaticResource StatusDXFVerifier}" 
                    Foreground="#E0E0E0" FontSize="13" Margin="0,0,0,10"/>
 
         <!-- SECTION 4: Statistiques des Totaux -->

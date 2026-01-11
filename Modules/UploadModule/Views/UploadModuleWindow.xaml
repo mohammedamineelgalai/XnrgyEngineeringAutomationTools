@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Upload Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="{StaticResource WindowTitleUploadModule}" 
         Height="950" Width="1550"
         MinWidth="1400"
         MinHeight="800"
@@ -392,7 +392,7 @@
                 </Viewbox>
 
                 <!-- Centre: Statistiques (agrandies) -->
-                <Viewbox Grid.Column="1" Stretch="Uniform" MaxWidth="500" MaxHeight="80" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0">
+                <Viewbox Grid.Column="1" Stretch="Uniform" MaxWidth="700" MaxHeight="80" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0">
                     <Border Background="#1A1A28" CornerRadius="6" Padding="15,4"
                             BorderBrush="#4A7FBF" BorderThickness="2">
                         <StackPanel VerticalAlignment="Center">
@@ -412,9 +412,17 @@
                                     <TextBlock x:Name="TxtStatsNonInventor" Text="0" Foreground="#FFB74D" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
                                     <TextBlock Text="📄 Autres" Foreground="#FFB74D" FontSize="11" HorizontalAlignment="Center"/>
                                 </StackPanel>
-                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <TextBlock x:Name="TxtStatsSelected" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
                                     <TextBlock Text="✅ Selection" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsUploaded" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="📤 Uploades" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsFailed" Text="0" Foreground="#FF6B6B" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="❌ Echecs" Foreground="#FF6B6B" FontSize="11" HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </StackPanel>
                         </StackPanel>
@@ -679,18 +687,8 @@
         <Border Grid.Row="6" Style="{StaticResource CopyrightBarBorder}">
             <Grid>
                 <TextBlock Text="Pret" Style="{StaticResource StatusTextStyle}"/>
-                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
-                            <Binding Source="{StaticResource CopyrightUploadModule}"/>
-                            <Binding Source="{StaticResource AppShortName}"/>
-                            <Binding Source="{StaticResource AppVersion}"/>
-                            <Binding Source="{StaticResource AppReleaseDate}"/>
-                            <Binding Source="{StaticResource AppAuthor}"/>
-                            <Binding Source="{StaticResource AppCompany}"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
+                <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right"
+                           Text="{StaticResource CopyrightUploadModule}"/>
             </Grid>
         </Border>
     </Grid>

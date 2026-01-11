@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
-        Title="iProperties Summary - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" 
+        Title="{StaticResource WindowTitleIProperties}" 
         Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Height="1000" Width="880"
         MinHeight="700" MinWidth="750"
@@ -453,18 +453,8 @@
                     
                     <!-- Footer -->
                     <Border Grid.Row="6" Style="{StaticResource CopyrightBarBorder}" Margin="0,10,0,0" CornerRadius="0,0,8,8">
-                        <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center">
-                            <TextBlock.Text>
-                                <MultiBinding StringFormat="{}{0} - {1} - {2} - {3} - By {4} - {5}">
-                                    <Binding Source="iProperties Summary"/>
-                                    <Binding Source="{StaticResource AppShortName}"/>
-                                    <Binding Source="{StaticResource AppVersion}"/>
-                                    <Binding Source="{StaticResource AppReleaseDate}"/>
-                                    <Binding Source="{StaticResource AppAuthor}"/>
-                                    <Binding Source="{StaticResource AppCompany}"/>
-                                </MultiBinding>
-                            </TextBlock.Text>
-                        </TextBlock>
+                        <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center"
+                                   Text="{StaticResource CopyrightIProperties}"/>
                     </Border>
                 </Grid>
             </Border>
