@@ -183,8 +183,9 @@ namespace XnrgyEngineeringAutomationTools.Services
                         Logger.Log("[+] Ancien fichier supprime de Vault", Logger.LogLevel.DEBUG);
                     }
                     
-                    // Ajouter le nouveau fichier
-                    bool uploadSuccess = _vaultService.AddFileToVault(LocalFilePath, VAULT_APP_FOLDER, "Configuration XNRGY Automation Tools");
+                    // Ajouter le nouveau fichier avec commentaire standardise
+                    string configComment = $"MAJ Configuration | XNRGY Engineering Automation Tools | {DateTime.Now:yyyy-MM-dd HH:mm}";
+                    bool uploadSuccess = _vaultService.AddFileToVault(LocalFilePath, VAULT_APP_FOLDER, configComment);
                     if (uploadSuccess)
                     {
                         Logger.Log("[+] Configuration uploadee dans Vault", Logger.LogLevel.INFO);
@@ -300,7 +301,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                 {
                     // Fichier existe - CheckOut, Update, CheckIn
                     Logger.Log("[>] Mise a jour du fichier existant dans Vault...", Logger.LogLevel.DEBUG);
-                    bool success = _vaultService.UpdateFileInVault(existingFile, LocalFilePath, "Mise a jour configuration XNRGY Automation");
+                    string updateComment = $"MAJ Configuration | XNRGY Engineering Automation Tools | {DateTime.Now:yyyy-MM-dd HH:mm}";
+                    bool success = _vaultService.UpdateFileInVault(existingFile, LocalFilePath, updateComment);
                     if (success)
                     {
                         Logger.Log("[+] Configuration mise a jour dans Vault", Logger.LogLevel.INFO);
@@ -311,7 +313,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                 {
                     // Nouveau fichier - Add to Vault
                     Logger.Log("[>] Ajout nouveau fichier config dans Vault...", Logger.LogLevel.DEBUG);
-                    bool success = _vaultService.AddFileToVault(LocalFilePath, VAULT_APP_FOLDER, "Configuration XNRGY Automation Tools");
+                    string addComment = $"MAJ Configuration | XNRGY Engineering Automation Tools | {DateTime.Now:yyyy-MM-dd HH:mm}";
+                    bool success = _vaultService.AddFileToVault(LocalFilePath, VAULT_APP_FOLDER, addComment);
                     if (success)
                     {
                         Logger.Log("[+] Configuration ajoutee dans Vault", Logger.LogLevel.INFO);

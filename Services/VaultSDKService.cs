@@ -1183,7 +1183,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                             ACW.CheckoutFileOptions.Master,
                             Environment.MachineName,
                                 localFolder,
-                                "Modification UDP via VaultAutomationTool",
+                                $"Checkout pour MAJ Proprietes | Project: {projectNumber ?? "N/A"}, Ref: {reference ?? "N/A"}, Module: {module ?? "N/A"}",
                                 out var downloadTicket
                             );
                             
@@ -1233,10 +1233,14 @@ namespace XnrgyEngineeringAutomationTools.Services
                         var wsFileForCheckin = _connection.WebServiceManager.DocumentService.GetFileById(checkedOutFileInv.Id);
                         var vaultFileForCheckin = new VDF.Vault.Currency.Entities.FileIteration(_connection, wsFileForCheckin);
                         
-                        // Commentaire detaille pour l'application des proprietes (3eme version)
+                        // Commentaire standardise avec les valeurs des proprietes (format Upload Module)
+                        string checkinCommentInv = !string.IsNullOrEmpty(checkInComment) 
+                            ? checkInComment 
+                            : $"MAJ Proprietes | Project: {projectNumber ?? "N/A"}, Ref: {reference ?? "N/A"}, Module: {module ?? "N/A"}";
+                        
                         _connection.FileManager.CheckinFile(
                             vaultFileForCheckin,
-                            "MAJ proprietes (Project/Reference/Module) via Vault Automation Tool",
+                            checkinCommentInv,
                             false,  // keepCheckedOut
                             wsFileForCheckin.ModDate,
                             null,
@@ -1326,13 +1330,13 @@ namespace XnrgyEngineeringAutomationTools.Services
                         System.IO.Directory.CreateDirectory(localFolder);
                     }
                     
-                    // Checkout avec download via ticket
+                    // Checkout avec download via ticket - commentaire pour checkout (pas visible dans historique)
                     checkedOutFileNonInv = _connection.WebServiceManager.DocumentService.CheckoutFile(
                         fileInfo.Id,
                                 ACW.CheckoutFileOptions.Master,
                                 Environment.MachineName,
                         localFolder,
-                        "Modification proprietes via VaultAutomationTool",
+                        $"Checkout pour MAJ Proprietes | Project: {projectNumber ?? "N/A"}, Ref: {reference ?? "N/A"}, Module: {module ?? "N/A"}",
                         out var downloadTicket
                     );
                     
@@ -1388,10 +1392,14 @@ namespace XnrgyEngineeringAutomationTools.Services
                     var wsFile = _connection.WebServiceManager.DocumentService.GetFileById(checkedOutFileNonInv.Id);
                     var vaultFile = new VDF.Vault.Currency.Entities.FileIteration(_connection, wsFile);
                     
-                    // Commentaire detaille pour l'application des proprietes (3eme version)
+                    // Commentaire standardise avec les valeurs des proprietes (format Upload Module)
+                    string checkinCommentNonInv = !string.IsNullOrEmpty(checkInComment) 
+                        ? checkInComment 
+                        : $"MAJ Proprietes | Project: {projectNumber ?? "N/A"}, Ref: {reference ?? "N/A"}, Module: {module ?? "N/A"}";
+                    
                     _connection.FileManager.CheckinFile(
                         vaultFile,
-                        "MAJ proprietes (Project / Reference / Module) via Vault Automation Tool",
+                        checkinCommentNonInv,
                         false,  // keepCheckedOut
                         wsFile.ModDate,
                             null,
@@ -2352,7 +2360,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                                                     new[] { file.MasterId },  // Utiliser MasterId au lieu de Id
                                                     new[] { lifecycleDefinitionId.Value }, 
                                                     new[] { lifecycleStateId.Value }, 
-                                                    "Assignation lifecycle via VaultAutomationTool" 
+                                                    "MAJ Lifecycle | XNRGY Engineering Automation Tools" 
                                                 });
                                             Logger.Log($"   [+] Lifecycle Definition + State assignes via UpdateFileLifeCycleDefinitions", Logger.LogLevel.INFO);
                                             lifecycleAssigned = true;
@@ -2378,7 +2386,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                                                     new object[] { 
                                                         new[] { file.MasterId },
                                                         new[] { lifecycleStateId.Value }, 
-                                                        "Changement state via VaultAutomationTool" 
+                                                        "MAJ Lifecycle State | XNRGY Engineering Automation Tools" 
                                                     });
                                                 Logger.Log($"   [+] State assigne via UpdateFileLifeCycleStates", Logger.LogLevel.INFO);
                                                 lifecycleAssigned = true;
@@ -2441,7 +2449,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                                             new object[] { 
                                                 new[] { file.Id },  // FileId (pas MasterId)
                                                 new[] { revision },  // Revision
-                                                "Assignation revision via VaultAutomationTool" 
+                                                $"MAJ Revision | {revision} | XNRGY Engineering Automation Tools" 
                                             });
                                         Logger.Log($"   [+] Revision '{revision}' assignee via UpdateFileRevisionNumbers", Logger.LogLevel.INFO);
                                         
@@ -2946,13 +2954,14 @@ namespace XnrgyEngineeringAutomationTools.Services
                         new[] { propArray }
                     );
                     
-                    // CheckIn
+                    // CheckIn avec commentaire standardise
                     var wsFile = _connection.WebServiceManager.DocumentService.GetFileById(fileInfo.Id);
                     var vaultFile = new VDF.Vault.Currency.Entities.FileIteration(_connection, wsFile);
                     
+                    string checkinComment = $"MAJ Proprietes | Project: {projectNumber ?? "N/A"}, Ref: {reference ?? "N/A"}, Module: {module ?? "N/A"}";
                     _connection.FileManager.CheckinFile(
                         vaultFile,
-                        "Proprietes XNRGY",
+                        checkinComment,
                         false,
                         fileInfo.ModDate,
                         null,

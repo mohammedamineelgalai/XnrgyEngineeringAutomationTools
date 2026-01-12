@@ -138,7 +138,7 @@
                     Click="CancelButton_Click"
                     Width="110" Padding="10,8" Margin="0,0,10,0"
                     Style="{StaticResource SecondaryButton}"/>
-            <Button x:Name="ConnectButton" Content="➜ Se Connecter" 
+            <Button x:Name="ConnectButton" Content="🔗 Se Connecter" 
                     Click="ConnectButton_Click"
                     Width="150" Padding="10,8"
                     Style="{StaticResource PrimaryButton}"/>
