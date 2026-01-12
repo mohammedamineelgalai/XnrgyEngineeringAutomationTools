@@ -177,6 +177,7 @@
     <sys:String x:Key="WindowTitlePreview" xmlns:sys="clr-namespace:System;assembly=mscorlib">Previsualisation - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     <sys:String x:Key="WindowTitleModuleSelection" xmlns:sys="clr-namespace:System;assembly=mscorlib">Selection Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     <sys:String x:Key="WindowTitleCreateModuleSettings" xmlns:sys="clr-namespace:System;assembly=mscorlib">Reglages Creer Module - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitlePlaceEquipmentSettings" xmlns:sys="clr-namespace:System;assembly=mscorlib">Reglages Place Equipment - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     <!-- Petites fenetres SmartTools -->
     <sys:String x:Key="WindowTitleExportOptions" xmlns:sys="clr-namespace:System;assembly=mscorlib">Export IAM Options - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     <sys:String x:Key="WindowTitleProgress" xmlns:sys="clr-namespace:System;assembly=mscorlib">Progression - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>

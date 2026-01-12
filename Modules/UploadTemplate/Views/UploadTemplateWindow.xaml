@@ -585,9 +585,9 @@
 
                 <!-- Controles: Boutons selection + Recherche + Filtres -->
                 <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8" VerticalAlignment="Center">
-                    <Button Content="✓ Tout selectionner" Style="{StaticResource SuccessButton}" 
+                    <Button Content="✅ Tout selectionner" Style="{StaticResource SuccessButton}" 
                             Click="SelectAll_Click" Height="38" MinWidth="150" Padding="12,8" VerticalContentAlignment="Center" FontSize="12"/>
-                    <Button Content="✗ Tout deselectionner" Style="{StaticResource DangerButton}" 
+                    <Button Content="❌ Tout deselectionner" Style="{StaticResource DangerButton}" 
                             Click="DeselectAll_Click" Margin="6,0,0,0" Height="38" MinWidth="160" Padding="12,8" VerticalContentAlignment="Center" FontSize="12"/>
                     
                     <!-- Recherche -->
@@ -713,7 +713,7 @@
                             Style="{StaticResource WarningButton}" Height="34" MinWidth="95" FontSize="13"
                             Click="BtnStop_Click" IsEnabled="False" Margin="0,0,8,0" Padding="10,5" VerticalContentAlignment="Center"/>
                     
-                    <Button x:Name="BtnCancel" Content="✗ FERMER" 
+                    <Button x:Name="BtnCancel" Content="❌ FERMER" 
                             Style="{StaticResource DangerButton}" Height="34" MinWidth="115" FontSize="13"
                             Click="BtnCancel_Click" Padding="10,5" VerticalContentAlignment="Center"/>
                 </StackPanel>

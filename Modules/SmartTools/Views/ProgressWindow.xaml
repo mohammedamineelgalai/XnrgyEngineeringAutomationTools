@@ -40,11 +40,11 @@
                 </Grid.ColumnDefinitions>
                 
                 <TextBlock x:Name="TxtTitle" Grid.Column="0" 
-                           Text="Progression"
+                           Text="⏳ Progression"
                            FontSize="16" FontWeight="Bold" Foreground="White"
                            VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                 
-                <Button x:Name="BtnClose" Grid.Column="1" Content="X" 
+                <Button x:Name="BtnClose" Grid.Column="1" Content="✕" 
                         Width="28" Height="28" FontWeight="Bold"
                         Background="#DC2626" Foreground="White" 
                         BorderThickness="0" Cursor="Hand"

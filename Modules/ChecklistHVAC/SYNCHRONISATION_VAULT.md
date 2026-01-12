@@ -270,3 +270,4 @@ Pour l'instant, `ExportToWordAsync` exporte en JSON. Pour exporter en Word réel
 **Dernière mise à jour** : 2026-01-15  
 **Auteur** : Mohammed Amine Elgalai - XNRGY Climate Systems ULC
 
+

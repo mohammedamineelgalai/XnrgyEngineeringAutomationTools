@@ -3370,10 +3370,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
         {
             try
             {
-                AddLog("Ouverture des reglages administrateur...", "START");
+                AddLog("Ouverture des reglages Place Equipment...", "START");
                 
                 // Passer le VaultService pour la synchronisation Vault
-                var settingsWindow = new CreateModuleSettingsWindow(_vaultService)
+                var settingsWindow = new PlaceEquipmentSettingsWindow(_vaultService)
                 {
                     Owner = this
                 };
@@ -3383,7 +3383,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 if (result == true)
                 {
                     // Recharger les parametres apres sauvegarde
-                    AddLog("[+] Parametres mis a jour et synchronises vers Vault", "SUCCESS");
+                    AddLog("[+] Parametres Place Equipment mis a jour et synchronises vers Vault", "SUCCESS");
                     ReloadSettingsFromService();
                 }
                 else
@@ -3393,7 +3393,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             }
             catch (Exception ex)
             {
-                AddLog($"Erreur ouverture réglages: {ex.Message}", "ERROR");
+                AddLog($"Erreur ouverture reglages: {ex.Message}", "ERROR");
             }
         }
 

@@ -115,9 +115,9 @@
                     </StackPanel>
                 </Border>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
-                    <Button x:Name="SyncNowButton" Content="Sync Vault" Click="SyncNowButton_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0"/>
-                    <Button x:Name="RefreshButton" Content="Rafraichir" Click="RefreshButton_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
-                    <Button x:Name="OpenExternalButton" Content="Ouvrir Navigateur" Click="OpenExternalButton_Click" Style="{StaticResource SecondaryButton}"/>
+                    <Button x:Name="SyncNowButton" Content="🔄 Sync Vault" Click="SyncNowButton_Click" Style="{StaticResource PrimaryButton}" Margin="0,0,8,0"/>
+                    <Button x:Name="RefreshButton" Content="🔃 Rafraichir" Click="RefreshButton_Click" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0"/>
+                    <Button x:Name="OpenExternalButton" Content="🌐 Ouvrir Navigateur" Click="OpenExternalButton_Click" Style="{StaticResource SecondaryButton}"/>
                 </StackPanel>
             </Grid>
         </Border>

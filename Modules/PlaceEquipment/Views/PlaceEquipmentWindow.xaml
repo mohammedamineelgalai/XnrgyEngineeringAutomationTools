@@ -899,7 +899,7 @@
                     </StackPanel>
                     
                     <!-- Bouton Actualiser la liste des equipements -->
-                    <Button x:Name="BtnRefreshEquipments" Content="Actualiser la liste" 
+                    <Button x:Name="BtnRefreshEquipments" Content="🔄 Actualiser la liste" 
                             Style="{StaticResource SecondaryButton}"
                             Padding="10,8" FontSize="11" Margin="0,0,0,10"
                             Click="BtnRefreshEquipments_Click"
@@ -1107,13 +1107,13 @@
 
                 <!-- Boutons d'action (compacts) -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="BtnPreview" Content="Previsualiser" Style="{StaticResource SecondaryButton}" 
+                    <Button x:Name="BtnPreview" Content="👁️ Previsualiser" Style="{StaticResource SecondaryButton}" 
                             Background="#0891B2" Foreground="White" Height="34" FontSize="13"
                             Padding="12,5" Margin="0,0,8,0" Click="BtnPreview_Click" VerticalContentAlignment="Center"/>
-                    <Button x:Name="BtnCancel" Content="Annuler" Style="{StaticResource SecondaryButton}" 
+                    <Button x:Name="BtnCancel" Content="❌ Annuler" Style="{StaticResource SecondaryButton}" 
                             Background="#E81123" Foreground="White" Height="34" FontSize="13"
                             Padding="12,5" Margin="0,0,8,0" Click="BtnCancel_Click" VerticalContentAlignment="Center"/>
-                    <Button x:Name="BtnPlaceEquipment" Content="PLACER L'EQUIPEMENT" Style="{StaticResource SuccessButton}" 
+                    <Button x:Name="BtnPlaceEquipment" Content="📥 PLACER L'EQUIPEMENT" Style="{StaticResource SuccessButton}" 
                             Height="34" FontSize="13"
                             Padding="15,5" IsEnabled="False" Click="BtnPlaceEquipment_Click" VerticalContentAlignment="Center"/>
                 </StackPanel>

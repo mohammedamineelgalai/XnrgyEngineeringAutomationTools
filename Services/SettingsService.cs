@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using XnrgyEngineeringAutomationTools.Models;
 using XnrgyEngineeringAutomationTools.Modules.CreateModule.Models;
+using XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Models;
 
 namespace XnrgyEngineeringAutomationTools.Services
 {
@@ -131,6 +132,11 @@ namespace XnrgyEngineeringAutomationTools.Services
         /// Paramètres du module "Créer Module"
         /// </summary>
         public CreateModuleSettings CreateModule { get; set; } = new CreateModuleSettings();
+
+        /// <summary>
+        /// Paramètres du module "Place Equipment"
+        /// </summary>
+        public PlaceEquipmentSettings PlaceEquipment { get; set; } = new PlaceEquipmentSettings();
 
         // Futurs modules:
         // public VaultUploadSettings VaultUpload { get; set; } = new VaultUploadSettings();

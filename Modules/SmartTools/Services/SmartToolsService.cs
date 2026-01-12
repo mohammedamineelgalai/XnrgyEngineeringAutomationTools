@@ -23,6 +23,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
     public class SmartToolsService
     {
         private readonly InventorService _inventorService;
+        private VaultSdkService? _vaultService;
         private Action<string, string>? _logCallback;
         private Action<string, string>? _htmlPopupCallback;
         private Func<string, string, ExportOptionsResult?>? _exportOptionsCallback;
@@ -37,6 +38,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         public SmartToolsService(InventorService inventorService)
         {
             _inventorService = inventorService;
+        }
+
+        /// <summary>
+        /// Définit le service Vault pour l'upload de fichiers
+        /// </summary>
+        public void SetVaultService(VaultSdkService? vaultService)
+        {
+            _vaultService = vaultService;
         }
 
         /// <summary>
@@ -4513,12 +4522,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         return;
                     }
 
-                    int docType = doc.DocumentType;
-                    const int kAssemblyDocumentObject = 12290;
-
-                    if (docType != kAssemblyDocumentObject)
+                    // Utiliser l'extension du fichier pour détecter le type (méthode fiable avec dynamic)
+                    // DocumentType ne fonctionne pas toujours correctement avec dynamic en COM
+                    string fullFileName = doc.FullFileName;
+                    string extension = System.IO.Path.GetExtension(fullFileName).ToLowerInvariant();
+                    
+                    if (extension != ".iam")
                     {
-                        Log("Cette fonction fonctionne uniquement sur des assemblages (.iam)", "WARNING");
+                        Log($"Cette fonction fonctionne uniquement sur des assemblages (.iam). Type détecté: {extension}", "WARNING");
                         MessageBox.Show("Veuillez ouvrir un fichier assemblage (.iam) pour utiliser cette fonction.",
                             "Document non compatible", MessageBoxButton.OK, MessageBoxImage.Warning);
                         return;
@@ -4544,7 +4555,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     }
 
                     Log($"Format sélectionné: {options.Format}", "INFO");
-                    Log($"Destination: {options.FullOutputPath}", "INFO");
+                    Log($"Chemin Vault: {options.VaultDestinationPath}", "INFO");
+                    Log($"Fichier temporaire local: {options.FullOutputPath}", "INFO");
 
                     // Masquer les éléments de référence si demandé
                     if (options.HideReferences)
@@ -4567,7 +4579,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     // Mise à jour du document
                     doc.Update2(true);
 
-                    // Exécuter l'export selon le format
+                    // Exécuter l'export selon le format (vers fichier temporaire local)
                     if (options.Format.ToString() == "IPT")
                     {
                         ExportToIPT(doc, options.FullOutputPath, inventorApp);
@@ -4577,9 +4589,72 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         ExportToSTEP(doc, options.FullOutputPath, inventorApp);
                     }
 
-                    Log($"Export terminé avec succès: {options.OutputFileName}", "SUCCESS");
+                    Log($"Export terminé: {System.IO.Path.GetFileName(options.FullOutputPath)}", "SUCCESS");
 
-                    // Ouvrir le fichier si demandé
+                    // Uploader vers Vault si la destination est Vault et le service est disponible
+                    if (options.IsDestinationVault && _vaultService != null && _vaultService.IsConnected && !string.IsNullOrEmpty(options.VaultDestinationPath))
+                    {
+                        try
+                        {
+                            Log($"Upload vers Vault: {options.VaultDestinationPath}", "INFO");
+                            
+                            // Extraire Module depuis le nom du fichier si possible (format: 123450101)
+                            string? module = null;
+                            if (options.OutputFileName.Length >= 8)
+                            {
+                                // Format: 123450101 -> module serait les 2 derniers chiffres (01)
+                                module = options.OutputFileName.Substring(options.OutputFileName.Length - 2);
+                            }
+                            
+                            bool uploadSuccess = _vaultService.UploadFile(
+                                options.FullOutputPath,
+                                options.VaultDestinationPath,
+                                projectNumber: options.ProjectNumber,
+                                reference: options.Reference,
+                                module: module,
+                                checkInComment: $"Export {options.Format.ToString()} depuis Smart Tools"
+                            );
+
+                            if (uploadSuccess)
+                            {
+                                Log($"Upload vers Vault réussi: {options.OutputFileName}", "SUCCESS");
+                                
+                                // Supprimer le fichier temporaire local après upload réussi
+                                try
+                                {
+                                    if (System.IO.File.Exists(options.FullOutputPath))
+                                    {
+                                        System.IO.File.Delete(options.FullOutputPath);
+                                        Log("Fichier temporaire local supprimé", "INFO");
+                                    }
+                                }
+                                catch (Exception delEx)
+                                {
+                                    Log($"Impossible de supprimer le fichier temporaire: {delEx.Message}", "WARNING");
+                                }
+                            }
+                            else
+                            {
+                                Log($"Échec upload vers Vault: {options.OutputFileName}", "ERROR");
+                                // Le fichier temporaire reste pour permettre un upload manuel
+                            }
+                        }
+                        catch (Exception uploadEx)
+                        {
+                            Log($"Erreur upload vers Vault: {uploadEx.Message}", "ERROR");
+                            // Le fichier temporaire reste pour permettre un upload manuel
+                        }
+                    }
+                    else if (options.IsDestinationVault)
+                    {
+                        Log("Service Vault non disponible - fichier sauvegardé localement uniquement", "WARNING");
+                    }
+                    else
+                    {
+                        Log($"Fichier sauvegardé localement: {options.LocalDestinationPath}", "INFO");
+                    }
+
+                    // Ouvrir le fichier si demandé (seulement si le fichier existe encore)
                     if (options.OpenAfterExport && System.IO.File.Exists(options.FullOutputPath))
                     {
                         try
@@ -4654,39 +4729,83 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             }
         }
 
+        /// <summary>
+        /// Exporte un assemblage IAM vers un fichier IPT avec plusieurs solides
+        /// Utilise DerivedAssemblyComponents comme dans l'add-in original
+        /// Code basé sur SmartToolsAmineAddin/Scripts/ExportIAMToIPT.vb
+        /// </summary>
         private void ExportToIPT(dynamic doc, string outputPath, dynamic inventorApp)
         {
             try
             {
-                // Utiliser la commande d'export vers pièce composite
-                dynamic asmDef = doc.ComponentDefinition;
-                
-                // Créer un nouveau document pièce
-                dynamic partDoc = inventorApp.Documents.Add(12288, "", true); // kPartDocumentObject
-                dynamic partDef = partDoc.ComponentDefinition;
+                Log("Démarrage export IAM → IPT avec DerivedAssemblyComponent", "INFO");
 
-                // Créer des corps solides à partir de l'assemblage
-                // Note: Cette approche simplifiée - l'export complet nécessite plus de logique
+                // 1. Créer un nouveau document IPT
+                // kPartDocumentObject = 12288
+                dynamic partDoc = inventorApp.Documents.Add(12288, "", true);
+                Log("Document IPT créé", "INFO");
+
+                // 2. Récupérer le chemin source IAM
+                string iamPath = doc.FullFileName;
+                Log($"Chemin IAM source: {System.IO.Path.GetFileName(iamPath)}", "INFO");
+
+                // 3. Créer la définition de dérivation d'assemblage
+                // MÉTHODE CORRECTE : Utiliser DerivedAssemblyComponents (pas ShrinkwrapComponents)
+                dynamic partDef = partDoc.ComponentDefinition;
+                dynamic deriveDef = partDef.ReferenceComponents.DerivedAssemblyComponents.CreateDefinition(iamPath);
+                
+                if (deriveDef == null)
+                {
+                    partDoc.Close(true);
+                    throw new Exception("Impossible de créer la définition de pièce dérivée");
+                }
+                Log("DerivedAssemblyDefinition créée", "INFO");
+
+                // 4. Définir le style de dérivation pour corps multiples
+                // kDeriveAsMultipleBodies = 58112 (pour plusieurs solides)
+                deriveDef.DeriveStyle = 58112;
+                Log("Style de dérivation configuré: Multiple Bodies", "INFO");
+
+                // 5. Ajouter la définition à la pièce
+                dynamic derivedComponent = partDef.ReferenceComponents.DerivedAssemblyComponents.Add(deriveDef);
+                
+                if (derivedComponent == null)
+                {
+                    partDoc.Close(true);
+                    throw new Exception("Impossible d'ajouter le DerivedAssemblyComponent");
+                }
+                Log("DerivedAssemblyComponent ajouté", "INFO");
+
+                // 6. SOLUTION CRITIQUE : Rompre le lien avec le fichier source
+                // Sans BreakLinkToFile(), le fichier IPT reste lié à l'assemblage IAM source
                 try
                 {
-                    // Méthode via ShrinkwrapDefinition
-                    dynamic shrinkwrapDef = partDef.ReferenceComponents.ShrinkwrapComponents.CreateDefinition(doc.FullFileName);
-                    shrinkwrapDef.DeriveStyle = 58115; // kDeriveAsSingleBodyNoSeams
-                    partDef.ReferenceComponents.ShrinkwrapComponents.Add(shrinkwrapDef);
+                    derivedComponent.BreakLinkToFile();
+                    Log("Lien rompu avec BreakLinkToFile()", "INFO");
                 }
-                catch
+                catch (Exception breakEx)
                 {
-                    // Fallback: sauvegarder comme copie
-                    Log("Utilisation de la méthode de copie simplifiée", "INFO");
+                    Log($"Attention : Impossible de rompre le lien: {breakEx.Message}", "WARNING");
+                    Log("Le fichier IPT restera lié à l'assemblage source", "WARNING");
+                    // Continuer quand même - le fichier fonctionnera mais restera lié
                 }
 
-                // Sauvegarder
+                // 7. Mettre à jour le document pour appliquer les changements
+                partDoc.Update2(true);
+                Log("Document mis à jour", "INFO");
+
+                // 8. Sauvegarder le fichier IPT
                 partDoc.SaveAs(outputPath, false);
-                Log($"Fichier IPT créé: {System.IO.Path.GetFileName(outputPath)}", "SUCCESS");
+                Log($"Fichier IPT sauvegardé: {System.IO.Path.GetFileName(outputPath)}", "SUCCESS");
+
+                // 9. Fermer le document IPT
+                partDoc.Close(true);
+                Log("Document IPT fermé", "INFO");
             }
             catch (Exception ex)
             {
-                throw new Exception($"Erreur export IPT: {ex.Message}");
+                Log($"Erreur export IPT: {ex.Message}", "ERROR");
+                throw new Exception($"Erreur export IPT: {ex.Message}", ex);
             }
         }
 

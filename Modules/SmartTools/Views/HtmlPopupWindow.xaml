@@ -44,7 +44,7 @@
                            FontSize="16" FontWeight="Bold" Foreground="White"
                            VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
                 
-                <Button x:Name="BtnClose" Grid.Column="1" Content="X" 
+                <Button x:Name="BtnClose" Grid.Column="1" Content="✕" 
                         Width="28" Height="28" FontWeight="Bold"
                         Background="#DC2626" Foreground="White" 
                         BorderThickness="0" Cursor="Hand"
@@ -61,7 +61,7 @@
 
         <!-- Footer avec bouton OK -->
         <Border Grid.Row="2" Background="#2A4A6F" Padding="8">
-            <Button x:Name="BtnOK" Content="OK" 
+            <Button x:Name="BtnOK" Content="✅ OK" 
                     Width="100" Height="32"
                     FontSize="14" FontWeight="Bold"
                     Background="#0078D4" Foreground="White"

@@ -246,11 +246,11 @@
                 <Button x:Name="DetectPdfButton" Grid.Row="0" Grid.Column="2" Content="🔍 Detecter PDF" Style="{StaticResource PrimaryButton}" 
                         Margin="15,5,5,5" Click="DetectPdfButton_Click"/>
                 
-                <TextBlock Grid.Row="0" Grid.Column="3" Text="Chemin de base:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="20,0,10,0"/>
+                <TextBlock Grid.Row="0" Grid.Column="3" Text="📁 Chemin de base:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center" Margin="20,0,10,0"/>
                 <TextBox x:Name="BasePathTextBox" Grid.Row="0" Grid.Column="4" Style="{StaticResource ModernTextBox}" Width="400" Margin="0,5"
                          Text="C:\Vault\Engineering\Projects"/>
                 
-                <Button x:Name="BrowsePathButton" Grid.Row="0" Grid.Column="5" Content="..." Style="{StaticResource SecondaryButton}" 
+                <Button x:Name="BrowsePathButton" Grid.Row="0" Grid.Column="5" Content="📂" Style="{StaticResource SecondaryButton}" 
                         Width="40" Margin="5" Click="BrowsePathButton_Click"/>
 
                 <!-- Ligne 2 -->
@@ -290,25 +290,25 @@
                 </Grid.RowDefinitions>
 
                 <!-- CSV -->
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Fichier CSV:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="📄 Fichier CSV:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
                 <Border Grid.Row="0" Grid.Column="1" Background="#2D2D44" BorderBrush="#4A7FBF" BorderThickness="1" CornerRadius="4" Margin="5" Padding="10,5">
                     <TextBlock x:Name="CsvPathLabel" Text="Non detecte" Foreground="#888" FontSize="11"/>
                 </Border>
-                <Button Grid.Row="0" Grid.Column="2" Content="..." Style="{StaticResource SecondaryButton}" Click="CsvBrowseButton_Click"/>
+                <Button Grid.Row="0" Grid.Column="2" Content="📂" Style="{StaticResource SecondaryButton}" Click="CsvBrowseButton_Click"/>
 
                 <!-- Excel -->
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="Fichier Excel:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="📊 Fichier Excel:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
                 <Border Grid.Row="1" Grid.Column="1" Background="#2D2D44" BorderBrush="#4A7FBF" BorderThickness="1" CornerRadius="4" Margin="5" Padding="10,5">
                     <TextBlock x:Name="ExcelPathLabel" Text="Non detecte" Foreground="#888" FontSize="11"/>
                 </Border>
-                <Button Grid.Row="1" Grid.Column="2" Content="..." Style="{StaticResource SecondaryButton}" Click="ExcelBrowseButton_Click"/>
+                <Button Grid.Row="1" Grid.Column="2" Content="📂" Style="{StaticResource SecondaryButton}" Click="ExcelBrowseButton_Click"/>
 
                 <!-- PDF -->
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Fichier PDF:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Row="2" Grid.Column="0" Text="📑 Fichier PDF:" Style="{StaticResource ModernLabel}" VerticalAlignment="Center"/>
                 <Border Grid.Row="2" Grid.Column="1" Background="#2D2D44" BorderBrush="#4A7FBF" BorderThickness="1" CornerRadius="4" Margin="5" Padding="10,5">
                     <TextBlock x:Name="PdfPathLabel" Text="Non detecte" Foreground="#888" FontSize="11"/>
                 </Border>
-                <Button Grid.Row="2" Grid.Column="2" Content="..." Style="{StaticResource SecondaryButton}" Click="PdfBrowseButton_Click"/>
+                <Button Grid.Row="2" Grid.Column="2" Content="📂" Style="{StaticResource SecondaryButton}" Click="PdfBrowseButton_Click"/>
             </Grid>
         </GroupBox>
 

@@ -258,6 +258,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Modules\PlaceEquipment\Views\PlaceEquipmentSettingsWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <!-- ========== MODULE: UPLOAD TEMPLATE ========== -->
     <Page Include="Modules\UploadTemplate\Views\UploadTemplateWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -373,8 +377,13 @@
       <DependentUpon>PlaceEquipmentWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Modules\PlaceEquipment\Views\PlaceEquipmentSettingsWindow.xaml.cs">
+      <DependentUpon>PlaceEquipmentSettingsWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Modules\PlaceEquipment\Models\EquipmentItem.cs" />
     <Compile Include="Modules\PlaceEquipment\Models\PlaceEquipmentRequest.cs" />
+    <Compile Include="Modules\PlaceEquipment\Models\PlaceEquipmentSettings.cs" />
     <Compile Include="Modules\PlaceEquipment\Services\EquipmentPlacementService.cs" />
     <Compile Include="Modules\PlaceEquipment\Services\EquipmentCopyDesignService.cs" />
     <!-- ========== CODE-BEHIND: MODULE UPLOAD TEMPLATE ========== -->

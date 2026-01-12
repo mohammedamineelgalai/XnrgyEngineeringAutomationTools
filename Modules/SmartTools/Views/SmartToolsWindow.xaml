@@ -447,9 +447,9 @@
                 <!-- Header Journal -->
                 <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8">
                     <Grid>
-                        <TextBlock Text="Journal des Operations" FontSize="14" FontWeight="Bold" 
+                        <TextBlock Text="📋 Journal des Operations" FontSize="14" FontWeight="Bold" 
                                    Foreground="White"/>
-                        <Button x:Name="BtnClearLog" Content="Effacer" HorizontalAlignment="Right" 
+                        <Button x:Name="BtnClearLog" Content="🗑️ Effacer" HorizontalAlignment="Right" 
                                 Background="#DC2626" Foreground="White" FontWeight="Bold"
                                 BorderBrush="#DC2626" BorderThickness="2"
                                 Padding="8,2" Click="BtnClearLog_Click" Cursor="Hand"/>

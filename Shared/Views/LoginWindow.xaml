@@ -77,31 +77,31 @@
 
         <!-- Serveur -->
         <StackPanel Grid.Row="1" Margin="0,0,0,15">
-            <TextBlock Text="Serveur" Foreground="White" Margin="0,0,0,5"/>
+            <TextBlock Text="🖥️ Serveur" Foreground="White" Margin="0,0,0,5"/>
             <TextBox x:Name="ServerTextBox" Text="VAULTPOC" Style="{StaticResource ModernTextBox}"/>
         </StackPanel>
 
         <!-- Vault -->
         <StackPanel Grid.Row="2" Margin="0,0,0,15">
-            <TextBlock Text="Vault" Foreground="White" Margin="0,0,0,5"/>
+            <TextBlock Text="🗄️ Vault" Foreground="White" Margin="0,0,0,5"/>
             <TextBox x:Name="VaultTextBox" Text="TestXNRGY" Style="{StaticResource ModernTextBox}"/>
         </StackPanel>
 
         <!-- Utilisateur -->
         <StackPanel Grid.Row="3" Margin="0,0,0,15">
-            <TextBlock Text="Utilisateur" Foreground="White" Margin="0,0,0,5"/>
+            <TextBlock Text="👤 Utilisateur" Foreground="White" Margin="0,0,0,5"/>
             <TextBox x:Name="UserTextBox" Style="{StaticResource ModernTextBox}"/>
         </StackPanel>
 
         <!-- Mot de passe -->
         <StackPanel Grid.Row="4" Margin="0,0,0,15">
-            <TextBlock Text="Mot de passe" Foreground="White" Margin="0,0,0,5"/>
+            <TextBlock Text="🔑 Mot de passe" Foreground="White" Margin="0,0,0,5"/>
             <PasswordBox x:Name="PasswordBox" Style="{StaticResource ModernPasswordBox}"/>
         </StackPanel>
 
         <!-- Sauvegarder -->
         <CheckBox Grid.Row="5" x:Name="SaveCredentialsCheckBox" 
-                  Content="Sauvegarder les identifiants" 
+                  Content="💾 Sauvegarder les identifiants" 
                   Foreground="White" IsChecked="False" Margin="0,0,0,10"/>
 
         <!-- Spinner de connexion -->
@@ -129,18 +129,18 @@
 
         <!-- Boutons -->
         <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,15,0,0">
-            <Button x:Name="ClearButton" Content="Effacer" 
+            <Button x:Name="ClearButton" Content="🗑️ Effacer" 
                     Click="ClearButton_Click"
-                    Width="80" Padding="10,8" Margin="0,0,10,0"
+                    Width="100" Padding="10,8" Margin="0,0,10,0"
                     Style="{StaticResource SecondaryButton}"
                     ToolTip="Effacer les identifiants sauvegardes"/>
-            <Button x:Name="CancelButton" Content="Annuler" 
+            <Button x:Name="CancelButton" Content="❌ Annuler" 
                     Click="CancelButton_Click"
-                    Width="100" Padding="10,8" Margin="0,0,10,0"
+                    Width="110" Padding="10,8" Margin="0,0,10,0"
                     Style="{StaticResource SecondaryButton}"/>
-            <Button x:Name="ConnectButton" Content="🔌 Connecter" 
+            <Button x:Name="ConnectButton" Content="➜ Se Connecter" 
                     Click="ConnectButton_Click"
-                    Width="130" Padding="10,8"
+                    Width="150" Padding="10,8"
                     Style="{StaticResource PrimaryButton}"/>
         </StackPanel>
     </Grid>

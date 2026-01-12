@@ -56,6 +56,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             _vaultService = vaultService;
             MainWindowLogCallback = mainLogCallback;
             
+            // Passer le service Vault au SmartToolsService
+            _smartToolsService.SetVaultService(_vaultService);
+            
             // Passer le callback pour les popups HTML au service
             _smartToolsService.SetHtmlPopupCallback(ShowHtmlPopup);
             _smartToolsService.SetExportOptionsCallback(ShowExportOptions);
@@ -725,8 +728,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
                     {
                         Format = options.SelectedFormat,
                         DestinationPath = options.DestinationPath,
+                        VaultDestinationPath = options.IsDestinationVault ? options.VaultDestinationPath : "",
+                        LocalDestinationPath = options.IsDestinationVault ? "" : options.LocalDestinationPath,
                         OutputFileName = options.OutputFileName,
                         FullOutputPath = options.FullOutputPath,
+                        ProjectNumber = options.ProjectNumber,
+                        Reference = options.Reference,
+                        IsDestinationVault = options.IsDestinationVault,
                         HideReferences = options.HideReferences,
                         ActivateDefaultRepresentation = options.ActivateDefaultRepresentation,
                         OpenAfterExport = options.OpenAfterExport
@@ -743,9 +751,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
     public class ExportOptionsResult
     {
         public ExportFormat Format { get; set; }
-        public string DestinationPath { get; set; } = "";
+        public string DestinationPath { get; set; } = ""; // Chemin de destination (local ou Vault)
+        public string VaultDestinationPath { get; set; } = ""; // Chemin Vault de destination (si IsDestinationVault = true)
+        public string LocalDestinationPath { get; set; } = ""; // Chemin local de destination (si IsDestinationVault = false)
         public string OutputFileName { get; set; } = "";
-        public string FullOutputPath { get; set; } = "";
+        public string FullOutputPath { get; set; } = ""; // Chemin complet du fichier de sortie
+        public string ProjectNumber { get; set; } = "";
+        public string Reference { get; set; } = "";
+        public bool IsDestinationVault { get; set; } = false; // true = Vault, false = Local
         public bool HideReferences { get; set; }
         public bool ActivateDefaultRepresentation { get; set; }
         public bool OpenAfterExport { get; set; }

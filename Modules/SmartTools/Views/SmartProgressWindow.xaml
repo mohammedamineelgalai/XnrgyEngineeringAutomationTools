@@ -139,11 +139,11 @@
                                 <TextBlock x:Name="StatusIconText" Text="◌" FontSize="12" Foreground="White"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
-                            <TextBlock x:Name="TxtStatus" Text="En cours..." FontSize="14" 
+                            <TextBlock x:Name="TxtStatus" Text="⏳ En cours..." FontSize="14" 
                                        Foreground="#2c3e50" VerticalAlignment="Center"/>
                         </StackPanel>
                         
-                        <Button x:Name="BtnClose" Content="Fermer" HorizontalAlignment="Right"
+                        <Button x:Name="BtnClose" Content="✅ Fermer" HorizontalAlignment="Right"
                                 Padding="20,8" FontSize="14" FontWeight="SemiBold"
                                 Background="#3498db" Foreground="White" BorderThickness="0"
                                 Cursor="Hand" Visibility="Collapsed" Click="BtnClose_Click">

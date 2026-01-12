@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{StaticResource WindowTitleExportOptions}"
         Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
-        Height="450" Width="550"
-        MinHeight="400" MinWidth="500"
-        WindowStartupLocation="CenterOwner"
+        Height="600" Width="650"
+        MinHeight="550" MinWidth="600"
+        WindowStartupLocation="Manual"
         Background="#1E1E2E"
         ResizeMode="NoResize"
         ShowInTaskbar="True">
@@ -86,7 +86,7 @@
         </Border>
 
         <!-- Contenu -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+        <Grid Grid.Row="1">
             <StackPanel Margin="20">
                 
                 <!-- Nom du fichier source -->
@@ -108,8 +108,22 @@
                     </StackPanel>
                 </Border>
                 
-                <!-- Dossier de destination -->
-                <TextBlock Text="Dossier de destination:" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,6"/>
+                <!-- Destination -->
+                <TextBlock Text="Destination:" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,8"/>
+                <Border Background="#252536" CornerRadius="4" Padding="16,12" Margin="0,0,0,16"
+                        BorderBrush="#4A7FBF" BorderThickness="1">
+                    <StackPanel>
+                        <RadioButton x:Name="RbDestinationLocal" Content="📍 Disque local (C:\Vault\...)" 
+                                     Style="{StaticResource DarkRadioButton}" GroupName="Destination" 
+                                     Checked="RbDestination_Checked"/>
+                        <RadioButton x:Name="RbDestinationVault" Content="☁️ Vault ($/Engineering/...)" 
+                                     Style="{StaticResource DarkRadioButton}" GroupName="Destination"
+                                     Checked="RbDestination_Checked"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Chemin de destination -->
+                <TextBlock x:Name="TxtDestinationLabel" Text="Chemin de destination (local):" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,6"/>
                 <Grid Margin="0,0,0,16">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
@@ -126,7 +140,7 @@
                 <TextBlock Text="Nom du fichier de sortie:" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,6"/>
                 <TextBox x:Name="TxtOutputFileName" Style="{StaticResource DarkTextBox}" Margin="0,0,0,16"
                          Text=""/>
-                <TextBlock Text="Format suggéré: PROJET-REF-MODULE (ex: 10516-01-M06)" 
+                <TextBlock Text="Format Top Assembly: 123450101 (sans REF et M) | Format Sous-Assembly: 123450101_LEFT_WALL_01" 
                            FontSize="11" Foreground="#888888" Margin="0,-12,0,16"/>
                 
                 <!-- Options -->
@@ -143,7 +157,7 @@
                     </StackPanel>
                 </Border>
             </StackPanel>
-        </ScrollViewer>
+        </Grid>
 
         <!-- Footer avec boutons -->
         <Border Grid.Row="2" Background="#252536" Padding="16,12" BorderBrush="#4A7FBF" BorderThickness="0,2,0,0">
@@ -154,12 +168,12 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 
-                <Button x:Name="BtnCancel" Grid.Column="1" Content="Annuler" 
+                <Button x:Name="BtnCancel" Grid.Column="1" Content="❌ Annuler" 
                         Style="{StaticResource ActionButton}" Background="#6B7280"
-                        Width="100" Margin="0,0,12,0" Click="BtnCancel_Click"/>
-                <Button x:Name="BtnExport" Grid.Column="2" Content="🔄 Exporter" 
+                        Width="110" Margin="0,0,12,0" Click="BtnCancel_Click"/>
+                <Button x:Name="BtnExport" Grid.Column="2" Content="� Exporter" 
                         Style="{StaticResource ActionButton}" Background="#107C10"
-                        Width="120" Click="BtnExport_Click"/>
+                        Width="130" Click="BtnExport_Click"/>
             </Grid>
         </Border>
 
