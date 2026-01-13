@@ -189,13 +189,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
         /// <param name="destinationFolder">Dossier de destination</param>
         /// <param name="topAssemblyFileName">Nom du fichier assemblage principal</param>
         /// <param name="filesToCopy">Liste optionnelle des fichiers a copier (si null, copie tout)</param>
+        /// <param name="fileRenameMap">Dictionnaire de renommage: OriginalFileName -> NewFileName (avec suffixe _01, _02, etc.)</param>
         /// <returns>Resultat de la copie</returns>
         public async Task<EquipmentCopyResult> ExecuteEquipmentCopyDesignAsync(
             string equipmentIpjPath,
             string sourceFolder,
             string destinationFolder,
             string topAssemblyFileName,
-            List<FileItem>? filesToCopy = null)
+            List<FileItem>? filesToCopy = null,
+            Dictionary<string, string>? fileRenameMap = null)
         {
             // Calculer le chemin complet de l'assemblage source
             string sourceAssemblyPath = IOPath.Combine(sourceFolder, topAssemblyFileName);
@@ -306,7 +308,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                     // Calculer le chemin relatif et destination
                     string relativePath = GetRelativePath(originalPath, sourceFolder);
                     string originalFileName = IOPath.GetFileName(originalPath);
-                    string newFileName = originalFileName;  // Toujours garder les noms originaux
+                    
+                    // Appliquer le renommage si un dictionnaire est fourni
+                    string newFileName = originalFileName;
+                    if (fileRenameMap != null && fileRenameMap.TryGetValue(originalFileName, out string? renamedFileName) && !string.IsNullOrEmpty(renamedFileName))
+                    {
+                        newFileName = renamedFileName;
+                    }
+                    
                     string newPath;
 
                     string? relativeDir = IOPath.GetDirectoryName(relativePath);
@@ -382,6 +391,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                         idwIndex++;
                         string idwFileName = IOPath.GetFileName(idwPath);
                         
+                        // Appliquer le renommage si un dictionnaire est fourni
+                        string newIdwFileName = idwFileName;
+                        if (fileRenameMap != null && fileRenameMap.TryGetValue(idwFileName, out string? renamedIdwFileName) && !string.IsNullOrEmpty(renamedIdwFileName))
+                        {
+                            newIdwFileName = renamedIdwFileName;
+                        }
+                        
                         // Calculer le nouveau chemin
                         string relativePath = GetRelativePath(idwPath, sourceFolder);
                         string? relativeDir = IOPath.GetDirectoryName(relativePath);
@@ -389,11 +405,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                         
                         if (string.IsNullOrEmpty(relativeDir))
                         {
-                            newIdwPath = IOPath.Combine(destinationFolder, idwFileName);
+                            newIdwPath = IOPath.Combine(destinationFolder, newIdwFileName);
                         }
                         else
                         {
-                            newIdwPath = IOPath.Combine(destinationFolder, relativeDir, idwFileName);
+                            newIdwPath = IOPath.Combine(destinationFolder, relativeDir, newIdwFileName);
                         }
                         
                         // S'assurer que le dossier existe
@@ -417,16 +433,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                             OriginalPath = idwPath,
                             NewPath = newIdwPath,
                             OriginalFileName = idwFileName,
-                            NewFileName = idwFileName
+                            NewFileName = newIdwFileName
                         });
                         
-                        Log($"  [+] [{idwIndex}/{idwFiles.Count}] {idwFileName}", "SUCCESS");
+                        Log($"  [+] [{idwIndex}/{idwFiles.Count}] {idwFileName} -> {newIdwFileName}", "SUCCESS");
                         
                         // Fermer le dessin
                         drawDoc.Close(false);
                         
                         int progress = 80 + (int)(idwIndex * 5.0 / Math.Max(idwFiles.Count, 1));
-                        ReportProgress(progress, $"Dessin: {idwFileName}");
+                        ReportProgress(progress, $"Dessin: {newIdwFileName}");
                     }
                     catch (Exception ex)
                     {
@@ -471,13 +487,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                 // Ils sont appeles dynamiquement par iLogic selon les scenarios
                 // IMPORTANT: Ne pas ouvrir ces fichiers, juste les copier physiquement
                 // ══════════════════════════════════════════════════════════════════
-                int orphansCopied = await CopyOrphanInventorFilesAsync(sourceFolder, destinationFolder, result.CopiedFiles);
+                int orphansCopied = await CopyOrphanInventorFilesAsync(sourceFolder, destinationFolder, result.CopiedFiles, fileRenameMap);
                 Log($"[+] {orphansCopied} fichiers Inventor orphelins copies (appeles par iLogic)", "SUCCESS");
 
                 ReportProgress(95, "Copie fichiers non-Inventor...");
 
                 // Copier les fichiers non-Inventor (IPJ, images, etc.)
-                await CopyNonInventorFilesAsync(sourceFolder, destinationFolder);
+                await CopyNonInventorFilesAsync(sourceFolder, destinationFolder, fileRenameMap);
 
                 result.Success = result.CopiedFiles.Count > 0;
                 result.FilesCopied = result.CopiedFiles.Count;
@@ -550,7 +566,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
             }
         }
 
-        private async Task CopyNonInventorFilesAsync(string sourceFolder, string destFolder)
+        private async Task CopyNonInventorFilesAsync(string sourceFolder, string destFolder, Dictionary<string, string>? fileRenameMap)
         {
             await Task.Run(() =>
             {
@@ -572,8 +588,26 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                     // Exclure dossiers _V
                     if (ExcludedFolders.Contains(dirName, StringComparer.OrdinalIgnoreCase)) continue;
 
+                    // Appliquer le renommage si un dictionnaire est fourni
+                    string newFileName = fileName;
+                    if (fileRenameMap != null && fileRenameMap.TryGetValue(fileName, out string? renamedFileName) && !string.IsNullOrEmpty(renamedFileName))
+                    {
+                        newFileName = renamedFileName;
+                    }
+
                     string relativePath = GetRelativePath(file, sourceFolder);
-                    string destPath = IOPath.Combine(destFolder, relativePath);
+                    string? relativeDir = IOPath.GetDirectoryName(relativePath);
+                    string destPath;
+                    
+                    if (string.IsNullOrEmpty(relativeDir))
+                    {
+                        destPath = IOPath.Combine(destFolder, newFileName);
+                    }
+                    else
+                    {
+                        destPath = IOPath.Combine(destFolder, relativeDir, newFileName);
+                    }
+                    
                     string? destDir = IOPath.GetDirectoryName(destPath);
 
                     if (!string.IsNullOrEmpty(destDir) && !IODirectory.Exists(destDir))
@@ -584,7 +618,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                     try
                     {
                         IOFile.Copy(file, destPath, true);
-                        Log($"  [+] Copie: {fileName}", "DEBUG");
+                        Log($"  [+] Copie: {fileName} -> {newFileName}", "DEBUG");
                     }
                     catch (Exception ex)
                     {
@@ -600,7 +634,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
         /// Ces fichiers sont typiquement appeles dynamiquement par les regles iLogic.
         /// IMPORTANT: Copie physique simple sans ouvrir dans Inventor (evite les erreurs de references)
         /// </summary>
-        private async Task<int> CopyOrphanInventorFilesAsync(string sourceFolder, string destFolder, List<FileCopyInfo> alreadyCopied)
+        private async Task<int> CopyOrphanInventorFilesAsync(string sourceFolder, string destFolder, List<FileCopyInfo> alreadyCopied, Dictionary<string, string>? fileRenameMap)
         {
             int copiedCount = 0;
             
@@ -635,9 +669,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                     // Verifier si ce fichier a deja ete copie par le Copy Design
                     if (copiedPaths.Contains(file)) continue;
 
+                    // Appliquer le renommage si un dictionnaire est fourni
+                    string newFileName = fileName;
+                    if (fileRenameMap != null && fileRenameMap.TryGetValue(fileName, out string? renamedFileName) && !string.IsNullOrEmpty(renamedFileName))
+                    {
+                        newFileName = renamedFileName;
+                    }
+
                     // Calculer le chemin de destination
                     string relativePath = GetRelativePath(file, sourceFolder);
-                    string destPath = IOPath.Combine(destFolder, relativePath);
+                    string? relativeDir = IOPath.GetDirectoryName(relativePath);
+                    string destPath;
+                    
+                    if (string.IsNullOrEmpty(relativeDir))
+                    {
+                        destPath = IOPath.Combine(destFolder, newFileName);
+                    }
+                    else
+                    {
+                        destPath = IOPath.Combine(destFolder, relativeDir, newFileName);
+                    }
+                    
                     string? destDir = IOPath.GetDirectoryName(destPath);
 
                     // Verifier si le fichier existe deja a destination
@@ -658,7 +710,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                         // Log tous les 50 fichiers pour ne pas spammer
                         if (copiedCount <= 10 || copiedCount % 50 == 0)
                         {
-                            Log($"  [+] Orphelin: {fileName}", "DEBUG");
+                            Log($"  [+] Orphelin: {fileName} -> {newFileName}", "DEBUG");
                         }
                     }
                     catch (Exception ex)

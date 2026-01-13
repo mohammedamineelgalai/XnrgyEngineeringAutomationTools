@@ -534,10 +534,20 @@
 
                 <!-- Droite: Statut connexion + Boutons -->
                 <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                    <!-- Statut Connexion Vault et Inventor (côte à côte) -->
+                    <!-- Statut Connexion Inventor et Vault (côte à côte) - Inventor à gauche, Vault à droite -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0,0,0,6">
-                        <!-- Statut Connexion Vault (style identique VaultUploadModule) -->
+                        <!-- Statut Connexion Inventor (dynamique avec fichier actif) -->
                         <Border Background="#2D2D44" CornerRadius="4" Padding="10,6" Margin="0,0,8,0"
+                                BorderBrush="#4A7FBF" BorderThickness="2">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse x:Name="InventorStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtInventorStatus" FontWeight="SemiBold" FontSize="12">
+                                    <Run Text="⚙️" Foreground="#FF8C00"/><Run x:Name="RunInventorStatus" Text=" Inventor : Deconnecte" Foreground="White"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                        <!-- Statut Connexion Vault (style identique VaultUploadModule) -->
+                        <Border Background="#2D2D44" CornerRadius="4" Padding="10,6"
                                 BorderBrush="#4A7FBF" BorderThickness="2">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
@@ -546,18 +556,6 @@
                                 </TextBlock>
                             </StackPanel>
                         </Border>
-                        <!-- Statut Connexion Inventor (plus petit et dynamique) -->
-                        <Viewbox Stretch="Uniform" MaxWidth="200" MaxHeight="30" HorizontalAlignment="Left" VerticalAlignment="Center">
-                            <Border Background="#2D2D44" CornerRadius="4" Padding="8,4"
-                                    BorderBrush="#4A7FBF" BorderThickness="2">
-                                <StackPanel Orientation="Horizontal">
-                                    <Ellipse x:Name="InventorStatusIndicator" Width="8" Height="8" Fill="#E81123" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="TxtInventorStatus" FontWeight="SemiBold" FontSize="10">
-                                        <Run Text="⚙️" Foreground="#FFB74D"/><Run x:Name="RunInventorStatus" Text=" Inventor : Deconnecte" Foreground="White"/>
-                                    </TextBlock>
-                                </StackPanel>
-                            </Border>
-                        </Viewbox>
                     </StackPanel>
                     <!-- Boutons -->
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -636,35 +634,35 @@
                         <!-- Ligne 2: Full Project Number + Destination Path -->
                         <Grid Margin="0,6,0,0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="0.7*"/>
+                                <ColumnDefinition Width="2.3*"/>
                             </Grid.ColumnDefinitions>
 
                             <!-- Full Project Number (Calcule) -->
                             <StackPanel Grid.Column="0" Margin="0,0,8,0">
-                                <TextBlock Text="N° Complet (Auto)" Style="{StaticResource ModernLabel}" FontSize="10"/>
-                                <Border Background="#1A1A28" CornerRadius="4" Padding="8,6" BorderBrush="#4A7FBF" BorderThickness="2">
-                                    <TextBlock x:Name="TxtFullProjectNumber" Text="000000000" FontSize="11" 
+                                <TextBlock Text="Numéro Projet Complet (Auto)" Style="{StaticResource ModernLabel}" FontSize="11"/>
+                                <Border Background="#1A1A28" CornerRadius="4" Padding="10,8" BorderBrush="#4A7FBF" BorderThickness="2">
+                                    <TextBlock x:Name="TxtFullProjectNumber" Text="000000000" FontSize="12" 
                                                FontWeight="Bold" Foreground="White" FontFamily="Consolas"/>
                                 </Border>
                             </StackPanel>
 
                             <!-- Destination Path (Calcule) -->
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Destination (Auto)" Style="{StaticResource ModernLabel}" FontSize="10"/>
+                                <TextBlock Text="Chemin de Destination (Auto)" Style="{StaticResource ModernLabel}" FontSize="11"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <Border Grid.Column="0" Background="#1A1A28" CornerRadius="4,0,0,4" Padding="8,6" 
+                                    <Border Grid.Column="0" Background="#1A1A28" CornerRadius="4,0,0,4" Padding="10,8" 
                                             BorderBrush="#4A7FBF" BorderThickness="2,2,0,2">
                                         <TextBlock x:Name="TxtDestinationPath" Text="C:\Vault\Engineering\Projects\..." 
-                                                   FontSize="10" FontWeight="Bold" Foreground="White" FontFamily="Consolas" 
+                                                   FontSize="12" FontWeight="Bold" Foreground="White" FontFamily="Consolas" 
                                                    TextTrimming="CharacterEllipsis" TextWrapping="NoWrap"/>
                                     </Border>
                                     <Button Grid.Column="1" x:Name="BtnBrowseDestination" Content="📂" 
-                                            Style="{StaticResource SecondaryButton}" Padding="6,4"
+                                            Style="{StaticResource SecondaryButton}" Padding="8,5" Foreground="#FFD700"
                                             Click="BtnBrowseDestination_Click" ToolTip="Parcourir..."/>
                                 </Grid>
                             </StackPanel>

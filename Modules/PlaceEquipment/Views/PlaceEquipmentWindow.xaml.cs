@@ -1531,40 +1531,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                         Logger.Debug($"[i] Propriete 'Job_Title' non trouvee: {ex.Message}");
                     }
 
-                    // Chercher "Creation_Date" (nom avec underscore dans Inventor)
-                    try
-                    {
-                        dynamic prop = customProps["Creation_Date"];
-                        var dateValue = prop.Value;
-                        Logger.Info($"[i] Propriete 'Creation_Date' trouvee: '{dateValue}' (Type: {dateValue?.GetType().Name ?? "null"})");
-                        
-                        if (dateValue is DateTime dt)
-                        {
-                            DpCreationDate.SelectedDate = dt;
-                            AddLog($"[+] Date: {dt:yyyy-MM-dd}", "SUCCESS");
-                            Logger.Info($"[+] Date appliquee: {dt:yyyy-MM-dd}");
-                            propsFound++;
-                        }
-                        else if (dateValue != null)
-                        {
-                            // Essayer de parser la date
-                            if (DateTime.TryParse(dateValue.ToString(), out DateTime parsedDate))
-                            {
-                                DpCreationDate.SelectedDate = parsedDate;
-                                AddLog($"[+] Date: {parsedDate:yyyy-MM-dd}", "SUCCESS");
-                                Logger.Info($"[+] Date parsee et appliquee: {parsedDate:yyyy-MM-dd}");
-                                propsFound++;
-                            }
-                            else
-                            {
-                                Logger.Warning($"[!] Impossible de parser la date: '{dateValue}'");
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Debug($"[i] Propriete 'Creation_Date' non trouvee: {ex.Message}");
-                    }
+                    // NOTE: La date de creation (Creation_Date) n'est PAS chargee depuis l'assemblage principal
+                    // car elle doit etre la date du jour ou le dessinateur place l'equipement
+                    // La date reste donc celle initialisee par defaut (DateTime.Now)
+                    Logger.Info("[i] Date de creation: conservee a la date du jour (date de placement de l'equipement)");
 
                     if (propsFound > 0)
                     {
@@ -3089,6 +3059,37 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     Logger.Info($"[+] Dossier destination cree: {equipmentDestPath}");
                 }
                 
+                // ══════════════════════════════════════════════════════════
+                // CONSTRUIRE LE DICTIONNAIRE DE RENOMMAGE DEPUIS LA DATAGRID
+                // Ce dictionnaire mappe: OriginalFileName -> NewFileName (avec suffixe _01, _02, etc.)
+                // IMPORTANT: Declare AVANT le bloc using pour etre accessible dans l'etape 3
+                // ══════════════════════════════════════════════════════════
+                Dictionary<string, string>? fileRenameMap = null;
+                if (_files != null && _files.Count > 0)
+                {
+                    fileRenameMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var file in _files)
+                    {
+                        if (!string.IsNullOrEmpty(file.OriginalFileName) && !string.IsNullOrEmpty(file.NewFileName))
+                        {
+                            // Ajouter seulement si le nom a change
+                            if (!file.OriginalFileName.Equals(file.NewFileName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                fileRenameMap[file.OriginalFileName] = file.NewFileName;
+                            }
+                        }
+                    }
+                    
+                    if (fileRenameMap.Count > 0)
+                    {
+                        AddLog($"[i] Renommage: {fileRenameMap.Count} fichiers avec suffixe '{_selectedInstanceSuffix}'", "INFO");
+                    }
+                    else
+                    {
+                        fileRenameMap = null; // Pas de renommage necessaire
+                    }
+                }
+                
                 // Executer le Copy Design avec EquipmentCopyDesignService
                 // Ce service utilise l'IPJ passe en parametre (equipmentIpjPath) DIRECTEMENT
                 // Pas de recherche automatique = PAS de selection du mauvais IPJ "Benoit"
@@ -3122,7 +3123,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                         _selectedEquipment.LocalTempPath,
                         equipmentDestPath,
                         _selectedEquipment.AssemblyFileName,
-                        null);  // Copier tous les fichiers (pas de filtre)
+                        null,  // Copier tous les fichiers (pas de filtre)
+                        fileRenameMap);  // Dictionnaire de renommage avec suffixe
                     
                     if (!result.Success)
                     {
@@ -3139,23 +3141,40 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 UpdateProgress(52, "Localisation de l'assemblage copie...");
                 AddLog("[3/8] Recherche de l'assemblage copie...", "INFO");
                 
-                // L'assemblage copie devrait etre renomme avec le numero de projet
-                // ou garder son nom original selon la config
-                var copiedEquipmentAssembly = Path.Combine(equipmentDestPath, _selectedEquipment.AssemblyFileName);
+                // L'assemblage copie peut etre renomme avec le suffixe d'instance (_01, _02, etc.)
+                // D'abord, chercher avec le nom renomme si un suffixe est applique
+                string expectedAssemblyName = _selectedEquipment.AssemblyFileName;
+                if (fileRenameMap != null && fileRenameMap.TryGetValue(_selectedEquipment.AssemblyFileName, out string? renamedAssemblyName))
+                {
+                    expectedAssemblyName = renamedAssemblyName;
+                    AddLog($"[i] Nom assemblage avec suffixe: {expectedAssemblyName}", "INFO");
+                }
                 
-                // Chercher aussi avec le nom renomme (fullProjectNumber.iam)
+                var copiedEquipmentAssembly = Path.Combine(equipmentDestPath, expectedAssemblyName);
+                
+                // Chercher aussi avec le nom original si le nom renomme n'existe pas
                 if (!File.Exists(copiedEquipmentAssembly))
                 {
-                    // Peut-etre renomme - chercher le premier .iam dans le dossier
-                    var iamFiles = Directory.GetFiles(equipmentDestPath, "*.iam", SearchOption.TopDirectoryOnly);
-                    if (iamFiles.Length > 0)
+                    // Essayer avec le nom original
+                    var originalPath = Path.Combine(equipmentDestPath, _selectedEquipment.AssemblyFileName);
+                    if (File.Exists(originalPath))
                     {
-                        copiedEquipmentAssembly = iamFiles[0];
-                        AddLog($"[i] Assemblage trouve: {Path.GetFileName(copiedEquipmentAssembly)}", "INFO");
+                        copiedEquipmentAssembly = originalPath;
+                        AddLog($"[i] Assemblage trouve (nom original): {Path.GetFileName(copiedEquipmentAssembly)}", "INFO");
                     }
                     else
                     {
-                        throw new Exception($"Aucun assemblage .iam trouve dans: {equipmentDestPath}");
+                        // Chercher le premier .iam dans le dossier
+                        var iamFiles = Directory.GetFiles(equipmentDestPath, "*.iam", SearchOption.TopDirectoryOnly);
+                        if (iamFiles.Length > 0)
+                        {
+                            copiedEquipmentAssembly = iamFiles[0];
+                            AddLog($"[i] Assemblage trouve: {Path.GetFileName(copiedEquipmentAssembly)}", "INFO");
+                        }
+                        else
+                        {
+                            throw new Exception($"Aucun assemblage .iam trouve dans: {equipmentDestPath}");
+                        }
                     }
                 }
                 Logger.Info($"[i] Assemblage copie: {copiedEquipmentAssembly}");
