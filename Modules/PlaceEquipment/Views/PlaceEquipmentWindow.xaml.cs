@@ -458,6 +458,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
 
         /// <summary>
         /// Classe pour representer un equipement dans Vault
+        /// Supporte les equipements avec variantes (Infinitum) et fichiers IPT
         /// </summary>
         private class VaultEquipment
         {
@@ -467,6 +468,31 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
             public string LocalPath { get; set; } = string.Empty;
             public string ProjectFileName { get; set; } = string.Empty;
             public string AssemblyFileName { get; set; } = string.Empty;
+            
+            /// <summary>
+            /// Type de fichier principal (Assembly=.iam, Part=.ipt)
+            /// </summary>
+            public PrimaryFileType PrimaryFileType { get; set; } = PrimaryFileType.Assembly;
+            
+            /// <summary>
+            /// Indique si cet equipement a des variantes (ex: Infinitum)
+            /// </summary>
+            public bool HasVariants { get; set; } = false;
+            
+            /// <summary>
+            /// Liste des variantes disponibles
+            /// </summary>
+            public List<EquipmentVariant>? Variants { get; set; }
+            
+            /// <summary>
+            /// Variante selectionnee par l'utilisateur
+            /// </summary>
+            public EquipmentVariant? SelectedVariant { get; set; }
+            
+            /// <summary>
+            /// Liste des dessins alternatifs (ex: Damper avec Floor vs Wall/Roof)
+            /// </summary>
+            public List<string>? AlternateDrawings { get; set; }
             
             /// <summary>
             /// Override ToString pour afficher le DisplayName dans le ComboBox
@@ -533,7 +559,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                     // [DEBUG] Log si equipement connu trouve ou non
                     if (knownEquipment != null)
                     {
-                        Logger.Debug($"[+] Equipement '{folder.Name}' trouve dans liste: IPJ='{knownEquipment.ProjectFileName}', IAM='{knownEquipment.AssemblyFileName}'");
+                        var fileInfo = knownEquipment.HasVariants 
+                            ? $"{knownEquipment.Variants?.Count ?? 0} variantes"
+                            : $"IPJ='{knownEquipment.ProjectFileName}', Primary='{knownEquipment.PrimaryFileName}'";
+                        Logger.Debug($"[+] Equipement '{folder.Name}' trouve dans liste: {fileInfo}");
                     }
                     else
                     {
@@ -547,7 +576,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                         VaultPath = $"{equipmentBasePath}/{folder.Name}",
                         LocalPath = Path.Combine(_defaultTemplatePath, folder.Name),
                         ProjectFileName = knownEquipment?.ProjectFileName ?? "",
-                        AssemblyFileName = knownEquipment?.AssemblyFileName ?? ""
+                        AssemblyFileName = knownEquipment?.AssemblyFileName ?? knownEquipment?.PrimaryFileName ?? "",
+                        PrimaryFileType = knownEquipment?.PrimaryFileType ?? PrimaryFileType.Assembly,
+                        HasVariants = knownEquipment?.HasVariants ?? false,
+                        Variants = knownEquipment?.Variants,
+                        AlternateDrawings = knownEquipment?.AlternateDrawings
                     };
                     equipments.Add(equipment);
                 }
@@ -580,29 +613,80 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
 
         /// <summary>
         /// Gestionnaire de selection d'equipement
+        /// Gere les equipements avec variantes (ex: Infinitum) et fichiers IPT
         /// </summary>
         private void CmbEquipment_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (CmbEquipment.SelectedItem is VaultEquipment equipment)
             {
-                _selectedEquipment = new EquipmentItem
+                // Verifier si l'equipement a des variantes (ex: Infinitum)
+                if (equipment.HasVariants && equipment.Variants != null && equipment.Variants.Count > 0)
                 {
-                    Name = equipment.Name,
-                    DisplayName = equipment.DisplayName,
-                    VaultPath = equipment.VaultPath,
-                    LocalTempPath = equipment.LocalPath,
-                    ProjectFileName = equipment.ProjectFileName,
-                    AssemblyFileName = equipment.AssemblyFileName
-                };
+                    // Afficher le dialogue de selection de variante
+                    var selectedVariant = ShowVariantSelectionDialog(equipment);
+                    if (selectedVariant == null)
+                    {
+                        // L'utilisateur a annule - deselectionner l'equipement
+                        CmbEquipment.SelectedIndex = -1;
+                        TxtStatus.Text = "Selection de variante annulee";
+                        return;
+                    }
+                    
+                    equipment.SelectedVariant = selectedVariant;
+                    
+                    // Mettre a jour les chemins avec la variante selectionnee
+                    _selectedEquipment = new EquipmentItem
+                    {
+                        Name = equipment.Name,
+                        DisplayName = $"{equipment.DisplayName} - {selectedVariant.DisplayName}",
+                        VaultPath = string.IsNullOrEmpty(selectedVariant.SubFolder) 
+                            ? equipment.VaultPath 
+                            : $"{equipment.VaultPath}/{selectedVariant.SubFolder}",
+                        LocalTempPath = string.IsNullOrEmpty(selectedVariant.SubFolder)
+                            ? equipment.LocalPath
+                            : Path.Combine(equipment.LocalPath, selectedVariant.SubFolder),
+                        ProjectFileName = selectedVariant.ProjectFileName,
+                        AssemblyFileName = selectedVariant.PrimaryFileName,
+                        PrimaryFileName = selectedVariant.PrimaryFileName,
+                        PrimaryFileType = selectedVariant.FileType,
+                        SelectedVariant = selectedVariant
+                    };
+                    
+                    AddLog($"[+] Variante selectionnee: {selectedVariant.DisplayName}", "SUCCESS");
+                    AddLog($"    Type fichier: {(selectedVariant.FileType == PrimaryFileType.Part ? ".ipt (Piece)" : ".iam (Assemblage)")}", "INFO");
+                }
+                else
+                {
+                    // Equipement standard sans variantes
+                    _selectedEquipment = new EquipmentItem
+                    {
+                        Name = equipment.Name,
+                        DisplayName = equipment.DisplayName,
+                        VaultPath = equipment.VaultPath,
+                        LocalTempPath = equipment.LocalPath,
+                        ProjectFileName = equipment.ProjectFileName,
+                        AssemblyFileName = equipment.AssemblyFileName,
+                        PrimaryFileName = equipment.AssemblyFileName,
+                        PrimaryFileType = equipment.PrimaryFileType,
+                        AlternateDrawings = equipment.AlternateDrawings
+                    };
+                }
                 
                 // Afficher le chemin Vault
-                TxtEquipmentVaultPath.Text = equipment.VaultPath;
-                TxtSourcePath.Text = equipment.LocalPath;
+                TxtEquipmentVaultPath.Text = _selectedEquipment.VaultPath;
+                TxtSourcePath.Text = _selectedEquipment.LocalTempPath;
                 
-                AddLog($"[+] Equipement selectionne: {equipment.DisplayName}", "INFO");
-                AddLog($"    Vault: {equipment.VaultPath}", "INFO");
-                AddLog($"    IPJ: {equipment.ProjectFileName}, IAM: {equipment.AssemblyFileName}", "DEBUG");
-                TxtStatus.Text = $"[+] Equipement selectionne: {equipment.DisplayName} - Cliquez 'Charger depuis Vault'";
+                AddLog($"[+] Equipement selectionne: {_selectedEquipment.DisplayName}", "INFO");
+                AddLog($"    Vault: {_selectedEquipment.VaultPath}", "INFO");
+                AddLog($"    IPJ: {_selectedEquipment.ProjectFileName}, Fichier principal: {_selectedEquipment.PrimaryFileName}", "DEBUG");
+                
+                // Indiquer le type de fichier si c'est un IPT
+                if (_selectedEquipment.PrimaryFileType == PrimaryFileType.Part)
+                {
+                    AddLog($"    [!] Type: Piece (.ipt) - sera inseree comme composant", "INFO");
+                }
+                
+                TxtStatus.Text = $"[+] Equipement selectionne: {_selectedEquipment.DisplayName} - Cliquez 'Charger depuis Vault'";
                 
                 // Vider les fichiers - ils seront charges apres le telechargement
                 _files.Clear();
@@ -612,6 +696,123 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Views
                 // [+] Detecter les instances existantes dans le module cible
                 DetectExistingEquipmentInstances();
             }
+        }
+
+        /// <summary>
+        /// Affiche un dialogue pour selectionner une variante d'equipement (ex: Infinitum)
+        /// </summary>
+        /// <param name="equipment">L'equipement avec variantes</param>
+        /// <returns>La variante selectionnee ou null si annule</returns>
+        private EquipmentVariant? ShowVariantSelectionDialog(VaultEquipment equipment)
+        {
+            if (equipment.Variants == null || equipment.Variants.Count == 0)
+                return null;
+            
+            // Creer une fenetre de dialogue simple
+            var dialog = new Window
+            {
+                Title = $"Selection de variante - {equipment.DisplayName}",
+                Width = 450,
+                Height = 350,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                ResizeMode = ResizeMode.NoResize,
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(45, 45, 48))
+            };
+            
+            var grid = new Grid { Margin = new Thickness(15) };
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            
+            // Titre
+            var title = new TextBlock
+            {
+                Text = $"L'equipement '{equipment.DisplayName}' a plusieurs variantes.\nSelectionnez la variante a utiliser:",
+                Foreground = System.Windows.Media.Brushes.White,
+                FontSize = 13,
+                Margin = new Thickness(0, 0, 0, 10),
+                TextWrapping = TextWrapping.Wrap
+            };
+            Grid.SetRow(title, 0);
+            grid.Children.Add(title);
+            
+            // Liste des variantes
+            var listBox = new ListBox
+            {
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(30, 30, 30)),
+                Foreground = System.Windows.Media.Brushes.White,
+                BorderBrush = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(63, 63, 70)),
+                FontSize = 12
+            };
+            
+            foreach (var variant in equipment.Variants)
+            {
+                var itemText = $"{variant.DisplayName}";
+                var fileTypeText = variant.FileType == PrimaryFileType.Part ? "Piece (.ipt)" : "Assemblage (.iam)";
+                var fullText = $"{itemText}\n    Fichier: {variant.PrimaryFileName} ({fileTypeText})";
+                
+                var item = new ListBoxItem
+                {
+                    Content = fullText,
+                    Tag = variant,
+                    Padding = new Thickness(8, 6, 8, 6),
+                    Foreground = System.Windows.Media.Brushes.White
+                };
+                listBox.Items.Add(item);
+            }
+            
+            listBox.SelectedIndex = 0;
+            Grid.SetRow(listBox, 1);
+            grid.Children.Add(listBox);
+            
+            // Boutons
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Orientation.Horizontal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Margin = new Thickness(0, 15, 0, 0)
+            };
+            
+            var btnOk = new Button
+            {
+                Content = "Selectionner",
+                Width = 100,
+                Height = 30,
+                Margin = new Thickness(0, 0, 10, 0),
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 122, 204)),
+                Foreground = System.Windows.Media.Brushes.White,
+                BorderThickness = new Thickness(0)
+            };
+            btnOk.Click += (s, e) => { dialog.DialogResult = true; dialog.Close(); };
+            buttonPanel.Children.Add(btnOk);
+            
+            var btnCancel = new Button
+            {
+                Content = "Annuler",
+                Width = 80,
+                Height = 30,
+                Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(63, 63, 70)),
+                Foreground = System.Windows.Media.Brushes.White,
+                BorderThickness = new Thickness(0)
+            };
+            btnCancel.Click += (s, e) => { dialog.DialogResult = false; dialog.Close(); };
+            buttonPanel.Children.Add(btnCancel);
+            
+            Grid.SetRow(buttonPanel, 2);
+            grid.Children.Add(buttonPanel);
+            
+            dialog.Content = grid;
+            
+            // Double-clic pour selectionner
+            listBox.MouseDoubleClick += (s, e) => { dialog.DialogResult = true; dialog.Close(); };
+            
+            if (dialog.ShowDialog() == true && listBox.SelectedItem is ListBoxItem selectedItem)
+            {
+                return selectedItem.Tag as EquipmentVariant;
+            }
+            
+            return null;
         }
 
         /// <summary>

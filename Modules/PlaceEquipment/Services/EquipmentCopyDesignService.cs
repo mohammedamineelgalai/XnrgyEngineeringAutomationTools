@@ -247,28 +247,36 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                 // Creer la structure de dossiers
                 await Task.Run(() => CreateFolderStructure(sourceFolder, destinationFolder));
 
-                ReportProgress(10, "Ouverture assemblage source...");
+                ReportProgress(10, "Ouverture fichier source...");
 
-                // Ouvrir l'assemblage source
-                AssemblyDocument? asmDoc = null;
+                // Determiner le type de fichier (assemblage ou piece)
+                string sourceExt = IOPath.GetExtension(sourceAssemblyPath).ToLowerInvariant();
+                bool isPartFile = sourceExt == ".ipt";
+                
+                // Ouvrir le fichier source (assemblage ou piece)
+                Document? sourceDoc = null;
                 await Task.Run(() =>
                 {
-                    asmDoc = (AssemblyDocument)_inventorApp.Documents.Open(sourceAssemblyPath, false);
+                    sourceDoc = _inventorApp.Documents.Open(sourceAssemblyPath, false);
                 });
 
-                if (asmDoc == null)
+                if (sourceDoc == null)
                 {
                     throw new Exception($"Impossible d'ouvrir: {assemblyFileName}");
                 }
 
-                Log($"[+] Assemblage ouvert: {assemblyFileName}", "SUCCESS");
+                string fileTypeText = isPartFile ? "Piece" : "Assemblage";
+                Log($"[+] {fileTypeText} ouvert: {assemblyFileName}", "SUCCESS");
 
                 ReportProgress(20, "Collecte des fichiers references...");
 
                 // Collecter tous les fichiers references
                 var allReferencedDocs = new Dictionary<string, Document>(StringComparer.OrdinalIgnoreCase);
-                allReferencedDocs[asmDoc.FullFileName] = (Document)asmDoc;
-                CollectAllReferencedDocuments((Document)asmDoc, allReferencedDocs);
+                allReferencedDocs[sourceDoc.FullFileName] = sourceDoc;
+                
+                // Pour les assemblages, collecter recursivement les references
+                // Pour les pieces, il peut y avoir des references (iMates, etc.) mais moins nombreuses
+                CollectAllReferencedDocuments(sourceDoc, allReferencedDocs);
 
                 // Filtrer: seulement les fichiers du dossier source (pas Library)
                 var filesToCopyLocal = allReferencedDocs
@@ -280,12 +288,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
 
                 ReportProgress(30, "Copie des fichiers...");
 
-                // Trier: IPT d'abord, puis IAM, Top Assembly en dernier
+                // Trier: IPT d'abord, puis IAM, Top Assembly/Part en dernier
                 var sortedFiles = filesToCopyLocal
                     .OrderBy(kvp =>
                     {
                         var doc = kvp.Value;
-                        if (doc.DocumentType == DocumentTypeEnum.kPartDocumentObject) return 0;
+                        if (doc.DocumentType == DocumentTypeEnum.kPartDocumentObject) 
+                        {
+                            // Le fichier source (si c'est un IPT) doit etre copie en dernier
+                            if (kvp.Key.Equals(sourceAssemblyPath, StringComparison.OrdinalIgnoreCase))
+                                return 100;
+                            return 0;
+                        }
                         if (doc.DocumentType == DocumentTypeEnum.kAssemblyDocumentObject)
                         {
                             if (kvp.Key.Equals(sourceAssemblyPath, StringComparison.OrdinalIgnoreCase))

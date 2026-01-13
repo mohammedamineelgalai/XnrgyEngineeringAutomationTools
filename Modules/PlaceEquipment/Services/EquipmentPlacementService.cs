@@ -13,8 +13,15 @@ using XnrgyEngineeringAutomationTools.Services;
 namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
 {
     /// <summary>
-    /// Service de placement d'équipements dans les modules XNRGY
-    /// Gère le téléchargement depuis Vault, Copy Design et insertion dans le top assembly
+    /// Service de placement d'equipements dans les modules XNRGY
+    /// Gere le telechargement depuis Vault, Copy Design et insertion dans le top assembly
+    /// 
+    /// ARCHITECTURE EXTENSIBLE:
+    /// Pour ajouter un nouvel equipement, simplement ajouter une entree dans AvailableEquipment:
+    /// - Equipement simple: new EquipmentItem { Name, DisplayName, ProjectFileName, AssemblyFileName, VaultPath }
+    /// - Equipement IPT: ajouter PrimaryFileType = PrimaryFileType.Part
+    /// - Equipement avec variantes: ajouter Variants = new List<EquipmentVariant> { ... }
+    /// - Equipement avec dessins multiples: ajouter AlternateDrawings = new List<string> { ... }
     /// </summary>
     public class EquipmentPlacementService
     {
@@ -22,36 +29,323 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
         private readonly VaultSdkService? _vaultService;
 
         /// <summary>
-        /// Liste complète des équipements disponibles avec leurs fichiers .ipj et .iam
+        /// Liste complete des equipements disponibles avec leurs fichiers .ipj et .iam/.ipt
+        /// 
+        /// STRUCTURE STANDARD (email Benoit - Janvier 2026):
+        /// Vault: $/Engineering/Library/Equipment/[NomEquipement]
+        /// Fichiers: [NomEquipement].ipj, [NomEquipement].iam, [NomEquipement].idw
+        /// 
+        /// POUR AJOUTER UN NOUVEL EQUIPEMENT:
+        /// 1. Equipement standard (.iam):
+        ///    new EquipmentItem { 
+        ///        Name = "Nom_Dossier", DisplayName = "Nom Affichage", 
+        ///        ProjectFileName = "Nom.ipj", AssemblyFileName = "Nom.iam",
+        ///        VaultPath = "$/Engineering/Library/Equipment/Nom_Dossier" 
+        ///    }
+        /// 
+        /// 2. Equipement avec piece principale (.ipt):
+        ///    new EquipmentItem { 
+        ///        Name = "Nom_Dossier", DisplayName = "Nom Affichage",
+        ///        ProjectFileName = "Nom.ipj", PrimaryFileName = "Nom.ipt",
+        ///        PrimaryFileType = PrimaryFileType.Part,
+        ///        VaultPath = "$/Engineering/Library/Equipment/Nom_Dossier"
+        ///    }
+        /// 
+        /// 3. Equipement avec variantes (ex: Infinitum):
+        ///    new EquipmentItem {
+        ///        Name = "Parent_Folder", DisplayName = "Equipement Parent",
+        ///        ProjectFileName = "Parent.ipj",
+        ///        Variants = new List<EquipmentVariant> {
+        ///            new EquipmentVariant { Name = "Variante1", SubFolder = "Variante1", ... },
+        ///            new EquipmentVariant { Name = "Variante2", SubFolder = "Variante2", ... }
+        ///        }
+        ///    }
         /// </summary>
         public static readonly List<EquipmentItem> AvailableEquipment = new List<EquipmentItem>
         {
-            new EquipmentItem { Name = "AngularFilter", DisplayName = "Angular Filter", ProjectFileName = "Angular Filter.ipj", AssemblyFileName = "Angular Filter.iam", VaultPath = "$/Engineering/Library/Equipment/AngularFilter" },
-            new EquipmentItem { Name = "Bellmouth", DisplayName = "Bellmouth", ProjectFileName = "BellMouth.ipj", AssemblyFileName = "BellMouth.iam", VaultPath = "$/Engineering/Library/Equipment/Bellmouth" },
-            new EquipmentItem { Name = "BlankTest", DisplayName = "Blank Test", ProjectFileName = "Blank Test.ipj", AssemblyFileName = "Blank Test.iam", VaultPath = "$/Engineering/Library/Equipment/BlankTest" },
-            new EquipmentItem { Name = "CatWalk", DisplayName = "Cat Walk", ProjectFileName = "Cat_Walk.ipj", AssemblyFileName = "Handrail.iam", VaultPath = "$/Engineering/Library/Equipment/CatWalk" },
-            new EquipmentItem { Name = "CircularOpeningSupport", DisplayName = "Circular Opening Support", ProjectFileName = "Circular_Opening_Support.ipj", AssemblyFileName = "Circular_Opening_Support.iam", VaultPath = "$/Engineering/Library/Equipment/CircularOpeningSupport" },
-            new EquipmentItem { Name = "CoolingCoil", DisplayName = "Cooling Coil", ProjectFileName = "CoolingCoil.ipj", AssemblyFileName = "CoolingCoil.iam", VaultPath = "$/Engineering/Library/Equipment/CoolingCoil" },
-            new EquipmentItem { Name = "CoolingCoilDouble", DisplayName = "Cooling Coil Double", ProjectFileName = "Cooling Coil Double.ipj", AssemblyFileName = "Cooling Coil Double.iam", VaultPath = "$/Engineering/Library/Equipment/CoolingCoilDouble" },
-            new EquipmentItem { Name = "Damper", DisplayName = "Damper", ProjectFileName = "Damper.ipj", AssemblyFileName = "Damper.iam", VaultPath = "$/Engineering/Library/Equipment/Damper" },
-            new EquipmentItem { Name = "Dwyer_2000", DisplayName = "Dwyer 2000", ProjectFileName = "Dwyer_2000.ipj", AssemblyFileName = "Dwyer_2000.iam", VaultPath = "$/Engineering/Library/Equipment/Dwyer_Gage/Dwyer_2000" },
-            new EquipmentItem { Name = "Dwyer_3000", DisplayName = "Dwyer 3000", ProjectFileName = "Dwyer_3000.ipj", AssemblyFileName = "Dwyer_3000.iam", VaultPath = "$/Engineering/Library/Equipment/Dwyer_Gage/Dwyer_3000" },
-            new EquipmentItem { Name = "FanCube", DisplayName = "Fan Cube", ProjectFileName = "Fan Cube Assy.ipj", AssemblyFileName = "Fan Cube Assy.iam", VaultPath = "$/Engineering/Library/Equipment/FanCube" },
-            new EquipmentItem { Name = "FloorPanOnly", DisplayName = "Floor Pan Only", ProjectFileName = "Floor Pan.ipj", AssemblyFileName = "Floor Pan.iam", VaultPath = "$/Engineering/Library/Equipment/FloorPanOnly" },
-            new EquipmentItem { Name = "FrontFilter", DisplayName = "Front Filter", ProjectFileName = "Front Filter.ipj", AssemblyFileName = "Front Filter.iam", VaultPath = "$/Engineering/Library/Equipment/FrontFilter" },
-            new EquipmentItem { Name = "HeatingCoil", DisplayName = "Heating Coil", ProjectFileName = "HeatingCoil.ipj", AssemblyFileName = "HeatingCoil.iam", VaultPath = "$/Engineering/Library/Equipment/HeatingCoil" },
-            new EquipmentItem { Name = "HeatingCoilDouble", DisplayName = "Heating Coil Double", ProjectFileName = "Heating Coil Double.ipj", AssemblyFileName = "Heating Coil Double.iam", VaultPath = "$/Engineering/Library/Equipment/HeatingCoilDouble" },
-            new EquipmentItem { Name = "HeatWheel", DisplayName = "Heat Wheel", ProjectFileName = "HeatWheel.ipj", AssemblyFileName = "HeatWheel.iam", VaultPath = "$/Engineering/Library/Equipment/HeatWheel" },
-            new EquipmentItem { Name = "Humidifier", DisplayName = "Humidifier", ProjectFileName = "Humidifier.ipj", AssemblyFileName = "Humidifier.iam", VaultPath = "$/Engineering/Library/Equipment/Humidifier" },
-            new EquipmentItem { Name = "IsolatorPlate", DisplayName = "Isolator Plate", ProjectFileName = "PlateAssy.ipj", AssemblyFileName = "PlateAssy.iam", VaultPath = "$/Engineering/Library/Equipment/IsolatorPlate" },
-            new EquipmentItem { Name = "OutletGuard", DisplayName = "Outlet Guard", ProjectFileName = "GuardAssy.ipj", AssemblyFileName = "GuardAssy.iam", VaultPath = "$/Engineering/Library/Equipment/OutletGuard" },
-            new EquipmentItem { Name = "Rehausse", DisplayName = "Rehausse", ProjectFileName = "Rehausse.ipj", AssemblyFileName = "Rehausse.iam", VaultPath = "$/Engineering/Library/Equipment/Rehausse" },
-            new EquipmentItem { Name = "RemovablePanel", DisplayName = "Removable Panel", ProjectFileName = "Removable Panel.ipj", AssemblyFileName = "Removable Panel.iam", VaultPath = "$/Engineering/Library/Equipment/Removable Panel" },
-            new EquipmentItem { Name = "Silencer", DisplayName = "Silencer", ProjectFileName = "Silencer.ipj", AssemblyFileName = "Silencer.iam", VaultPath = "$/Engineering/Library/Equipment/Silencer" },
-            new EquipmentItem { Name = "Transition", DisplayName = "Transition", ProjectFileName = "Transition.ipj", AssemblyFileName = "Transition.iam", VaultPath = "$/Engineering/Library/Equipment/Transition" },
-            new EquipmentItem { Name = "VicWest", DisplayName = "Vic West", ProjectFileName = "VicWest.ipj", AssemblyFileName = "VicWest.idw", VaultPath = "$/Engineering/Library/Equipment/VicWest" },
-            new EquipmentItem { Name = "XnHoodAssy", DisplayName = "XNRGY Hood Assembly", ProjectFileName = "HoodAssembly.ipj", AssemblyFileName = "HoodAssembly.iam", VaultPath = "$/Engineering/Library/Equipment/XnHoodAssy" },
-            new EquipmentItem { Name = "XnrgyDoor", DisplayName = "XNRGY Door", ProjectFileName = "Xnrgy_Door.ipj", AssemblyFileName = "Xnrgy_Door.iam", VaultPath = "$/Engineering/Library/Equipment/XnrgyDoor" }
+            // ══════════════════════════════════════════════════════════════════
+            // EQUIPEMENTS STANDARDS (.iam comme fichier principal)
+            // Structure: Dossier/Equipement.ipj + Equipement.iam + Equipement.idw
+            // ══════════════════════════════════════════════════════════════════
+            
+            new EquipmentItem { 
+                Name = "Angular_Filter", 
+                DisplayName = "Angular Filter", 
+                ProjectFileName = "Angular_Filter.ipj", 
+                AssemblyFileName = "Angular_Filter.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Angular_Filter" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Bell_Mouth", 
+                DisplayName = "Bell Mouth", 
+                ProjectFileName = "Bell_Mouth.ipj", 
+                AssemblyFileName = "Bell_Mouth.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Bell_Mouth" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Blank_Test", 
+                DisplayName = "Blank Test", 
+                ProjectFileName = "Blank_Test.ipj", 
+                AssemblyFileName = "Blank_Test.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Blank_Test" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Catwalk", 
+                DisplayName = "Catwalk", 
+                ProjectFileName = "Catwalk.ipj", 
+                AssemblyFileName = "Catwalk.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Catwalk" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Circular_Opening_Support", 
+                DisplayName = "Circular Opening Support", 
+                ProjectFileName = "Circular_Opening_Support.ipj", 
+                AssemblyFileName = "Circular_Opening_Support.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Circular_Opening_Support" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Cooling_Coil", 
+                DisplayName = "Cooling Coil", 
+                ProjectFileName = "Cooling_Coil.ipj", 
+                AssemblyFileName = "Cooling_Coil.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Cooling_Coil" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Cooling_Coil_Double", 
+                DisplayName = "Cooling Coil Double", 
+                ProjectFileName = "Cooling_Coil_Double.ipj", 
+                AssemblyFileName = "Cooling_Coil_Double.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Cooling_Coil_Double" 
+            },
+            
+            // DAMPER: Equipement avec dessins alternatifs (Floor vs Wall/Roof)
+            new EquipmentItem { 
+                Name = "Damper", 
+                DisplayName = "Damper", 
+                ProjectFileName = "Damper.ipj", 
+                AssemblyFileName = "Damper.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Damper",
+                AlternateDrawings = new List<string> { "Floor_Damper.idw", "Wall_and_Roof_Damper.idw" }
+            },
+            
+            new EquipmentItem { 
+                Name = "Fan_Cube", 
+                DisplayName = "Fan Cube", 
+                ProjectFileName = "Fan_Cube_Assy.ipj", 
+                AssemblyFileName = "Fan_Cube_Assy.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Fan_Cube" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Floor_Pan_Only", 
+                DisplayName = "Floor Pan Only", 
+                ProjectFileName = "Floor_Pan.ipj", 
+                AssemblyFileName = "Floor_Pan.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Floor_Pan_Only" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Front_Filter", 
+                DisplayName = "Front Filter", 
+                ProjectFileName = "Front_Filter.ipj", 
+                AssemblyFileName = "Front_Filter.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Front_Filter" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Heat_Wheel", 
+                DisplayName = "Heat Wheel", 
+                ProjectFileName = "Heat_Wheel.ipj", 
+                AssemblyFileName = "Heat_Wheel.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Heat_Wheel" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Heating_Coil", 
+                DisplayName = "Heating Coil", 
+                ProjectFileName = "Heating_Coil.ipj", 
+                AssemblyFileName = "Heating_Coil.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Heating_Coil" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Heating_Coil_Double", 
+                DisplayName = "Heating Coil Double", 
+                ProjectFileName = "Heating_Coil_Double.ipj", 
+                AssemblyFileName = "Heating_Coil_Double.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Heating_Coil_Double" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Hood", 
+                DisplayName = "Hood", 
+                ProjectFileName = "Hood.ipj", 
+                AssemblyFileName = "Hood.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Hood" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Humidifier", 
+                DisplayName = "Humidifier", 
+                ProjectFileName = "Humidifier.ipj", 
+                AssemblyFileName = "Humidifier.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Humidifier" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Isolator_Plate", 
+                DisplayName = "Isolator Plate", 
+                ProjectFileName = "Isolator_Plate.ipj", 
+                AssemblyFileName = "Isolator_Plate.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Isolator_Plate" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Outlet_Guard", 
+                DisplayName = "Outlet Guard", 
+                ProjectFileName = "Outlet_Guard.ipj", 
+                AssemblyFileName = "Outlet_Guard.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Outlet_Guard" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Rehausse", 
+                DisplayName = "Rehausse", 
+                ProjectFileName = "Rehausse.ipj", 
+                AssemblyFileName = "Rehausse.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Rehausse" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Removable_Panel", 
+                DisplayName = "Removable Panel", 
+                ProjectFileName = "Removable_Panel.ipj", 
+                AssemblyFileName = "Removable_Panel.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Removable_Panel" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Silencer", 
+                DisplayName = "Silencer", 
+                ProjectFileName = "Silencer.ipj", 
+                AssemblyFileName = "Silencer.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Silencer" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Transition", 
+                DisplayName = "Transition", 
+                ProjectFileName = "Transition.ipj", 
+                AssemblyFileName = "Transition.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Transition" 
+            },
+            
+            new EquipmentItem { 
+                Name = "VicWest", 
+                DisplayName = "VicWest", 
+                ProjectFileName = "VicWest.ipj", 
+                AssemblyFileName = "VicWest.iam",
+                VaultPath = "$/Engineering/Library/Equipment/VicWest" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Xnrgy_Door", 
+                DisplayName = "XNRGY Door", 
+                ProjectFileName = "Xnrgy_Door.ipj", 
+                AssemblyFileName = "Xnrgy_Door.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Xnrgy_Door" 
+            },
+            
+            // ══════════════════════════════════════════════════════════════════
+            // EQUIPEMENTS AVEC SOUS-DOSSIERS (Dwyer_Gage)
+            // Structure: Parent/SubFolder/Equipement.ipj + .iam
+            // ══════════════════════════════════════════════════════════════════
+            
+            new EquipmentItem { 
+                Name = "Dwyer_2000", 
+                DisplayName = "Dwyer 2000", 
+                ProjectFileName = "Dwyer_2000.ipj", 
+                AssemblyFileName = "Dwyer_2000.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Dwyer_Gage/Dwyer_2000" 
+            },
+            
+            new EquipmentItem { 
+                Name = "Dwyer_3000", 
+                DisplayName = "Dwyer 3000", 
+                ProjectFileName = "Dwyer_3000.ipj", 
+                AssemblyFileName = "Dwyer_3000.iam",
+                VaultPath = "$/Engineering/Library/Equipment/Dwyer_Gage/Dwyer_3000" 
+            },
+            
+            // ══════════════════════════════════════════════════════════════════
+            // EQUIPEMENTS INFINITUM (Moteurs avec variantes)
+            // Chaque variante a son propre IPJ et fichier principal (.iam ou .ipt)
+            // L'utilisateur doit choisir quelle variante utiliser
+            // ══════════════════════════════════════════════════════════════════
+            
+            new EquipmentItem { 
+                Name = "Infinitum", 
+                DisplayName = "Infinitum Motor", 
+                ProjectFileName = "Infinitum.ipj",  // IPJ parent (peut ne pas exister)
+                VaultPath = "$/Engineering/Library/Equipment/Infinitum",
+                Variants = new List<EquipmentVariant>
+                {
+                    new EquipmentVariant { 
+                        Name = "7.5Hp_1800RPM", 
+                        DisplayName = "7.5 HP @ 1800 RPM (IES180)", 
+                        ProjectFileName = "7.5Hp_1800RPM_IES180.ipj",
+                        PrimaryFileName = "7.5Hp_1800RPM_IES180.ipt",
+                        FileType = PrimaryFileType.Part,
+                        SubFolder = "7.5Hp_1800RPM"
+                    },
+                    new EquipmentVariant { 
+                        Name = "7.5Hp_3600RPM", 
+                        DisplayName = "7.5 HP @ 3600 RPM", 
+                        ProjectFileName = "7.5Hp_3600RPM.ipj",
+                        PrimaryFileName = "7.5Hp_3600RPM.iam",
+                        FileType = PrimaryFileType.Assembly,
+                        SubFolder = "7.5Hp_3600RPM"
+                    },
+                    new EquipmentVariant { 
+                        Name = "10Hp_1800RPM_Gen2_1piecesVFD", 
+                        DisplayName = "10 HP @ 1800 RPM Gen2 (1pc VFD)", 
+                        ProjectFileName = "10Hp_1800RPM_Gen2_1piecesVFD.ipj",
+                        PrimaryFileName = "10Hp_1800RPM_Gen2_1piecesVFD.ipt",
+                        FileType = PrimaryFileType.Part,
+                        SubFolder = "10Hp_1800RPM_Gen2_1piecesVFD"
+                    },
+                    new EquipmentVariant { 
+                        Name = "10Hp_1800RPM_Gen2_2piecesVFD", 
+                        DisplayName = "10 HP @ 1800 RPM Gen2 (2pc VFD)", 
+                        ProjectFileName = "10Hp_1800RPM_Gen2_2piecesVFD.ipj",
+                        PrimaryFileName = "10Hp_1800RPM_Gen2_2piecesVFD.ipt",
+                        FileType = PrimaryFileType.Part,
+                        SubFolder = "10Hp_1800RPM_Gen2_2piecesVFD"
+                    },
+                    new EquipmentVariant { 
+                        Name = "10Hp_2400RPM", 
+                        DisplayName = "10 HP @ 2400 RPM", 
+                        ProjectFileName = "10Hp_2400RPM.ipj",
+                        PrimaryFileName = "10Hp_2400RPM.ipt",
+                        FileType = PrimaryFileType.Part,
+                        SubFolder = "10Hp_2400RPM"
+                    },
+                    new EquipmentVariant { 
+                        Name = "IES150", 
+                        DisplayName = "IES150", 
+                        ProjectFileName = "IES150.ipj",
+                        PrimaryFileName = "IES150.iam",
+                        FileType = PrimaryFileType.Assembly,
+                        SubFolder = "IES150"
+                    }
+                }
+            }
         };
 
         public EquipmentPlacementService(VaultSdkService? vaultService, Action<string, string>? logCallback = null)
