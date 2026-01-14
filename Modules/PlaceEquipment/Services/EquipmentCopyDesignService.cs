@@ -372,12 +372,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                     }
                 }
 
+                ReportProgress(75, "Copie fichiers Inventor orphelins...");
+
+                // ══════════════════════════════════════════════════════════════════
+                // PHASE CRITIQUE: Copier les fichiers Inventor "orphelins" AVANT les dessins
+                // Ces fichiers sont dans le dossier mais pas references directement
+                // Ils sont appeles dynamiquement par iLogic selon les scenarios
+                // IMPORTANT: Copier AVANT les dessins pour que les references soient resolues
+                // ══════════════════════════════════════════════════════════════════
+                int orphansCopied = await CopyOrphanInventorFilesAsync(sourceFolder, destinationFolder, result.CopiedFiles, fileRenameMap);
+                Log($"[+] {orphansCopied} fichiers Inventor orphelins copies (appeles par iLogic)", "SUCCESS");
+
+                ReportProgress(78, "Copie fichiers non-Inventor...");
+
+                // Copier les fichiers non-Inventor (IPJ, images, etc.)
+                await CopyNonInventorFilesAsync(sourceFolder, destinationFolder, fileRenameMap);
+
                 ReportProgress(80, "Traitement des dessins (.idw)...");
 
                 // ══════════════════════════════════════════════════════════════════
                 // PHASE SUPPLEMENTAIRE: Traiter les fichiers .idw (dessins)
                 // Les dessins ne sont PAS inclus dans AllReferencedDocuments
                 // car ils referencent l'assemblage, pas l'inverse
+                // IMPORTANT: Traiter APRES la copie des orphelins pour que les fichiers existent
                 // ══════════════════════════════════════════════════════════════════
                 
                 // Creer un dictionnaire des chemins source -> destination pour les references
@@ -437,7 +454,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                         var drawDoc = (DrawingDocument)_inventorApp!.Documents.Open(idwPath, false);
                         
                         // Mettre a jour les references du dessin AVANT de faire le SaveAs
-                        UpdateDrawingReferences(drawDoc, sourceFolder, destinationFolder, pathMapping);
+                        // IMPORTANT: Passer fileRenameMap pour que les liens pointent vers les fichiers renommes (suffixe _01, _02, etc.)
+                        UpdateDrawingReferences(drawDoc, sourceFolder, destinationFolder, pathMapping, fileRenameMap);
                         
                         // SaveAs vers la nouvelle destination
                         ((Document)drawDoc).SaveAs(newIdwPath, false);
@@ -480,7 +498,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                 {
                     try
                     {
-                        UpdateAssemblyReferences(asmFile.NewPath, sourceFolder, destinationFolder, pathMapping);
+                        // IMPORTANT: Passer fileRenameMap pour que les liens pointent vers les fichiers renommes (suffixe _01, _02, etc.)
+                        UpdateAssemblyReferences(asmFile.NewPath, sourceFolder, destinationFolder, pathMapping, fileRenameMap);
                     }
                     catch (Exception ex)
                     {
@@ -492,22 +511,6 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
 
                 // Fermer tous les documents
                 CloseAllDocuments();
-
-                ReportProgress(91, "Copie fichiers Inventor orphelins...");
-
-                // ══════════════════════════════════════════════════════════════════
-                // PHASE CRITIQUE: Copier les fichiers Inventor "orphelins"
-                // Ces fichiers sont dans le dossier mais pas references directement
-                // Ils sont appeles dynamiquement par iLogic selon les scenarios
-                // IMPORTANT: Ne pas ouvrir ces fichiers, juste les copier physiquement
-                // ══════════════════════════════════════════════════════════════════
-                int orphansCopied = await CopyOrphanInventorFilesAsync(sourceFolder, destinationFolder, result.CopiedFiles, fileRenameMap);
-                Log($"[+] {orphansCopied} fichiers Inventor orphelins copies (appeles par iLogic)", "SUCCESS");
-
-                ReportProgress(95, "Copie fichiers non-Inventor...");
-
-                // Copier les fichiers non-Inventor (IPJ, images, etc.)
-                await CopyNonInventorFilesAsync(sourceFolder, destinationFolder, fileRenameMap);
 
                 result.Success = result.CopiedFiles.Count > 0;
                 result.FilesCopied = result.CopiedFiles.Count;
@@ -721,6 +724,18 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                         IOFile.Copy(file, destPath, true);
                         copiedCount++;
                         
+                        // IMPORTANT: Ajouter a la liste pour que le pathMapping soit complet
+                        lock (alreadyCopied)
+                        {
+                            alreadyCopied.Add(new FileCopyInfo
+                            {
+                                OriginalPath = file,
+                                NewPath = destPath,
+                                OriginalFileName = fileName,
+                                NewFileName = newFileName
+                            });
+                        }
+                        
                         // Log tous les 50 fichiers pour ne pas spammer
                         if (copiedCount <= 10 || copiedCount % 50 == 0)
                         {
@@ -745,12 +760,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
         /// <summary>
         /// Met a jour les references d'un dessin pour pointer vers les fichiers copies
         /// Utilise ReferencedFileDescriptor.PutLogicalFileNameUsingFull() pour changer les liens
+        /// IMPORTANT: Prend en compte le renommage des fichiers (suffixe _01, _02, etc.)
         /// </summary>
         private void UpdateDrawingReferences(
             DrawingDocument drawDoc, 
             string sourceRoot, 
             string destRoot, 
-            Dictionary<string, string> pathMapping)
+            Dictionary<string, string> pathMapping,
+            Dictionary<string, string>? fileRenameMap = null)
         {
             try
             {
@@ -763,7 +780,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                     {
                         string refPath = refDesc.FullFileName;
                         
-                        // Verifier si on a un mapping direct
+                        // Verifier si on a un mapping direct (chemin complet source -> destination)
                         if (pathMapping.TryGetValue(refPath, out string? newPath))
                         {
                             if (IOFile.Exists(newPath))
@@ -778,23 +795,35 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                         if (refPath.StartsWith(sourceRoot, StringComparison.OrdinalIgnoreCase))
                         {
                             string fileName = IOPath.GetFileName(refPath);
+                            
+                            // IMPORTANT: Appliquer le renommage si disponible (suffixe _01, _02, etc.)
+                            string newFileName = fileName;
+                            if (fileRenameMap != null && fileRenameMap.TryGetValue(fileName, out string? renamedFile) && !string.IsNullOrEmpty(renamedFile))
+                            {
+                                newFileName = renamedFile;
+                            }
+                            
                             string relativePath = GetRelativePath(refPath, sourceRoot);
                             string? relativeDir = IOPath.GetDirectoryName(relativePath);
                             
                             string newRefPath;
                             if (string.IsNullOrEmpty(relativeDir))
                             {
-                                newRefPath = IOPath.Combine(destRoot, fileName);
+                                newRefPath = IOPath.Combine(destRoot, newFileName);
                             }
                             else
                             {
-                                newRefPath = IOPath.Combine(destRoot, relativeDir, fileName);
+                                newRefPath = IOPath.Combine(destRoot, relativeDir, newFileName);
                             }
 
                             if (IOFile.Exists(newRefPath))
                             {
                                 refDesc.PutLogicalFileNameUsingFull(newRefPath);
-                                Log($"    -> {IOPath.GetFileName(refPath)} => {IOPath.GetFileName(newRefPath)}", "DEBUG");
+                                Log($"    -> {fileName} => {newFileName}", "DEBUG");
+                            }
+                            else
+                            {
+                                Log($"    [!] Fichier non trouve: {newRefPath}", "DEBUG");
                             }
                         }
                     }
@@ -817,7 +846,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
             string assemblyPath, 
             string sourceRoot, 
             string destRoot, 
-            Dictionary<string, string> pathMapping)
+            Dictionary<string, string> pathMapping,
+            Dictionary<string, string>? fileRenameMap = null)
         {
             if (_inventorApp == null) return;
             
@@ -851,22 +881,30 @@ namespace XnrgyEngineeringAutomationTools.Modules.PlaceEquipment.Services
                         else if (refPath.StartsWith(sourceRoot, StringComparison.OrdinalIgnoreCase))
                         {
                             string fileName = IOPath.GetFileName(refPath);
+                            
+                            // IMPORTANT: Appliquer le renommage si disponible (suffixe _01, _02, etc.)
+                            string newFileName = fileName;
+                            if (fileRenameMap != null && fileRenameMap.TryGetValue(fileName, out string? renamedFile) && !string.IsNullOrEmpty(renamedFile))
+                            {
+                                newFileName = renamedFile;
+                            }
+                            
                             string relativePath = GetRelativePath(refPath, sourceRoot);
                             string? relativeDir = IOPath.GetDirectoryName(relativePath);
                             
                             if (string.IsNullOrEmpty(relativeDir))
                             {
-                                newPath = IOPath.Combine(destRoot, fileName);
+                                newPath = IOPath.Combine(destRoot, newFileName);
                             }
                             else
                             {
-                                newPath = IOPath.Combine(destRoot, relativeDir, fileName);
+                                newPath = IOPath.Combine(destRoot, relativeDir, newFileName);
                             }
                             
                             // Si le chemin calcule n'existe pas, rechercher le fichier
                             if (!IOFile.Exists(newPath))
                             {
-                                var foundFiles = IODirectory.GetFiles(destRoot, fileName, System.IO.SearchOption.AllDirectories);
+                                var foundFiles = IODirectory.GetFiles(destRoot, newFileName, System.IO.SearchOption.AllDirectories);
                                 if (foundFiles.Length > 0)
                                 {
                                     newPath = foundFiles[0];
