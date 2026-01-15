@@ -1,0 +1,266 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views.ProjectSelectorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="{StaticResource WindowTitleDXFProjectSelector}" 
+        Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
+        Height="650" Width="950"
+        MinHeight="500" MinWidth="750"
+        WindowStartupLocation="CenterOwner"
+        Background="#1E1E2E"
+        FontSize="12"
+        ResizeMode="CanResize"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/XnrgyStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <SolidColorBrush x:Key="DarkBg" Color="#1E1E2E"/>
+            <SolidColorBrush x:Key="DarkBg2" Color="#252536"/>
+            <SolidColorBrush x:Key="DarkBg3" Color="#2D2D44"/>
+            <SolidColorBrush x:Key="BorderColor" Color="#4A7FBF"/>
+            <SolidColorBrush x:Key="TextLight" Color="#E0E0E0"/>
+            <SolidColorBrush x:Key="XnrgyBlue" Color="#0078D4"/>
+            <SolidColorBrush x:Key="XnrgyGreen" Color="#107C10"/>
+            
+            <!-- Style DataGrid moderne -->
+            <Style TargetType="DataGrid">
+                <Setter Property="Background" Value="#252536"/>
+                <Setter Property="Foreground" Value="#FFFFFF"/>
+                <Setter Property="BorderBrush" Value="#4A7FBF"/>
+                <Setter Property="BorderThickness" Value="2"/>
+                <Setter Property="RowBackground" Value="#252536"/>
+                <Setter Property="AlternatingRowBackground" Value="#2D2D44"/>
+                <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+                <Setter Property="HorizontalGridLinesBrush" Value="#404060"/>
+                <Setter Property="HeadersVisibility" Value="Column"/>
+                <Setter Property="SelectionMode" Value="Single"/>
+                <Setter Property="SelectionUnit" Value="FullRow"/>
+                <Setter Property="FontSize" Value="12"/>
+            </Style>
+
+            <!-- Style Header DataGrid -->
+            <Style TargetType="DataGridColumnHeader">
+                <Setter Property="Background" Value="#2A4A6F"/>
+                <Setter Property="Foreground" Value="#FFFFFF"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Padding" Value="12,10"/>
+                <Setter Property="BorderBrush" Value="#3A5A7F"/>
+                <Setter Property="BorderThickness" Value="0,0,1,0"/>
+            </Style>
+
+            <!-- Style Cell DataGrid -->
+            <Style TargetType="DataGridCell">
+                <Setter Property="Padding" Value="10,8"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridCell">
+                            <Border Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter VerticalAlignment="Center"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Style.Triggers>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="#0078D4"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            
+            <!-- Style Row DataGrid -->
+            <Style TargetType="DataGridRow">
+                <Setter Property="Background" Value="#252536"/>
+                <Setter Property="Foreground" Value="#FFFFFF"/>
+                <Setter Property="Height" Value="38"/>
+                <Style.Triggers>
+                    <Trigger Property="AlternationIndex" Value="1">
+                        <Setter Property="Background" Value="#2D2D44"/>
+                    </Trigger>
+                    <Trigger Property="IsSelected" Value="True">
+                        <Setter Property="Background" Value="#0078D4"/>
+                        <Setter Property="Foreground" Value="White"/>
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="Background" Value="#3A5A7F"/>
+                    </Trigger>
+                </Style.Triggers>
+            </Style>
+            
+            <!-- Style TextBox recherche -->
+            <Style x:Key="SearchTextBox" TargetType="TextBox">
+                <Setter Property="Background" Value="#252536"/>
+                <Setter Property="Foreground" Value="#E0E0E0"/>
+                <Setter Property="BorderBrush" Value="#4A7FBF"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="10,8"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="VerticalContentAlignment" Value="Center"/>
+            </Style>
+            
+            <!-- Style Button Action - Glow Brillant (style Upload Module) -->
+            <Style x:Key="ActionButton" TargetType="Button">
+                <Setter Property="Background" Value="#107C10"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontWeight" Value="Bold"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Padding" Value="20,10"/>
+                <Setter Property="BorderThickness" Value="2"/>
+                <Setter Property="BorderBrush" Value="#4A7FBF"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#32CD32"/>
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#00FF7F"/>
+                                    <Setter TargetName="border" Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="#00FF7F" BlurRadius="30" ShadowDepth="0" Opacity="0.9"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Background" Value="#4A7FBF"/>
+                                    <Setter Property="Foreground" Value="#666"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            
+            <!-- Style Button Cancel - Glow Brillant -->
+            <Style x:Key="CancelButton" TargetType="Button">
+                <Setter Property="Background" Value="#2D2D44"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Padding" Value="20,10"/>
+                <Setter Property="BorderBrush" Value="#4A7FBF"/>
+                <Setter Property="BorderThickness" Value="2"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#3D3D55"/>
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
+                                    <Setter TargetName="border" Property="Effect">
+                                        <Setter.Value>
+                                            <DropShadowEffect Color="#00D4FF" BlurRadius="28" ShadowDepth="0" Opacity="0.85"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2A4A6F" Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="📁 Selection du Projet" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Selectionnez un module pour la verification DXF" 
+                               FontSize="12" Foreground="#FFB74D" Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtProjectCount" Text="0 modules" Foreground="#90EE90" FontSize="14" FontWeight="Bold"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Barre de recherche -->
+        <Border Grid.Row="1" Background="#252536" Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="🔍 Recherche:" Foreground="White" FontSize="13" 
+                           FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <TextBox x:Name="TxtSearch" Grid.Column="1" Style="{StaticResource SearchTextBox}" 
+                         TextChanged="TxtSearch_TextChanged"
+                         ToolTip="Rechercher par projet, reference ou module"/>
+            </Grid>
+        </Border>
+
+        <!-- DataGrid des projets -->
+        <DataGrid x:Name="ProjectsDataGrid" Grid.Row="2" Margin="16,8,16,8"
+                  AutoGenerateColumns="False" IsReadOnly="True"
+                  CanUserAddRows="False" CanUserDeleteRows="False"
+                  MouseDoubleClick="ProjectsDataGrid_MouseDoubleClick"
+                  AlternationCount="2">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="📋 Projet" Binding="{Binding ProjectNumber}" Width="100"/>
+                <DataGridTextColumn Header="📐 Reference" Binding="{Binding Reference}" Width="100"/>
+                <DataGridTextColumn Header="📊 Module" Binding="{Binding ModuleNumber}" Width="80"/>
+                <DataGridTextColumn Header="📁 Chemin" Binding="{Binding ProjectPath}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Boutons -->
+        <Border Grid.Row="3" Background="#252536" Padding="16,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <TextBlock Grid.Column="0" x:Name="TxtInfo" Text="Double-cliquez ou selectionnez puis cliquez sur Valider" 
+                           Foreground="#888888" FontSize="12" VerticalAlignment="Center"/>
+                
+                <Button x:Name="BtnSelect" Grid.Column="1" Content="✅ Valider" 
+                        Style="{StaticResource ActionButton}" Margin="0,0,10,0"
+                        Click="BtnSelect_Click"/>
+                
+                <Button x:Name="BtnCancel" Grid.Column="2" Content="❌ Annuler" 
+                        Style="{StaticResource CancelButton}"
+                        Click="BtnCancel_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- Copyright Bar -->
+        <Border Grid.Row="4" Style="{StaticResource CopyrightBarBorder}">
+            <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center"
+                       Text="{StaticResource CopyrightDXFProjectSelector}"/>
+        </Border>
+    </Grid>
+</Window>

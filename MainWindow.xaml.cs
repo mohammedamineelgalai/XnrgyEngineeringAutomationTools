@@ -1323,7 +1323,7 @@ namespace XnrgyEngineeringAutomationTools
             StatusText.Text = "Ouverture de DXF Verifier...";
             try
             {
-                var dxfVerifierWindow = new DXFVerifierWindow();
+                var dxfVerifierWindow = new DXFVerifierWindow(_isVaultConnected ? _vaultService : null);
                 dxfVerifierWindow.Owner = this;
                 dxfVerifierWindow.Show();
                 AddLog("[+] DXF Verifier ouvert avec succes", "SUCCESS");

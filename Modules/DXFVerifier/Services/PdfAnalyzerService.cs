@@ -120,9 +120,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
         /// <summary>
         /// Point d'entrée principal - extrait tous les tableaux du PDF
         /// Version restaurée avec la logique simple et efficace
+        /// CORRECTION: Additionner les quantités quand le même tag apparaît sur plusieurs pages
         /// </summary>
         /// <param name="pdfPath">Chemin complet du fichier PDF</param>
-        /// <returns>Dictionnaire de tags avec leurs quantités</returns>
+        /// <returns>Dictionnaire de tags avec leurs quantités CUMULÉES</returns>
         public static Dictionary<string, int> ExtractTablesFromPdf(string pdfPath)
         {
             if (string.IsNullOrWhiteSpace(pdfPath))
@@ -143,24 +144,23 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
                 var extractedItems = ExtractStructuredTables(pdfPath);
                 Log("PdfAnalysis", $"Extraction structuree: {extractedItems.Count} items trouves");
 
-                // 2. Conversion en dictionnaire (CORRIGÉE pour préserver quantités 0)
+                // 2. CONSOLIDATION: ADDITIONNER les quantités pour chaque tag
+                // Si tag apparaît sur page 1 avec qty=6 et page 2 avec qty=6, total = 12
                 foreach (var item in extractedItems)
                 {
-                    if (!string.IsNullOrWhiteSpace(item.Tag) && item.Quantity >= 0) // >= 0 au lieu de > 0
+                    if (!string.IsNullOrWhiteSpace(item.Tag) && item.Quantity >= 0)
                     {
                         if (results.ContainsKey(item.Tag))
                         {
-                            // Ne jamais écraser avec une quantité plus petite (SAUF si c'est 0 explicite)
-                            if (item.Quantity > results[item.Tag] ||
-                                (item.Quantity == 0 && results[item.Tag] == 1)) // Cas spécial : 0 explicite écrase 1 par défaut
-                            {
-                                Log("PdfAnalysis", $"[!] Mise a jour quantite pour {item.Tag}: {results[item.Tag]} -> {item.Quantity}");
-                                results[item.Tag] = item.Quantity;
-                            }
+                            // Tag déjà trouvé - ADDITIONNER la quantité
+                            var oldQty = results[item.Tag];
+                            results[item.Tag] += item.Quantity;
+                            Log("PdfAnalysis", $"[+] Cumul quantite pour {item.Tag}: {oldQty} + {item.Quantity} = {results[item.Tag]} (page {item.PageNumber})");
                         }
                         else
                         {
-                            results[item.Tag] = item.Quantity; // Inclut maintenant les quantités 0
+                            // Nouveau tag - ajouter directement
+                            results[item.Tag] = item.Quantity;
                         }
                     }
                 }
@@ -255,8 +255,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
         #region Extraction structurée des tableaux - Logique simple restaurée
 
         /// <summary>
-        /// Extraction principale avec la logique simple et efficace d'hier
-        /// Restaurée depuis la version .NET 6 qui fonctionnait parfaitement
+        /// Extraction principale avec la logique simple et efficace
+        /// SANS filtrage de pages - extraction EXACTE du PDF tel quel
         /// </summary>
         private static List<PdfItem> ExtractStructuredTables(string pdfPath)
         {
@@ -332,12 +332,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
                             Log("PdfAnalysis", $"  Tableau {tableIndex + 1}: {tableItems.Count} items extraits");
                         }
 
-                        // Analyse complémentaire: chercher des tags isolés hors tableaux (SEULEMENT ceux pas encore trouvés)
-                        var isolatedItems = FindIsolatedTags(lines, pageNum, foundTags);
-                        if (isolatedItems.Count > 0)
+                        // METHODE COMPLEMENTAIRE: Extraction directe des lignes de données
+                        // Pour récupérer les tags manquants qui ne sont pas dans les tableaux détectés
+                        var directItems = ExtractDirectFromLines(lines, pageNum, foundTags);
+                        if (directItems.Count > 0)
                         {
-                            Log("PdfAnalysis", $"  Page {pageNum}: {isolatedItems.Count} tags isoles complementaires trouves");
-                            allItems.AddRange(isolatedItems);
+                            Log("PdfAnalysis", $"  Page {pageNum}: {directItems.Count} tags supplementaires (extraction directe)");
+                            allItems.AddRange(directItems);
                         }
                     }
                 }
@@ -367,7 +368,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
             var sorted = elements.OrderByDescending(e => e.Y).ThenBy(e => e.X).ToList();
 
             // Tolérance Y pour considérer des éléments sur la même ligne
-            const double Y_TOLERANCE = 2.0;
+            // CORRECTION BENCHMARK: Augmentée de 2.0 à 10.0 pour grouper correctement les mots sur la même ligne
+            // Avant: Y_TOLERANCE = 2.0 causait des échecs car les mots sur la même ligne PDF ont parfois
+            //        des décalages Y de 0.1 à 5 pixels (ex: tag à Y=302.6, qty à Y=302.5)
+            const double Y_TOLERANCE = 10.0;
 
             var currentLine = new TextLine
             {
@@ -491,12 +495,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
         {
             if (string.IsNullOrWhiteSpace(lineText)) return false;
 
-            // Pattern pour un tag valide: XXX0000-0000
-            string tagPattern = @"[A-Z]{2,3}\d{1,4}[-_]?\d{1,4}";
+            // Pattern pour un tag valide XNRGY: XXX1234-5678 ou XXXX1234-5678
+            // Format: 2-4 lettres + 4 chiffres + tiret/underscore + 4 chiffres
+            string tagPattern = @"[A-Z]{2,4}\d{4}[-_]\d{4}";
             bool hasTag = Regex.IsMatch(lineText, tagPattern, RegexOptions.IgnoreCase);
 
-            // Doit avoir au moins un nombre (quantité potentielle)
-            bool hasNumber = Regex.IsMatch(lineText, @"\d+");
+            // Doit avoir au moins un nombre séparé (quantité potentielle)
+            bool hasNumber = Regex.IsMatch(lineText, @"\s\d{1,3}\s");
 
             return hasTag && hasNumber;
         }
@@ -590,8 +595,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
             // Parser la ligne selon les règles strictes et simples
             var lineText = dataLine.Text;
 
-            // 1. Chercher le tag (premier mot qui match le pattern)
-            string tagPattern = @"([A-Z]{2,3}\d{1,4}[-_]?\d{1,4})";
+            // 1. Chercher le tag (premier mot qui match le pattern XNRGY)
+            // Format: 2-4 lettres + 4 chiffres + tiret/underscore + 4 chiffres
+            string tagPattern = @"([A-Z]{2,4}\d{4}[-_]\d{4})";
             var tagMatch = Regex.Match(lineText, tagPattern, RegexOptions.IgnoreCase);
 
             if (!tagMatch.Success) return null;
@@ -668,6 +674,59 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
             if (!string.IsNullOrWhiteSpace(item.Material)) item.Confidence += 0.2;
 
             return item.Confidence >= 0.5 ? item : null;
+        }
+
+        /// <summary>
+        /// Extraction directe des lignes de données qui ressemblent à des entrées de tableau
+        /// UNIQUEMENT pour les tags pas encore trouvés - Pattern: TAG QUANTITE [MATERIAU]
+        /// Cette méthode récupère les tags des tableaux mal détectés (sans en-tête standard)
+        /// </summary>
+        private static List<PdfItem> ExtractDirectFromLines(List<TextLine> lines, int pageNum, HashSet<string> foundTags)
+        {
+            var items = new List<PdfItem>();
+
+            // Pattern strict pour une ligne de tableau: TAG suivi d'un nombre (quantité)
+            // Format attendu: "TAG1234-5678   5   MATERIAU" ou "TAG1234-5678 5"
+            string tableRowPattern = @"^([A-Z]{2,4}\d{4}[-_]\d{4})\s+(\d{1,3})(?:\s+(.+))?$";
+
+            foreach (var line in lines)
+            {
+                if (string.IsNullOrWhiteSpace(line.Text)) continue;
+
+                // Ignorer les en-têtes
+                if (IsTableHeader(line.Text)) continue;
+
+                // Chercher le pattern de ligne de tableau
+                var match = Regex.Match(line.Text.Trim(), tableRowPattern, RegexOptions.IgnoreCase);
+                if (match.Success)
+                {
+                    var tag = match.Groups[1].Value.ToUpper(CultureInfo.InvariantCulture).Replace("_", "-");
+
+                    // SEULEMENT si le tag n'a pas déjà été trouvé
+                    if (!foundTags.Contains(tag))
+                    {
+                        if (int.TryParse(match.Groups[2].Value, out int qty) && qty >= 0 && qty <= 500)
+                        {
+                            var item = new PdfItem
+                            {
+                                Tag = tag,
+                                Quantity = qty,
+                                Material = match.Groups[3].Success ? match.Groups[3].Value.Trim() : "",
+                                PageNumber = pageNum,
+                                Confidence = 0.85, // Haute confiance car pattern strict
+                                SourceType = "DIRECT",
+                                TableNumber = 0
+                            };
+
+                            items.Add(item);
+                            foundTags.Add(tag);
+                            Log("PdfAnalysis", $"    [+] Direct: Tag={tag}, Qty={qty}");
+                        }
+                    }
+                }
+            }
+
+            return items;
         }
 
         /// <summary>
@@ -759,13 +818,234 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
             return items;
         }
 
+        /// <summary>
+        /// ALGORITHME V2 - Extraction par proximité X/Y validée à 100% (benchmark Python)
+        /// Cette méthode extrait les tags et quantités en utilisant la proximité spatiale
+        /// plutôt que la détection de structure de tableau
+        /// 
+        /// PARAMÈTRES VALIDÉS:
+        /// - Y_TOLERANCE = 10 pixels (grouper mots sur même ligne)
+        /// - X_MAX_DISTANCE = 150 pixels (distance max tag-qty)
+        /// - Recherche: D'ABORD à droite du tag, PUIS à gauche
+        /// </summary>
+        /// <param name="pdfPath">Chemin complet du fichier PDF</param>
+        /// <returns>Liste de PdfItem avec tag et quantité extraits par proximité</returns>
+        public static List<PdfItem> ExtractByProximity(string pdfPath)
+        {
+            var items = new List<PdfItem>();
+            
+            if (string.IsNullOrWhiteSpace(pdfPath) || !File.Exists(pdfPath))
+            {
+                Log("Error", $"[-] Fichier PDF introuvable: {pdfPath}");
+                return items;
+            }
+
+            Log("PdfAnalysis", "=== EXTRACTION PAR PROXIMITE V2 (Algorithme 100%) ===");
+
+            try
+            {
+                // Constantes validées par benchmark Python
+                const double Y_TOLERANCE = 10.0;      // Grouper mots sur même ligne
+                const double X_MAX_DISTANCE = 150.0;  // Distance max tag-qty
+                
+                // Pattern tag XNRGY: 2-4 lettres + 3-4 chiffres + tiret/underscore + 3-4 chiffres
+                var tagRegex = new Regex(@"^([A-Z]{2,4}\d{3,4}[-_]\d{3,4})$", RegexOptions.IgnoreCase);
+                var numberRegex = new Regex(@"^\d{1,3}$"); // 1 à 3 chiffres pour quantité
+
+                using (var document = PdfDocument.Open(pdfPath))
+                {
+                    Log("PdfAnalysis", $"Document ouvert: {document.NumberOfPages} pages");
+                    _lastAnalyzedPageCount = document.NumberOfPages;
+
+                    for (int pageNum = 1; pageNum <= document.NumberOfPages; pageNum++)
+                    {
+                        var page = document.GetPage(pageNum);
+                        var words = page.GetWords().ToList();
+
+                        // ÉTAPE 1: Grouper les mots par ligne Y (avec tolérance 10px)
+                        var lineGroups = new Dictionary<int, List<(string text, double x, double y)>>();
+                        
+                        foreach (var word in words)
+                        {
+                            if (string.IsNullOrWhiteSpace(word.Text)) continue;
+                            
+                            // Arrondir Y à la dizaine pour grouper les mots sur la même ligne
+                            int yKey = (int)(Math.Round(word.BoundingBox.Bottom / Y_TOLERANCE) * Y_TOLERANCE);
+                            
+                            if (!lineGroups.ContainsKey(yKey))
+                            {
+                                lineGroups[yKey] = new List<(string, double, double)>();
+                            }
+                            
+                            lineGroups[yKey].Add((word.Text.Trim(), word.BoundingBox.Left, word.BoundingBox.Bottom));
+                        }
+
+                        // ÉTAPE 2: Pour chaque ligne, trouver les tags et leurs quantités par proximité X
+                        foreach (var lineEntry in lineGroups)
+                        {
+                            var lineWords = lineEntry.Value;
+                            
+                            // Séparer tags et nombres sur cette ligne
+                            var tags = new List<(string tag, double x)>();
+                            var numbers = new List<(int qty, double x)>();
+                            
+                            foreach (var (text, x, y) in lineWords)
+                            {
+                                if (tagRegex.IsMatch(text))
+                                {
+                                    tags.Add((text.ToUpper(CultureInfo.InvariantCulture).Replace("_", "-"), x));
+                                }
+                                else if (numberRegex.IsMatch(text) && int.TryParse(text, out int num))
+                                {
+                                    numbers.Add((num, x));
+                                }
+                            }
+
+                            // ÉTAPE 3: Associer chaque tag à la quantité la plus proche
+                            foreach (var (tag, tagX) in tags)
+                            {
+                                int? bestQty = null;
+                                double bestDist = double.MaxValue;
+
+                                // Chercher D'ABORD à DROITE du tag (format Tag | Qty)
+                                foreach (var (qty, numX) in numbers)
+                                {
+                                    if (numX > tagX) // À droite du tag
+                                    {
+                                        double dist = numX - tagX;
+                                        if (dist < bestDist && dist < X_MAX_DISTANCE)
+                                        {
+                                            bestDist = dist;
+                                            bestQty = qty;
+                                        }
+                                    }
+                                }
+
+                                // Si aucune quantité à droite, chercher à GAUCHE (format Qty | Tag)
+                                if (bestQty == null)
+                                {
+                                    foreach (var (qty, numX) in numbers)
+                                    {
+                                        if (numX < tagX) // À gauche du tag
+                                        {
+                                            double dist = tagX - numX;
+                                            if (dist < bestDist && dist < X_MAX_DISTANCE)
+                                            {
+                                                bestDist = dist;
+                                                bestQty = qty;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // Créer l'item (avec qty=1 par défaut si non trouvée)
+                                var item = new PdfItem
+                                {
+                                    Tag = tag,
+                                    Quantity = bestQty ?? 1,
+                                    PageNumber = pageNum,
+                                    Confidence = bestQty.HasValue ? 0.95 : 0.6,
+                                    SourceType = "PROXIMITY",
+                                    TableNumber = 0
+                                };
+
+                                items.Add(item);
+                            }
+                        }
+                    }
+                }
+
+                Log("PdfAnalysis", $"=== EXTRACTION PROXIMITE: {items.Count} tags trouves ===");
+                return items;
+            }
+            catch (Exception ex)
+            {
+                Log("Error", $"[-] Erreur ExtractByProximity: {ex.Message}");
+                return items;
+            }
+        }
+
+        /// <summary>
+        /// Point d'entrée alternatif utilisant l'algorithme de proximité V2
+        /// Retourne un dictionnaire consolidé tag -> quantité totale
+        /// </summary>
+        /// <param name="pdfPath">Chemin du fichier PDF</param>
+        /// <param name="csvReference">Référence CSV optionnelle pour filtrage</param>
+        /// <returns>Dictionnaire de tags avec leurs quantités CUMULÉES</returns>
+        public static Dictionary<string, int> ExtractTablesFromPdfV2(string pdfPath, Dictionary<string, CsvRow>? csvReference = null)
+        {
+            Log("PdfAnalysis", "========== EXTRACTION PDF V2 (Algorithme Proximite) ==========");
+            
+            var results = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var items = ExtractByProximity(pdfPath);
+
+            // Consolider: additionner les quantités pour chaque tag
+            foreach (var item in items)
+            {
+                if (!string.IsNullOrWhiteSpace(item.Tag))
+                {
+                    if (results.ContainsKey(item.Tag))
+                    {
+                        results[item.Tag] += item.Quantity;
+                    }
+                    else
+                    {
+                        results[item.Tag] = item.Quantity;
+                    }
+                }
+            }
+
+            Log("PdfAnalysis", $"V2 Extraction brute: {results.Count} tags uniques, {results.Values.Sum()} total qty");
+
+            // Filtrer par référence CSV si fournie
+            if (csvReference != null && csvReference.Count > 0)
+            {
+                var filteredResults = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+                foreach (var kvp in results)
+                {
+                    // Normaliser le tag pour comparaison
+                    var normalizedTag = kvp.Key.ToUpperInvariant().Replace("_", "-");
+                    
+                    // Si le tag existe dans la référence CSV, l'inclure
+                    if (csvReference.ContainsKey(normalizedTag) || csvReference.ContainsKey(kvp.Key))
+                    {
+                        filteredResults[kvp.Key] = kvp.Value;
+                    }
+                }
+
+                Log("PdfAnalysis", $"V2 Après filtrage CSV: {filteredResults.Count} tags, {filteredResults.Values.Sum()} total qty");
+                return filteredResults;
+            }
+
+            return results;
+        }
+
         #endregion
 
         #region Logging
 
         private static void Log(string category, string message)
         {
+            // Envoyer au journal UI via evenement
             OnLog?.Invoke(category, message);
+            
+            // Envoyer aussi au Logger principal de l'application (fichier VaultSDK_POC_*.log)
+            switch (category.ToUpperInvariant())
+            {
+                case "ERROR":
+                    XnrgyEngineeringAutomationTools.Services.Logger.Error($"[DXFVerifier] {message}");
+                    break;
+                case "WARNING":
+                    XnrgyEngineeringAutomationTools.Services.Logger.Warning($"[DXFVerifier] {message}");
+                    break;
+                case "DEBUG":
+                    XnrgyEngineeringAutomationTools.Services.Logger.Debug($"[DXFVerifier] {message}");
+                    break;
+                default:
+                    XnrgyEngineeringAutomationTools.Services.Logger.Info($"[DXFVerifier] {message}");
+                    break;
+            }
         }
 
         #endregion

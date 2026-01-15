@@ -189,6 +189,9 @@
     <sys:String x:Key="WindowTitleSmartProgress" xmlns:sys="clr-namespace:System;assembly=mscorlib">Progression - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     <!-- DXF Verifier -->
     <sys:String x:Key="WindowTitleDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">DXF Verifier - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <!-- DXF Verifier - Sous-fenetres -->
+    <sys:String x:Key="WindowTitleDXFProjectSelector" xmlns:sys="clr-namespace:System;assembly=mscorlib">Selection Projet - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="WindowTitleDXFVerifierInfo" xmlns:sys="clr-namespace:System;assembly=mscorlib">A propos - DXF Verifier - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- ═══════════ TEXTES COPYRIGHT COMPLETS POUR BARRE COPYRIGHT ═══════════ -->
     <!-- Format: "[Module] - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" -->
@@ -221,8 +224,11 @@
     <!-- Update Workspace -->
     <sys:String x:Key="CopyrightUpdateWS" xmlns:sys="clr-namespace:System;assembly=mscorlib">Update Workspace - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
-    <!-- DXF Verifier (version specifique 1.2.0) -->
-    <sys:String x:Key="CopyrightDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">DXF Verifier - XEAT - v1.2.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <!-- DXF Verifier (utilise la version globale) -->
+    <sys:String x:Key="CopyrightDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">DXF Verifier - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <!-- DXF Verifier - Sous-fenetres -->
+    <sys:String x:Key="CopyrightDXFProjectSelector" xmlns:sys="clr-namespace:System;assembly=mscorlib">Selection Projet - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <sys:String x:Key="CopyrightDXFVerifierInfo" xmlns:sys="clr-namespace:System;assembly=mscorlib">A propos - DXF Verifier - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- Sous-fenetres SmartTools -->
     <sys:String x:Key="CopyrightExportOptions" xmlns:sys="clr-namespace:System;assembly=mscorlib">Export Options - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>

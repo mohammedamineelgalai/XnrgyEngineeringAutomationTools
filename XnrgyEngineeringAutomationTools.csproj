@@ -326,6 +326,14 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Modules\DXFVerifier\Views\DXFVerifierInfoWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Modules\DXFVerifier\Views\ProjectSelectorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <!-- ========== STYLES ========== -->
     <Page Include="Styles\XnrgyStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -468,6 +476,14 @@
     <!-- ========== CODE-BEHIND: MODULE DXF VERIFIER ========== -->
     <Compile Include="Modules\DXFVerifier\Views\DXFVerifierWindow.xaml.cs">
       <DependentUpon>DXFVerifierWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\DXFVerifier\Views\DXFVerifierInfoWindow.xaml.cs">
+      <DependentUpon>DXFVerifierInfoWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\DXFVerifier\Views\ProjectSelectorWindow.xaml.cs">
+      <DependentUpon>ProjectSelectorWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Modules\DXFVerifier\Services\PdfAnalyzerService.cs" />

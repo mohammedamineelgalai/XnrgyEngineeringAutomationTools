@@ -12,7 +12,7 @@
              level="highestAvailable"  - L'application s'execute avec le plus haut niveau disponible
              level="requireAdministrator" - L'application requiert des droits administrateur
         -->
-        <requestedExecutionLevel level="requireAdministrator" uiAccess="false" />
+        <requestedExecutionLevel level="asInvoker" uiAccess="false" />
       </requestedPrivileges>
     </security>
   </trustInfo>

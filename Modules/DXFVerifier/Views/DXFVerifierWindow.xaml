@@ -5,11 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="{StaticResource WindowTitleDXFVerifier}" 
+        Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
         Height="1000" Width="1450"
         MinHeight="800" MinWidth="1200"
         WindowStartupLocation="CenterOwner"
         WindowState="Maximized"
         Background="#1E1E2E"
+        FontSize="12"
         Loaded="Window_Loaded">
 
     <Window.Resources>
@@ -232,6 +234,86 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!-- Style ComboBox moderne (theme noir) - COPIE de CreateModule -->
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="#2D2D44"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="Border" Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="24"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- ContentPresenter pour afficher la selection - utilise TextBlock pour texte visible -->
+                                    <TextBlock Grid.Column="0" Margin="8,0,0,0" 
+                                               Text="{TemplateBinding Text}"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               FontSize="{TemplateBinding FontSize}"
+                                               FontWeight="{TemplateBinding FontWeight}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Left"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <ToggleButton Grid.Column="1" x:Name="ToggleButton" 
+                                                  Background="Transparent" BorderThickness="0"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ClickMode="Press">
+                                        <Path Fill="#888" Data="M0,0 L4,4 L8,0 Z" 
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </ToggleButton>
+                                    <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" 
+                                           AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                        <Border x:Name="DropDownBorder" Background="#2D2D44" 
+                                                BorderBrush="#0078D4" BorderThickness="2" CornerRadius="6"
+                                                MinWidth="{TemplateBinding ActualWidth}" MaxHeight="300">
+                                            <ScrollViewer>
+                                                <StackPanel IsItemsHost="True"/>
+                                            </ScrollViewer>
+                                        </Border>
+                                    </Popup>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Style ComboBoxItem moderne -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3D3D56"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#0078D4"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid Margin="10">
@@ -244,9 +326,9 @@
         </Grid.RowDefinitions>
 
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-        <!-- HEADER BAR - Style comme UploadModule avec Logo + Statistiques + Connexion -->
+        <!-- HEADER BAR - Style comme SmartTools avec Logo + Statistiques + Connexion Vault -->
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-        <Border Grid.Row="0" Background="#2A4A6F" Padding="12,10" Margin="0,0,0,8">
+        <Border Grid.Row="0" Background="#2A4A6F" Padding="15,12" Margin="0,0,0,8">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -254,63 +336,69 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Logo XNRGY + Titre + Description -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image x:Name="LogoImage" Width="50" Height="50" Margin="0,0,15,0" VerticalAlignment="Center"/>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="DXF Verifier - Validation CSV/DXF vs PDF" FontSize="22" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock Text="Comparaison automatique des quantites et tags entre fichiers CSV/DXF et PDF BatchPrint" 
-                                   FontSize="11" Foreground="#FFB74D" FontWeight="SemiBold"/>
+                <!-- Logo + Titre (style SmartTools) -->
+                <Viewbox Grid.Column="0" Stretch="Uniform" MaxWidth="600" MaxHeight="80" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <Image Source="/Assets/Icons/DXFVerifier.png" Width="50" Height="50" Margin="0,0,12,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="DXF Verifier - Validation CSV/DXF vs PDF" FontSize="20" FontWeight="Bold" Foreground="White"/>
+                            <TextBlock FontSize="14" Foreground="#FFB74D" FontWeight="SemiBold" Margin="0,3,0,0">
+                                <Run Text="📊 Comparaison automatique des quantités et tags entre fichiers CSV/DXF et PDF BatchPrint"/>
+                            </TextBlock>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+                </Viewbox>
 
-                <!-- Statistiques au centre (style encadre comme UploadModule) -->
+                <!-- Statistiques au centre -->
                 <Border Grid.Column="1" Background="#1A1A28" CornerRadius="6" Padding="15,8" Margin="20,0"
                         BorderBrush="#4A7FBF" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Statistiques de Verification" Foreground="#FFD700" FontSize="11" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,6"/>
+                        <TextBlock Text="Statistiques de Verification" Foreground="#FFD700" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,6"/>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- CSV Qty -->
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalCsvQtyLabel" Text="0" Foreground="#90EE90" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Total Qte CSV/DXF" Foreground="#90EE90" FontSize="9" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalCsvQtyLabel" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Total Qte CSV/DXF" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <!-- CSV Tags -->
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalCsvTagsLabel" Text="0" Foreground="#90EE90" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Total Tags CSV/DXF" Foreground="#90EE90" FontSize="9" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalCsvTagsLabel" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Total Tags CSV/DXF" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <!-- Separateur -->
                             <Border Background="#4A7FBF" Width="2" Height="40" Margin="5,0"/>
                             <!-- PDF Qty -->
                             <StackPanel Margin="20,0,20,0" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalPdfQtyLabel" Text="0" Foreground="#ADD8E6" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Total Qte PDF" Foreground="#ADD8E6" FontSize="9" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalPdfQtyLabel" Text="0" Foreground="#ADD8E6" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Total Qte PDF" Foreground="#ADD8E6" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <!-- PDF Tags -->
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalPdfTagsLabel" Text="0" Foreground="#ADD8E6" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Total Tags PDF" Foreground="#ADD8E6" FontSize="9" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalPdfTagsLabel" Text="0" Foreground="#ADD8E6" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Total Tags PDF" Foreground="#ADD8E6" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <!-- PDF Pages -->
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalPdfPagesLabel" Text="0" Foreground="#87CEEB" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Pages PDF" Foreground="#87CEEB" FontSize="9" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalPdfPagesLabel" Text="0" Foreground="#87CEEB" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Pages PDF" Foreground="#87CEEB" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <!-- Info + Statut Vault a droite -->
-                <StackPanel Grid.Column="2" VerticalAlignment="Center">
+                <!-- Info + Statut Vault a droite (style SmartTools/CreateModule) -->
+                <StackPanel Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center">
                     <!-- Bouton Info -->
-                    <Button x:Name="InfoButton" Content="Info" Style="{StaticResource SecondaryButton}" 
-                            Click="InfoButton_Click" Padding="20,6" Margin="0,0,0,6"/>
-                    <!-- Status Connexion Vault -->
-                    <Border Background="#2D2D44" CornerRadius="4" Padding="8,4" BorderBrush="#4A7FBF" BorderThickness="1">
+                    <Button x:Name="InfoButton" Content="ℹ️ Info" Style="{StaticResource SecondaryButton}" 
+                            Click="InfoButton_Click" Width="80" Padding="10,6" Margin="0,0,0,6" HorizontalAlignment="Right"/>
+                    <!-- Status Connexion Vault (style identique SmartTools/CreateModule) -->
+                    <Border Background="#2D2D44" CornerRadius="4" Padding="10,6"
+                            BorderBrush="#4A7FBF" BorderThickness="2">
                         <StackPanel Orientation="Horizontal">
-                            <Ellipse x:Name="VaultStatusIndicator" Width="8" Height="8" Fill="#888888" Margin="0,0,6,0" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="VaultStatusText" Text="Vault: N/A" Foreground="#888888" FontSize="10" VerticalAlignment="Center"/>
+                            <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtVaultStatus" FontWeight="SemiBold" FontSize="12">
+                                <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/><Run Text="👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/><Run Text="📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
                 </StackPanel>
@@ -322,7 +410,7 @@
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
         <GroupBox Grid.Row="1" Style="{StaticResource ModernGroupBox}">
             <GroupBox.Header>
-                <TextBlock Text="Detection Automatique de Projet" Foreground="White" FontWeight="Bold" FontSize="13"/>
+                <TextBlock Text="📁 Detection Automatique de Projet" Foreground="#FFB74D" FontWeight="Bold" FontSize="13"/>
             </GroupBox.Header>
             <Grid>
                 <Grid.RowDefinitions>
@@ -334,11 +422,11 @@
                 <Grid Grid.Row="0" Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="80"/>
+                        <ColumnDefinition Width="100"/>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="55"/>
+                        <ColumnDefinition Width="70"/>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="55"/>
+                        <ColumnDefinition Width="70"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
@@ -347,23 +435,29 @@
                     </Grid.ColumnDefinitions>
 
                     <TextBlock Grid.Column="0" Text="Projet:" Style="{StaticResource ModernLabel}" Margin="0,0,8,0"/>
-                    <TextBox x:Name="ProjectNumberTextBox" Grid.Column="1" Style="{StaticResource ModernTextBox}" Height="30"/>
+                    <ComboBox x:Name="ProjectNumberComboBox" Grid.Column="1" Height="30" 
+                              Style="{StaticResource ModernComboBox}"
+                              SelectionChanged="ProjectNumberComboBox_SelectionChanged"/>
 
                     <TextBlock Grid.Column="2" Text="Ref:" Style="{StaticResource ModernLabel}" Margin="12,0,8,0"/>
-                    <TextBox x:Name="ReferenceTextBox" Grid.Column="3" Style="{StaticResource ModernTextBox}" Height="30"/>
+                    <ComboBox x:Name="ReferenceComboBox" Grid.Column="3" Height="30" 
+                              Style="{StaticResource ModernComboBox}"
+                              SelectionChanged="ReferenceComboBox_SelectionChanged"/>
 
                     <TextBlock Grid.Column="4" Text="Module:" Style="{StaticResource ModernLabel}" Margin="12,0,8,0"/>
-                    <TextBox x:Name="ModuleNumberTextBox" Grid.Column="5" Style="{StaticResource ModernTextBox}" Height="30"/>
+                    <ComboBox x:Name="ModuleNumberComboBox" Grid.Column="5" Height="30" 
+                              Style="{StaticResource ModernComboBox}"
+                              SelectionChanged="ModuleNumberComboBox_SelectionChanged"/>
 
                     <Button x:Name="DetectPdfButton" Grid.Column="6" Content="🔍 Detecter" Style="{StaticResource PrimaryButton}" 
                             Padding="12,6" Margin="15,0,5,0" Click="DetectPdfButton_Click"/>
-                    <Button x:Name="SelectProjectButton" Grid.Column="7" Content="� Choisir" Style="{StaticResource SecondaryButton}" 
-                            Padding="12,6" Margin="0,0,5,0" Click="SelectProjectButton_Click"/>
+                    <Button x:Name="SelectProjectButton" Grid.Column="7" Content="📁 Choisir Projet" Style="{StaticResource SecondaryButton}" 
+                            Padding="15,6" Margin="0,0,5,0" Click="SelectProjectButton_Click"/>
 
                     <TextBlock Grid.Column="8" Text="Chemin:" Style="{StaticResource ModernLabel}" Margin="15,0,8,0"/>
                     <TextBox x:Name="BasePathTextBox" Grid.Column="9" Style="{StaticResource ModernTextBox}" Height="30"
                              Text="C:\Vault\Engineering\Projects"/>
-                    <Button x:Name="BrowsePathButton" Grid.Column="10" Content="�" Style="{StaticResource SecondaryButton}" 
+                    <Button x:Name="BrowsePathButton" Grid.Column="10" Content="📂" Style="{StaticResource SecondaryButton}" 
                             Width="35" Height="30" Padding="5,3" Margin="5,0,0,0" Click="BrowsePathButton_Click"/>
                 </Grid>
 
@@ -406,17 +500,17 @@
         </GroupBox>
 
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-        <!-- DATAGRID RESULTATS -->
+        <!-- DATAGRID RESULTATS - Avec couleurs de ligne selon le statut -->
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
         <DataGrid x:Name="ResultDataGrid" Grid.Row="2" Style="{StaticResource ModernDataGrid}" 
                   Margin="0,0,0,8" AutoGenerateColumns="False" IsReadOnly="True"
                   CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Qte CSV/DXF" Binding="{Binding Quantity}" Width="*"/>
+                <DataGridTextColumn Header="Qté pièces CSV/DXF" Binding="{Binding Quantity}" Width="*"/>
                 <DataGridTextColumn Header="Tag CSV/DXF" Binding="{Binding Tag}" Width="2*"/>
-                <DataGridTextColumn Header="Materiau" Binding="{Binding Material}" Width="*"/>
-                <DataGridTextColumn Header="Qte PDF" Binding="{Binding PdfQuantity}" Width="*"/>
-                <DataGridTextColumn Header="Resultat" Binding="{Binding Status}" Width="2*"/>
+                <DataGridTextColumn Header="Matériau CSV/DXF" Binding="{Binding Material}" Width="*"/>
+                <DataGridTextColumn Header="Qté trouvée dans PDF" Binding="{Binding PdfQuantity}" Width="*"/>
+                <DataGridTextColumn Header="Résultat d'analyse PDF ✅" Binding="{Binding Status}" Width="2*"/>
             </DataGrid.Columns>
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
@@ -429,37 +523,86 @@
                     <Setter Property="BorderThickness" Value="0,0,1,0"/>
                 </Style>
             </DataGrid.ColumnHeaderStyle>
+            <!-- Style de ligne avec couleur de fond selon StatusColor (compatible theme sombre) -->
+            <DataGrid.RowStyle>
+                <Style TargetType="DataGridRow">
+                    <Setter Property="Background" Value="{Binding StatusColor}"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                    <Style.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter Property="Background" Value="#0078D4"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </Style.Triggers>
+                </Style>
+            </DataGrid.RowStyle>
         </DataGrid>
 
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-        <!-- BARRE DE PROGRESSION + BOUTON VERIFIER + STATUT -->
+        <!-- BARRE DE PROGRESSION STYLE UPLOAD MODULE + BOUTON VERIFIER -->
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="3" Margin="0,0,0,8">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <Border Grid.Row="3" Background="#2A4A6F" CornerRadius="8" Padding="15,12" Margin="0,0,0,8"
+                BorderBrush="#4A7FBF" BorderThickness="2">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <!-- Barre de progression moderne -->
-            <ProgressBar x:Name="ProgressBar" Grid.Row="0" Grid.Column="0" Style="{StaticResource ModernProgressBar}" 
-                         Minimum="0" Maximum="100" Margin="0,0,10,0"/>
-            
-            <!-- Bouton Verifier PDF -->
-            <Button x:Name="VerifyButton" Grid.Row="0" Grid.Column="1" Content="✅ Verifier PDF" Style="{StaticResource SuccessButton}" 
-                    Padding="25,8" Click="VerifyButton_Click"/>
+                <!-- Barre de progression style Upload Module -->
+                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" 
+                        Height="34" Margin="0,0,15,0" ClipToBounds="True"
+                        BorderBrush="#4A7FBF" BorderThickness="2">
+                    <Grid>
+                        <!-- Barre de progression verte (fond) - Brillance -->
+                        <Border x:Name="ProgressFillBorder" Background="#28A745" 
+                                CornerRadius="4" HorizontalAlignment="Left" Width="0" Margin="2">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00FF7F" BlurRadius="15" ShadowDepth="0" Opacity="0.45"/>
+                            </Border.Effect>
+                        </Border>
+                        
+                        <!-- Texte de statut a gauche -->
+                        <TextBlock x:Name="TxtProgressStatus" 
+                                   Text="Pret" 
+                                   Foreground="White" FontSize="12" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"
+                                   Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="250"/>
+                        
+                        <!-- Etape en cours au centre -->
+                        <TextBlock x:Name="TxtProgressStep" 
+                                   Text="" 
+                                   Foreground="White" FontSize="12" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"
+                                   Margin="280,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="180"/>
+                        
+                        <!-- Temps ecoule et estime a droite -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0">
+                            <TextBlock Text="⏱️ Ecoulé: " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TxtProgressTimeElapsed" 
+                                       Text="00:00" 
+                                       Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text=" / Estimé: " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                            <TextBlock x:Name="TxtProgressTimeEstimated" 
+                                       Text="00:00" 
+                                       Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center"/>
+                            <TextBlock Text=" | " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,8,0"/>
+                            <TextBlock x:Name="TxtProgressPercent" 
+                                       Text="0%" 
+                                       Foreground="White" FontSize="12" FontWeight="Bold" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-            <!-- Statut -->
-            <TextBlock x:Name="StatusLabel" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" 
-                       Text="{StaticResource StatusDXFVerifier}" 
-                       Foreground="#E0E0E0" FontSize="11" Margin="0,5,0,0"/>
-        </Grid>
+                <!-- Bouton Verifier PDF -->
+                <Button x:Name="VerifyButton" Grid.Column="1" Content="✅ Verifier PDF" Style="{StaticResource SuccessButton}" 
+                        Height="34" MinWidth="140" FontSize="13" Padding="15,5" Click="VerifyButton_Click"/>
+            </Grid>
+        </Border>
 
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-        <!-- JOURNAL avec boutons Effacer + Voir Log dans le header -->
+        <!-- JOURNAL avec boutons Effacer (rose) + Voir Log (bleu clair) dans le header -->
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
         <GroupBox Grid.Row="4" Style="{StaticResource ModernGroupBox}" Margin="0">
             <GroupBox.Header>
@@ -469,18 +612,82 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Journal des Operations" Foreground="White" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
-                    <Button x:Name="ClearLogButton" Grid.Column="1" Content="🗑️ Effacer" 
-                            Background="Transparent" Foreground="White" BorderBrush="#4A7FBF" BorderThickness="1"
-                            Padding="10,4" Margin="0,0,8,0" FontSize="11" Cursor="Hand" Click="ClearLogButton_Click"/>
-                    <Button x:Name="ViewLogButton" Grid.Column="2" Content="📋 Voir Log" 
-                            Background="Transparent" Foreground="White" BorderBrush="#4A7FBF" BorderThickness="1"
-                            Padding="10,4" FontSize="11" Cursor="Hand" Click="ViewLogButton_Click"/>
+                    <TextBlock Grid.Column="0" Text="Journal des Operations" Foreground="#FFB74D" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                    <Button x:Name="ClearLogButton" Grid.Column="1" Content="Effacer" 
+                            Background="#E81123" Foreground="White" BorderBrush="#FF6666" BorderThickness="1"
+                            Padding="12,5" Margin="0,0,8,0" FontSize="11" FontWeight="Bold" Cursor="Hand" Click="ClearLogButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#FF4444"/>
+                                                    <Setter TargetName="border" Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect Color="#FF4444" BlurRadius="15" ShadowDepth="0" Opacity="0.7"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button x:Name="ViewLogButton" Grid.Column="2" Content="Voir Log" 
+                            Background="#00BFFF" Foreground="White" BorderBrush="#87CEEB" BorderThickness="1"
+                            Padding="12,5" FontSize="11" FontWeight="Bold" Cursor="Hand" Click="ViewLogButton_Click">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Template">
+                                    <Setter.Value>
+                                        <ControlTemplate TargetType="Button">
+                                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                                    CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <ControlTemplate.Triggers>
+                                                <Trigger Property="IsMouseOver" Value="True">
+                                                    <Setter TargetName="border" Property="Background" Value="#1E90FF"/>
+                                                    <Setter TargetName="border" Property="Effect">
+                                                        <Setter.Value>
+                                                            <DropShadowEffect Color="#1E90FF" BlurRadius="15" ShadowDepth="0" Opacity="0.7"/>
+                                                        </Setter.Value>
+                                                    </Setter>
+                                                </Trigger>
+                                            </ControlTemplate.Triggers>
+                                        </ControlTemplate>
+                                    </Setter.Value>
+                                </Setter>
+                            </Style>
+                        </Button.Style>
+                    </Button>
                 </Grid>
             </GroupBox.Header>
             <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <TextBox x:Name="LogTextBox" Background="#1A1A2E" Foreground="#00FF00" FontFamily="Consolas" FontSize="11"
-                         IsReadOnly="True" TextWrapping="Wrap" BorderThickness="0" AcceptsReturn="True"/>
+                <RichTextBox x:Name="LogTextBox" Background="#0D0D15" FontFamily="Consolas" FontSize="11"
+                         IsReadOnly="True" BorderThickness="0" Padding="10,6"
+                         Foreground="#E0E0E0">
+                    <RichTextBox.Resources>
+                        <Style TargetType="Paragraph">
+                            <Setter Property="Margin" Value="0,1"/>
+                        </Style>
+                    </RichTextBox.Resources>
+                    <FlowDocument>
+                        <Paragraph/>
+                    </FlowDocument>
+                </RichTextBox>
             </ScrollViewer>
         </GroupBox>
     </Grid>

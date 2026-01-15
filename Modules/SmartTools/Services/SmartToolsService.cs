@@ -4639,8 +4639,270 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     }
 
                     // Mise à jour du document
-                    doc.Update2(true);
-
+                    // ============================================================
+                    // APPLIQUER TOUTES LES OPTIONS PRÉPARATIVES SUR L'ASSEMBLAGE
+                    // AVANT MÊME DE COMMENCER L'EXPORT
+                    // ============================================================
+                    Log("Application des options préparatives sur l'assemblage source...", "INFO");
+                    
+                    // 1. Activer la représentation par défaut (comme Smart Save)
+                    if (options.ActivateDefaultRepresentation)
+                    {
+                        try
+                        {
+                            ActivateDefaultRepresentation(doc);
+                            Log("Représentation par défaut activée", "INFO");
+                        }
+                        catch (Exception repEx)
+                        {
+                            Log($"Note activation représentation: {repEx.Message}", "WARNING");
+                        }
+                    }
+                    
+                    // 2. Afficher tous les composants masqués (comme Smart Save)
+                    if (options.ShowHiddenComponents)
+                    {
+                        try
+                        {
+                            dynamic controlDefs = inventorApp.CommandManager.ControlDefinitions;
+                            dynamic cmd = controlDefs.Item("AssemblyShowAllComponentsCmd");
+                            cmd.Execute();
+                            doc.Update();
+                            Log("Tous les composants masqués affichés", "INFO");
+                        }
+                        catch (Exception showEx)
+                        {
+                            Log($"Note affichage composants: {showEx.Message}", "WARNING");
+                        }
+                    }
+                    
+                    // 3. Réduire l'arborescence du navigateur (comme Smart Save)
+                    if (options.CollapseBrowserTree)
+                    {
+                        try
+                        {
+                            CollapseTree(doc);
+                            Log("Arborescence du navigateur réduite", "INFO");
+                        }
+                        catch (Exception collapseEx)
+                        {
+                            Log($"Note réduction arborescence: {collapseEx.Message}", "WARNING");
+                        }
+                    }
+                    
+                    // 4. Appliquer la vue isométrique (comme Smart Save)
+                    if (options.ApplyIsometricView)
+                    {
+                        try
+                        {
+                            ApplyIsometricView(inventorApp);
+                            Log("Vue isométrique appliquée", "INFO");
+                        }
+                        catch (Exception isoEx)
+                        {
+                            Log($"Note vue isométrique: {isoEx.Message}", "WARNING");
+                        }
+                    }
+                    
+                    // 5. Masquer les éléments de référence techniques (comme Smart Save)
+                    if (options.HideReferences)
+                    {
+                        try
+                        {
+                            MasquerElementsReferenceForExport(doc);
+                            Log("Éléments de référence techniques masqués", "INFO");
+                        }
+                        catch (Exception hideRefEx)
+                        {
+                            Log($"Note masquage références techniques: {hideRefEx.Message}", "WARNING");
+                        }
+                    }
+                    
+                    // 6. NOUVEAU: Masquer TOUS les éléments de référence (plans, axes, points)
+                    // OPTIMISATION: Vérifier d'abord si déjà masqués pour éviter le parcours récursif
+                    try
+                    {
+                        Log("Vérification et masquage des éléments de référence (plans, axes, points)...", "INFO");
+                        
+                        // ÉTAPE 1: Vérifier l'état actuel via ObjectVisibility (rapide)
+                        bool needToHideRefs = false;
+                        try
+                        {
+                            dynamic objVis = doc.ObjectVisibility;
+                            try 
+                            { 
+                                if (objVis.UserWorkPlanes == true) 
+                                {
+                                    needToHideRefs = true;
+                                    Log("UserWorkPlanes sont visibles - masquage nécessaire", "INFO");
+                                }
+                            } 
+                            catch { }
+                            try 
+                            { 
+                                if (objVis.UserWorkAxes == true) 
+                                {
+                                    needToHideRefs = true;
+                                    Log("UserWorkAxes sont visibles - masquage nécessaire", "INFO");
+                                }
+                            } 
+                            catch { }
+                            try 
+                            { 
+                                if (objVis.UserWorkPoints == true) 
+                                {
+                                    needToHideRefs = true;
+                                    Log("UserWorkPoints sont visibles - masquage nécessaire", "INFO");
+                                }
+                            } 
+                            catch { }
+                        }
+                        catch (Exception objVisEx)
+                        {
+                            Log($"Note vérification ObjectVisibility: {objVisEx.Message}", "WARNING");
+                            needToHideRefs = true; // En cas d'erreur, faire le masquage complet
+                        }
+                        
+                        // ÉTAPE 2: Si ObjectVisibility indique que tout est masqué, on peut éviter le parcours récursif
+                        // Note: ObjectVisibility ne vérifie que les User Work Features, pas les Origin Planes
+                        // Donc si ObjectVisibility dit que tout est masqué, on fait quand même un parcours rapide
+                        // pour vérifier les Origin Planes (mais seulement si on n'a pas déjà détecté des éléments visibles)
+                        if (!needToHideRefs)
+                        {
+                            // Si ObjectVisibility dit que tout est masqué, on peut considérer que c'est bon
+                            // car le parcours récursif est coûteux et les Origin Planes sont généralement masqués aussi
+                            Log("ObjectVisibility indique que tous les User Work Features sont masqués - masquage global suffisant", "INFO");
+                        }
+                        
+                        // ÉTAPE 3: Masquer seulement si nécessaire
+                        if (needToHideRefs)
+                        {
+                            // Utiliser ObjectVisibility pour masquer globalement (rapide)
+                            try
+                            {
+                                dynamic objVis = doc.ObjectVisibility;
+                                try { objVis.UserWorkPlanes = false; } catch { }
+                                try { objVis.UserWorkAxes = false; } catch { }
+                                try { objVis.UserWorkPoints = false; } catch { }
+                                Log("ObjectVisibility: User Work Features masqués", "INFO");
+                            }
+                            catch (Exception objVisEx)
+                            {
+                                Log($"Note ObjectVisibility: {objVisEx.Message}", "WARNING");
+                            }
+                            
+                            // Masquer récursivement tous les work planes, axes, points (seulement si nécessaire)
+                            var refStats = ToggleRefVisibility_Simplified(doc, false);
+                            Log($"Éléments de référence masqués: {refStats.WorkPlanes} plans, {refStats.WorkAxes} axes, {refStats.WorkPoints} points", "INFO");
+                        }
+                    }
+                    catch (Exception allRefEx)
+                    {
+                        Log($"Note masquage tous éléments référence: {allRefEx.Message}", "WARNING");
+                    }
+                    
+                    // 7. NOUVEAU: Masquer TOUTES les esquisses (2D et 3D)
+                    // OPTIMISATION: Vérifier d'abord si déjà masquées pour éviter le parcours récursif
+                    try
+                    {
+                        Log("Vérification et masquage des esquisses (2D et 3D)...", "INFO");
+                        
+                        // ÉTAPE 1: Vérifier l'état actuel via ObjectVisibility (rapide)
+                        bool needToHideSketches = false;
+                        try
+                        {
+                            dynamic objVis = doc.ObjectVisibility;
+                            try 
+                            { 
+                                if (objVis.Sketches == true) 
+                                {
+                                    needToHideSketches = true;
+                                    Log("Sketches sont visibles - masquage nécessaire", "INFO");
+                                }
+                            } 
+                            catch { }
+                            try 
+                            { 
+                                if (objVis.Sketches3D == true) 
+                                {
+                                    needToHideSketches = true;
+                                    Log("Sketches3D sont visibles - masquage nécessaire", "INFO");
+                                }
+                            } 
+                            catch { }
+                        }
+                        catch (Exception objVisEx)
+                        {
+                            Log($"Note vérification ObjectVisibility Sketches: {objVisEx.Message}", "WARNING");
+                            needToHideSketches = true; // En cas d'erreur, faire le masquage complet
+                        }
+                        
+                        // ÉTAPE 2: Vérifier aussi via HasSketchVisible_Simplified (vérifie récursivement)
+                        if (!needToHideSketches)
+                        {
+                            try
+                            {
+                                bool hasVisible = HasSketchVisible_Simplified(doc);
+                                if (hasVisible)
+                                {
+                                    needToHideSketches = true;
+                                    Log("Esquisses visibles détectées - masquage nécessaire", "INFO");
+                                }
+                                else
+                                {
+                                    Log("Toutes les esquisses sont déjà masquées - pas de parcours nécessaire", "INFO");
+                                }
+                            }
+                            catch (Exception checkEx)
+                            {
+                                Log($"Note vérification récursive esquisses: {checkEx.Message}", "WARNING");
+                                needToHideSketches = true; // En cas d'erreur, faire le masquage complet
+                            }
+                        }
+                        
+                        // ÉTAPE 3: Masquer seulement si nécessaire
+                        if (needToHideSketches)
+                        {
+                            // Utiliser ObjectVisibility pour masquer globalement (rapide)
+                            try
+                            {
+                                dynamic objVis = doc.ObjectVisibility;
+                                try { objVis.Sketches = false; } catch { }
+                                try { objVis.Sketches3D = false; } catch { }
+                                Log("ObjectVisibility: Sketches masqués", "INFO");
+                            }
+                            catch (Exception objVisEx)
+                            {
+                                Log($"Note ObjectVisibility Sketches: {objVisEx.Message}", "WARNING");
+                            }
+                            
+                            // Masquer récursivement toutes les esquisses (seulement si nécessaire)
+                            ToggleSketches_Simplified(doc, false);
+                            Log("Toutes les esquisses masquées", "INFO");
+                        }
+                    }
+                    catch (Exception allSketchEx)
+                    {
+                        Log($"Note masquage toutes esquisses: {allSketchEx.Message}", "WARNING");
+                    }
+                    
+                    // 8. Mettre à jour le document pour appliquer tous les changements
+                    try
+                    {
+                        doc.Update2(true);
+                        Log("Document mis à jour avec toutes les options préparatives", "INFO");
+                    }
+                    catch (Exception updateEx)
+                    {
+                        Log($"Note mise à jour document: {updateEx.Message}", "WARNING");
+                    }
+                    
+                    Log("Toutes les options préparatives appliquées sur l'assemblage source", "SUCCESS");
+                    
+                    // ============================================================
+                    // MAINTENANT ON PEUT COMMENCER L'EXPORT
+                    // ============================================================
+                    
                     // Exécuter l'export selon le format (vers fichier temporaire local)
                     if (options.Format == ExportFormat.IPT)
                     {
@@ -4839,43 +5101,67 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
 
                 Log($"Chemin IAM source (absolu): {iamPath}", "INFO");
 
-                // 1. Ouvrir le template IPT XNRGY (au lieu de créer un nouveau document)
-                // Cette approche évite les problèmes de Documents.Add dans une application externe
+                // 1. Copier le template vers la destination finale avec le bon nom
+                // Cette approche permet de manipuler le fichier sans problème de lecture seule
+                string templatePath = @"C:\Vault\Engineering\Inventor_Standards\Template\Xnrgy_Structural_Part_Template.ipt";
+                
+                Log($"Vérification du template: {System.IO.Path.GetFileName(templatePath)}", "INFO");
+                
+                // Vérifier que le template existe
+                if (!System.IO.File.Exists(templatePath))
+                {
+                    throw new Exception($"Le fichier template n'existe pas: {templatePath}");
+                }
+                
+                // Créer le répertoire de destination s'il n'existe pas
+                string destDir = System.IO.Path.GetDirectoryName(outputPath);
+                if (!string.IsNullOrEmpty(destDir) && !System.IO.Directory.Exists(destDir))
+                {
+                    System.IO.Directory.CreateDirectory(destDir);
+                }
+                
+                // Copier le template vers la destination finale
+                Log($"Copie du template vers: {System.IO.Path.GetFileName(outputPath)}", "INFO");
                 try
                 {
-                    string templatePath = @"C:\Vault\Engineering\Inventor_Standards\Template\Xnrgy_Structural_Part_Template.ipt";
-                    
-                    Log($"Vérification du template: {System.IO.Path.GetFileName(templatePath)}", "INFO");
-                    
-                    // Vérifier que le template existe
-                    if (!System.IO.File.Exists(templatePath))
+                    // Si le fichier existe déjà, le supprimer d'abord (pour éviter les problèmes de lecture seule)
+                    if (System.IO.File.Exists(outputPath))
                     {
-                        throw new Exception($"Le fichier template n'existe pas: {templatePath}");
+                        System.IO.File.SetAttributes(outputPath, System.IO.FileAttributes.Normal); // Enlever read-only
+                        System.IO.File.Delete(outputPath);
                     }
-                    
-                    Log("Ouverture du template IPT XNRGY...", "INFO");
-                    
-                    // Ouvrir le template (en lecture seule pour ne pas le modifier)
-                    // Documents.Open(FilePath, Visible)
-                    partDoc = inventorApp.Documents.Open(templatePath, true);
-                    
+                    System.IO.File.Copy(templatePath, outputPath, true);
+                    // S'assurer que le fichier copié n'est pas en lecture seule
+                    System.IO.File.SetAttributes(outputPath, System.IO.FileAttributes.Normal);
+                    Log("Template copié avec succès", "INFO");
+                }
+                catch (Exception copyEx)
+                {
+                    throw new Exception($"Erreur lors de la copie du template: {copyEx.Message}", copyEx);
+                }
+                
+                // 2. Ouvrir le fichier copié (plus un template, donc on peut le manipuler)
+                Log("Ouverture du fichier IPT copié...", "INFO");
+                try
+                {
+                    partDoc = inventorApp.Documents.Open(outputPath, true);
                     if (partDoc == null)
                     {
-                        throw new Exception("Échec de l'ouverture du template IPT (retour null)");
+                        throw new Exception("Échec de l'ouverture du document IPT (retour null)");
                     }
-                    Log("Template IPT ouvert", "INFO");
+                    Log("Document IPT ouvert", "INFO");
                 }
                 catch (Exception openEx)
                 {
-                    Log($"Erreur ouverture template: {openEx.GetType().Name} - {openEx.Message}", "ERROR");
+                    Log($"Erreur ouverture: {openEx.GetType().Name} - {openEx.Message}", "ERROR");
                     if (openEx.InnerException != null)
                     {
                         Log($"Exception interne: {openEx.InnerException.Message}", "ERROR");
                     }
-                    throw new Exception($"Erreur lors de l'ouverture du template IPT: {openEx.Message}", openEx);
+                    throw new Exception($"Erreur lors de l'ouverture du fichier IPT: {openEx.Message}", openEx);
                 }
 
-                // 2. Obtenir le ComponentDefinition du document IPT ouvert
+                // 3. Obtenir le ComponentDefinition du document IPT ouvert
                 dynamic partDef = null;
                 try
                 {
@@ -4893,17 +5179,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     throw new Exception($"Erreur lors de l'accès au ComponentDefinition: {defEx.Message}", defEx);
                 }
 
-                // 3. Vérifier et nettoyer les composants dérivés existants dans le template (si nécessaire)
+                // 4. Vérifier et nettoyer les composants dérivés existants (si nécessaire)
                 try
                 {
                     dynamic refComponents = partDef.ReferenceComponents;
                     if (refComponents != null)
                     {
-                        dynamic derivedAssemblyComponents = refComponents.DerivedAssemblyComponents;
-                        if (derivedAssemblyComponents != null)
+                        dynamic derivedAssemblyComponentsLocal = refComponents.DerivedAssemblyComponents;
+                        if (derivedAssemblyComponentsLocal != null)
                         {
                             // Vérifier s'il y a des composants dérivés existants
-                            int count = derivedAssemblyComponents.Count;
+                            int count = derivedAssemblyComponentsLocal.Count;
                             if (count > 0)
                             {
                                 Log($"Template contient {count} composant(s) dérivé(s) existant(s) - suppression...", "INFO");
@@ -4912,7 +5198,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                                 {
                                     try
                                     {
-                                        dynamic existingComp = derivedAssemblyComponents[i];
+                                        dynamic existingComp = derivedAssemblyComponentsLocal[i];
                                         if (existingComp != null)
                                         {
                                             existingComp.Delete();
@@ -4934,9 +5220,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     // Continuer quand même
                 }
 
-                // 4. Créer la définition de dérivation d'assemblage
+                // 5. Créer la définition de dérivation d'assemblage
                 // MÉTHODE CORRECTE : Utiliser DerivedAssemblyComponents.CreateDefinition(iamPath)
                 dynamic deriveDef = null;
+                dynamic derivedAssemblyComponents = null;
                 try
                 {
                     dynamic refComponents = partDef.ReferenceComponents;
@@ -4946,7 +5233,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                         throw new Exception("Impossible d'accéder à ReferenceComponents");
                     }
 
-                    dynamic derivedAssemblyComponents = refComponents.DerivedAssemblyComponents;
+                    derivedAssemblyComponents = refComponents.DerivedAssemblyComponents;
                     if (derivedAssemblyComponents == null)
                     {
                         partDoc.Close(true);
@@ -4968,28 +5255,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     throw new Exception($"Erreur lors de la création de DerivedAssemblyDefinition: {deriveEx.Message}", deriveEx);
                 }
 
-                // 5. Définir le style de dérivation pour corps multiples AVANT d'ajouter
-                // kDeriveAsMultipleBodies = 58112 (pour plusieurs solides)
-                try
-                {
-                    deriveDef.DeriveStyle = 58112;
-                    Log("Style de dérivation configuré: Multiple Bodies", "INFO");
-                }
-                catch (Exception styleEx)
-                {
-                    partDoc.Close(true);
-                    throw new Exception($"Erreur lors de la configuration du style de dérivation: {styleEx.Message}", styleEx);
-                }
-
-                // 6. Ajouter la définition à la pièce
+                // 6. SOLUTION CRITIQUE : Ajouter le composant SANS définir DeriveStyle d'abord
+                // Le DeriveStyle doit être défini APRÈS l'ajout, sinon erreur "Value does not fall within the expected range"
                 dynamic derivedComponent = null;
                 try
                 {
-                    Log("Ajout du DerivedAssemblyComponent...", "INFO");
-                    dynamic refComponents = partDef.ReferenceComponents;
-                    dynamic derivedAssemblyComponents = refComponents.DerivedAssemblyComponents;
+                    Log("Ajout du DerivedAssemblyComponent (sans DeriveStyle d'abord)...", "INFO");
                     
-                    // Ajouter le composant dérivé
+                    // Ajouter le composant dérivé SANS avoir défini DeriveStyle
                     derivedComponent = derivedAssemblyComponents.Add(deriveDef);
                     
                     if (derivedComponent == null)
@@ -5008,6 +5281,21 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     }
                     if (partDoc != null) partDoc.Close(true);
                     throw new Exception($"Erreur lors de l'ajout du DerivedAssemblyComponent: {addEx.Message}", addEx);
+                }
+
+                // 7. Définir le style de dérivation APRÈS l'ajout
+                // kDeriveAsMultipleBodies = 58112 (pour plusieurs solides)
+                try
+                {
+                    // Définir le style sur la définition du composant ajouté
+                    derivedComponent.Definition.DeriveStyle = 58112;
+                    Log("Style de dérivation configuré: Multiple Bodies (après ajout)", "INFO");
+                }
+                catch (Exception styleEx)
+                {
+                    Log($"Attention : Impossible de définir DeriveStyle après ajout: {styleEx.Message}", "WARNING");
+                    Log("Le composant fonctionnera mais avec le style par défaut", "WARNING");
+                    // Continuer quand même - le composant est ajouté
                 }
 
                 // 6. SOLUTION CRITIQUE : Rompre le lien avec le fichier source
@@ -5036,22 +5324,47 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     throw new Exception($"Erreur lors de la mise à jour du document: {updateEx.Message}", updateEx);
                 }
 
-                // 8. Sauvegarder le fichier IPT (SaveAs ne détruit pas le template)
+                // 8. Sauvegarder le fichier IPT
+                // Le document est déjà ouvert au bon chemin (outputPath), donc utiliser Save() ou Save2()
                 try
                 {
-                    // S'assurer que le répertoire de destination existe
-                    string destDir = System.IO.Path.GetDirectoryName(outputPath);
-                    if (!string.IsNullOrEmpty(destDir) && !System.IO.Directory.Exists(destDir))
+                    // S'assurer que le fichier n'est pas en lecture seule
+                    System.IO.File.SetAttributes(outputPath, System.IO.FileAttributes.Normal);
+                    
+                    // Vérifier que le document est bien au bon chemin
+                    string currentPath = partDoc.FullFileName;
+                    if (string.IsNullOrEmpty(currentPath) || !currentPath.Equals(outputPath, StringComparison.OrdinalIgnoreCase))
                     {
-                        System.IO.Directory.CreateDirectory(destDir);
+                        // Le document n'est pas au bon chemin, utiliser SaveAs
+                        Log($"Document au chemin: {currentPath}, destination: {outputPath}", "INFO");
+                        partDoc.SaveAs(outputPath, false);
+                        Log($"Fichier IPT sauvegardé avec SaveAs: {System.IO.Path.GetFileName(outputPath)}", "SUCCESS");
                     }
-
-                    // SaveAs vers la destination (le template reste intact)
-                    partDoc.SaveAs(outputPath, false);
-                    Log($"Fichier IPT sauvegardé: {System.IO.Path.GetFileName(outputPath)}", "SUCCESS");
+                    else
+                    {
+                        // Le document est déjà au bon chemin, utiliser Save() ou Save2()
+                        try
+                        {
+                            // Essayer Save2() d'abord (inclut dépendances)
+                            partDoc.Save2(true);
+                            Log($"Fichier IPT sauvegardé avec Save2: {System.IO.Path.GetFileName(outputPath)}", "SUCCESS");
+                        }
+                        catch (Exception save2Ex)
+                        {
+                            // Si Save2() échoue, essayer Save() sans paramètre
+                            Log($"Save2() a échoué, tentative Save(): {save2Ex.Message}", "WARNING");
+                            partDoc.Save();
+                            Log($"Fichier IPT sauvegardé avec Save: {System.IO.Path.GetFileName(outputPath)}", "SUCCESS");
+                        }
+                    }
                 }
                 catch (Exception saveEx)
                 {
+                    Log($"Erreur lors de la sauvegarde: {saveEx.Message}", "ERROR");
+                    if (saveEx.InnerException != null)
+                    {
+                        Log($"Détail: {saveEx.InnerException.Message}", "ERROR");
+                    }
                     partDoc.Close(true);
                     throw new Exception($"Erreur lors de la sauvegarde du fichier IPT: {saveEx.Message}", saveEx);
                 }

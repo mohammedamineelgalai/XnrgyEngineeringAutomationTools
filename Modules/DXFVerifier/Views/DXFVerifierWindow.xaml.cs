@@ -23,10 +23,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Documents;
 using System.Windows.Forms;
 using System.Windows.Media;
 using Microsoft.Win32;
 using XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services;
+using XnrgyEngineeringAutomationTools.Services;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using Binding = System.Windows.Data.Binding;
@@ -81,13 +83,36 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 
         private const string BasePath = @"C:\Vault\Engineering\Projects";
         private readonly StringBuilder _logBuilder = new StringBuilder();
+        
+        // Service Vault herite de MainWindow
+        private readonly VaultSdkService? _vaultService;
+        
+        // Chronometre pour la progression style Upload Module
+        private DateTime _progressStartTime;
+        private System.Windows.Threading.DispatcherTimer? _progressTimer;
+        
+        // Chronometre Stopwatch pour mesure precise du temps ecoule/estime
+        private readonly Stopwatch _verificationStopwatch = new Stopwatch();
 
         #endregion
 
         #region Constructor
 
-        public DXFVerifierWindow()
+        /// <summary>
+        /// Constructeur par defaut (sans service Vault)
+        /// </summary>
+        public DXFVerifierWindow() : this(null)
         {
+        }
+
+        /// <summary>
+        /// Constructeur avec service Vault pour heritage du statut de connexion depuis MainWindow
+        /// </summary>
+        /// <param name="vaultService">Service Vault connecte (optionnel)</param>
+        public DXFVerifierWindow(VaultSdkService? vaultService)
+        {
+            _vaultService = vaultService;
+            
             InitializeComponent();
             
             // Subscribe to static service log events
@@ -104,7 +129,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 
         private void OnServiceLog(string category, string message)
         {
-            LogMessage($"[{category}] {message}");
+            // Utiliser Dispatcher pour thread-safety (appele depuis Task.Run)
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                LogMessage(message);
+            }));
         }
 
         #endregion
@@ -113,8 +142,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Charger le logo XNRGY
-            LoadLogo();
+            // Charger les listes deroulantes des projets
+            LoadProjectDropdowns();
+            
+            // Mettre a jour le statut Vault herite de MainWindow
+            UpdateVaultConnectionStatusFromService();
             
             LogMessage("[+] DXF-CSV vs PDF Verifier v1.0 initialise");
             LogMessage("[i] Pret pour la detection de projet");
@@ -122,19 +154,167 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             ShowStatus("Pret - Detectez un PDF ouvert ou selectionnez un projet manuellement", StatusType.Info);
         }
 
-        private void LoadLogo()
+        /// <summary>
+        /// Met a jour le statut Vault depuis le service herite de MainWindow
+        /// </summary>
+        private void UpdateVaultConnectionStatusFromService()
+        {
+            if (_vaultService != null && _vaultService.IsConnected)
+            {
+                UpdateVaultConnectionStatus(true, _vaultService.VaultName, _vaultService.UserName);
+            }
+            else
+            {
+                UpdateVaultConnectionStatus(false, null, null);
+            }
+        }
+
+        /// <summary>
+        /// Met a jour l'indicateur de connexion Vault dans l'en-tete (style SmartTools/CreateModule)
+        /// </summary>
+        private void UpdateVaultConnectionStatus(bool isConnected, string? vaultName, string? userName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (VaultStatusIndicator != null)
+                {
+                    VaultStatusIndicator.Fill = new SolidColorBrush(
+                        isConnected ? (Color)ColorConverter.ConvertFromString("#107C10") : (Color)ColorConverter.ConvertFromString("#E81123"));
+                }
+                
+                if (RunVaultName != null && RunUserName != null && RunStatus != null)
+                {
+                    RunVaultName.Text = isConnected ? $" Vault : {vaultName}  /  " : " Vault : --  /  ";
+                    RunUserName.Text = isConnected ? $" Utilisateur : {userName}  /  " : " Utilisateur : --  /  ";
+                    RunStatus.Text = isConnected ? " Statut : Connecte" : " Statut : Deconnecte";
+                }
+            });
+        }
+
+        /// <summary>
+        /// Helper method to set a value in a ComboBox by finding the matching item
+        /// </summary>
+        private void SetComboBoxValue(System.Windows.Controls.ComboBox comboBox, string value)
+        {
+            if (string.IsNullOrEmpty(value) || comboBox.ItemsSource == null) return;
+            
+            foreach (var item in comboBox.ItemsSource)
+            {
+                if (item?.ToString() == value)
+                {
+                    comboBox.SelectedItem = item;
+                    return;
+                }
+            }
+            // If not found in list, try to add it temporarily
+            // For non-editable ComboBox, we can't type a value, so leave unselected
+        }
+
+        private void LoadProjectDropdowns()
         {
             try
             {
-                string logoPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "xnrgy_logo.png");
-                if (System.IO.File.Exists(logoPath))
-                {
-                    LogoImage.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(logoPath, UriKind.Absolute));
-                }
+                var basePath = BasePathTextBox.Text;
+                if (!Directory.Exists(basePath)) return;
+
+                // Charger les projets disponibles
+                var projectDirs = Directory.GetDirectories(basePath)
+                    .Select(d => Path.GetFileName(d))
+                    .Where(name => Regex.IsMatch(name, @"^\d+$"))
+                    .OrderByDescending(x => x)
+                    .ToList();
+
+                ProjectNumberComboBox.ItemsSource = projectDirs;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Erreur chargement logo: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Erreur chargement projets: {ex.Message}");
+            }
+        }
+
+        private void ProjectNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                var projectNumber = ProjectNumberComboBox.SelectedItem?.ToString();
+                if (string.IsNullOrEmpty(projectNumber)) return;
+
+                var projectPath = Path.Combine(BasePathTextBox.Text, projectNumber);
+                if (!Directory.Exists(projectPath)) return;
+
+                // Charger les references disponibles pour ce projet
+                var refDirs = Directory.GetDirectories(projectPath)
+                    .Select(d => Path.GetFileName(d))
+                    .Where(name => name.StartsWith("REF", StringComparison.OrdinalIgnoreCase))
+                    .Select(name => name.Substring(3)) // Enlever "REF" prefix
+                    .OrderByDescending(x => x)
+                    .ToList();
+
+                ReferenceComboBox.ItemsSource = refDirs;
+                ReferenceComboBox.SelectedIndex = -1;
+                ModuleNumberComboBox.ItemsSource = null;
+                ModuleNumberComboBox.SelectedIndex = -1;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erreur chargement references: {ex.Message}");
+            }
+        }
+
+        private void ReferenceComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                var projectNumber = ProjectNumberComboBox.SelectedItem?.ToString();
+                var reference = ReferenceComboBox.SelectedItem?.ToString();
+                if (string.IsNullOrEmpty(projectNumber) || string.IsNullOrEmpty(reference)) return;
+
+                var refPath = Path.Combine(BasePathTextBox.Text, projectNumber, $"REF{reference}");
+                if (!Directory.Exists(refPath)) return;
+
+                // Charger les modules disponibles pour cette reference
+                var moduleDirs = Directory.GetDirectories(refPath)
+                    .Select(d => Path.GetFileName(d))
+                    .Where(name => name.StartsWith("M", StringComparison.OrdinalIgnoreCase) && name.Length <= 4)
+                    .OrderBy(x => x)
+                    .ToList();
+
+                ModuleNumberComboBox.ItemsSource = moduleDirs;
+                ModuleNumberComboBox.SelectedIndex = -1;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erreur chargement modules: {ex.Message}");
+            }
+        }
+
+        private void ModuleNumberComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                var projectNumber = ProjectNumberComboBox.SelectedItem?.ToString();
+                var reference = ReferenceComboBox.SelectedItem?.ToString();
+                var module = ModuleNumberComboBox.SelectedItem?.ToString();
+                
+                if (string.IsNullOrEmpty(projectNumber) || string.IsNullOrEmpty(reference) || string.IsNullOrEmpty(module))
+                    return;
+
+                // Detecter automatiquement les fichiers pour ce module
+                var moduleNum = module.StartsWith("M", StringComparison.OrdinalIgnoreCase) ? module.Substring(1) : module;
+                var projectInfo = new ProjectPathInfo
+                {
+                    ProjectNumber = projectNumber,
+                    Reference = reference,
+                    ModuleNumber = moduleNum,
+                    BasePath = Path.Combine(BasePathTextBox.Text, projectNumber, $"REF{reference}", module)
+                };
+                
+                AutoDetectFiles(projectInfo);
+                LogMessage($"[+] Module selectionne: {projectNumber} REF{reference} {module}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erreur selection module: {ex.Message}");
             }
         }
 
@@ -163,9 +343,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                     var projectInfo = ExtractProjectInfoFromPath(pdfPath);
                     if (projectInfo != null)
                     {
-                        ProjectNumberTextBox.Text = projectInfo.ProjectNumber;
-                        ReferenceTextBox.Text = projectInfo.Reference;
-                        ModuleNumberTextBox.Text = projectInfo.ModuleNumber;
+                        SetComboBoxValue(ProjectNumberComboBox, projectInfo.ProjectNumber);
+                        SetComboBoxValue(ReferenceComboBox, projectInfo.Reference);
+                        SetComboBoxValue(ModuleNumberComboBox, projectInfo.ModuleNumber);
                         
                         LogMessage($"[+] Projet detecte: {projectInfo.ProjectNumber} REF{projectInfo.Reference} M{projectInfo.ModuleNumber}");
                         
@@ -351,34 +531,154 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             
             LogMessage($"[>] Recherche des fichiers dans: {projectFolder}");
             
-            // Detect CSV/DXF file
-            var csvPatterns = new[] { "*-DXF.csv", "*_DXF.csv", "*DXF*.csv" };
-            foreach (var pattern in csvPatterns)
+            if (!Directory.Exists(projectFolder))
             {
-                var csvFiles = Directory.GetFiles(projectFolder, pattern, SearchOption.AllDirectories);
-                if (csvFiles.Length > 0)
+                LogMessage($"[-] Dossier non trouve: {projectFolder}");
+                return;
+            }
+            
+            // Extraire le numero de reference sans le prefixe REF
+            var refNumber = projectInfo.Reference;
+            
+            // === 1. DETECTION CSV ===
+            // Chemin Vault 2026: 5_Exportation/Sheet_Metal_Nesting/Punch/[PROJECT]-[REF]-M[XX].csv
+            var csvPath = Path.Combine(projectFolder, "5_Exportation", "Sheet_Metal_Nesting", "Punch", 
+                $"{projectInfo.ProjectNumber}-{refNumber}-M{projectInfo.ModuleNumber}.csv");
+            
+            if (File.Exists(csvPath))
+            {
+                _csvFilePath = csvPath;
+                CsvPathLabel.Text = _csvFilePath;
+                CsvPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
+                LogMessage($"[+] CSV detecte: {Path.GetFileName(_csvFilePath)}");
+            }
+            else
+            {
+                // Fallback: recherche par pattern dans tout le dossier
+                var csvPatterns = new[] { "*-DXF.csv", "*_DXF.csv", "*DXF*.csv", "*.csv" };
+                foreach (var pattern in csvPatterns)
                 {
-                    _csvFilePath = csvFiles[0];
-                    CsvPathLabel.Text = _csvFilePath;
-                    CsvPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
-                    LogMessage($"[+] CSV detecte: {Path.GetFileName(_csvFilePath)}");
-                    break;
+                    try
+                    {
+                        var csvFiles = Directory.GetFiles(projectFolder, pattern, SearchOption.AllDirectories);
+                        if (csvFiles.Length > 0)
+                        {
+                            _csvFilePath = csvFiles[0];
+                            CsvPathLabel.Text = _csvFilePath;
+                            CsvPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
+                            LogMessage($"[+] CSV detecte (fallback): {Path.GetFileName(_csvFilePath)}");
+                            break;
+                        }
+                    }
+                    catch { /* Ignorer les erreurs d'acces */ }
                 }
             }
             
-            // Detect Excel file
-            var excelPatterns = new[] { "*-DXF.xlsx", "*_DXF.xlsx", "*DXF*.xlsx" };
-            foreach (var pattern in excelPatterns)
+            if (string.IsNullOrEmpty(_csvFilePath))
             {
-                var excelFiles = Directory.GetFiles(projectFolder, pattern, SearchOption.AllDirectories);
-                if (excelFiles.Length > 0)
+                CsvPathLabel.Text = "Non detecte";
+                CsvPathLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 99, 71)); // Tomato
+                LogMessage($"[-] CSV non trouve");
+            }
+            
+            // === 2. DETECTION EXCEL ===
+            // Chemin Vault 2026: 0-Documents/[PROJECT]-[REF]-M[XX]_Decompte de DXF_DXF Count.xlsx
+            var excelPath = Path.Combine(projectFolder, "0-Documents", 
+                $"{projectInfo.ProjectNumber}-{refNumber}-M{projectInfo.ModuleNumber}_Décompte de DXF_DXF Count.xlsx");
+            
+            if (File.Exists(excelPath))
+            {
+                _excelFilePath = excelPath;
+                ExcelPathLabel.Text = _excelFilePath;
+                ExcelPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
+                LogMessage($"[+] Excel detecte: {Path.GetFileName(_excelFilePath)}");
+            }
+            else
+            {
+                // Fallback: recherche par pattern
+                var excelPatterns = new[] { "*DXF Count*.xlsx", "*_DXF*.xlsx", "*-DXF.xlsx" };
+                foreach (var pattern in excelPatterns)
                 {
-                    _excelFilePath = excelFiles[0];
-                    ExcelPathLabel.Text = _excelFilePath;
-                    ExcelPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
-                    LogMessage($"[+] Excel detecte: {Path.GetFileName(_excelFilePath)}");
-                    break;
+                    try
+                    {
+                        var excelFiles = Directory.GetFiles(projectFolder, pattern, SearchOption.AllDirectories);
+                        if (excelFiles.Length > 0)
+                        {
+                            _excelFilePath = excelFiles[0];
+                            ExcelPathLabel.Text = _excelFilePath;
+                            ExcelPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
+                            LogMessage($"[+] Excel detecte (fallback): {Path.GetFileName(_excelFilePath)}");
+                            break;
+                        }
+                    }
+                    catch { /* Ignorer les erreurs d'acces */ }
                 }
+            }
+            
+            if (string.IsNullOrEmpty(_excelFilePath))
+            {
+                ExcelPathLabel.Text = "Non detecte";
+                ExcelPathLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 215, 0)); // Gold - Excel peut etre cree
+                LogMessage($"[!] Excel non trouve - sera cree automatiquement");
+            }
+            
+            // === 3. DETECTION PDF ===
+            // Chemin Vault 2026: 6-Shop Drawing PDF/Production/BatchPrint/02-Machines.pdf
+            var pdfPath = Path.Combine(projectFolder, "6-Shop Drawing PDF", "Production", "BatchPrint", "02-Machines.pdf");
+            
+            if (File.Exists(pdfPath))
+            {
+                _pdfFilePath = pdfPath;
+                PdfPathLabel.Text = _pdfFilePath;
+                PdfPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
+                LogMessage($"[+] PDF detecte: {Path.GetFileName(_pdfFilePath)}");
+            }
+            else
+            {
+                // Fallback: recherche par pattern
+                var pdfPatterns = new[] { "*Machines*.pdf", "*CutList*.pdf", "*Cut_List*.pdf", "*.pdf" };
+                foreach (var pattern in pdfPatterns)
+                {
+                    try
+                    {
+                        var pdfFiles = Directory.GetFiles(projectFolder, pattern, SearchOption.AllDirectories);
+                        if (pdfFiles.Length > 0)
+                        {
+                            _pdfFilePath = pdfFiles[0];
+                            PdfPathLabel.Text = _pdfFilePath;
+                            PdfPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
+                            LogMessage($"[+] PDF detecte (fallback): {Path.GetFileName(_pdfFilePath)}");
+                            break;
+                        }
+                    }
+                    catch { /* Ignorer les erreurs d'acces */ }
+                }
+            }
+            
+            if (string.IsNullOrEmpty(_pdfFilePath))
+            {
+                PdfPathLabel.Text = "Non detecte";
+                PdfPathLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 99, 71)); // Tomato
+                LogMessage($"[-] PDF non trouve");
+            }
+            
+            // Afficher le statut final
+            var filesFound = new List<string>();
+            if (!string.IsNullOrEmpty(_csvFilePath)) filesFound.Add("CSV");
+            if (!string.IsNullOrEmpty(_excelFilePath)) filesFound.Add("Excel");
+            if (!string.IsNullOrEmpty(_pdfFilePath)) filesFound.Add("PDF");
+            
+            if (filesFound.Count == 3)
+            {
+                ShowStatus($"[+] Tous les fichiers detectes - Pret pour verification", StatusType.Success);
+            }
+            else if (filesFound.Count > 0)
+            {
+                ShowStatus($"[!] Fichiers detectes: {string.Join(", ", filesFound)}", StatusType.Warning);
+            }
+            else
+            {
+                ShowStatus($"[-] Aucun fichier detecte dans le module", StatusType.Error);
             }
         }
 
@@ -404,19 +704,21 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             }
             
             VerifyButton.IsEnabled = false;
-            ProgressBar.Value = 0;
+            ResetProgress();
+            StartProgressTimer();
             _results.Clear();
             
             try
             {
-                ShowStatus("Verification en cours...", StatusType.Info);
                 LogMessage("=".PadRight(60, '='));
                 LogMessage("[>] DEBUT DE LA VERIFICATION");
                 LogMessage("=".PadRight(60, '='));
                 
+                // Demarrer le chronometre pour le temps ecoule/estime
+                StartTimer();
+                
                 // Step 1: Read CSV/Excel data
-                ProgressBar.Value = 10;
-                ShowStatus("Lecture des donnees CSV/Excel...", StatusType.Info);
+                UpdateTimer(10, 5, 1, "Lecture CSV/Excel");
                 
                 _csvItems.Clear();
                 
@@ -428,15 +730,32 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                     LogMessage($"[+] {_csvItems.Count} tags lus depuis CSV");
                 }
                 
-                ProgressBar.Value = 30;
+                UpdateTimer(30, 5, 2, "Analyse PDF");
                 
-                // Step 2: Analyze PDF
-                ShowStatus("Analyse du PDF...", StatusType.Info);
+                // Step 2: Analyze PDF avec strategie CSV->PDF
                 LogMessage($"[>] Analyse PDF: {Path.GetFileName(_pdfFilePath)}");
                 
                 _pdfItems.Clear();
-                // Use static method from PdfAnalyzerService - returns Dictionary<string, int>
-                var pdfData = await Task.Run(() => PdfAnalyzerService.ExtractTablesFromPdf(_pdfFilePath));
+                
+                // STRATEGIE CSV->PDF: Construire la reference CSV pour corriger les quantites des tags echus
+                Dictionary<string, PdfAnalyzerService.CsvRow>? csvReference = null;
+                if (_csvItems.Count > 0)
+                {
+                    csvReference = new Dictionary<string, PdfAnalyzerService.CsvRow>(StringComparer.OrdinalIgnoreCase);
+                    foreach (var csvItem in _csvItems)
+                    {
+                        var normalizedTag = NormalizeTag(csvItem.Tag);
+                        if (!csvReference.ContainsKey(normalizedTag))
+                        {
+                            csvReference[normalizedTag] = new PdfAnalyzerService.CsvRow(csvItem.Tag, csvItem.Quantity, csvItem.Material);
+                        }
+                    }
+                    LogMessage($"[i] Reference CSV preparee: {csvReference.Count} tags");
+                }
+                
+                // Utiliser ExtractTablesFromPdfV2 avec algorithme de proximite X/Y valide a 100%
+                // Note: Les logs sont automatiquement envoyes au journal via OnServiceLog (connecte dans constructeur)
+                var pdfData = await Task.Run(() => PdfAnalyzerService.ExtractTablesFromPdfV2(_pdfFilePath, csvReference));
                 
                 // Convert PDF Dictionary<tag, qty> to List<DxfItem>
                 foreach (var kvp in pdfData)
@@ -449,37 +768,89 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                     });
                 }
                 
-                LogMessage($"[+] {_pdfItems.Count} tags extraits du PDF");
+                LogMessage($"[+] {_pdfItems.Count} tags extraits du PDF (strategie CSV->PDF)");
+                LogMessage($"[i] Pages analysees: {PdfAnalyzerService.LastAnalyzedPageCount}");
                 
-                ProgressBar.Value = 60;
+                UpdateTimer(50, 5, 3, "Comparaison des resultats");
                 
                 // Step 3: Compare results
-                ShowStatus("Comparaison des resultats...", StatusType.Info);
                 CompareAndDisplayResults();
                 
-                ProgressBar.Value = 90;
+                UpdateTimer(70, 5, 4, "Statistiques");
                 
                 // Step 4: Update statistics
                 UpdateStatistics();
                 
-                ProgressBar.Value = 100;
+                // Step 5: Write results to Excel report
+                if (!string.IsNullOrEmpty(_excelFilePath))
+                {
+                    UpdateTimer(85, 5, 5, "Ecriture Excel");
+                    LogMessage($"[>] Ecriture du rapport Excel: {Path.GetFileName(_excelFilePath)}");
+                    
+                    try
+                    {
+                        // Convert results to DxfItem list for ExcelManagerService
+                        var dxfItemsForExcel = _csvItems.Select(csv =>
+                        {
+                            var result = _results.FirstOrDefault(r => r.Tag == csv.Tag);
+                            return new DxfItem
+                            {
+                                Tag = csv.Tag,
+                                Quantity = csv.Quantity,
+                                Material = csv.Material,
+                                FoundInPdf = result?.PdfQuantity > 0 || (result?.Status.Contains("[+]") ?? false),
+                                PdfQuantity = result?.PdfQuantity ?? 0
+                            };
+                        }).ToList();
+                        
+                        ExcelManagerService.WriteToExcel(_excelFilePath, dxfItemsForExcel);
+                        LogMessage($"[+] Rapport Excel sauvegarde: {dxfItemsForExcel.Count} elements");
+                    }
+                    catch (Exception exExcel)
+                    {
+                        LogMessage($"[!] Erreur ecriture Excel: {exExcel.Message}");
+                    }
+                }
                 
-                // Step 5: Determine final status
-                var mismatchCount = _results.Count(r => r.Status.Contains("ERREUR") || r.Status.Contains("MANQUANT"));
+                // Arret du timer et affichage final
+                _verificationStopwatch.Stop();
+                UpdateTimer(100, 5, 5, "Termine");
+                
+                // Step 6: Determine final status
+                var mismatchCount = _results.Count(r => r.Status.Contains("[-]") || r.Status.Contains("[!]") || r.Status.Contains("[?]"));
                 if (mismatchCount == 0)
                 {
-                    ShowStatus($"Verification terminee - SUCCES: Tous les {_results.Count} tags correspondent!", StatusType.Success);
+                    ShowStatus($"SUCCES: {_results.Count} tags verifies", StatusType.Success);
                     LogMessage($"[+] VERIFICATION REUSSIE: {_results.Count} tags verifies");
                 }
                 else
                 {
-                    ShowStatus($"Verification terminee - {mismatchCount} differences trouvees sur {_results.Count} tags", StatusType.Warning);
+                    ShowStatus($"{mismatchCount} differences sur {_results.Count} tags", StatusType.Warning);
                     LogMessage($"[!] VERIFICATION AVEC DIFFERENCES: {mismatchCount}/{_results.Count} tags avec problemes");
                 }
                 
                 LogMessage("=".PadRight(60, '='));
                 LogMessage("[+] FIN DE LA VERIFICATION");
                 LogMessage("=".PadRight(60, '='));
+                
+                // Step 7: Open Excel report at the end (only Excel, not PDF)
+                if (!string.IsNullOrEmpty(_excelFilePath) && File.Exists(_excelFilePath))
+                {
+                    LogMessage($"[>] Ouverture du rapport Excel...");
+                    try
+                    {
+                        Process.Start(new ProcessStartInfo
+                        {
+                            FileName = _excelFilePath,
+                            UseShellExecute = true
+                        });
+                        LogMessage($"[+] Excel ouvert: {Path.GetFileName(_excelFilePath)}");
+                    }
+                    catch (Exception exOpen)
+                    {
+                        LogMessage($"[!] Erreur ouverture Excel: {exOpen.Message}");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -498,8 +869,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         {
             _results.Clear();
             
-            // Create lookup dictionary for PDF items by tag
+            // Create lookup dictionary for PDF items by tag (pour detecter doublons)
             var pdfLookup = new Dictionary<string, DxfItem>(StringComparer.OrdinalIgnoreCase);
+            var duplicateTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase); // Tags en double dans PDF
+            
             foreach (var pdfItem in _pdfItems)
             {
                 var normalizedTag = NormalizeTag(pdfItem.Tag);
@@ -509,12 +882,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 }
                 else
                 {
+                    // Tag en double detecte - marquer comme doublon
+                    duplicateTags.Add(normalizedTag);
                     // Accumulate quantities for duplicate tags
                     pdfLookup[normalizedTag].Quantity += pdfItem.Quantity;
                 }
             }
             
-            // Compare each CSV item with PDF
+            // Log des doublons detectes
+            if (duplicateTags.Count > 0)
+            {
+                LogMessage($"[!] {duplicateTags.Count} tags en double detectes dans le PDF");
+            }
+            
+            // Compare each CSV item with PDF - Couleurs compatibles theme sombre (plus claires)
             foreach (var csvItem in _csvItems)
             {
                 var normalizedTag = NormalizeTag(csvItem.Tag);
@@ -529,22 +910,40 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 {
                     result.PdfQuantity = pdfItem.Quantity;
                     
-                    if (csvItem.Quantity == pdfItem.Quantity)
+                    // Verifier si c'est un doublon
+                    bool isDuplicate = duplicateTags.Contains(normalizedTag);
+                    
+                    if (isDuplicate)
                     {
-                        result.Status = "OK - Quantites identiques";
+                        // ROUGE VIF - Doublon detecte dans PDF (cumul affiche)
+                        result.Status = $"❌ DOUBLON PDF: qty cumulee={pdfItem.Quantity} (CSV={csvItem.Quantity})";
+                        result.StatusColor = new SolidColorBrush(Color.FromRgb(255, 80, 80)); // Rouge vif
+                    }
+                    else if (csvItem.Quantity == pdfItem.Quantity)
+                    {
+                        // VERT CLAIR - OK (compatible theme sombre)
+                        result.Status = "✅ Tag trouvé, quantité OK";
                         result.StatusColor = new SolidColorBrush(Color.FromRgb(144, 238, 144)); // LightGreen
+                    }
+                    else if (pdfItem.Quantity == 0)
+                    {
+                        // BLEU CLAIR - Quantite 0
+                        result.Status = "🔍 Tag trouvé mais quantité = 0 dans PDF";
+                        result.StatusColor = new SolidColorBrush(Color.FromRgb(173, 216, 230)); // LightBlue
                     }
                     else
                     {
-                        result.Status = $"ERREUR - CSV:{csvItem.Quantity} vs PDF:{pdfItem.Quantity}";
-                        result.StatusColor = new SolidColorBrush(Color.FromRgb(255, 99, 71)); // Tomato
+                        // ROUGE - Quantite differente (demande utilisateur: rouge au lieu d'orange)
+                        result.Status = $"❌ Qty DIFFERENTE: CSV={csvItem.Quantity} vs PDF={pdfItem.Quantity}";
+                        result.StatusColor = new SolidColorBrush(Color.FromRgb(255, 100, 100)); // Rouge clair
                     }
                 }
                 else
                 {
+                    // ROUGE FONCE - Manquant dans PDF
                     result.PdfQuantity = 0;
-                    result.Status = "MANQUANT dans PDF";
-                    result.StatusColor = new SolidColorBrush(Color.FromRgb(255, 165, 0)); // Orange
+                    result.Status = "❌ Tag non trouvé dans le PDF";
+                    result.StatusColor = new SolidColorBrush(Color.FromRgb(255, 150, 150)); // Rouge clair
                 }
                 
                 _results.Add(result);
@@ -564,13 +963,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                         Quantity = 0,
                         Material = string.Empty,
                         PdfQuantity = pdfItem.Quantity,
-                        Status = "SUPPLEMENT dans PDF (pas dans CSV)",
+                        Status = "ℹ️ SUPPLÉMENT dans PDF (pas dans CSV)",
                         StatusColor = new SolidColorBrush(Color.FromRgb(135, 206, 250)) // LightSkyBlue
                     });
                 }
             }
             
-            LogMessage($"[+] Comparaison terminee: {_results.Count} lignes");
+            // Compter les erreurs
+            int erreurCount = _results.Count(r => r.Status.StartsWith("❌"));
+            int okCount = _results.Count(r => r.Status.StartsWith("✅"));
+            
+            LogMessage($"[+] Comparaison terminee: {_results.Count} lignes ({okCount} OK, {erreurCount} erreurs)");
         }
 
         private string NormalizeTag(string tag)
@@ -682,130 +1085,24 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 
                 LogMessage($"[+] {projects.Count} modules trouves dans {projects.Select(p => p.ProjectNumber).Distinct().Count()} projets");
                 
-                // Create selection dialog
-                var dialog = new Window
+                // Utiliser la nouvelle fenetre de selection moderne
+                var dialog = new ProjectSelectorWindow(projects)
                 {
-                    Title = "Selection du Projet - DXF Verifier",
-                    Width = 800,
-                    Height = 550,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                    Owner = this,
-                    Background = new SolidColorBrush(Color.FromRgb(30, 30, 46)),
-                    ResizeMode = ResizeMode.CanResize
+                    Owner = this
                 };
                 
-                var mainGrid = new Grid();
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-                mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-                
-                // Create ListView
-                var listView = new System.Windows.Controls.ListView
+                if (dialog.ShowDialog() == true && dialog.SelectedProject != null)
                 {
-                    Margin = new Thickness(15),
-                    Background = new SolidColorBrush(Color.FromRgb(37, 37, 54)),
-                    Foreground = Brushes.White,
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(74, 127, 191)),
-                    BorderThickness = new Thickness(2)
-                };
-                
-                // Create GridView for columns
-                var gridView = new GridView();
-                gridView.Columns.Add(new GridViewColumn { Header = "Projet", DisplayMemberBinding = new System.Windows.Data.Binding("ProjectNumber"), Width = 100 });
-                gridView.Columns.Add(new GridViewColumn { Header = "Reference", DisplayMemberBinding = new System.Windows.Data.Binding("Reference"), Width = 100 });
-                gridView.Columns.Add(new GridViewColumn { Header = "Module", DisplayMemberBinding = new System.Windows.Data.Binding("ModuleNumber"), Width = 100 });
-                gridView.Columns.Add(new GridViewColumn { Header = "Chemin", DisplayMemberBinding = new System.Windows.Data.Binding("ProjectPath"), Width = 450 });
-                listView.View = gridView;
-                
-                // Add items
-                foreach (var project in projects.OrderByDescending(p => p.ProjectNumber).ThenBy(p => p.Reference).ThenBy(p => p.ModuleNumber))
-                {
-                    listView.Items.Add(project);
-                }
-                
-                Grid.SetRow(listView, 0);
-                mainGrid.Children.Add(listView);
-                
-                // Button panel
-                var buttonPanel = new StackPanel
-                {
-                    Orientation = System.Windows.Controls.Orientation.Horizontal,
-                    HorizontalAlignment = System.Windows.HorizontalAlignment.Right,
-                    Margin = new Thickness(15, 10, 15, 15)
-                };
-                
-                var btnSelect = new System.Windows.Controls.Button
-                {
-                    Content = "Selectionner",
-                    Width = 120,
-                    Height = 35,
-                    Margin = new Thickness(0, 0, 10, 0),
-                    Background = new SolidColorBrush(Color.FromRgb(16, 124, 16)),
-                    Foreground = Brushes.White,
-                    FontWeight = FontWeights.Bold,
-                    Cursor = System.Windows.Input.Cursors.Hand
-                };
-                
-                var btnCancel = new System.Windows.Controls.Button
-                {
-                    Content = "Annuler",
-                    Width = 100,
-                    Height = 35,
-                    Background = new SolidColorBrush(Color.FromRgb(45, 45, 68)),
-                    Foreground = Brushes.White,
-                    Cursor = System.Windows.Input.Cursors.Hand
-                };
-                
-                ProjectPathInfo selectedProject = null;
-                
-                btnSelect.Click += (s, args) =>
-                {
-                    if (listView.SelectedItem is ProjectPathInfo selected)
-                    {
-                        selectedProject = selected;
-                        dialog.DialogResult = true;
-                        dialog.Close();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Veuillez selectionner un projet.", "Selection requise", MessageBoxButton.OK, MessageBoxImage.Warning);
-                    }
-                };
-                
-                btnCancel.Click += (s, args) =>
-                {
-                    dialog.DialogResult = false;
-                    dialog.Close();
-                };
-                
-                // Double-click to select
-                listView.MouseDoubleClick += (s, args) =>
-                {
-                    if (listView.SelectedItem is ProjectPathInfo selected)
-                    {
-                        selectedProject = selected;
-                        dialog.DialogResult = true;
-                        dialog.Close();
-                    }
-                };
-                
-                buttonPanel.Children.Add(btnSelect);
-                buttonPanel.Children.Add(btnCancel);
-                
-                Grid.SetRow(buttonPanel, 1);
-                mainGrid.Children.Add(buttonPanel);
-                
-                dialog.Content = mainGrid;
-                
-                if (dialog.ShowDialog() == true && selectedProject != null)
-                {
+                    var selectedProject = dialog.SelectedProject;
+                    
                     // Extract reference number (remove REF prefix)
                     var refNumber = selectedProject.Reference;
                     if (refNumber.StartsWith("REF", StringComparison.OrdinalIgnoreCase))
                         refNumber = refNumber.Substring(3);
                     
-                    ProjectNumberTextBox.Text = selectedProject.ProjectNumber;
-                    ReferenceTextBox.Text = refNumber;
-                    ModuleNumberTextBox.Text = selectedProject.ModuleNumber;
+                    SetComboBoxValue(ProjectNumberComboBox, selectedProject.ProjectNumber);
+                    SetComboBoxValue(ReferenceComboBox, refNumber);
+                    SetComboBoxValue(ModuleNumberComboBox, selectedProject.ModuleNumber);
                     
                     LogMessage($"[+] Projet selectionne: {selectedProject.ProjectNumber} REF{refNumber} {selectedProject.ModuleNumber}");
                     
@@ -947,9 +1244,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 var projectInfo = ExtractProjectInfoFromPath(_pdfFilePath);
                 if (projectInfo != null)
                 {
-                    ProjectNumberTextBox.Text = projectInfo.ProjectNumber;
-                    ReferenceTextBox.Text = projectInfo.Reference;
-                    ModuleNumberTextBox.Text = projectInfo.ModuleNumber;
+                    SetComboBoxValue(ProjectNumberComboBox, projectInfo.ProjectNumber);
+                    SetComboBoxValue(ReferenceComboBox, projectInfo.Reference);
+                    SetComboBoxValue(ModuleNumberComboBox, projectInfo.ModuleNumber);
                     AutoDetectFiles(projectInfo);
                 }
             }
@@ -961,42 +1258,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 
         private void InfoButton_Click(object sender, RoutedEventArgs e)
         {
-            var info = new StringBuilder();
-            info.AppendLine("DXF-CSV vs PDF Verifier v1.2");
-            info.AppendLine("XNRGY Engineering Automation Tools");
-            info.AppendLine("By Mohammed Amine Elgalai");
-            info.AppendLine();
-            info.AppendLine("=".PadRight(50, '='));
-            info.AppendLine("FONCTIONNALITES:");
-            info.AppendLine("-".PadRight(50, '-'));
-            info.AppendLine("- Detection automatique du PDF ouvert dans Adobe");
-            info.AppendLine("- Extraction des tags et quantites depuis CSV/DXF");
-            info.AppendLine("- Analyse des tables PDF avec PdfPig");
-            info.AppendLine("- Comparaison et verification des donnees");
-            info.AppendLine("- Export vers Excel avec EPPlus");
-            info.AppendLine();
-            info.AppendLine("=".PadRight(50, '='));
-            info.AppendLine("STRUCTURE DES DOSSIERS ATTENDUE:");
-            info.AppendLine("-".PadRight(50, '-'));
-            info.AppendLine(@"C:\Vault\Engineering\Projects\");
-            info.AppendLine(@"    [PROJECT_NUMBER]\");
-            info.AppendLine(@"        REF[XX]\");
-            info.AppendLine(@"            M[XX]\");
-            info.AppendLine(@"                03-CutList_[PROJECT]_REF[XX]_M[XX].pdf");
-            info.AppendLine(@"                [PROJECT]_REF[XX]_M[XX]-DXF.csv");
-            info.AppendLine(@"                [PROJECT]_REF[XX]_M[XX]-DXF.xlsx");
-            info.AppendLine();
-            info.AppendLine("=".PadRight(50, '='));
-            info.AppendLine("PATTERNS DE TAG RECONNUS:");
-            info.AppendLine("-".PadRight(50, '-'));
-            info.AppendLine("- XX1234 (2-3 lettres + 1-4 chiffres)");
-            info.AppendLine("- XX1234-5678 (avec suffixe)");
-            info.AppendLine("- XX1234_5678 (avec underscore)");
-            info.AppendLine();
-            info.AppendLine("Version: 1.2.0 - Migrated to WPF");
-            info.AppendLine("Build: " + DateTime.Now.ToString("yyyy-MM-dd"));
-            
-            MessageBox.Show(info.ToString(), "Information - DXF Verifier", MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                var infoWindow = new DXFVerifierInfoWindow();
+                infoWindow.Owner = this;
+                infoWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"[-] Erreur ouverture Info: {ex.Message}");
+                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         #endregion
@@ -1028,10 +1300,39 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             // Add to log builder
             _logBuilder.AppendLine(logLine);
             
+            // Determiner le niveau de log et la couleur
+            JournalColorService.LogLevel level = JournalColorService.LogLevel.INFO;
+            if (message.StartsWith("[+]") || message.Contains("succes") || message.Contains("trouve") || message.Contains("OK"))
+                level = JournalColorService.LogLevel.SUCCESS;
+            else if (message.StartsWith("[-]") || message.Contains("erreur") || message.Contains("Error") || message.Contains("echoue"))
+                level = JournalColorService.LogLevel.ERROR;
+            else if (message.StartsWith("[!]") || message.Contains("attention") || message.Contains("Warning") || message.Contains("manquant"))
+                level = JournalColorService.LogLevel.WARNING;
+            else if (message.StartsWith("[~]") || message.StartsWith("[?]"))
+                level = JournalColorService.LogLevel.DEBUG;
+            
             // Update UI (must be on UI thread)
             Dispatcher.Invoke(() =>
             {
-                LogTextBox.AppendText(logLine + Environment.NewLine);
+                // Creer le paragraph avec couleur
+                var paragraph = new Paragraph();
+                paragraph.Margin = new Thickness(0, 2, 0, 2);
+                
+                // Timestamp en gris
+                var timestampRun = new Run($"[{timestamp}] ")
+                {
+                    Foreground = JournalColorService.TimestampBrush
+                };
+                paragraph.Inlines.Add(timestampRun);
+                
+                // Message avec couleur selon le niveau
+                var messageRun = new Run(message)
+                {
+                    Foreground = JournalColorService.GetBrushForLevel(level)
+                };
+                paragraph.Inlines.Add(messageRun);
+                
+                LogTextBox.Document.Blocks.Add(paragraph);
                 LogTextBox.ScrollToEnd();
             });
             
@@ -1064,7 +1365,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 
         private void ClearLogButton_Click(object sender, RoutedEventArgs e)
         {
-            LogTextBox.Clear();
+            // Clear RichTextBox
+            LogTextBox.Document.Blocks.Clear();
             _logBuilder.Clear();
             LogMessage("[i] Journal efface");
         }
@@ -1081,25 +1383,136 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             Error
         }
 
+        /// <summary>
+        /// Demarre le chronometre de progression
+        /// </summary>
+        private void StartProgressTimer()
+        {
+            _progressStartTime = DateTime.Now;
+            
+            if (_progressTimer == null)
+            {
+                _progressTimer = new System.Windows.Threading.DispatcherTimer
+                {
+                    Interval = TimeSpan.FromMilliseconds(500)
+                };
+                _progressTimer.Tick += (s, e) => UpdateElapsedTime();
+            }
+            _progressTimer.Start();
+        }
+
+        /// <summary>
+        /// Arrete le chronometre de progression
+        /// </summary>
+        private void StopProgressTimer()
+        {
+            _progressTimer?.Stop();
+        }
+
+        /// <summary>
+        /// Demarre le chronometre pour mesurer le temps ecoule
+        /// </summary>
+        private void StartTimer()
+        {
+            _verificationStopwatch.Restart();
+            TxtProgressTimeElapsed.Text = "00:00";
+            TxtProgressTimeEstimated.Text = "--:--";
+            TxtProgressPercent.Text = "0%";
+            TxtProgressStatus.Text = "Demarrage...";
+            TxtProgressStep.Text = "";
+            ProgressFillBorder.Width = 0;
+        }
+
+        /// <summary>
+        /// Met a jour la barre de progression avec temps ecoule/estime
+        /// </summary>
+        private void UpdateTimer(int percentage, int totalSteps, int currentStep, string stepName)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                // Calculer la largeur de remplissage
+                var parentGrid = ProgressFillBorder.Parent as Grid;
+                var totalWidth = parentGrid?.ActualWidth ?? 600;
+                if (totalWidth <= 4) totalWidth = 600;
+                
+                var fillWidth = ((totalWidth - 4) * percentage) / 100.0;
+                ProgressFillBorder.Width = Math.Max(0, fillWidth);
+                
+                // Temps ecoule
+                var elapsed = _verificationStopwatch.Elapsed;
+                TxtProgressTimeElapsed.Text = FormatTime(elapsed);
+                
+                // Temps estime (basé sur la progression)
+                if (percentage > 0 && percentage < 100)
+                {
+                    var estimatedTotal = TimeSpan.FromTicks((long)(elapsed.Ticks / (percentage / 100.0)));
+                    var remaining = estimatedTotal - elapsed;
+                    TxtProgressTimeEstimated.Text = FormatTime(remaining);
+                }
+                else if (percentage >= 100)
+                {
+                    TxtProgressTimeEstimated.Text = "00:00";
+                }
+                
+                // Pourcentage
+                TxtProgressPercent.Text = $"{percentage}%";
+                
+                // Etape courante
+                TxtProgressStep.Text = $"Etape {currentStep}/{totalSteps}: {stepName}";
+            });
+        }
+
+        /// <summary>
+        /// Formate un TimeSpan en mm:ss
+        /// </summary>
+        private string FormatTime(TimeSpan time)
+        {
+            return time.TotalMinutes >= 1 
+                ? $"{(int)time.TotalMinutes:D2}:{time.Seconds:D2}" 
+                : $"00:{(int)time.TotalSeconds:D2}";
+        }
+
+        /// <summary>
+        /// Met a jour le temps ecoule affiche
+        /// </summary>
+        private void UpdateElapsedTime()
+        {
+            var elapsed = DateTime.Now - _progressStartTime;
+            TxtProgressTimeElapsed.Text = elapsed.ToString(@"mm\:ss");
+        }
+
+        /// <summary>
+        /// Reinitialise la barre de progression
+        /// </summary>
+        private void ResetProgress()
+        {
+            Dispatcher.Invoke(() =>
+            {
+                ProgressFillBorder.Width = 0;
+                TxtProgressStatus.Text = "Pret";
+                TxtProgressStep.Text = "";
+                TxtProgressPercent.Text = "0%";
+                TxtProgressTimeElapsed.Text = "00:00";
+                TxtProgressTimeEstimated.Text = "00:00";
+            });
+        }
+
         private void ShowStatus(string message, StatusType type)
         {
-            var prefix = type switch
+            Dispatcher.Invoke(() =>
             {
-                StatusType.Success => "[+] ",
-                StatusType.Warning => "[!] ",
-                StatusType.Error => "[-] ",
-                _ => "[i] "
-            };
-            
-            StatusLabel.Text = prefix + message;
-            
-            StatusLabel.Foreground = type switch
-            {
-                StatusType.Success => new SolidColorBrush(Color.FromRgb(144, 238, 144)), // LightGreen
-                StatusType.Warning => new SolidColorBrush(Color.FromRgb(255, 165, 0)),   // Orange
-                StatusType.Error => new SolidColorBrush(Color.FromRgb(255, 99, 71)),     // Tomato
-                _ => new SolidColorBrush(Color.FromRgb(224, 224, 224))                    // Light gray
-            };
+                // Couleurs selon le type
+                var color = type switch
+                {
+                    StatusType.Success => Colors.LightGreen,
+                    StatusType.Warning => Color.FromRgb(255, 193, 7), // #FFC107 jaune
+                    StatusType.Error => Color.FromRgb(220, 53, 69),   // #DC3545 rouge
+                    _ => Colors.White
+                };
+                
+                TxtProgressStatus.Foreground = new SolidColorBrush(color);
+                TxtProgressStatus.Text = message;
+            });
         }
 
         #endregion
