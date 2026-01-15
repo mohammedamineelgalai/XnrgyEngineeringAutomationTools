@@ -1,10 +1,10 @@
-<Window x:Class="XnrgyEngineeringAutomationTools.Modules.SmartTools.Views.ExportOptionsWindow"
+﻿<Window x:Class="XnrgyEngineeringAutomationTools.Modules.SmartTools.Views.ExportOptionsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{StaticResource WindowTitleExportOptions}"
         Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
-        Height="600" Width="650"
-        MinHeight="550" MinWidth="600"
+        Height="750" Width="700"
+        MinHeight="700" MinWidth="650"
         WindowStartupLocation="Manual"
         Background="#1E1E2E"
         ResizeMode="NoResize"
@@ -87,6 +87,7 @@
 
         <!-- Contenu -->
         <Grid Grid.Row="1">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
             <StackPanel Margin="20">
                 
                 <!-- Nom du fichier source -->
@@ -102,9 +103,11 @@
                         BorderBrush="#4A7FBF" BorderThickness="1">
                     <StackPanel>
                         <RadioButton x:Name="RbExportIPT" Content="IPT - Pièce Inventor (solides multiples)" 
-                                     Style="{StaticResource DarkRadioButton}" IsChecked="True" GroupName="ExportFormat"/>
+                                     Style="{StaticResource DarkRadioButton}" IsChecked="True" GroupName="ExportFormat"
+                                     Checked="RbExportFormat_Checked"/>
                         <RadioButton x:Name="RbExportSTEP" Content="STEP - Format d'échange standard (AP214)" 
-                                     Style="{StaticResource DarkRadioButton}" GroupName="ExportFormat"/>
+                                     Style="{StaticResource DarkRadioButton}" GroupName="ExportFormat"
+                                     Checked="RbExportFormat_Checked"/>
                     </StackPanel>
                 </Border>
                 
@@ -123,17 +126,20 @@
                 </Border>
                 
                 <!-- Chemin de destination -->
-                <TextBlock x:Name="TxtDestinationLabel" Text="Chemin de destination (local):" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,6"/>
-                <Grid Margin="0,0,0,16">
+                <TextBlock x:Name="TxtDestinationLabel" Text="Chemin de destination:" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,6"/>
+                <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <TextBox x:Name="TxtDestinationPath" Grid.Column="0" Style="{StaticResource DarkTextBox}"
                              Text="C:\Vault\Engineering\Projects\"/>
-                    <Button x:Name="BtnBrowse" Grid.Column="1" Content="📁 Parcourir" 
+                    <Button x:Name="BtnBrowseLocal" Grid.Column="1" Content="📁 Parcourir" 
                             Style="{StaticResource ActionButton}" Margin="8,0,0,0"
-                            Background="#FF8C00" Click="BtnBrowse_Click"/>
+                            Background="#FF8C00" Click="BtnBrowseLocal_Click" Visibility="Visible"/>
+                    <Button x:Name="BtnBrowseVault" Grid.Column="1" Content="ℹ️ Info" 
+                            Style="{StaticResource ActionButton}" Margin="8,0,0,0"
+                            Background="#0078D4" Click="BtnBrowseVault_Click" Visibility="Collapsed"/>
                 </Grid>
                 
                 <!-- Nom du fichier de sortie -->
@@ -143,20 +149,34 @@
                 <TextBlock Text="Format Top Assembly: 123450101 (sans REF et M) | Format Sous-Assembly: 123450101_LEFT_WALL_01" 
                            FontSize="11" Foreground="#888888" Margin="0,-12,0,16"/>
                 
-                <!-- Options -->
-                <TextBlock Text="Options:" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,8"/>
+                <!-- Options préparatives -->
+                <TextBlock Text="Options préparatives:" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,8"/>
                 <Border Background="#252536" CornerRadius="4" Padding="16,12" 
                         BorderBrush="#4A7FBF" BorderThickness="1">
                     <StackPanel>
-                        <CheckBox x:Name="ChkHideReferences" Content="Masquer les éléments de référence avant export" 
-                                  Foreground="#E0E0E0" FontSize="13" IsChecked="True" Margin="0,4"/>
                         <CheckBox x:Name="ChkActivateDefaultRep" Content="Activer la représentation par défaut" 
+                                  Foreground="#E0E0E0" FontSize="13" IsChecked="True" Margin="0,4"/>
+                        <CheckBox x:Name="ChkShowHiddenComponents" Content="Afficher tous les composants masqués (hors références)" 
+                                  Foreground="#E0E0E0" FontSize="13" IsChecked="True" Margin="0,4"/>
+                        <CheckBox x:Name="ChkCollapseBrowserTree" Content="Réduire l'arborescence du navigateur" 
+                                  Foreground="#E0E0E0" FontSize="13" IsChecked="True" Margin="0,4"/>
+                        <CheckBox x:Name="ChkApplyIsometricView" Content="Appliquer la vue isométrique" 
+                                  Foreground="#E0E0E0" FontSize="13" IsChecked="True" Margin="0,4"/>
+                        <CheckBox x:Name="ChkHideReferences" Content="Masquer les éléments de référence avant export" 
                                   Foreground="#E0E0E0" FontSize="13" IsChecked="True" Margin="0,4"/>
                         <CheckBox x:Name="ChkOpenAfterExport" Content="Ouvrir le fichier après export" 
                                   Foreground="#E0E0E0" FontSize="13" IsChecked="False" Margin="0,4"/>
                     </StackPanel>
                 </Border>
+                
+                <!-- Chemin complet de destination -->
+                <TextBlock Text="Chemin complet de destination:" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,16,0,6"/>
+                <Border Background="#252536" CornerRadius="4" Padding="12,10" Margin="0,0,0,16"
+                        BorderBrush="#4A7FBF" BorderThickness="1">
+                    <TextBlock x:Name="TxtFullDestinationPath" Text="--" Foreground="#E0E0E0" FontSize="12" TextWrapping="Wrap"/>
+                </Border>
             </StackPanel>
+            </ScrollViewer>
         </Grid>
 
         <!-- Footer avec boutons -->
@@ -171,7 +191,7 @@
                 <Button x:Name="BtnCancel" Grid.Column="1" Content="❌ Annuler" 
                         Style="{StaticResource ActionButton}" Background="#6B7280"
                         Width="110" Margin="0,0,12,0" Click="BtnCancel_Click"/>
-                <Button x:Name="BtnExport" Grid.Column="2" Content="� Exporter" 
+                <Button x:Name="BtnExport" Grid.Column="2" Content="✅ Exporter" 
                         Style="{StaticResource ActionButton}" Background="#107C10"
                         Width="130" Click="BtnExport_Click"/>
             </Grid>
@@ -184,3 +204,4 @@
         </Border>
     </Grid>
 </Window>
+

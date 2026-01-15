@@ -1,0 +1,158 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Modules.SmartTools.Views.FolderBrowserWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Sélectionner un dossier" 
+        Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
+        Height="600" Width="800"
+        MinHeight="500" MinWidth="700"
+        WindowStartupLocation="CenterOwner"
+        Background="#1E1E2E"
+        ResizeMode="CanResize"
+        ShowInTaskbar="False">
+
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="pack://application:,,,/Styles/XnrgyStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            
+            <SolidColorBrush x:Key="DarkBg" Color="#1E1E2E"/>
+            <SolidColorBrush x:Key="DarkBg2" Color="#252536"/>
+            <SolidColorBrush x:Key="BorderColor" Color="#4A7FBF"/>
+            <SolidColorBrush x:Key="TextLight" Color="#E0E0E0"/>
+            <SolidColorBrush x:Key="XnrgyBlue" Color="#0078D4"/>
+            
+            <!-- Style TreeView -->
+            <Style x:Key="DarkTreeView" TargetType="TreeView">
+                <Setter Property="Background" Value="#252536"/>
+                <Setter Property="Foreground" Value="#E0E0E0"/>
+                <Setter Property="BorderBrush" Value="#4A7FBF"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="FontSize" Value="13"/>
+            </Style>
+            
+            <!-- Style TextBox -->
+            <Style x:Key="DarkTextBox" TargetType="TextBox">
+                <Setter Property="Background" Value="#252536"/>
+                <Setter Property="Foreground" Value="#E0E0E0"/>
+                <Setter Property="BorderBrush" Value="#4A7FBF"/>
+                <Setter Property="BorderThickness" Value="1"/>
+                <Setter Property="Padding" Value="8,6"/>
+                <Setter Property="FontSize" Value="13"/>
+            </Style>
+            
+            <!-- Style Button -->
+            <Style x:Key="ActionButton" TargetType="Button">
+                <Setter Property="Background" Value="#0078D4"/>
+                <Setter Property="Foreground" Value="White"/>
+                <Setter Property="FontWeight" Value="SemiBold"/>
+                <Setter Property="FontSize" Value="13"/>
+                <Setter Property="Padding" Value="16,8"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Setter Property="Cursor" Value="Hand"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                    CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="border" Property="Background" Value="#1E90FF"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Border Grid.Row="0" Background="#2A4A6F" Padding="16,12">
+            <StackPanel>
+                <TextBlock Text="📁 Sélectionner un dossier" FontSize="18" FontWeight="Bold" Foreground="White"/>
+                <TextBlock Text="Naviguez dans l'arborescence pour sélectionner le dossier de destination" 
+                           FontSize="12" Foreground="#FFB74D" Margin="0,4,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Contenu principal -->
+        <Grid Grid.Row="1" Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Barre de recherche/navigation rapide -->
+            <StackPanel Grid.Row="0" Margin="0,0,0,12">
+                <TextBlock Text="Chemin actuel:" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,6"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="TxtCurrentPath" Grid.Column="0" Style="{StaticResource DarkTextBox}"
+                             TextChanged="TxtCurrentPath_TextChanged"/>
+                    <Button x:Name="BtnGoToPath" Grid.Column="1" Content="➤ Aller" 
+                            Style="{StaticResource ActionButton}" Margin="8,0,0,0"
+                            Background="#107C10" Click="BtnGoToPath_Click"/>
+                </Grid>
+            </StackPanel>
+
+            <!-- Arborescence des dossiers -->
+            <Border Grid.Row="1" Background="#252536" CornerRadius="4" Padding="12"
+                    BorderBrush="#4A7FBF" BorderThickness="1">
+                <TreeView x:Name="FolderTreeView" Style="{StaticResource DarkTreeView}"
+                          SelectedItemChanged="FolderTreeView_SelectedItemChanged"
+                          MouseDoubleClick="FolderTreeView_MouseDoubleClick"/>
+            </Border>
+
+            <!-- Dossier sélectionné -->
+            <StackPanel Grid.Row="2" Margin="0,12,0,0">
+                <TextBlock Text="Dossier sélectionné:" FontWeight="SemiBold" Foreground="#0078D4" FontSize="13" Margin="0,0,0,6"/>
+                <TextBox x:Name="TxtSelectedPath" Style="{StaticResource DarkTextBox}" IsReadOnly="True"
+                         Background="#1E1E2E"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- Footer avec boutons -->
+        <Border Grid.Row="2" Background="#252536" Padding="16,12" BorderBrush="#4A7FBF" BorderThickness="0,2,0,0">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <Button x:Name="BtnCreateFolder" Grid.Column="0" Content="➕ Créer un nouveau dossier" 
+                        Style="{StaticResource ActionButton}" Background="#FF8C00" 
+                        HorizontalAlignment="Left" Click="BtnCreateFolder_Click"/>
+                
+                <Button x:Name="BtnCancel" Grid.Column="1" Content="❌ Annuler" 
+                        Style="{StaticResource ActionButton}" Background="#6B7280"
+                        Width="110" Margin="0,0,12,0" Click="BtnCancel_Click"/>
+                <Button x:Name="BtnSelect" Grid.Column="2" Content="✓ Sélectionner" 
+                        Style="{StaticResource ActionButton}" Background="#107C10"
+                        Width="130" Click="BtnSelect_Click"/>
+            </Grid>
+        </Border>
+
+        <!-- COPYRIGHT BAR -->
+        <Border Grid.Row="3" Style="{StaticResource CopyrightBarBorder}">
+            <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center"
+                       Text="{StaticResource CopyrightExportOptions}"/>
+        </Border>
+    </Grid>
+</Window>
+

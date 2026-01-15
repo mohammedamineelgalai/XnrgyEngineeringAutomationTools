@@ -33,14 +33,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         public string OutputFileName => TxtOutputFileName.Text;
 
         /// <summary>
-        /// Masquer les éléments de référence avant export
-        /// </summary>
-        public bool HideReferences => ChkHideReferences.IsChecked == true;
-
-        /// <summary>
         /// Activer la représentation par défaut
         /// </summary>
         public bool ActivateDefaultRepresentation => ChkActivateDefaultRep.IsChecked == true;
+
+        /// <summary>
+        /// Afficher tous les composants masqués (hors références)
+        /// </summary>
+        public bool ShowHiddenComponents => ChkShowHiddenComponents.IsChecked == true;
+
+        /// <summary>
+        /// Réduire l'arborescence du navigateur
+        /// </summary>
+        public bool CollapseBrowserTree => ChkCollapseBrowserTree.IsChecked == true;
+
+        /// <summary>
+        /// Appliquer la vue isométrique
+        /// </summary>
+        public bool ApplyIsometricView => ChkApplyIsometricView.IsChecked == true;
+
+        /// <summary>
+        /// Masquer les éléments de référence avant export
+        /// </summary>
+        public bool HideReferences => ChkHideReferences.IsChecked == true;
 
         /// <summary>
         /// Ouvrir le fichier après export
@@ -150,6 +165,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         public string Reference { get; private set; } = "";
 
         /// <summary>
+        /// Module extrait depuis le chemin (format M03)
+        /// </summary>
+        public string Module { get; private set; } = "";
+
+        /// <summary>
         /// Chemin Vault de destination (si destination Vault)
         /// </summary>
         public string VaultDestinationPath { get; private set; } = "";
@@ -178,17 +198,25 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             TxtSourceFile.Text = sourceFileName;
 
-            // Extraire Project Number et Reference depuis le chemin
-            // Format: C:\Vault\Engineering\Projects\12345\REF01\...
+            // Extraire Project Number, Reference et Module depuis le chemin
+            // Format: C:\Vault\Engineering\Projects\12345\REF01\M03\...
             ExtractProjectAndReference(sourcePath);
 
             // Générer les chemins de destination (local et Vault)
-            // Format local: C:\Vault\Engineering\Projects\12345\REF01\...
-            // Format Vault: $/Engineering/Projects/12345/REF01
+            // Format local: C:\Vault\Engineering\Projects\12345\REF01\M03
+            // Format Vault: $/Engineering/Projects/12345/REF01/M03
             if (!string.IsNullOrEmpty(ProjectNumber) && !string.IsNullOrEmpty(Reference))
             {
-                LocalDestinationPath = $"C:\\Vault\\Engineering\\Projects\\{ProjectNumber}\\{Reference}";
-                VaultDestinationPath = $"$/Engineering/Projects/{ProjectNumber}/{Reference}";
+                if (!string.IsNullOrEmpty(Module))
+                {
+                    LocalDestinationPath = $"C:\\Vault\\Engineering\\Projects\\{ProjectNumber}\\{Reference}\\{Module}";
+                    VaultDestinationPath = $"$/Engineering/Projects/{ProjectNumber}/{Reference}/{Module}";
+                }
+                else
+                {
+                    LocalDestinationPath = $"C:\\Vault\\Engineering\\Projects\\{ProjectNumber}\\{Reference}";
+                    VaultDestinationPath = $"$/Engineering/Projects/{ProjectNumber}/{Reference}";
+                }
             }
             else
             {
@@ -204,16 +232,70 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             
             TxtDestinationPath.Text = LocalDestinationPath;
             TxtDestinationLabel.Text = "Chemin de destination (local):";
+            BtnBrowseLocal.Visibility = Visibility.Visible;
+            BtnBrowseVault.Visibility = Visibility.Collapsed;
             IsDestinationVault = false;
 
             // Générer un nom de fichier suggéré selon le nouveau format
             string suggestedName = GenerateSuggestedFileName(sourcePath, sourceFileName);
             TxtOutputFileName.Text = suggestedName;
+            
+            // Écouter les changements pour mettre à jour le chemin complet
+            TxtOutputFileName.TextChanged += (s, e) => UpdateFullDestinationPath();
+            RbDestinationLocal.Checked += (s, e) => UpdateFullDestinationPath();
+            RbDestinationVault.Checked += (s, e) => UpdateFullDestinationPath();
+            TxtDestinationPath.TextChanged += (s, e) => UpdateFullDestinationPath();
+            
+            // Mettre à jour le chemin complet de destination après l'initialisation complète
+            // Utiliser Dispatcher pour s'assurer que tous les contrôles sont chargés
+            Dispatcher.BeginInvoke(new Action(() => UpdateFullDestinationPath()), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         /// <summary>
-        /// Extrait Project Number et Reference depuis le chemin source
-        /// Format: C:\Vault\Engineering\Projects\12345\REF01\...
+        /// Met à jour l'affichage du chemin complet de destination
+        /// </summary>
+        private void UpdateFullDestinationPath()
+        {
+            try
+            {
+                // Vérifier que tous les contrôles sont initialisés
+                if (RbExportIPT == null || RbExportSTEP == null || TxtOutputFileName == null || 
+                    TxtDestinationPath == null || TxtFullDestinationPath == null ||
+                    RbDestinationLocal == null || RbDestinationVault == null)
+                {
+                    return; // Contrôles pas encore initialisés
+                }
+
+                string ext = RbExportIPT.IsChecked == true ? ".ipt" : ".stp";
+                string fileName = string.IsNullOrWhiteSpace(TxtOutputFileName.Text) ? "nom_fichier" : TxtOutputFileName.Text;
+                string fullFileName = fileName + ext;
+                
+                if (RbDestinationVault.IsChecked == true)
+                {
+                    string vaultPath = string.IsNullOrWhiteSpace(TxtDestinationPath.Text) ? VaultDestinationPath : TxtDestinationPath.Text;
+                    TxtFullDestinationPath.Text = $"{vaultPath}/{fullFileName}";
+                }
+                else
+                {
+                    string localPath = string.IsNullOrWhiteSpace(TxtDestinationPath.Text) ? LocalDestinationPath : TxtDestinationPath.Text;
+                    TxtFullDestinationPath.Text = System.IO.Path.Combine(localPath, fullFileName);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log l'erreur si possible, sinon ignorer
+                try
+                {
+                    if (TxtFullDestinationPath != null)
+                        TxtFullDestinationPath.Text = "--";
+                }
+                catch { }
+            }
+        }
+
+        /// <summary>
+        /// Extrait Project Number, Reference et Module depuis le chemin source
+        /// Format: C:\Vault\Engineering\Projects\12345\REF01\M03\...
         /// </summary>
         private void ExtractProjectAndReference(string sourcePath)
         {
@@ -223,16 +305,35 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
                 
                 for (int i = 0; i < parts.Length; i++)
                 {
-                    if (parts[i].Equals("Projects", StringComparison.OrdinalIgnoreCase) && i + 2 < parts.Length)
+                    if (parts[i].Equals("Projects", StringComparison.OrdinalIgnoreCase))
                     {
-                        ProjectNumber = parts[i + 1];
+                        // Extraire Project Number (après "Projects")
+                        if (i + 1 < parts.Length)
+                        {
+                            ProjectNumber = parts[i + 1];
+                        }
                         
                         // Extraire Reference (format REF01 ou REF1)
-                        string refPart = parts[i + 2];
-                        if (refPart.StartsWith("REF", StringComparison.OrdinalIgnoreCase))
+                        if (i + 2 < parts.Length)
                         {
-                            Reference = refPart;
+                            string refPart = parts[i + 2];
+                            if (refPart.StartsWith("REF", StringComparison.OrdinalIgnoreCase))
+                            {
+                                Reference = refPart;
+                            }
                         }
+                        
+                        // Extraire Module (format M03 ou M3)
+                        if (i + 3 < parts.Length)
+                        {
+                            string modulePart = parts[i + 3];
+                            if (modulePart.StartsWith("M", StringComparison.OrdinalIgnoreCase) && 
+                                System.Text.RegularExpressions.Regex.IsMatch(modulePart, @"^M\d+$", System.Text.RegularExpressions.RegexOptions.IgnoreCase))
+                            {
+                                Module = modulePart;
+                            }
+                        }
+                        
                         break; // Sortir de la boucle une fois trouvé
                     }
                 }
@@ -304,47 +405,50 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             {
                 TxtDestinationPath.Text = LocalDestinationPath;
                 TxtDestinationLabel.Text = "Chemin de destination (local):";
-                BtnBrowse.Content = "📁 Parcourir";
-                BtnBrowse.IsEnabled = true;
+                BtnBrowseLocal.Visibility = Visibility.Visible;
+                BtnBrowseVault.Visibility = Visibility.Collapsed;
                 IsDestinationVault = false;
             }
             else if (RbDestinationVault.IsChecked == true)
             {
                 TxtDestinationPath.Text = VaultDestinationPath;
                 TxtDestinationLabel.Text = "Chemin de destination (Vault):";
-                BtnBrowse.Content = "ℹ️ Info";
-                BtnBrowse.IsEnabled = true;
+                BtnBrowseLocal.Visibility = Visibility.Collapsed;
+                BtnBrowseVault.Visibility = Visibility.Visible;
                 IsDestinationVault = true;
+            }
+            
+            // Mettre à jour le chemin complet
+            UpdateFullDestinationPath();
+        }
+
+        private void RbExportFormat_Checked(object sender, RoutedEventArgs e)
+        {
+            // Mettre à jour le chemin complet quand le format change
+            UpdateFullDestinationPath();
+        }
+
+        private void BtnBrowseLocal_Click(object sender, RoutedEventArgs e)
+        {
+            // Utiliser la fenêtre personnalisée pour sélectionner un dossier
+            string selectedPath = FolderBrowserWindow.ShowDialog(this, TxtDestinationPath.Text);
+            
+            if (!string.IsNullOrEmpty(selectedPath) && Directory.Exists(selectedPath))
+            {
+                TxtDestinationPath.Text = selectedPath;
+                LocalDestinationPath = selectedPath;
+                UpdateFullDestinationPath();
             }
         }
 
-        private void BtnBrowse_Click(object sender, RoutedEventArgs e)
+        private void BtnBrowseVault_Click(object sender, RoutedEventArgs e)
         {
-            if (RbDestinationLocal.IsChecked == true)
-            {
-                // Parcourir pour sélectionner un dossier local
-                var dialog = new System.Windows.Forms.FolderBrowserDialog
-                {
-                    Description = "Sélectionner le dossier de destination",
-                    SelectedPath = TxtDestinationPath.Text,
-                    ShowNewFolderButton = true
-                };
-
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
-                {
-                    TxtDestinationPath.Text = dialog.SelectedPath;
-                    LocalDestinationPath = dialog.SelectedPath;
-                }
-            }
-            else
-            {
-                // Afficher info pour Vault
-                Shared.Views.XnrgyMessageBox.ShowInfo(
-                    "Destination Vault.\n\n" +
-                    $"Chemin Vault: {VaultDestinationPath}\n\n" +
-                    "Vous pouvez modifier le chemin Vault manuellement dans le champ ci-dessus.",
-                    "Destination Vault", this);
-            }
+            // Afficher info pour Vault
+            Shared.Views.XnrgyMessageBox.ShowInfo(
+                "Destination Vault.\n\n" +
+                $"Chemin Vault: {VaultDestinationPath}\n\n" +
+                "Vous pouvez modifier le chemin Vault manuellement dans le champ ci-dessus.",
+                "Destination Vault", this);
         }
 
         private void BtnCancel_Click(object sender, RoutedEventArgs e)
@@ -419,17 +523,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         /// <returns>Instance configurée ou null si annulé</returns>
         public static ExportOptionsWindow? ShowOptions(string sourceFileName, string sourcePath, Window? owner = null)
         {
-            var window = new ExportOptionsWindow();
-            window.Initialize(sourceFileName, sourcePath);
-
-            if (owner != null)
+            try
             {
-                window.Owner = owner;
+                var window = new ExportOptionsWindow();
+                
+                if (owner != null)
+                {
+                    window.Owner = owner;
+                }
+
+                // Initialiser après avoir défini le owner
+                window.Initialize(sourceFileName, sourcePath);
+
+                if (window.ShowDialog() == true && window.IsConfirmed)
+                {
+                    return window;
+                }
             }
-
-            if (window.ShowDialog() == true && window.IsConfirmed)
+            catch (Exception ex)
             {
-                return window;
+                System.Diagnostics.Debug.WriteLine($"Erreur ShowOptions: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
+                System.Windows.MessageBox.Show($"Erreur lors de l'ouverture de la fenêtre d'export: {ex.Message}", 
+                    "Erreur", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
             }
 
             return null;

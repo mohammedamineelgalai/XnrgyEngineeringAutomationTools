@@ -187,8 +187,8 @@
     <sys:String x:Key="WindowTitleIProperties" xmlns:sys="clr-namespace:System;assembly=mscorlib">iProperties Summary - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     <sys:String x:Key="WindowTitleCustomPropertyBatch" xmlns:sys="clr-namespace:System;assembly=mscorlib">Gestionnaire Proprietes - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     <sys:String x:Key="WindowTitleSmartProgress" xmlns:sys="clr-namespace:System;assembly=mscorlib">Progression - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
-    <!-- DXF Verifier (version 1.2.0 specifique) -->
-    <sys:String x:Key="WindowTitleDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">DXF Verifier - XEAT - v1.2.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
+    <!-- DXF Verifier -->
+    <sys:String x:Key="WindowTitleDXFVerifier" xmlns:sys="clr-namespace:System;assembly=mscorlib">DXF Verifier - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC</sys:String>
     
     <!-- ═══════════ TEXTES COPYRIGHT COMPLETS POUR BARRE COPYRIGHT ═══════════ -->
     <!-- Format: "[Module] - XEAT - v1.0.0 - R 2026-01-10 - By Mohammed Amine Elgalai - XNRGY CLIMATE SYSTEMS ULC" -->

@@ -126,7 +126,6 @@ namespace XnrgyEngineeringAutomationTools.Shared.Views
             _checklistItems["XnrgyAddins"] = (EmojiXnrgyAddins, StatusXnrgyAddins, ItemXnrgyAddins);
             _checklistItems["DxfVerifier"] = (EmojiDxfVerifier, StatusDxfVerifier, ItemDxfVerifier);
             _checklistItems["SmartTools"] = (EmojiSmartTools, StatusSmartTools, ItemSmartTools);
-            _checklistItems["BatchPrint"] = (EmojiBatchPrint, StatusBatchPrint, ItemBatchPrint);
         }
 
         private void InitializeTimer()
@@ -325,16 +324,18 @@ namespace XnrgyEngineeringAutomationTools.Shared.Views
                 _ => "⏳"
             };
 
-            // Mettre a jour le texte de statut
+            // Mettre a jour le texte de statut avec couleurs PLUS VISIBLES
             if (!string.IsNullOrEmpty(statusText))
             {
                 item.Status.Text = statusText;
+                item.Status.FontWeight = FontWeights.Bold;
                 item.Status.Foreground = status switch
                 {
-                    ChecklistStatus.Success => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50")),
-                    ChecklistStatus.Error => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F44336")),
-                    ChecklistStatus.InProgress => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2196F3")),
-                    _ => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#808080"))
+                    ChecklistStatus.Success => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00E676")),  // Vert vif
+                    ChecklistStatus.Error => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF5252")),    // Rouge vif
+                    ChecklistStatus.InProgress => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#40C4FF")), // Bleu clair vif
+                    ChecklistStatus.Warning => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFAB40")),  // Orange vif
+                    _ => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#B0B0B0"))
                 };
             }
 
@@ -399,15 +400,16 @@ namespace XnrgyEngineeringAutomationTools.Shared.Views
                 Text = $"[{timestamp}] {message}",
                 FontFamily = new FontFamily("Consolas"),
                 FontSize = 12,
-                Margin = new Thickness(10, 2, 10, 2),
+                FontWeight = FontWeights.SemiBold,
+                Margin = new Thickness(10, 3, 10, 3),
                 TextWrapping = TextWrapping.Wrap,
                 Foreground = level switch
                 {
-                    LogLevel.SUCCESS => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4CAF50")),
-                    LogLevel.ERROR => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F44336")),
-                    LogLevel.WARNING => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF9800")),
-                    LogLevel.INFO => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#4FC3F7")),
-                    LogLevel.DEBUG => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#9E9E9E")),
+                    LogLevel.SUCCESS => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00E676")),  // Vert vif
+                    LogLevel.ERROR => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF5252")),    // Rouge vif
+                    LogLevel.WARNING => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFAB40")),  // Orange vif
+                    LogLevel.INFO => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#40C4FF")),     // Bleu clair vif
+                    LogLevel.DEBUG => new SolidColorBrush((Color)ColorConverter.ConvertFromString("#B0B0B0")),    // Gris clair
                     _ => new SolidColorBrush(Colors.White)
                 }
             };

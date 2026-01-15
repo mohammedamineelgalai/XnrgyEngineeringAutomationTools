@@ -4558,14 +4558,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     Log($"Chemin Vault: {options.VaultDestinationPath}", "INFO");
                     Log($"Fichier temporaire local: {options.FullOutputPath}", "INFO");
 
-                    // Masquer les éléments de référence si demandé
-                    if (options.HideReferences)
-                    {
-                        Log("Masquage des éléments de référence...", "INFO");
-                        MasquerElementsReferenceForExport(doc);
-                    }
-
-                    // Activer représentation par défaut si demandé
+                    // Options préparatives inspirées de SmartSave
+                    // 1. Activer représentation par défaut si demandé
                     if (options.ActivateDefaultRepresentation)
                     {
                         try
@@ -4573,14 +4567,82 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                             ActivateDefaultRepresentation(doc);
                             Log("Représentation par défaut activée", "INFO");
                         }
-                        catch { }
+                        catch (Exception repEx)
+                        {
+                            Log($"Erreur activation représentation: {repEx.Message}", "WARNING");
+                        }
+                    }
+
+                    // 2. Afficher tous les composants masqués (hors références) si demandé
+                    if (options.ShowHiddenComponents)
+                    {
+                        try
+                        {
+                            dynamic cmdManager = inventorApp.CommandManager;
+                            dynamic controlDefs = cmdManager.ControlDefinitions;
+                            try
+                            {
+                                dynamic cmd = controlDefs.Item("AssemblyShowAllComponentsCmd");
+                                cmd.Execute();
+                                doc.Update();
+                            }
+                            catch
+                            {
+                                // Méthode alternative: parcourir récursivement
+                                if (doc.ComponentDefinition != null && doc.ComponentDefinition.Occurrences != null)
+                                {
+                                    AfficherTousComposantsRecursive(doc.ComponentDefinition.Occurrences);
+                                    doc.Update();
+                                }
+                            }
+                            Log("Composants masqués affichés", "INFO");
+                        }
+                        catch (Exception showEx)
+                        {
+                            Log($"Erreur affichage composants: {showEx.Message}", "WARNING");
+                        }
+                    }
+
+                    // 3. Réduire l'arborescence du navigateur si demandé
+                    if (options.CollapseBrowserTree)
+                    {
+                        try
+                        {
+                            CollapseTree(doc);
+                            Log("Arborescence du navigateur réduite", "INFO");
+                        }
+                        catch (Exception collapseEx)
+                        {
+                            Log($"Erreur réduction arborescence: {collapseEx.Message}", "WARNING");
+                        }
+                    }
+
+                    // 4. Appliquer vue isométrique si demandé
+                    if (options.ApplyIsometricView)
+                    {
+                        try
+                        {
+                            ApplyIsometricView(inventorApp);
+                            Log("Vue isométrique appliquée", "INFO");
+                        }
+                        catch (Exception isoEx)
+                        {
+                            Log($"Erreur vue isométrique: {isoEx.Message}", "WARNING");
+                        }
+                    }
+
+                    // 5. Masquer les éléments de référence si demandé
+                    if (options.HideReferences)
+                    {
+                        Log("Masquage des éléments de référence...", "INFO");
+                        MasquerElementsReferenceForExport(doc);
                     }
 
                     // Mise à jour du document
                     doc.Update2(true);
 
                     // Exécuter l'export selon le format (vers fichier temporaire local)
-                    if (options.Format.ToString() == "IPT")
+                    if (options.Format == ExportFormat.IPT)
                     {
                         ExportToIPT(doc, options.FullOutputPath, inventorApp);
                     }
@@ -4612,7 +4674,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                                 projectNumber: options.ProjectNumber,
                                 reference: options.Reference,
                                 module: module,
-                                checkInComment: $"Export {options.Format.ToString()} depuis Smart Tools"
+                                checkInComment: $"Export {options.Format} depuis Smart Tools"
                             );
 
                             if (uploadSuccess)
@@ -4659,7 +4721,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                     {
                         try
                         {
-                            if (options.Format.ToString() == "IPT")
+                            if (options.Format == ExportFormat.IPT)
                             {
                                 inventorApp.Documents.Open(options.FullOutputPath, true);
                             }
@@ -4733,48 +4795,220 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
         /// Exporte un assemblage IAM vers un fichier IPT avec plusieurs solides
         /// Utilise DerivedAssemblyComponents comme dans l'add-in original
         /// Code basé sur SmartToolsAmineAddin/Scripts/ExportIAMToIPT.vb
+        /// Séquence EXACTE de l'ancienne add-in:
+        /// 1. Créer nouveau document IPT
+        /// 2. Créer DerivedAssemblyDefinition depuis le chemin IAM
+        /// 3. Configurer le style kDeriveAsMultipleBodies
+        /// 4. Ajouter le DerivedAssemblyComponent
+        /// 5. BreakLinkToFile() pour rompre le lien
+        /// 6. Update2() pour appliquer les changements
+        /// 7. SaveAs() pour sauvegarder
+        /// 8. Close() pour fermer le document
         /// </summary>
         private void ExportToIPT(dynamic doc, string outputPath, dynamic inventorApp)
         {
+            dynamic partDoc = null;
             try
             {
                 Log("Démarrage export IAM → IPT avec DerivedAssemblyComponent", "INFO");
 
-                // 1. Créer un nouveau document IPT
-                // kPartDocumentObject = 12288
-                dynamic partDoc = inventorApp.Documents.Add(12288, "", true);
-                Log("Document IPT créé", "INFO");
+                // Vérifier que le document source est valide et enregistré
+                if (doc == null)
+                {
+                    throw new Exception("Le document source est null");
+                }
 
-                // 2. Récupérer le chemin source IAM
                 string iamPath = doc.FullFileName;
-                Log($"Chemin IAM source: {System.IO.Path.GetFileName(iamPath)}", "INFO");
-
-                // 3. Créer la définition de dérivation d'assemblage
-                // MÉTHODE CORRECTE : Utiliser DerivedAssemblyComponents (pas ShrinkwrapComponents)
-                dynamic partDef = partDoc.ComponentDefinition;
-                dynamic deriveDef = partDef.ReferenceComponents.DerivedAssemblyComponents.CreateDefinition(iamPath);
-                
-                if (deriveDef == null)
+                if (string.IsNullOrEmpty(iamPath))
                 {
-                    partDoc.Close(true);
-                    throw new Exception("Impossible de créer la définition de pièce dérivée");
+                    throw new Exception("Le document source n'a pas de chemin (pas encore enregistré)");
                 }
-                Log("DerivedAssemblyDefinition créée", "INFO");
 
-                // 4. Définir le style de dérivation pour corps multiples
+                // S'assurer que le chemin est absolu
+                if (!System.IO.Path.IsPathRooted(iamPath))
+                {
+                    // Si le chemin est relatif, essayer de le rendre absolu
+                    string currentDir = System.IO.Directory.GetCurrentDirectory();
+                    iamPath = System.IO.Path.Combine(currentDir, iamPath);
+                }
+
+                if (!System.IO.File.Exists(iamPath))
+                {
+                    throw new Exception($"Le fichier source n'existe pas: {iamPath}");
+                }
+
+                Log($"Chemin IAM source (absolu): {iamPath}", "INFO");
+
+                // 1. Ouvrir le template IPT XNRGY (au lieu de créer un nouveau document)
+                // Cette approche évite les problèmes de Documents.Add dans une application externe
+                try
+                {
+                    string templatePath = @"C:\Vault\Engineering\Inventor_Standards\Template\Xnrgy_Structural_Part_Template.ipt";
+                    
+                    Log($"Vérification du template: {System.IO.Path.GetFileName(templatePath)}", "INFO");
+                    
+                    // Vérifier que le template existe
+                    if (!System.IO.File.Exists(templatePath))
+                    {
+                        throw new Exception($"Le fichier template n'existe pas: {templatePath}");
+                    }
+                    
+                    Log("Ouverture du template IPT XNRGY...", "INFO");
+                    
+                    // Ouvrir le template (en lecture seule pour ne pas le modifier)
+                    // Documents.Open(FilePath, Visible)
+                    partDoc = inventorApp.Documents.Open(templatePath, true);
+                    
+                    if (partDoc == null)
+                    {
+                        throw new Exception("Échec de l'ouverture du template IPT (retour null)");
+                    }
+                    Log("Template IPT ouvert", "INFO");
+                }
+                catch (Exception openEx)
+                {
+                    Log($"Erreur ouverture template: {openEx.GetType().Name} - {openEx.Message}", "ERROR");
+                    if (openEx.InnerException != null)
+                    {
+                        Log($"Exception interne: {openEx.InnerException.Message}", "ERROR");
+                    }
+                    throw new Exception($"Erreur lors de l'ouverture du template IPT: {openEx.Message}", openEx);
+                }
+
+                // 2. Obtenir le ComponentDefinition du document IPT ouvert
+                dynamic partDef = null;
+                try
+                {
+                    partDef = partDoc.ComponentDefinition;
+                    if (partDef == null)
+                    {
+                        partDoc.Close(true);
+                        throw new Exception("Impossible d'obtenir le ComponentDefinition du document IPT");
+                    }
+                    Log("ComponentDefinition obtenu", "INFO");
+                }
+                catch (Exception defEx)
+                {
+                    if (partDoc != null) partDoc.Close(true);
+                    throw new Exception($"Erreur lors de l'accès au ComponentDefinition: {defEx.Message}", defEx);
+                }
+
+                // 3. Vérifier et nettoyer les composants dérivés existants dans le template (si nécessaire)
+                try
+                {
+                    dynamic refComponents = partDef.ReferenceComponents;
+                    if (refComponents != null)
+                    {
+                        dynamic derivedAssemblyComponents = refComponents.DerivedAssemblyComponents;
+                        if (derivedAssemblyComponents != null)
+                        {
+                            // Vérifier s'il y a des composants dérivés existants
+                            int count = derivedAssemblyComponents.Count;
+                            if (count > 0)
+                            {
+                                Log($"Template contient {count} composant(s) dérivé(s) existant(s) - suppression...", "INFO");
+                                // Supprimer les composants dérivés existants (en ordre inverse pour éviter les problèmes d'index)
+                                for (int i = count; i >= 1; i--)
+                                {
+                                    try
+                                    {
+                                        dynamic existingComp = derivedAssemblyComponents[i];
+                                        if (existingComp != null)
+                                        {
+                                            existingComp.Delete();
+                                        }
+                                    }
+                                    catch (Exception delEx)
+                                    {
+                                        Log($"Note lors de la suppression du composant {i}: {delEx.Message}", "WARNING");
+                                    }
+                                }
+                                Log("Composants dérivés existants supprimés", "INFO");
+                            }
+                        }
+                    }
+                }
+                catch (Exception cleanupEx)
+                {
+                    Log($"Note lors du nettoyage: {cleanupEx.Message}", "WARNING");
+                    // Continuer quand même
+                }
+
+                // 4. Créer la définition de dérivation d'assemblage
+                // MÉTHODE CORRECTE : Utiliser DerivedAssemblyComponents.CreateDefinition(iamPath)
+                dynamic deriveDef = null;
+                try
+                {
+                    dynamic refComponents = partDef.ReferenceComponents;
+                    if (refComponents == null)
+                    {
+                        partDoc.Close(true);
+                        throw new Exception("Impossible d'accéder à ReferenceComponents");
+                    }
+
+                    dynamic derivedAssemblyComponents = refComponents.DerivedAssemblyComponents;
+                    if (derivedAssemblyComponents == null)
+                    {
+                        partDoc.Close(true);
+                        throw new Exception("Impossible d'accéder à DerivedAssemblyComponents");
+                    }
+
+                    Log($"Création de DerivedAssemblyDefinition depuis: {System.IO.Path.GetFileName(iamPath)}", "INFO");
+                    deriveDef = derivedAssemblyComponents.CreateDefinition(iamPath);
+                    if (deriveDef == null)
+                    {
+                        partDoc.Close(true);
+                        throw new Exception("Impossible de créer la définition de pièce dérivée (CreateDefinition retourné null)");
+                    }
+                    Log("DerivedAssemblyDefinition créée", "INFO");
+                }
+                catch (Exception deriveEx)
+                {
+                    if (partDoc != null) partDoc.Close(true);
+                    throw new Exception($"Erreur lors de la création de DerivedAssemblyDefinition: {deriveEx.Message}", deriveEx);
+                }
+
+                // 5. Définir le style de dérivation pour corps multiples AVANT d'ajouter
                 // kDeriveAsMultipleBodies = 58112 (pour plusieurs solides)
-                deriveDef.DeriveStyle = 58112;
-                Log("Style de dérivation configuré: Multiple Bodies", "INFO");
-
-                // 5. Ajouter la définition à la pièce
-                dynamic derivedComponent = partDef.ReferenceComponents.DerivedAssemblyComponents.Add(deriveDef);
-                
-                if (derivedComponent == null)
+                try
+                {
+                    deriveDef.DeriveStyle = 58112;
+                    Log("Style de dérivation configuré: Multiple Bodies", "INFO");
+                }
+                catch (Exception styleEx)
                 {
                     partDoc.Close(true);
-                    throw new Exception("Impossible d'ajouter le DerivedAssemblyComponent");
+                    throw new Exception($"Erreur lors de la configuration du style de dérivation: {styleEx.Message}", styleEx);
                 }
-                Log("DerivedAssemblyComponent ajouté", "INFO");
+
+                // 6. Ajouter la définition à la pièce
+                dynamic derivedComponent = null;
+                try
+                {
+                    Log("Ajout du DerivedAssemblyComponent...", "INFO");
+                    dynamic refComponents = partDef.ReferenceComponents;
+                    dynamic derivedAssemblyComponents = refComponents.DerivedAssemblyComponents;
+                    
+                    // Ajouter le composant dérivé
+                    derivedComponent = derivedAssemblyComponents.Add(deriveDef);
+                    
+                    if (derivedComponent == null)
+                    {
+                        partDoc.Close(true);
+                        throw new Exception("Impossible d'ajouter le DerivedAssemblyComponent (Add retourné null)");
+                    }
+                    Log("DerivedAssemblyComponent ajouté avec succès", "INFO");
+                }
+                catch (Exception addEx)
+                {
+                    Log($"Détail erreur Add: {addEx.GetType().Name} - {addEx.Message}", "ERROR");
+                    if (addEx.InnerException != null)
+                    {
+                        Log($"Exception interne: {addEx.InnerException.Message}", "ERROR");
+                    }
+                    if (partDoc != null) partDoc.Close(true);
+                    throw new Exception($"Erreur lors de l'ajout du DerivedAssemblyComponent: {addEx.Message}", addEx);
+                }
 
                 // 6. SOLUTION CRITIQUE : Rompre le lien avec le fichier source
                 // Sans BreakLinkToFile(), le fichier IPT reste lié à l'assemblage IAM source
@@ -4791,20 +5025,67 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
                 }
 
                 // 7. Mettre à jour le document pour appliquer les changements
-                partDoc.Update2(true);
-                Log("Document mis à jour", "INFO");
+                try
+                {
+                    partDoc.Update2(true);
+                    Log("Document mis à jour (Update2)", "INFO");
+                }
+                catch (Exception updateEx)
+                {
+                    partDoc.Close(true);
+                    throw new Exception($"Erreur lors de la mise à jour du document: {updateEx.Message}", updateEx);
+                }
 
-                // 8. Sauvegarder le fichier IPT
-                partDoc.SaveAs(outputPath, false);
-                Log($"Fichier IPT sauvegardé: {System.IO.Path.GetFileName(outputPath)}", "SUCCESS");
+                // 8. Sauvegarder le fichier IPT (SaveAs ne détruit pas le template)
+                try
+                {
+                    // S'assurer que le répertoire de destination existe
+                    string destDir = System.IO.Path.GetDirectoryName(outputPath);
+                    if (!string.IsNullOrEmpty(destDir) && !System.IO.Directory.Exists(destDir))
+                    {
+                        System.IO.Directory.CreateDirectory(destDir);
+                    }
 
-                // 9. Fermer le document IPT
-                partDoc.Close(true);
-                Log("Document IPT fermé", "INFO");
+                    // SaveAs vers la destination (le template reste intact)
+                    partDoc.SaveAs(outputPath, false);
+                    Log($"Fichier IPT sauvegardé: {System.IO.Path.GetFileName(outputPath)}", "SUCCESS");
+                }
+                catch (Exception saveEx)
+                {
+                    partDoc.Close(true);
+                    throw new Exception($"Erreur lors de la sauvegarde du fichier IPT: {saveEx.Message}", saveEx);
+                }
+
+                // 9. Fermer le document IPT (sans sauvegarder le template)
+                try
+                {
+                    // Fermer sans sauvegarder (true = skip save) pour ne pas modifier le template
+                    partDoc.Close(true);
+                    Log("Document IPT fermé (template non modifié)", "INFO");
+                }
+                catch (Exception closeEx)
+                {
+                    Log($"Erreur lors de la fermeture du document: {closeEx.Message}", "WARNING");
+                    // Ne pas throw - le fichier est déjà sauvegardé
+                }
             }
             catch (Exception ex)
             {
+                // S'assurer de fermer le document en cas d'erreur
+                try
+                {
+                    if (partDoc != null)
+                    {
+                        partDoc.Close(true);
+                    }
+                }
+                catch { }
+
                 Log($"Erreur export IPT: {ex.Message}", "ERROR");
+                if (ex.InnerException != null)
+                {
+                    Log($"Détail: {ex.InnerException.Message}", "ERROR");
+                }
                 throw new Exception($"Erreur export IPT: {ex.Message}", ex);
             }
         }

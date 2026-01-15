@@ -735,8 +735,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
                         ProjectNumber = options.ProjectNumber,
                         Reference = options.Reference,
                         IsDestinationVault = options.IsDestinationVault,
-                        HideReferences = options.HideReferences,
                         ActivateDefaultRepresentation = options.ActivateDefaultRepresentation,
+                        ShowHiddenComponents = options.ShowHiddenComponents,
+                        CollapseBrowserTree = options.CollapseBrowserTree,
+                        ApplyIsometricView = options.ApplyIsometricView,
+                        HideReferences = options.HideReferences,
                         OpenAfterExport = options.OpenAfterExport
                     };
                 }
@@ -759,8 +762,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         public string ProjectNumber { get; set; } = "";
         public string Reference { get; set; } = "";
         public bool IsDestinationVault { get; set; } = false; // true = Vault, false = Local
-        public bool HideReferences { get; set; }
         public bool ActivateDefaultRepresentation { get; set; }
+        public bool ShowHiddenComponents { get; set; }
+        public bool CollapseBrowserTree { get; set; }
+        public bool ApplyIsometricView { get; set; }
+        public bool HideReferences { get; set; }
         public bool OpenAfterExport { get; set; }
     }
 }

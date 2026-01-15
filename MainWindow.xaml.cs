@@ -16,6 +16,7 @@ using XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views;
 using XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views;
 using XnrgyEngineeringAutomationTools.Modules.SmartTools.Views;
 using XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views;
+using XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views;
 
 namespace XnrgyEngineeringAutomationTools
 {
@@ -35,7 +36,6 @@ namespace XnrgyEngineeringAutomationTools
         // === CHEMINS DES APPLICATIONS ===
         private readonly string _basePath = @"c:\Users\mohammedamine.elgala\source\repos";
         private string VaultUploadExePath => Path.Combine(_basePath, @"VaultAutomationTool\bin\Release\VaultAutomationTool.exe");
-        private string DXFVerifierExePath => Path.Combine(_basePath, @"DXFVerifier\bin\Release\DXFVerifier.exe");
         
         // Checklist HVAC : Chemin dans le projet (migré)
         private string ChecklistHVACPath => Path.Combine(
@@ -1319,32 +1319,19 @@ namespace XnrgyEngineeringAutomationTools
 
         private void OpenDXFVerifier_Click(object sender, RoutedEventArgs e)
         {
-            AddLog("Lancement de DXF Verifier...", "START");
-            StatusText.Text = "Lancement de DXF Verifier...";
+            AddLog("Ouverture de DXF Verifier...", "START");
+            StatusText.Text = "Ouverture de DXF Verifier...";
             try
             {
-                if (File.Exists(DXFVerifierExePath))
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = DXFVerifierExePath,
-                        UseShellExecute = true
-                    });
-                    AddLog("DXFVerifier lance avec succes", "SUCCESS");
-                    AddLog("Chemin: " + DXFVerifierExePath, "INFO");
-                    StatusText.Text = "DXF Verifier lance";
-                }
-                else
-                {
-                    AddLog("ERREUR: Application non trouvee!", "CRITICAL");
-                    AddLog("Chemin attendu: " + DXFVerifierExePath, "ERROR");
-                    AddLog("Compilez le projet DXFVerifier d'abord", "WARN");
-                    StatusText.Text = "Erreur: Application non trouvee";
-                }
+                var dxfVerifierWindow = new DXFVerifierWindow();
+                dxfVerifierWindow.Owner = this;
+                dxfVerifierWindow.Show();
+                AddLog("[+] DXF Verifier ouvert avec succes", "SUCCESS");
+                StatusText.Text = "DXF Verifier ouvert";
             }
             catch (Exception ex)
             {
-                AddLog("Erreur lancement DXFVerifier: " + ex.Message, "CRITICAL");
+                AddLog("[-] Erreur ouverture DXFVerifier: " + ex.Message, "CRITICAL");
                 StatusText.Text = "Erreur";
             }
         }
@@ -1416,57 +1403,12 @@ namespace XnrgyEngineeringAutomationTools
             }
         }
 
-        private async void UpdateWorkspace_Click(object sender, RoutedEventArgs e)
+        private void UpdateWorkspace_Click(object sender, RoutedEventArgs e)
         {
             if (!CheckVaultConnection()) return;
             
-            AddLog("===============================================================", "INFO");
-            AddLog("DEMARRAGE MISE A JOUR DU WORKSPACE", "START");
-            AddLog("===============================================================", "INFO");
-            StatusText.Text = "Mise a jour du Workspace...";
-            ConnectButton.IsEnabled = false;
-            
-            try
-            {
-                int success = 0;
-                int total = _workspaceFolders.Length;
-                
-                foreach (var folder in _workspaceFolders)
-                {
-                    AddLog("GET: " + folder + "...", "INFO");
-                    StatusText.Text = "GET: " + folder;
-                    
-                    if (await _vaultService.GetFolderAsync(folder))
-                    {
-                        success++;
-                        AddLog("GET reussi: " + folder, "SUCCESS");
-                    }
-                    else
-                    {
-                        AddLog("GET echoue: " + folder, "ERROR");
-                    }
-                }
-                
-                AddLog("===============================================================", "INFO");
-                if (success == total)
-                {
-                    AddLog("MISE A JOUR TERMINEE: " + success + "/" + total + " dossiers", "SUCCESS");
-                }
-                else
-                {
-                    AddLog("MISE A JOUR PARTIELLE: " + success + "/" + total + " dossiers", "WARN");
-                }
-                AddLog("===============================================================", "INFO");
-                StatusText.Text = "Workspace mis a jour (" + success + "/" + total + ")";
-            }
-            catch (Exception ex)
-            {
-                AddLog("ERREUR CRITIQUE: " + ex.Message, "CRITICAL");
-            }
-            finally
-            {
-                ConnectButton.IsEnabled = true;
-            }
+            // Ouvrir la fenetre de mise a jour du workspace
+            ShowUpdateWorkspaceWindow();
         }
 
         private bool CheckVaultConnection()

@@ -33,8 +33,21 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
         private readonly TextBlock[] _stepTexts;
         private readonly TextBlock[] _stepDetails;
 
-        // Collection pour le journal
-        public ObservableCollection<string> LogEntries { get; } = new ObservableCollection<string>();
+        // Collection pour le journal avec couleurs
+        public ObservableCollection<LogEntry> LogEntries { get; } = new ObservableCollection<LogEntry>();
+
+        #endregion
+
+        #region Log Entry Class
+
+        /// <summary>
+        /// Classe pour les entrees de log avec couleur
+        /// </summary>
+        public class LogEntry
+        {
+            public string Message { get; set; } = "";
+            public SolidColorBrush Color { get; set; } = new SolidColorBrush(Colors.White);
+        }
 
         #endregion
 
@@ -332,53 +345,72 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
 
             if (iconBlock == null || textBlock == null) return;
 
-            // Mettre a jour l'icone selon le statut
+            // Mettre a jour l'icone selon le statut - COULEURS VIVES
             switch (status)
             {
                 case UpdateWorkspaceService.StepStatus.Pending:
                     iconBlock.Text = "⏳";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xCC, 0xCC, 0xCC));
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0xFF, 0xFF)); // Blanc
                     break;
 
                 case UpdateWorkspaceService.StepStatus.InProgress:
                     iconBlock.Text = "🔄";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD4)); // Bleu
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x40, 0xC4, 0xFF)); // Bleu clair vif
                     break;
 
                 case UpdateWorkspaceService.StepStatus.Completed:
                     iconBlock.Text = "✅";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x10, 0x7C, 0x10)); // Vert
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xE6, 0x76)); // Vert vif
                     break;
 
                 case UpdateWorkspaceService.StepStatus.Failed:
                     iconBlock.Text = "❌";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xC4, 0x2B, 0x1C)); // Rouge
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0x52, 0x52)); // Rouge vif
                     break;
 
                 case UpdateWorkspaceService.StepStatus.Warning:
                     iconBlock.Text = "⚠️";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0xA5, 0x00)); // Orange
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0xAB, 0x40)); // Orange vif
                     break;
 
                 case UpdateWorkspaceService.StepStatus.Skipped:
                     iconBlock.Text = "⏸️";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0x88)); // Gris
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xB0, 0xB0, 0xB0)); // Gris clair
                     break;
             }
 
-            // Mettre a jour le detail si fourni
+            // Mettre a jour le detail si fourni - avec couleur correspondante
             if (detailBlock != null && !string.IsNullOrEmpty(message))
             {
                 detailBlock.Text = $"({message})";
+                // Couleur du detail selon le statut
+                detailBlock.Foreground = status switch
+                {
+                    UpdateWorkspaceService.StepStatus.Completed => new SolidColorBrush(Color.FromRgb(0x00, 0xE6, 0x76)),
+                    UpdateWorkspaceService.StepStatus.InProgress => new SolidColorBrush(Color.FromRgb(0x40, 0xC4, 0xFF)),
+                    UpdateWorkspaceService.StepStatus.Failed => new SolidColorBrush(Color.FromRgb(0xFF, 0x52, 0x52)),
+                    UpdateWorkspaceService.StepStatus.Warning => new SolidColorBrush(Color.FromRgb(0xFF, 0xAB, 0x40)),
+                    _ => new SolidColorBrush(Color.FromRgb(0xB0, 0xB0, 0xB0))
+                };
             }
         }
 
         private void AddLog(string message, UpdateWorkspaceService.LogLevel level = UpdateWorkspaceService.LogLevel.INFO)
         {
             string timestamp = DateTime.Now.ToString("HH:mm:ss");
-            string formattedMessage = $"[{timestamp}] {message}";
+            string formattedMessage = $"[{timestamp}]    {message}";
             
-            LogEntries.Add(formattedMessage);
+            // Couleur selon le niveau de log
+            var color = level switch
+            {
+                UpdateWorkspaceService.LogLevel.SUCCESS => new SolidColorBrush(Color.FromRgb(0x00, 0xE6, 0x76)),  // Vert vif
+                UpdateWorkspaceService.LogLevel.ERROR => new SolidColorBrush(Color.FromRgb(0xFF, 0x52, 0x52)),    // Rouge vif
+                UpdateWorkspaceService.LogLevel.WARNING => new SolidColorBrush(Color.FromRgb(0xFF, 0xAB, 0x40)),  // Orange vif
+                UpdateWorkspaceService.LogLevel.INFO => new SolidColorBrush(Color.FromRgb(0x40, 0xC4, 0xFF)),     // Bleu clair vif
+                _ => new SolidColorBrush(Colors.White)
+            };
+            
+            LogEntries.Add(new LogEntry { Message = formattedMessage, Color = color });
 
             // Faire defiler vers le bas
             if (LogListBox.Items.Count > 0)

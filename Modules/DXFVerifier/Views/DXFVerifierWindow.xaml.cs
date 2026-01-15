@@ -22,12 +22,14 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 using System.Windows.Forms;
 using System.Windows.Media;
 using Microsoft.Win32;
 using XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services;
 using MessageBox = System.Windows.MessageBox;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
+using Binding = System.Windows.Data.Binding;
 
 namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 {
@@ -111,10 +113,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            LogMessage("[+] DXF-CSV vs PDF Verifier v1.2 initialise");
+            // Charger le logo XNRGY
+            LoadLogo();
+            
+            LogMessage("[+] DXF-CSV vs PDF Verifier v1.0 initialise");
             LogMessage("[i] Pret pour la detection de projet");
             BasePathTextBox.Text = BasePath;
             ShowStatus("Pret - Detectez un PDF ouvert ou selectionnez un projet manuellement", StatusType.Info);
+        }
+
+        private void LoadLogo()
+        {
+            try
+            {
+                string logoPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "xnrgy_logo.png");
+                if (System.IO.File.Exists(logoPath))
+                {
+                    LogoImage.Source = new System.Windows.Media.Imaging.BitmapImage(new Uri(logoPath, UriKind.Absolute));
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Erreur chargement logo: {ex.Message}");
+            }
         }
 
         #endregion
@@ -574,23 +595,23 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             TotalPdfQtyLabel.Text = totalPdfQty.ToString();
             TotalPdfTagsLabel.Text = totalPdfTags.ToString();
             
-            // Color based on match
+            // Color based on match - Update TextBlock foreground color
             if (totalCsvQty == totalPdfQty)
             {
-                TotalPdfQtyBorder.Background = new SolidColorBrush(Color.FromRgb(144, 238, 144)); // LightGreen
+                TotalPdfQtyLabel.Foreground = new SolidColorBrush(Color.FromRgb(144, 238, 144)); // LightGreen
             }
             else
             {
-                TotalPdfQtyBorder.Background = new SolidColorBrush(Color.FromRgb(255, 99, 71)); // Tomato
+                TotalPdfQtyLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 99, 71)); // Tomato
             }
             
             if (totalCsvTags == totalPdfTags)
             {
-                TotalPdfTagsBorder.Background = new SolidColorBrush(Color.FromRgb(144, 238, 144)); // LightGreen
+                TotalPdfTagsLabel.Foreground = new SolidColorBrush(Color.FromRgb(144, 238, 144)); // LightGreen
             }
             else
             {
-                TotalPdfTagsBorder.Background = new SolidColorBrush(Color.FromRgb(255, 165, 0)); // Orange
+                TotalPdfTagsLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 165, 0)); // Orange
             }
             
             // PDF Pages - Use static property from PdfAnalyzerService
@@ -634,32 +655,240 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 
         private void SelectProjectButton_Click(object sender, RoutedEventArgs e)
         {
-            using (var dialog = new FolderBrowserDialog())
+            LogMessage("[>] Chargement de la liste des projets...");
+            ShowStatus("Chargement des projets...", StatusType.Info);
+            
+            try
             {
-                dialog.Description = "Selectionner le dossier du module (ex: M01)";
-                dialog.SelectedPath = BasePath;
-                if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                var basePath = BasePathTextBox.Text;
+                if (!Directory.Exists(basePath))
                 {
-                    var selectedPath = dialog.SelectedPath;
-                    var projectInfo = ExtractProjectInfoFromPath(selectedPath);
-                    
-                    if (projectInfo != null)
+                    MessageBox.Show($"Le chemin de base n'existe pas:\n{basePath}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+                
+                // Load available projects
+                var projects = LoadAvailableProjects(basePath);
+                
+                if (projects.Count == 0)
+                {
+                    LogMessage("[!] Aucun projet trouve dans le chemin de base");
+                    ShowStatus("Aucun projet trouve", StatusType.Warning);
+                    MessageBox.Show("Aucun projet trouve dans le chemin de base.\n\n" +
+                                  "Structure attendue: Projects\\[XXXXX]\\REF[XX]\\M[XX]",
+                                  "Aucun projet", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+                
+                LogMessage($"[+] {projects.Count} modules trouves dans {projects.Select(p => p.ProjectNumber).Distinct().Count()} projets");
+                
+                // Create selection dialog
+                var dialog = new Window
+                {
+                    Title = "Selection du Projet - DXF Verifier",
+                    Width = 800,
+                    Height = 550,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = this,
+                    Background = new SolidColorBrush(Color.FromRgb(30, 30, 46)),
+                    ResizeMode = ResizeMode.CanResize
+                };
+                
+                var mainGrid = new Grid();
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+                mainGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                
+                // Create ListView
+                var listView = new System.Windows.Controls.ListView
+                {
+                    Margin = new Thickness(15),
+                    Background = new SolidColorBrush(Color.FromRgb(37, 37, 54)),
+                    Foreground = Brushes.White,
+                    BorderBrush = new SolidColorBrush(Color.FromRgb(74, 127, 191)),
+                    BorderThickness = new Thickness(2)
+                };
+                
+                // Create GridView for columns
+                var gridView = new GridView();
+                gridView.Columns.Add(new GridViewColumn { Header = "Projet", DisplayMemberBinding = new System.Windows.Data.Binding("ProjectNumber"), Width = 100 });
+                gridView.Columns.Add(new GridViewColumn { Header = "Reference", DisplayMemberBinding = new System.Windows.Data.Binding("Reference"), Width = 100 });
+                gridView.Columns.Add(new GridViewColumn { Header = "Module", DisplayMemberBinding = new System.Windows.Data.Binding("ModuleNumber"), Width = 100 });
+                gridView.Columns.Add(new GridViewColumn { Header = "Chemin", DisplayMemberBinding = new System.Windows.Data.Binding("ProjectPath"), Width = 450 });
+                listView.View = gridView;
+                
+                // Add items
+                foreach (var project in projects.OrderByDescending(p => p.ProjectNumber).ThenBy(p => p.Reference).ThenBy(p => p.ModuleNumber))
+                {
+                    listView.Items.Add(project);
+                }
+                
+                Grid.SetRow(listView, 0);
+                mainGrid.Children.Add(listView);
+                
+                // Button panel
+                var buttonPanel = new StackPanel
+                {
+                    Orientation = System.Windows.Controls.Orientation.Horizontal,
+                    HorizontalAlignment = System.Windows.HorizontalAlignment.Right,
+                    Margin = new Thickness(15, 10, 15, 15)
+                };
+                
+                var btnSelect = new System.Windows.Controls.Button
+                {
+                    Content = "Selectionner",
+                    Width = 120,
+                    Height = 35,
+                    Margin = new Thickness(0, 0, 10, 0),
+                    Background = new SolidColorBrush(Color.FromRgb(16, 124, 16)),
+                    Foreground = Brushes.White,
+                    FontWeight = FontWeights.Bold,
+                    Cursor = System.Windows.Input.Cursors.Hand
+                };
+                
+                var btnCancel = new System.Windows.Controls.Button
+                {
+                    Content = "Annuler",
+                    Width = 100,
+                    Height = 35,
+                    Background = new SolidColorBrush(Color.FromRgb(45, 45, 68)),
+                    Foreground = Brushes.White,
+                    Cursor = System.Windows.Input.Cursors.Hand
+                };
+                
+                ProjectPathInfo selectedProject = null;
+                
+                btnSelect.Click += (s, args) =>
+                {
+                    if (listView.SelectedItem is ProjectPathInfo selected)
                     {
-                        ProjectNumberTextBox.Text = projectInfo.ProjectNumber;
-                        ReferenceTextBox.Text = projectInfo.Reference;
-                        ModuleNumberTextBox.Text = projectInfo.ModuleNumber;
-                        
-                        LogMessage($"[+] Projet selectionne: {projectInfo.ProjectNumber} REF{projectInfo.Reference} M{projectInfo.ModuleNumber}");
-                        AutoDetectFiles(projectInfo);
-                        ShowStatus($"Projet selectionne: {projectInfo.ProjectNumber}", StatusType.Success);
+                        selectedProject = selected;
+                        dialog.DialogResult = true;
+                        dialog.Close();
                     }
                     else
                     {
-                        LogMessage("[!] Impossible d'extraire les infos projet du chemin selectionne");
-                        ShowStatus("Chemin non reconnu - Utilisez le format: Projects/XXXXX/REFXX/MXX", StatusType.Warning);
+                        MessageBox.Show("Veuillez selectionner un projet.", "Selection requise", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    }
+                };
+                
+                btnCancel.Click += (s, args) =>
+                {
+                    dialog.DialogResult = false;
+                    dialog.Close();
+                };
+                
+                // Double-click to select
+                listView.MouseDoubleClick += (s, args) =>
+                {
+                    if (listView.SelectedItem is ProjectPathInfo selected)
+                    {
+                        selectedProject = selected;
+                        dialog.DialogResult = true;
+                        dialog.Close();
+                    }
+                };
+                
+                buttonPanel.Children.Add(btnSelect);
+                buttonPanel.Children.Add(btnCancel);
+                
+                Grid.SetRow(buttonPanel, 1);
+                mainGrid.Children.Add(buttonPanel);
+                
+                dialog.Content = mainGrid;
+                
+                if (dialog.ShowDialog() == true && selectedProject != null)
+                {
+                    // Extract reference number (remove REF prefix)
+                    var refNumber = selectedProject.Reference;
+                    if (refNumber.StartsWith("REF", StringComparison.OrdinalIgnoreCase))
+                        refNumber = refNumber.Substring(3);
+                    
+                    ProjectNumberTextBox.Text = selectedProject.ProjectNumber;
+                    ReferenceTextBox.Text = refNumber;
+                    ModuleNumberTextBox.Text = selectedProject.ModuleNumber;
+                    
+                    LogMessage($"[+] Projet selectionne: {selectedProject.ProjectNumber} REF{refNumber} {selectedProject.ModuleNumber}");
+                    
+                    // Auto-detect files
+                    var projectInfo = new ProjectPathInfo
+                    {
+                        ProjectNumber = selectedProject.ProjectNumber,
+                        Reference = refNumber,
+                        ModuleNumber = selectedProject.ModuleNumber.StartsWith("M") ? selectedProject.ModuleNumber.Substring(1) : selectedProject.ModuleNumber,
+                        BasePath = selectedProject.ProjectPath
+                    };
+                    AutoDetectFiles(projectInfo);
+                    
+                    ShowStatus($"Projet selectionne: {selectedProject.ProjectNumber}", StatusType.Success);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"[-] Erreur lors du chargement des projets: {ex.Message}");
+                ShowStatus("Erreur lors du chargement des projets", StatusType.Error);
+                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Load all available projects from the base path
+        /// Structure: Projects/[XXXXX]/REF[XX]/M[XX]
+        /// </summary>
+        private List<ProjectPathInfo> LoadAvailableProjects(string basePath)
+        {
+            var projects = new List<ProjectPathInfo>();
+            
+            if (!Directory.Exists(basePath))
+                return projects;
+            
+            try
+            {
+                // Get all project directories (4-6 digits)
+                foreach (var projectDir in Directory.GetDirectories(basePath))
+                {
+                    var projectNumber = Path.GetFileName(projectDir);
+                    if (!Regex.IsMatch(projectNumber, @"^\d{4,6}$"))
+                        continue;
+                    
+                    try
+                    {
+                        // Get all reference directories (REF01, REF02, etc.)
+                        foreach (var refDir in Directory.GetDirectories(projectDir))
+                        {
+                            var refName = Path.GetFileName(refDir);
+                            if (!Regex.IsMatch(refName, @"^REF\d{1,2}$", RegexOptions.IgnoreCase))
+                                continue;
+                            
+                            // Get all module directories (M01, M02, etc.)
+                            foreach (var moduleDir in Directory.GetDirectories(refDir))
+                            {
+                                var moduleName = Path.GetFileName(moduleDir);
+                                if (!Regex.IsMatch(moduleName, @"^M\d{1,2}$", RegexOptions.IgnoreCase))
+                                    continue;
+                                
+                                projects.Add(new ProjectPathInfo
+                                {
+                                    ProjectNumber = projectNumber,
+                                    Reference = refName,
+                                    ModuleNumber = moduleName,
+                                    ProjectPath = moduleDir,
+                                    BasePath = moduleDir
+                                });
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Skip directories we can't access
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                LogMessage($"[!] Erreur scan projets: {ex.Message}");
+            }
+            
+            return projects;
         }
 
         private void CsvBrowseButton_Click(object sender, RoutedEventArgs e)
@@ -833,6 +1062,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             }
         }
 
+        private void ClearLogButton_Click(object sender, RoutedEventArgs e)
+        {
+            LogTextBox.Clear();
+            _logBuilder.Clear();
+            LogMessage("[i] Journal efface");
+        }
+
         #endregion
 
         #region Status Display
@@ -880,6 +1116,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         public string Reference { get; set; } = string.Empty;
         public string ModuleNumber { get; set; } = string.Empty;
         public string BasePath { get; set; } = string.Empty;
+        public string ProjectPath { get; set; } = string.Empty;
     }
 
     /// <summary>

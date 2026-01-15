@@ -15,6 +15,7 @@
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <ApplicationIcon>Assets\Icons\XnrgyTools.ico</ApplicationIcon>
     <LangVersion>10.0</LangVersion>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <!-- Configuration Debug x64 -->
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
@@ -118,9 +119,10 @@
     <Reference Include="System.ComponentModel.Annotations, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.ComponentModel.Annotations.5.0.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
     </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
+    <Reference Include="System.Memory, Version=4.0.2.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.Memory.4.6.0\lib\net462\System.Memory.dll</HintPath>
     </Reference>
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
@@ -310,16 +312,20 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Modules\SmartTools\Views\FolderBrowserWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <!-- ========== MODULE: UPDATE WORKSPACE ========== -->
     <Page Include="Modules\UpdateWorkspace\Views\UpdateWorkspaceWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <!-- ========== MODULE: DXF VERIFIER (DISABLED - Missing NuGet packages) ========== -->
-    <!-- <Page Include="Modules\DXFVerifier\Views\DXFVerifierWindow.xaml">
+    <!-- ========== MODULE: DXF VERIFIER ========== -->
+    <Page Include="Modules\DXFVerifier\Views\DXFVerifierWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
-    </Page> -->
+    </Page>
     <!-- ========== STYLES ========== -->
     <Page Include="Styles\XnrgyStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -449,20 +455,24 @@
       <DependentUpon>ExportOptionsWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Modules\SmartTools\Views\FolderBrowserWindow.xaml.cs">
+      <DependentUpon>FolderBrowserWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Modules\SmartTools\Services\*.cs" />
     <!-- ========== CODE-BEHIND: MODULE UPDATE WORKSPACE ========== -->
     <Compile Include="Modules\UpdateWorkspace\Views\UpdateWorkspaceWindow.xaml.cs">
       <DependentUpon>UpdateWorkspaceWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <!-- ========== CODE-BEHIND: MODULE DXF VERIFIER (DISABLED - Missing NuGet packages) ========== -->
-    <!-- <Compile Include="Modules\DXFVerifier\Views\DXFVerifierWindow.xaml.cs">
+    <!-- ========== CODE-BEHIND: MODULE DXF VERIFIER ========== -->
+    <Compile Include="Modules\DXFVerifier\Views\DXFVerifierWindow.xaml.cs">
       <DependentUpon>DXFVerifierWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Modules\DXFVerifier\Services\PdfAnalyzerService.cs" />
     <Compile Include="Modules\DXFVerifier\Services\ExcelManagerService.cs" />
-    <Compile Include="Modules\DXFVerifier\Services\PdfFormFillerService.cs" /> -->
+    <Compile Include="Modules\DXFVerifier\Services\PdfFormFillerService.cs" />
     <!-- ========== CORE CODE ========== -->
     <Compile Include="ViewModels\*.cs" />
     <Compile Include="Models\*.cs" />

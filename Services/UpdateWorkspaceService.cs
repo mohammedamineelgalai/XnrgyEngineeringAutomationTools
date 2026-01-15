@@ -37,11 +37,11 @@ namespace XnrgyEngineeringAutomationTools.Services
             @"C:\Vault\Engineering\Library\Xnrgy_Module\"
         };
 
-        // Plugins a copier
+        // Plugins a copier (depuis Application_Plugins)
         private static readonly (string SourceSubPath, string DestFolder)[] PluginCopyPaths = new[]
         {
-            (@"Automation_Standard\Xnrgy_Software\SIBL_XNRGY_ADDINS_2026", "SIBL_XNRGY_ADDINS_2026"),
-            (@"Automation_Standard\Xnrgy_Software\XNRGY_ADDINS_2026", "XNRGY_ADDINS_2026")
+            (@"Automation_Standard\Application_Plugins\SIBL_XNRGY_ADDINS_2026", "SIBL_XNRGY_ADDINS_2026"),
+            (@"Automation_Standard\Application_Plugins\XNRGY_ADDINS_2026", "XNRGY_ADDINS_2026")
         };
 
         // Dossier ApplicationPlugins d'Autodesk
@@ -54,13 +54,11 @@ namespace XnrgyEngineeringAutomationTools.Services
             "Automation_Data"
         };
 
-        // Installateurs silencieux
-        private static readonly (string RelativePath, string Arguments)[] SilentInstallers = new[]
-        {
-            (@"Automation_Standard\Xnrgy_Software\Setup\DXF-CSV_vs_PDF_Verifier_V1.2_Setup_2025.exe", "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"),
-            (@"Automation_Standard\Xnrgy_Software\Setup\SetupSmartToolsAmineAddin_V1.7.exe", "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART"),
-            (@"Automation_Standard\Xnrgy_Software\XnBatchPrint\setup.exe", "/S /VERYSILENT /SUPPRESSMSGBOXES /NORESTART")
-        };
+        // Dossier contenant les installateurs (scan automatique)
+        private const string INSTALLERS_FOLDER = @"C:\Vault\Engineering\Inventor_Standards\Automation_Standard\Application_Plugins\XNRGY_ADDINS_2026\Xnrgy_Software";
+        
+        // Arguments par defaut pour les installateurs Inno Setup
+        private const string SILENT_INSTALL_ARGS = "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP-";
 
         #endregion
 
@@ -108,6 +106,44 @@ namespace XnrgyEngineeringAutomationTools.Services
             try
             {
                 Log("[>] Demarrage de la mise a jour du workspace...");
+
+                // Verifier si Inventor est en cours (bloquerait les fichiers)
+                var inventorProcess = Process.GetProcessesByName("Inventor").FirstOrDefault();
+                if (inventorProcess != null)
+                {
+                    Log("[!] Inventor detecte en cours d'execution", LogLevel.WARNING);
+                    Log("[>] Fermeture d'Inventor pour permettre la mise a jour...");
+                    
+                    try
+                    {
+                        // Demander fermeture propre via COM si possible
+                        try
+                        {
+                            var inventorApp = (Inventor.Application)System.Runtime.InteropServices.Marshal.GetActiveObject("Inventor.Application");
+                            inventorApp.Quit();
+                            Log("[+] Commande de fermeture envoyee a Inventor");
+                        }
+                        catch
+                        {
+                            // Si COM echoue, fermer le processus
+                            inventorProcess.CloseMainWindow();
+                        }
+                        
+                        // Attendre la fermeture (max 30 secondes)
+                        bool closed = await Task.Run(() => inventorProcess.WaitForExit(30000), cancellationToken);
+                        if (!closed)
+                        {
+                            inventorProcess.Kill();
+                            await Task.Delay(2000, cancellationToken);
+                        }
+                        Log("[+] Inventor ferme avec succes");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"[!] Impossible de fermer Inventor: {ex.Message}", LogLevel.WARNING);
+                        Log("[!] Certains fichiers pourraient etre verouilles", LogLevel.WARNING);
+                    }
+                }
 
                 // Etape 1: Verifier la connexion Vault
                 UpdateStep(1, StepStatus.InProgress, "Verification de la connexion...");
@@ -159,7 +195,18 @@ namespace XnrgyEngineeringAutomationTools.Services
                     cancellationToken.ThrowIfCancellationRequested();
                 }
 
-                // Etapes 6-7: Copier les plugins
+                // Etapes 6-7: Copier les plugins (necessite droits admin)
+                bool isAdmin = new System.Security.Principal.WindowsPrincipal(
+                    System.Security.Principal.WindowsIdentity.GetCurrent())
+                    .IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+
+                if (!isAdmin)
+                {
+                    Log("[!] L'application n'a pas les droits administrateur", LogLevel.WARNING);
+                    Log("[!] La copie des plugins et l'installation peuvent echouer", LogLevel.WARNING);
+                    Log("[i] Relancez l'application en tant qu'administrateur pour cette fonctionnalite");
+                }
+
                 for (int i = 0; i < PluginCopyPaths.Length; i++)
                 {
                     int stepNumber = i + 6; // Etapes 6, 7
@@ -201,9 +248,9 @@ namespace XnrgyEngineeringAutomationTools.Services
                     
                     if (installResult.Success)
                     {
-                        UpdateStep(8, StepStatus.Completed, $"{installResult.SuccessCount}/{SilentInstallers.Length} installes");
+                        UpdateStep(8, StepStatus.Completed, $"{installResult.SuccessCount}/{installResult.TotalCount} installes");
                         result.InstalledTools = installResult.SuccessCount;
-                        Log($"[+] {installResult.SuccessCount} outils installes avec succes");
+                        Log($"[+] {installResult.SuccessCount}/{installResult.TotalCount} outils installes avec succes");
                     }
                     else
                     {
@@ -560,7 +607,8 @@ namespace XnrgyEngineeringAutomationTools.Services
         #region Silent Installers
 
         /// <summary>
-        /// Execute les installateurs silencieux
+        /// Execute les installateurs silencieux - SCALABLE
+        /// Scanne automatiquement le dossier Xnrgy_Software pour tous les .exe
         /// </summary>
         private async Task<InstallResult> RunSilentInstallersAsync(CancellationToken cancellationToken)
         {
@@ -568,42 +616,119 @@ namespace XnrgyEngineeringAutomationTools.Services
             int successCount = 0;
             var errors = new List<string>();
 
-            foreach (var (relativePath, arguments) in SilentInstallers)
+            // Enlever les attributs ReadOnly des fichiers existants dans ApplicationPlugins
+            // Car Vault les telecharge souvent en ReadOnly
+            try
+            {
+                var pluginPaths = new[]
+                {
+                    @"C:\ProgramData\Autodesk\ApplicationPlugins\XNRGY_ADDINS_2026",
+                    @"C:\ProgramData\Autodesk\ApplicationPlugins\SIBL_XNRGY_ADDINS_2026"
+                };
+                
+                foreach (var pluginPath in pluginPaths)
+                {
+                    if (Directory.Exists(pluginPath))
+                    {
+                        foreach (var file in Directory.GetFiles(pluginPath, "*.*", SearchOption.AllDirectories))
+                        {
+                            try
+                            {
+                                var fi = new FileInfo(file);
+                                if (fi.IsReadOnly)
+                                {
+                                    fi.IsReadOnly = false;
+                                }
+                            }
+                            catch { /* Ignorer les erreurs individuelles */ }
+                        }
+                    }
+                }
+                Log("   [i] Attributs ReadOnly enleves des plugins existants");
+            }
+            catch (Exception ex)
+            {
+                Log($"   [!] Impossible d'enlever ReadOnly: {ex.Message}", LogLevel.WARNING);
+            }
+
+            // Scanner dynamiquement le dossier Xnrgy_Software pour tous les .exe
+            var installers = new List<string>();
+            
+            if (Directory.Exists(INSTALLERS_FOLDER))
+            {
+                // Chercher tous les Setup*.exe dans les sous-dossiers
+                foreach (var subDir in Directory.GetDirectories(INSTALLERS_FOLDER))
+                {
+                    var exeFiles = Directory.GetFiles(subDir, "*.exe", SearchOption.TopDirectoryOnly)
+                        .Where(f => !Path.GetFileName(f).StartsWith("unins", StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                    
+                    installers.AddRange(exeFiles);
+                }
+                
+                Log($"   [i] {installers.Count} installateur(s) detecte(s) dans Xnrgy_Software");
+            }
+            else
+            {
+                Log($"   [!] Dossier introuvable: {INSTALLERS_FOLDER}", LogLevel.WARNING);
+            }
+
+            // Executer chaque installateur
+            foreach (var fullPath in installers)
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                string fullPath = Path.Combine(
-                    @"C:\Vault\Engineering\Inventor_Standards",
-                    relativePath);
-
                 var installerName = Path.GetFileName(fullPath);
                 Log($"   [>] Installation: {installerName}");
-
-                if (!File.Exists(fullPath))
-                {
-                    Log($"   [!] Installateur non trouve: {installerName}", LogLevel.WARNING);
-                    errors.Add($"Non trouve: {installerName}");
-                    continue;
-                }
 
                 try
                 {
                     ReportProgress(0, $"Installation de {installerName}...", installerName);
 
+                    // Verifier si on est deja admin
+                    bool isAdmin = new System.Security.Principal.WindowsPrincipal(
+                        System.Security.Principal.WindowsIdentity.GetCurrent())
+                        .IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = fullPath,
+                        Arguments = SILENT_INSTALL_ARGS,
+                        WindowStyle = ProcessWindowStyle.Hidden,
+                        CreateNoWindow = true
+                    };
+
+                    if (isAdmin)
+                    {
+                        // Deja admin - lancer directement sans shell
+                        startInfo.UseShellExecute = false;
+                        startInfo.RedirectStandardOutput = true;
+                        startInfo.RedirectStandardError = true;
+                    }
+                    else
+                    {
+                        // Pas admin - demander elevation via shell
+                        startInfo.UseShellExecute = true;
+                        startInfo.Verb = "runas";
+                    }
+
                     var process = new Process
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = fullPath,
-                            Arguments = arguments,
-                            UseShellExecute = true,
-                            WindowStyle = ProcessWindowStyle.Hidden,
-                            Verb = "runas" // Demander elevation si necessaire
-                        },
+                        StartInfo = startInfo,
                         EnableRaisingEvents = true
                     };
 
-                    process.Start();
+                    try
+                    {
+                        process.Start();
+                    }
+                    catch (System.ComponentModel.Win32Exception w32ex) when (w32ex.NativeErrorCode == 1223)
+                    {
+                        // L'utilisateur a annule la demande UAC
+                        Log($"   [!] Installation annulee par l'utilisateur: {installerName}", LogLevel.WARNING);
+                        errors.Add($"Annule: {installerName}");
+                        continue;
+                    }
 
                     // Attendre avec timeout de 2 minutes
                     bool exited = await Task.Run(() => process.WaitForExit(120000), cancellationToken);
@@ -618,6 +743,18 @@ namespace XnrgyEngineeringAutomationTools.Services
                     {
                         successCount++;
                         Log($"   [+] {installerName} installe (code: {process.ExitCode})");
+                    }
+                    else if (process.ExitCode == 5)
+                    {
+                        // Code 5 = Acces refuse - fichier verrouille ou droits insuffisants
+                        Log($"   [!] Acces refuse pour {installerName} - fermer Inventor et reessayer", LogLevel.WARNING);
+                        errors.Add($"Acces refuse: {installerName}");
+                    }
+                    else if (process.ExitCode == 1602 || process.ExitCode == 1603)
+                    {
+                        // Erreurs MSI courantes
+                        Log($"   [!] Installation annulee ou echouee: {installerName}", LogLevel.WARNING);
+                        errors.Add($"Echec MSI: {installerName}");
                     }
                     else
                     {
@@ -636,6 +773,7 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
 
             result.SuccessCount = successCount;
+            result.TotalCount = installers.Count;
             result.Success = errors.Count == 0;
             if (errors.Count > 0)
             {
@@ -677,6 +815,7 @@ namespace XnrgyEngineeringAutomationTools.Services
         {
             public bool Success { get; set; }
             public int SuccessCount { get; set; }
+            public int TotalCount { get; set; }
             public string? ErrorMessage { get; set; }
         }
 

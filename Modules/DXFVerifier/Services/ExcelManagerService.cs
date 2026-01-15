@@ -103,13 +103,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
                             if (int.TryParse(qtyStr, out quantity) && quantity > 0)
                             {
                                 // CRITIQUE: Si ce tag existe déjà, nous prenons la PREMIÈRE occurrence
-                                if (!tagsDict.TryAdd(tag, quantity))
+                                // NOTE: ContainsKey + Add remplace TryAdd (non disponible en .NET 4.8)
+                                if (tagsDict.ContainsKey(tag))
                                 {
                                     Log("FileIO", $"[!] ATTENTION: Tag duplique dans le CSV - {tag}, " +
                                         $"Valeur originale: {tagsDict[tag]}, Nouvelle valeur ignoree: {quantity}");
                                 }
                                 else
                                 {
+                                    tagsDict.Add(tag, quantity);
                                     // Créer l'objet DxfItem avec valeur exacte du CSV
                                     var dxfItem = new DxfItem
                                     {
@@ -631,7 +633,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
 
                     if (int.TryParse(qtyStr, out quantity) && quantity > 0)
                     {
-                        csvDict.TryAdd(tag, new PdfAnalyzerService.CsvRow(tag, quantity, material));
+                        // NOTE: ContainsKey + Add remplace TryAdd (non disponible en .NET 4.8)
+                        if (!csvDict.ContainsKey(tag))
+                        {
+                            csvDict.Add(tag, new PdfAnalyzerService.CsvRow(tag, quantity, material));
+                        }
                     }
                 }
             }
