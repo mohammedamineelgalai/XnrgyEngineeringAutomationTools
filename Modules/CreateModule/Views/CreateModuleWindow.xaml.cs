@@ -502,9 +502,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
                 
                 if (RunVaultName != null && RunUserName != null && RunStatus != null)
                 {
-                    RunVaultName.Text = isConnected ? $" Vault : {vaultName}  /  " : " Vault : --  /  ";
-                    RunUserName.Text = isConnected ? $" Utilisateur : {userName}  /  " : " Utilisateur : --  /  ";
-                    RunStatus.Text = isConnected ? " Statut : Connecte" : " Statut : Deconnecte";
+                    RunVaultName.Text = isConnected ? $" Vault: {vaultName}" : " Vault: --";
+                    RunUserName.Text = isConnected ? $" {userName}" : " --";
+                    RunStatus.Text = isConnected ? " Connecte" : " Deconnecte";
                 }
             });
         }

@@ -108,9 +108,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock x:Name="StatusText" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center">
-                            <Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/>
-                            <Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/>
-                            <Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
+                            <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault: --" Foreground="White"/><Run Text="  |  👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" --" Foreground="White"/><Run Text="  |  📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Deconnecte" Foreground="White"/>
                         </TextBlock>
                     </StackPanel>
                 </Border>

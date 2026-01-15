@@ -515,7 +515,7 @@
                     <StackPanel Orientation="Horizontal">
                         <Ellipse x:Name="StatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                         <TextBlock x:Name="StatusText" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center">
-                            <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/><Run Text="👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/><Run Text="📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
+                            <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault: --" Foreground="White"/><Run Text="  |  👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" --" Foreground="White"/><Run Text="  |  📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Deconnecte" Foreground="White"/>
                         </TextBlock>
                     </StackPanel>
                 </Border>
@@ -598,6 +598,7 @@
                     <!-- Filtre Extension (chargé dynamiquement) -->
                     <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
                     <ComboBox x:Name="CmbExtension" Width="100" Height="32" VerticalContentAlignment="Center"
+                              Style="{StaticResource ModernComboBox}"
                               SelectionChanged="CmbExtension_SelectionChanged">
                         <ComboBoxItem Content="Tous" IsSelected="True"/>
                     </ComboBox>
@@ -605,6 +606,7 @@
                     <!-- Filtre Statut -->
                     <TextBlock Text="🔄 Statut:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
                     <ComboBox x:Name="CmbState" Width="120" Height="32" VerticalContentAlignment="Center"
+                              Style="{StaticResource ModernComboBox}"
                               SelectionChanged="CmbState_SelectionChanged">
                         <ComboBoxItem Content="Tous" IsSelected="True"/>
                         <ComboBoxItem Content="En attente"/>

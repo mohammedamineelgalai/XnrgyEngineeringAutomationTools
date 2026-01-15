@@ -129,9 +129,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
             {
                 _isVaultConnected = true;
                 VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(16, 124, 16)); // Vert
-                RunVaultName.Text = $" Vault : {_vaultService.VaultName}  /  ";
-                RunUserName.Text = $" Utilisateur : {_vaultService.UserName}  /  ";
-                RunStatus.Text = " Statut : Connecte";
+                RunVaultName.Text = $" Vault: {_vaultService.VaultName}";
+                RunUserName.Text = $" {_vaultService.UserName}";
+                RunStatus.Text = " Connecte";
                 Log($"[+] Connexion Vault active: {_vaultService.UserName}@{_vaultService.ServerName}/{_vaultService.VaultName}", LogLevel.SUCCESS);
                 
                 // Charger categories
@@ -141,9 +141,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
             {
                 _isVaultConnected = false;
                 VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(232, 17, 35)); // Rouge
-                RunVaultName.Text = " Vault : --  /  ";
-                RunUserName.Text = " Utilisateur : --  /  ";
-                RunStatus.Text = " Statut : Deconnecte";
+                RunVaultName.Text = " Vault: --";
+                RunUserName.Text = " --";
+                RunStatus.Text = " Deconnecte";
                 Log("[!] Vault non connecte - Upload impossible", LogLevel.WARNING);
             }
         }
@@ -791,6 +791,444 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
         }
 
         // ====================================================================
+        // Appliquer Proprietes Inventor (via API silencieuse)
+        // ====================================================================
+        private async void ApplyProperties_Click(object sender, RoutedEventArgs e)
+        {
+            if (_projectProperties == null)
+            {
+                XnrgyMessageBox.ShowError("Proprietes projet non definies.\nVeuillez selectionner un chemin de module valide.", "Erreur", this);
+                return;
+            }
+
+            var selectedFiles = _allFilesMaster.Where(f => f.IsSelected).ToList();
+            if (selectedFiles.Count == 0)
+            {
+                XnrgyMessageBox.ShowInfo("Aucun fichier selectionne.", "Information", this);
+                return;
+            }
+
+            // Filtrer uniquement les fichiers Inventor
+            var inventorFiles = selectedFiles.Where(f => InventorExtensions.Contains(Path.GetExtension(f.FullPath))).ToList();
+            
+            if (inventorFiles.Count == 0)
+            {
+                XnrgyMessageBox.ShowInfo("Aucun fichier Inventor selectionne.\nLes proprietes seront appliquees par Vault lors de l'upload.", "Information", this);
+                BtnCheckIn.IsEnabled = true;
+                return;
+            }
+
+            var confirm = XnrgyMessageBox.Show(
+                $"Appliquer les proprietes a {inventorFiles.Count} fichiers Inventor:\n\n" +
+                $"Project: {_projectProperties.ProjectNumber}\n" +
+                $"Reference: {_projectProperties.Reference}\n" +
+                $"Module: {_projectProperties.Module}\n\n" +
+                "Cette operation utilise l'API Inventor (silencieux).\n" +
+                "Continuer?",
+                "Appliquer Proprietes",
+                XnrgyMessageBoxType.Info,
+                XnrgyMessageBoxButtons.YesNo,
+                this);
+
+            if (confirm != XnrgyMessageBoxResult.Yes) return;
+
+            await ApplyInventorPropertiesAsync(inventorFiles);
+        }
+
+        private async Task ApplyInventorPropertiesAsync(List<VaultUploadFileItem> inventorFiles)
+        {
+            _isProcessing = true;
+            _startTime = DateTime.Now;
+            
+            BtnApplyProperties.IsEnabled = false;
+            BtnCheckIn.IsEnabled = false;
+            BtnCancel.IsEnabled = false;
+
+            int successCount = 0;
+            int failCount = 0;
+            int totalFiles = inventorFiles.Count;
+
+            Log($"[>] Application des proprietes a {totalFiles} fichiers Inventor...", LogLevel.INFO);
+            Log($"[i] Project: {_projectProperties!.ProjectNumber} | Ref: {_projectProperties.Reference} | Module: {_projectProperties.Module}", LogLevel.INFO);
+
+            // ETAPE 1: Supprimer la protection en ecriture sur tout le dossier du projet
+            Log($"[>] Suppression de la protection en ecriture sur: {_projectPath}", LogLevel.INFO);
+            int filesUnlocked = RemoveReadOnlyFromFolder(_projectPath);
+            Log($"[+] {filesUnlocked} fichiers deverrouilles", LogLevel.INFO);
+
+            Inventor.Application? inventorApp = null;
+            bool wasInventorRunning = false;
+            bool originalSilentOperation = false;
+            bool originalUserInteractionDisabled = false;
+            string? originalProjectPath = null;
+
+            try
+            {
+                // Essayer de se connecter a une instance existante
+                try
+                {
+                    inventorApp = (Inventor.Application)Marshal.GetActiveObject("Inventor.Application");
+                    wasInventorRunning = true;
+                    Log("[+] Connexion a l'instance Inventor existante", LogLevel.INFO);
+                }
+                catch
+                {
+                    // Pas d'instance existante - en creer une nouvelle
+                    Log("[i] Demarrage d'une nouvelle instance Inventor...", LogLevel.INFO);
+                    var inventorType = Type.GetTypeFromProgID("Inventor.Application");
+                    if (inventorType == null)
+                    {
+                        throw new Exception("Inventor n'est pas installe sur ce poste.");
+                    }
+                    inventorApp = (Inventor.Application?)Activator.CreateInstance(inventorType);
+                    if (inventorApp == null)
+                    {
+                        throw new Exception("Impossible de demarrer Inventor.");
+                    }
+                    inventorApp.Visible = false;
+                    Log("[+] Instance Inventor demarree en mode invisible", LogLevel.INFO);
+                }
+
+                // Sauvegarder et activer le mode silencieux
+                originalSilentOperation = inventorApp.SilentOperation;
+                originalUserInteractionDisabled = inventorApp.UserInterfaceManager.UserInteractionDisabled;
+                
+                inventorApp.SilentOperation = true;
+                inventorApp.UserInterfaceManager.UserInteractionDisabled = true;
+                Log("[i] Mode silencieux active", LogLevel.INFO);
+
+                // Trouver et activer l'IPJ du projet
+                string? projectIpjPath = FindProjectIpj(_projectPath);
+                if (!string.IsNullOrEmpty(projectIpjPath))
+                {
+                    // Sauvegarder le projet actuel
+                    try
+                    {
+                        var activeProject = inventorApp.DesignProjectManager.ActiveDesignProject;
+                        if (activeProject != null)
+                        {
+                            originalProjectPath = activeProject.FullFileName;
+                            Log($"[i] Projet actuel: {Path.GetFileName(originalProjectPath)}", LogLevel.INFO);
+                        }
+                    }
+                    catch { }
+
+                    // Switch vers l'IPJ du projet
+                    if (!SwitchToProjectIpj(inventorApp, projectIpjPath))
+                    {
+                        Log("[!] Impossible de switcher vers l'IPJ du projet", LogLevel.WARNING);
+                    }
+                }
+
+                await Task.Run(() =>
+                {
+                    for (int i = 0; i < inventorFiles.Count; i++)
+                    {
+                        var file = inventorFiles[i];
+                        string fileName = Path.GetFileName(file.FullPath);
+
+                        Dispatcher.Invoke(() =>
+                        {
+                            double progress = (double)(i + 1) / totalFiles;
+                            UpdateProgressBar(progress, $"[{i + 1}/{totalFiles}] {fileName}");
+                        });
+
+                        Inventor.Document? doc = null;
+                        try
+                        {
+                            // Ouvrir le document (Visible=false pour mode silencieux)
+                            doc = inventorApp!.Documents.Open(file.FullPath, false);
+                            
+                            if (doc != null)
+                            {
+                                // Acceder aux iProperties - User Defined Properties
+                                var customProps = doc.PropertySets["Inventor User Defined Properties"];
+                                
+                                // Appliquer Project
+                                SetOrCreateProperty(customProps, "Project", _projectProperties!.ProjectNumber);
+                                
+                                // Appliquer Reference
+                                SetOrCreateProperty(customProps, "Reference", _projectProperties.Reference);
+                                
+                                // Appliquer Module  
+                                SetOrCreateProperty(customProps, "Module", _projectProperties.Module);
+
+                                // Sauvegarder
+                                doc.Save();
+                                
+                                successCount++;
+                            }
+                            else
+                            {
+                                failCount++;
+                                Dispatcher.Invoke(() => Log($"[-] {fileName} - Impossible d'ouvrir", LogLevel.ERROR));
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            failCount++;
+                            Dispatcher.Invoke(() => Log($"[-] {fileName} - {ex.Message}", LogLevel.ERROR));
+                        }
+                        finally
+                        {
+                            // Toujours fermer le document
+                            if (doc != null)
+                            {
+                                try { doc.Close(true); } catch { }
+                                try { Marshal.ReleaseComObject(doc); } catch { }
+                            }
+                        }
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur Inventor: {ex.Message}", LogLevel.ERROR);
+            }
+            finally
+            {
+                // Restaurer le mode silencieux original
+                if (inventorApp != null)
+                {
+                    try
+                    {
+                        inventorApp.UserInterfaceManager.UserInteractionDisabled = originalUserInteractionDisabled;
+                        inventorApp.SilentOperation = originalSilentOperation;
+                        Log("[i] Modes silencieux restaures", LogLevel.INFO);
+                    }
+                    catch { }
+
+                    // Restaurer le projet IPJ original
+                    if (!string.IsNullOrEmpty(originalProjectPath) && File.Exists(originalProjectPath))
+                    {
+                        try
+                        {
+                            RestoreOriginalProject(inventorApp, originalProjectPath);
+                        }
+                        catch { }
+                    }
+                }
+
+                // Fermer Inventor seulement si on l'a demarre nous-memes
+                if (inventorApp != null && !wasInventorRunning)
+                {
+                    try
+                    {
+                        inventorApp.Quit();
+                        Log("[i] Instance Inventor fermee", LogLevel.INFO);
+                    }
+                    catch { }
+                }
+
+                if (inventorApp != null)
+                {
+                    Marshal.ReleaseComObject(inventorApp);
+                }
+            }
+
+            _isProcessing = false;
+            
+            // Re-activer les boutons
+            BtnApplyProperties.IsEnabled = true;
+            BtnCancel.IsEnabled = true;
+            
+            // Activer UPLOAD si succes
+            if (successCount > 0)
+            {
+                BtnCheckIn.IsEnabled = true;
+            }
+
+            // Log final
+            var elapsed = DateTime.Now - _startTime;
+            Log($"[+] Proprietes appliquees: {successCount}/{totalFiles} fichiers en {elapsed:mm\\:ss}", LogLevel.INFO);
+            
+            if (failCount > 0)
+            {
+                Log($"[!] {failCount} fichiers en echec", LogLevel.WARNING);
+            }
+
+            UpdateProgressBar(1.0, $"Termine: {successCount}/{totalFiles} fichiers traites");
+            
+            XnrgyMessageBox.ShowInfo(
+                $"Proprietes appliquees avec succes!\n\n" +
+                $"Fichiers traites: {successCount}/{totalFiles}\n" +
+                $"Echecs: {failCount}\n\n" +
+                "Vous pouvez maintenant cliquer sur UPLOAD.",
+                "Proprietes Appliquees",
+                this);
+        }
+
+        /// <summary>
+        /// Supprime l'attribut ReadOnly de tous les fichiers d'un dossier (recursif)
+        /// </summary>
+        private int RemoveReadOnlyFromFolder(string folderPath)
+        {
+            int count = 0;
+            try
+            {
+                // Supprimer ReadOnly sur tous les fichiers du dossier et sous-dossiers
+                foreach (string filePath in Directory.GetFiles(folderPath, "*.*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        var fileInfo = new FileInfo(filePath);
+                        if (fileInfo.IsReadOnly)
+                        {
+                            fileInfo.IsReadOnly = false;
+                            count++;
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"[!] Erreur suppression ReadOnly: {ex.Message}", LogLevel.WARNING);
+            }
+            return count;
+        }
+
+        /// <summary>
+        /// Definit ou cree une propriete utilisateur dans les iProperties Inventor
+        /// </summary>
+        private static void SetOrCreateProperty(Inventor.PropertySet propSet, string propName, string value)
+        {
+            try
+            {
+                // Essayer de modifier la propriete existante
+                propSet[propName].Value = value;
+            }
+            catch
+            {
+                // La propriete n'existe pas, la creer
+                propSet.Add(value, propName);
+            }
+        }
+
+        /// <summary>
+        /// Recherche le fichier .ipj dans le dossier du projet (Vault_XNRGY.ipj ou autre)
+        /// </summary>
+        private string? FindProjectIpj(string projectPath)
+        {
+            try
+            {
+                // Chercher d'abord Vault_XNRGY.ipj (standard XNRGY)
+                string vaultIpj = Path.Combine(projectPath, "Vault_XNRGY.ipj");
+                if (File.Exists(vaultIpj))
+                {
+                    Log($"[i] IPJ trouve: Vault_XNRGY.ipj", LogLevel.INFO);
+                    return vaultIpj;
+                }
+
+                // Sinon chercher n'importe quel .ipj dans le dossier
+                var ipjFiles = Directory.GetFiles(projectPath, "*.ipj", SearchOption.TopDirectoryOnly);
+                if (ipjFiles.Length > 0)
+                {
+                    Log($"[i] IPJ trouve: {Path.GetFileName(ipjFiles[0])}", LogLevel.INFO);
+                    return ipjFiles[0];
+                }
+
+                // Chercher dans C:\Vault si c'est un projet XNRGY standard
+                if (projectPath.StartsWith(@"C:\Vault", StringComparison.OrdinalIgnoreCase))
+                {
+                    string rootVaultIpj = @"C:\Vault\Vault_XNRGY.ipj";
+                    if (File.Exists(rootVaultIpj))
+                    {
+                        Log($"[i] IPJ trouve a la racine: Vault_XNRGY.ipj", LogLevel.INFO);
+                        return rootVaultIpj;
+                    }
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                Log($"[!] Erreur recherche IPJ: {ex.Message}", LogLevel.WARNING);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Switch Inventor vers l'IPJ du projet
+        /// </summary>
+        private bool SwitchToProjectIpj(Inventor.Application inventorApp, string ipjPath)
+        {
+            try
+            {
+                var designProjectManager = inventorApp.DesignProjectManager;
+                var projectsCollection = designProjectManager.DesignProjects;
+
+                // Verifier si ce projet est deja actif
+                var activeProject = designProjectManager.ActiveDesignProject;
+                if (activeProject != null && activeProject.FullFileName.Equals(ipjPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    Log($"[i] IPJ deja actif: {Path.GetFileName(ipjPath)}", LogLevel.INFO);
+                    return true;
+                }
+
+                // Chercher si le projet existe deja dans la collection
+                Inventor.DesignProject? targetProject = null;
+                foreach (Inventor.DesignProject project in projectsCollection)
+                {
+                    if (project.FullFileName.Equals(ipjPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        targetProject = project;
+                        break;
+                    }
+                }
+
+                // Si pas trouve, l'ajouter a la collection
+                if (targetProject == null)
+                {
+                    targetProject = projectsCollection.AddExisting(ipjPath);
+                    Log($"[+] IPJ ajoute a la collection: {Path.GetFileName(ipjPath)}", LogLevel.INFO);
+                }
+
+                // Activer le projet
+                targetProject.Activate();
+                Log($"[+] IPJ active: {Path.GetFileName(ipjPath)}", LogLevel.INFO);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log($"[-] Erreur switch IPJ: {ex.Message}", LogLevel.ERROR);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Restaure le projet IPJ original
+        /// </summary>
+        private void RestoreOriginalProject(Inventor.Application inventorApp, string originalProjectPath)
+        {
+            try
+            {
+                var designProjectManager = inventorApp.DesignProjectManager;
+                var projectsCollection = designProjectManager.DesignProjects;
+
+                // Chercher le projet original dans la collection
+                foreach (Inventor.DesignProject project in projectsCollection)
+                {
+                    if (project.FullFileName.Equals(originalProjectPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        project.Activate();
+                        Log($"[+] IPJ original restaure: {Path.GetFileName(originalProjectPath)}", LogLevel.INFO);
+                        return;
+                    }
+                }
+
+                // Projet pas trouve, l'ajouter et l'activer
+                var restoredProject = projectsCollection.AddExisting(originalProjectPath);
+                restoredProject.Activate();
+                Log($"[+] IPJ original restaure (ajoute): {Path.GetFileName(originalProjectPath)}", LogLevel.INFO);
+            }
+            catch (Exception ex)
+            {
+                Log($"[!] Erreur restauration IPJ original: {ex.Message}", LogLevel.WARNING);
+            }
+        }
+
+        // ====================================================================
         // Upload vers Vault
         // ====================================================================
         private async void CheckIn_Click(object sender, RoutedEventArgs e)
@@ -1063,6 +1501,35 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                 TxtCurrentFile.Text = fileName;
                 TxtProgressTimeElapsed.Text = elapsedStr;
                 TxtProgressTimeEstimated.Text = estimatedStr;
+                TxtProgressPercent.Text = $"{percent}%";
+            });
+        }
+
+        /// <summary>
+        /// Mise a jour simplifiee de la barre de progression (pour ApplyProperties)
+        /// </summary>
+        private void UpdateProgressBar(double progress, string statusText)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                int percent = (int)(progress * 100);
+                
+                // Mise a jour de la barre de progression
+                if (ProgressBarFill.Parent is Grid parentGrid)
+                {
+                    double maxWidth = parentGrid.ActualWidth > 0 ? parentGrid.ActualWidth : 400;
+                    double fillWidth = progress * maxWidth;
+                    ProgressBarFill.Width = fillWidth;
+                }
+                
+                // Calcul du temps ecoule
+                TimeSpan elapsed = DateTime.Now - _startTime;
+                string elapsedStr = FormatTimeSpan(elapsed);
+                
+                TxtProgress.Text = statusText;
+                TxtCurrentFile.Text = "";
+                TxtProgressTimeElapsed.Text = elapsedStr;
+                TxtProgressTimeEstimated.Text = "--:--";
                 TxtProgressPercent.Text = $"{percent}%";
             });
         }

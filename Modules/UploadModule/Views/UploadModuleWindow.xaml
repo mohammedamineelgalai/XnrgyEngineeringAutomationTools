@@ -437,7 +437,7 @@
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtVaultStatus" FontWeight="SemiBold" FontSize="12">
-                                <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/><Run Text="👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/><Run Text="📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
+                                <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault: --" Foreground="White"/><Run Text="  |  👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" --" Foreground="White"/><Run Text="  |  📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Deconnecte" Foreground="White"/>
                             </TextBlock>
                         </StackPanel>
                     </Border>
@@ -515,14 +515,18 @@
                     
                     <!-- Filtre Extension (chargé dynamiquement) -->
                     <TextBlock Text="📋 Extension:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                    <ComboBox x:Name="CmbExtension" Width="90" Height="32" VerticalContentAlignment="Center"
+                    <ComboBox x:Name="CmbExtension" Width="100" Height="32" 
+                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                              Style="{StaticResource ModernComboBox}"
                               SelectionChanged="CmbExtension_SelectionChanged">
                         <ComboBoxItem Content="Tous" IsSelected="True"/>
                     </ComboBox>
                     
                     <!-- Filtre Statut -->
                     <TextBlock Text="📊 Statut:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                    <ComboBox x:Name="CmbState" Width="100" Height="32" VerticalContentAlignment="Center"
+                    <ComboBox x:Name="CmbState" Width="110" Height="32" 
+                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                              Style="{StaticResource ModernComboBox}"
                               SelectionChanged="CmbState_SelectionChanged">
                         <ComboBoxItem Content="Tous" IsSelected="True"/>
                         <ComboBoxItem Content="En attente"/>
@@ -533,13 +537,16 @@
                     
                     <!-- Categorie Vault -->
                     <TextBlock Text="📁 Categorie:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                    <ComboBox x:Name="CmbCategory" Width="120" Height="32" DisplayMemberPath="Name" 
-                              VerticalContentAlignment="Center" SelectionChanged="CmbCategory_SelectionChanged"/>
+                    <ComboBox x:Name="CmbCategory" Width="140" Height="32" DisplayMemberPath="Name" 
+                              Style="{StaticResource ModernComboBox}"
+                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                              SelectionChanged="CmbCategory_SelectionChanged"/>
                     
                     <!-- Lifecycle State Vault -->
                     <TextBlock Text="🔄 State:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                    <ComboBox x:Name="CmbLifecycleState" Width="130" Height="32" DisplayMemberPath="Name"
-                              VerticalContentAlignment="Center"/>
+                    <ComboBox x:Name="CmbLifecycleState" Width="150" Height="32" DisplayMemberPath="Name"
+                              Style="{StaticResource ModernComboBox}"
+                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
                 </StackPanel>
 
                 <!-- DataGrid Unifie -->
@@ -632,9 +639,15 @@
 
                 <!-- Boutons action -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="BtnApplyProperties" Content="📝 Appliquer Proprietes" 
+                            Style="{StaticResource SecondaryButton}" Height="34" MinWidth="165" FontSize="12"
+                            Click="ApplyProperties_Click" Margin="0,0,8,0" Padding="10,5" VerticalContentAlignment="Center"
+                            ToolTip="Applique les proprietes Project/Reference/Module aux fichiers Inventor via API (requis avant Upload)"/>
+                    
                     <Button x:Name="BtnCheckIn" Content="▶️ UPLOAD" 
                             Style="{StaticResource SuccessButton}" Height="34" MinWidth="115" FontSize="13"
-                            Click="CheckIn_Click" Margin="0,0,8,0" Padding="12,5" VerticalContentAlignment="Center"/>
+                            Click="CheckIn_Click" Margin="0,0,8,0" Padding="12,5" VerticalContentAlignment="Center"
+                            IsEnabled="False" ToolTip="Cliquez d'abord sur 'Appliquer Proprietes'"/>
                     
                     <Button x:Name="BtnPause" Content="⏸️ PAUSE" 
                             Style="{StaticResource WarningButton}" Height="34" MinWidth="105" FontSize="13"

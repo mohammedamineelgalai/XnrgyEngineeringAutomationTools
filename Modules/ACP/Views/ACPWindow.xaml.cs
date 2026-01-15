@@ -73,16 +73,16 @@ namespace XnrgyEngineeringAutomationTools.Modules.ACP.Views
             if (_vaultService != null && _vaultService.IsConnected)
             {
                 VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(16, 124, 16));
-                RunVaultName.Text = " Vault : " + _vaultService.VaultName + "  /  ";
-                RunUserName.Text = " Utilisateur : " + _vaultService.UserName + "  /  ";
-                RunStatus.Text = " Statut : Connecte";
+                RunVaultName.Text = " Vault: " + _vaultService.VaultName;
+                RunUserName.Text = " " + _vaultService.UserName;
+                RunStatus.Text = " Connecte";
             }
             else
             {
                 VaultStatusIndicator.Fill = new SolidColorBrush(Color.FromRgb(232, 17, 35));
-                RunVaultName.Text = " Vault : --  /  ";
-                RunUserName.Text = " Utilisateur : --  /  ";
-                RunStatus.Text = " Statut : Deconnecte";
+                RunVaultName.Text = " Vault: --";
+                RunUserName.Text = " --";
+                RunStatus.Text = " Deconnecte";
             }
         }
         

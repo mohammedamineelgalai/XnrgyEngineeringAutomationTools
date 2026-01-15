@@ -251,6 +251,8 @@ namespace XnrgyEngineeringAutomationTools
                 BtnDXFVerifier.Background = btnDarkBg;
                 BtnChecklistHVAC.Background = btnDarkBg;
                 BtnUploadTemplate.Background = btnDarkBg;
+                BtnPlaceEquipment.Background = btnDarkBg;
+                BtnACP.Background = btnDarkBg;
                 
                 // Boutons - titres et descriptions (BLANC - pas de gris)
                 BtnVaultUploadTitle.Foreground = whiteBrush;
@@ -267,6 +269,10 @@ namespace XnrgyEngineeringAutomationTools
                 BtnChecklistHVACDesc.Foreground = lightDescText;
                 BtnUploadTemplateTitle.Foreground = whiteBrush;
                 BtnUploadTemplateDesc.Foreground = lightDescText;
+                BtnPlaceEquipmentTitle.Foreground = whiteBrush;
+                BtnPlaceEquipmentDesc.Foreground = lightDescText;
+                BtnACPTitle.Foreground = whiteBrush;
+                BtnACPDesc.Foreground = lightDescText;
                 
                 // Bouton Theme - fond sombre pour thème sombre
                 ThemeToggleButton.Background = new SolidColorBrush(Color.FromRgb(30, 30, 46));
@@ -323,6 +329,8 @@ namespace XnrgyEngineeringAutomationTools
                 BtnDXFVerifier.Background = btnLightBgElegant;
                 BtnChecklistHVAC.Background = btnLightBgElegant;
                 BtnUploadTemplate.Background = btnLightBgElegant;
+                BtnPlaceEquipment.Background = btnLightBgElegant;
+                BtnACP.Background = btnLightBgElegant;
                 
                 // Boutons - titres et descriptions (NOIR FONCE - pas de gris)
                 BtnVaultUploadTitle.Foreground = darkTextBrush;
@@ -339,6 +347,10 @@ namespace XnrgyEngineeringAutomationTools
                 BtnChecklistHVACDesc.Foreground = darkDescText;
                 BtnUploadTemplateTitle.Foreground = darkTextBrush;
                 BtnUploadTemplateDesc.Foreground = darkDescText;
+                BtnPlaceEquipmentTitle.Foreground = darkTextBrush;
+                BtnPlaceEquipmentDesc.Foreground = darkDescText;
+                BtnACPTitle.Foreground = darkTextBrush;
+                BtnACPDesc.Foreground = darkDescText;
                 
                 // Bouton Theme - fond bleu pâle élégant pour thème clair
                 ThemeToggleButton.Background = new SolidColorBrush(Color.FromRgb(235, 240, 250));
@@ -1264,18 +1276,18 @@ namespace XnrgyEngineeringAutomationTools
             if (_isVaultConnected && _vaultService.IsConnected)
             {
                 VaultIndicator.Fill = _greenBrush;
-                RunVaultName.Text = $" Vault : {_vaultService.VaultName}  /  ";
-                RunUserName.Text = $" Utilisateur : {_vaultService.UserName}  /  ";
-                RunStatus.Text = " Statut : Connecte";
+                RunVaultName.Text = $" Vault: {_vaultService.VaultName}";
+                RunUserName.Text = $" {_vaultService.UserName}";
+                RunStatus.Text = " Connecte";
                 ConnectButton.Content = "Deconnecter";
                 ConnectButton.Background = greenBtnBrush;  // Vert brillant quand connecté
             }
             else
             {
                 VaultIndicator.Fill = _redBrush;
-                RunVaultName.Text = " Vault : --  /  ";
-                RunUserName.Text = " Utilisateur : --  /  ";
-                RunStatus.Text = " Statut : Deconnecte";
+                RunVaultName.Text = " Vault: --";
+                RunUserName.Text = " --";
+                RunStatus.Text = " Deconnecte";
                 ConnectButton.Content = "Connecter";
                 ConnectButton.Background = redBtnBrush;    // Rouge clair quand déconnecté
             }

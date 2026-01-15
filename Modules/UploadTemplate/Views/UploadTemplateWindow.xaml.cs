@@ -185,9 +185,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
             // Afficher le statut de connexion (format identique MainWindow)
             if (_isConnected)
             {
-                RunVaultName.Text = $" Vault : {_vaultService?.VaultName}  /  ";
-                RunUserName.Text = $" Utilisateur : {_vaultService?.UserName}  /  ";
-                RunStatus.Text = " Statut : Connecte";
+                RunVaultName.Text = $" Vault: {_vaultService?.VaultName}";
+                RunUserName.Text = $" {_vaultService?.UserName}";
+                RunStatus.Text = " Connecte";
                 StatusIndicator.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#107C10"));
                 Log($"[+] Connexion Vault heritee de l'application principale", LogLevel.SUCCESS);
                 Log($"[i] Vault: {_vaultService?.VaultName} | User: {_vaultService?.UserName}", LogLevel.INFO);
@@ -195,9 +195,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadTemplate.Views
             }
             else
             {
-                RunVaultName.Text = " Vault : --  /  ";
-                RunUserName.Text = " Utilisateur : --  /  ";
-                RunStatus.Text = " Statut : Deconnecte";
+                RunVaultName.Text = " Vault: --";
+                RunUserName.Text = " --";
+                RunStatus.Text = " Deconnecte";
                 StatusIndicator.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E81123"));
                 Log("[-] Aucune connexion Vault. Veuillez vous connecter via l'application principale.", LogLevel.ERROR);
                 BtnStartUpload.IsEnabled = false;

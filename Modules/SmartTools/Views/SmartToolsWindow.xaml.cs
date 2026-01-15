@@ -116,15 +116,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
                 {
                     if (isConnected)
                     {
-                        RunVaultName.Text = $" Vault : {_vaultService!.VaultName}  /  ";
-                        RunUserName.Text = $" Utilisateur : {_vaultService.UserName}  /  ";
-                        RunStatus.Text = " Statut : Connecte";
+                        RunVaultName.Text = $" Vault: {_vaultService!.VaultName}";
+                        RunUserName.Text = $" {_vaultService.UserName}";
+                        RunStatus.Text = " Connecte";
                     }
                     else
                     {
-                        RunVaultName.Text = " Vault : --  /  ";
-                        RunUserName.Text = " Utilisateur : --  /  ";
-                        RunStatus.Text = " Statut : Deconnecte";
+                        RunVaultName.Text = " Vault: --";
+                        RunUserName.Text = " --";
+                        RunStatus.Text = " Deconnecte";
                     }
                 }
             });

@@ -484,9 +484,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 
                 if (RunVaultName != null && RunUserName != null && RunStatus != null)
                 {
-                    RunVaultName.Text = isConnected ? $" Vault : {vaultName}  /  " : " Vault : --  /  ";
-                    RunUserName.Text = isConnected ? $" Utilisateur : {userName}  /  " : " Utilisateur : --  /  ";
-                    RunStatus.Text = isConnected ? " Statut : Connecte" : " Statut : Deconnecte";
+                    RunVaultName.Text = isConnected ? $" Vault: {vaultName}" : " Vault: --";
+                    RunUserName.Text = isConnected ? $" {userName}" : " --";
+                    RunStatus.Text = isConnected ? " Connecte" : " Deconnecte";
                 }
             });
         }
@@ -860,7 +860,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         }
 
         /// <summary>
-        /// Ferme Excel s'il est ouvert (necessaire avant de modifier les fichiers)
+        /// Ferme Excel s'il est ouvert (KILL force - necessaire avant de modifier les fichiers)
         /// Appeler JUSTE AVANT l'ecriture, pas au moment de la detection
         /// </summary>
         private void CloseExcelIfOpen()
@@ -870,30 +870,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 var excelProcesses = System.Diagnostics.Process.GetProcessesByName("EXCEL");
                 if (excelProcesses.Length > 0)
                 {
-                    LogMessage($"[>] Excel detecte ({excelProcesses.Length} instance(s)) - Fermeture...");
+                    LogMessage($"[>] Excel detecte ({excelProcesses.Length} instance(s)) - KILL force...");
                     
                     foreach (var process in excelProcesses)
                     {
                         try
                         {
-                            // Essayer de fermer proprement d'abord
-                            process.CloseMainWindow();
-                            
-                            // Attendre un peu que Excel se ferme
-                            if (!process.WaitForExit(3000))
-                            {
-                                // Forcer la fermeture si pas de reponse
-                                process.Kill();
-                                LogMessage($"[!] Excel force a fermer (PID: {process.Id})");
-                            }
-                            else
-                            {
-                                LogMessage($"[+] Excel ferme proprement (PID: {process.Id})");
-                            }
+                            // KILL direct - pas de CloseMainWindow qui peut bloquer
+                            process.Kill();
+                            process.WaitForExit(2000);
+                            LogMessage($"[+] Excel tue (PID: {process.Id})");
                         }
                         catch (Exception ex)
                         {
-                            LogMessage($"[!] Erreur fermeture Excel: {ex.Message}");
+                            LogMessage($"[!] Erreur kill Excel: {ex.Message}");
                         }
                         finally
                         {
@@ -912,7 +902,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         }
 
         /// <summary>
-        /// Ferme Adobe Reader/Acrobat s'il est ouvert (necessaire avant de modifier les PDFs)
+        /// Ferme Adobe Reader/Acrobat s'il est ouvert (KILL force - necessaire avant de modifier les PDFs)
         /// Appeler JUSTE AVANT l'ecriture, pas au moment de la detection
         /// </summary>
         private void ClosePdfViewerIfOpen()
@@ -927,30 +917,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                     var pdfProcesses = System.Diagnostics.Process.GetProcessesByName(processName);
                     if (pdfProcesses.Length > 0)
                     {
-                        LogMessage($"[>] {processName} detecte ({pdfProcesses.Length} instance(s)) - Fermeture...");
+                        LogMessage($"[>] {processName} detecte ({pdfProcesses.Length} instance(s)) - KILL force...");
                         
                         foreach (var process in pdfProcesses)
                         {
                             try
                             {
-                                // Essayer de fermer proprement d'abord
-                                process.CloseMainWindow();
-                                
-                                // Attendre un peu que le processus se ferme
-                                if (!process.WaitForExit(3000))
-                                {
-                                    // Forcer la fermeture si pas de reponse
-                                    process.Kill();
-                                    LogMessage($"[!] {processName} force a fermer (PID: {process.Id})");
-                                }
-                                else
-                                {
-                                    LogMessage($"[+] {processName} ferme proprement (PID: {process.Id})");
-                                }
+                                // KILL direct - pas de CloseMainWindow qui peut bloquer
+                                process.Kill();
+                                process.WaitForExit(2000);
+                                LogMessage($"[+] {processName} tue (PID: {process.Id})");
                             }
                             catch (Exception ex)
                             {
-                                LogMessage($"[!] Erreur fermeture {processName}: {ex.Message}");
+                                LogMessage($"[!] Erreur kill {processName}: {ex.Message}");
                             }
                             finally
                             {
@@ -1000,6 +980,34 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             catch (Exception ex)
             {
                 LogMessage($"[!] Impossible d'enlever ReadOnly: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Maximise la fenetre d'une application par son nom de processus
+        /// </summary>
+        private void MaximizeApplicationWindow(params string[] processNames)
+        {
+            try
+            {
+                foreach (var processName in processNames)
+                {
+                    var processes = Process.GetProcessesByName(processName);
+                    foreach (var process in processes)
+                    {
+                        if (process.MainWindowHandle != IntPtr.Zero)
+                        {
+                            ShowWindow(process.MainWindowHandle, SW_MAXIMIZE);
+                            SetForegroundWindow(process.MainWindowHandle);
+                            LogMessage($"[+] Fenetre maximisee: {processName}");
+                            return; // Une seule fenetre suffit
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"[!] Erreur maximisation fenetre: {ex.Message}");
             }
         }
 
@@ -1521,6 +1529,31 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                             if (PdfFormFillerService.FillQuantityFields(_pdfFilePath, totalCsvQty, totalCsvTags, totalPdfQty, totalPdfTags))
                             {
                                 LogMessage($"[+] Quantites ecrites dans le PDF avec succes!");
+                                
+                                // === OUVRIR LE PDF APRES ECRITURE (MAXIMISE) ===
+                                LogMessage($"[>] Ouverture du PDF...");
+                                try
+                                {
+                                    var pdfProcess = Process.Start(new ProcessStartInfo
+                                    {
+                                        FileName = _pdfFilePath,
+                                        UseShellExecute = true
+                                    });
+                                    LogMessage($"[+] PDF ouvert: {Path.GetFileName(_pdfFilePath)}");
+                                    
+                                    // Attendre un peu pour que le PDF s'ouvre, puis maximiser
+                                    Task.Delay(1500).ContinueWith(_ =>
+                                    {
+                                        Dispatcher.Invoke(() =>
+                                        {
+                                            MaximizeApplicationWindow("AcroRd32", "Acrobat");
+                                        });
+                                    });
+                                }
+                                catch (Exception exOpenPdf)
+                                {
+                                    LogMessage($"[!] Erreur ouverture PDF: {exOpenPdf.Message}");
+                                }
                             }
                             else
                             {
@@ -1539,7 +1572,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 LogMessage("[+] FIN DE LA VERIFICATION");
                 LogMessage("=".PadRight(60, '='));
                 
-                // Step 7: Open Excel report at the end (only Excel, not PDF)
+                // Step 7: Open Excel report at the end (MAXIMIZED)
                 if (!string.IsNullOrEmpty(_excelFilePath) && File.Exists(_excelFilePath))
                 {
                     LogMessage($"[>] Ouverture du rapport Excel...");
@@ -1551,6 +1584,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                             UseShellExecute = true
                         });
                         LogMessage($"[+] Excel ouvert: {Path.GetFileName(_excelFilePath)}");
+                        
+                        // Attendre un peu pour que Excel s'ouvre, puis maximiser
+                        Task.Delay(1500).ContinueWith(_ =>
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                MaximizeApplicationWindow("EXCEL");
+                            });
+                        });
                     }
                     catch (Exception exOpen)
                     {

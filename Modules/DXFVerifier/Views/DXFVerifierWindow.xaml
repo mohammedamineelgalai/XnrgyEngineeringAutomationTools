@@ -525,6 +525,13 @@
                     <DataGridTextColumn.HeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="Background" Value="#2A4A6F"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="10,8"/>
+                            <Setter Property="BorderBrush" Value="#3A5A7F"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
                         </Style>
                     </DataGridTextColumn.HeaderStyle>
                     <DataGridTextColumn.ElementStyle>
@@ -538,6 +545,13 @@
                     <DataGridTextColumn.HeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="Background" Value="#2A4A6F"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="10,8"/>
+                            <Setter Property="BorderBrush" Value="#3A5A7F"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
                         </Style>
                     </DataGridTextColumn.HeaderStyle>
                     <DataGridTextColumn.ElementStyle>
@@ -551,6 +565,13 @@
                     <DataGridTextColumn.HeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="Background" Value="#2A4A6F"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="10,8"/>
+                            <Setter Property="BorderBrush" Value="#3A5A7F"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
                         </Style>
                     </DataGridTextColumn.HeaderStyle>
                     <DataGridTextColumn.ElementStyle>
@@ -564,6 +585,13 @@
                     <DataGridTextColumn.HeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                            <Setter Property="Background" Value="#2A4A6F"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="10,8"/>
+                            <Setter Property="BorderBrush" Value="#3A5A7F"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
                         </Style>
                     </DataGridTextColumn.HeaderStyle>
                     <DataGridTextColumn.ElementStyle>
@@ -578,6 +606,13 @@
                     <DataGridTextColumn.HeaderStyle>
                         <Style TargetType="DataGridColumnHeader">
                             <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                            <Setter Property="Background" Value="#2A4A6F"/>
+                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="FontWeight" Value="Bold"/>
+                            <Setter Property="FontSize" Value="12"/>
+                            <Setter Property="Padding" Value="10,8"/>
+                            <Setter Property="BorderBrush" Value="#3A5A7F"/>
+                            <Setter Property="BorderThickness" Value="0,0,1,0"/>
                         </Style>
                     </DataGridTextColumn.HeaderStyle>
                 </DataGridTextColumn>

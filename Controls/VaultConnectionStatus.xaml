@@ -1,0 +1,70 @@
+<UserControl x:Class="XnrgyEngineeringAutomationTools.Controls.VaultConnectionStatus"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="80" d:DesignWidth="600">
+    
+    <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+    <!-- CONTROLE CENTRALISE STATUT CONNEXION VAULT + INVENTOR                          -->
+    <!-- Utilise dans: MainWindow, DXFVerifier, CopyDesign, VaultUpload, etc.           -->
+    <!-- Style: Chaque partie dans son propre Border (pas de slashs)                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
+    
+    <StackPanel Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType=UserControl}, FallbackValue=Vertical}">
+        
+        <!-- LIGNE 1: Statut Vault -->
+        <Border x:Name="VaultStatusBorder" Background="#2D2D44" CornerRadius="6" Padding="10,6" Margin="0,0,0,6"
+                BorderBrush="#4A7FBF" BorderThickness="2">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Ellipse x:Name="VaultIndicator" Width="11" Height="11" Fill="#E81123" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                
+                <!-- Vault Name -->
+                <Border Background="#1A3A5A" CornerRadius="4" Padding="8,4" Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🗄️" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Vault:" Foreground="#00BFFF" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock x:Name="TxtVaultName" Text="--" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- User Name -->
+                <Border Background="#1A3A5A" CornerRadius="4" Padding="8,4" Margin="0,0,8,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="👤" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Utilisateur:" Foreground="#FFB74D" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock x:Name="TxtUserName" Text="--" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Status -->
+                <Border x:Name="StatusBorder" Background="#1A3A5A" CornerRadius="4" Padding="8,4">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="📡" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Statut:" Foreground="#90EE90" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock x:Name="TxtStatus" Text="Deconnecte" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+        
+        <!-- LIGNE 2: Statut Inventor -->
+        <Border x:Name="InventorStatusBorder" Background="#2D2D44" CornerRadius="6" Padding="10,6"
+                BorderBrush="#4A7FBF" BorderThickness="2">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Ellipse x:Name="InventorIndicator" Width="11" Height="11" Fill="#E81123" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                
+                <!-- Inventor Status -->
+                <Border Background="#1A3A5A" CornerRadius="4" Padding="8,4">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="⚙️" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock Text="Inventor:" Foreground="#FF8C00" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                        <TextBlock x:Name="TxtInventorStatus" Text="Deconnecte" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+        
+    </StackPanel>
+</UserControl>
