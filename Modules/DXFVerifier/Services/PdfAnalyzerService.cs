@@ -938,13 +938,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
                                     }
                                 }
 
-                                // Créer l'item (avec qty=1 par défaut si non trouvée)
+                                // IMPORTANT: Ignorer les tags sans quantité trouvée
+                                // Ces tags sont probablement dans des zones non-tableaux (titres, cartouches, etc.)
+                                if (!bestQty.HasValue)
+                                {
+                                    continue; // Pas de quantité = pas un tag de tableau
+                                }
+
+                                // Créer l'item SEULEMENT si une quantité a été trouvée
                                 var item = new PdfItem
                                 {
                                     Tag = tag,
-                                    Quantity = bestQty ?? 1,
+                                    Quantity = bestQty.Value,
                                     PageNumber = pageNum,
-                                    Confidence = bestQty.HasValue ? 0.95 : 0.6,
+                                    Confidence = 0.95,
                                     SourceType = "PROXIMITY",
                                     TableNumber = 0
                                 };

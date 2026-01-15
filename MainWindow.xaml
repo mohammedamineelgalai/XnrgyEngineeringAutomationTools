@@ -114,9 +114,9 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <!-- Status Vault et Inventor -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border x:Name="VaultStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" Margin="0,0,15,0" BorderBrush="#4A7FBF" BorderThickness="2">
+                <!-- Status Vault et Inventor (vertical: Vault en haut, Inventor en bas) -->
+                <StackPanel Grid.Column="0" Orientation="Vertical" VerticalAlignment="Center">
+                    <Border x:Name="VaultStatusBorder" Background="#1A1A28" CornerRadius="6" Padding="12,8" Margin="0,0,0,8" BorderBrush="#4A7FBF" BorderThickness="2">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <Ellipse x:Name="VaultIndicator" Width="11" Height="11" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="VaultStatusText" VerticalAlignment="Center" FontSize="12">

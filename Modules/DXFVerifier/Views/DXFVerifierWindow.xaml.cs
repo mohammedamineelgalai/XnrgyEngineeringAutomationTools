@@ -87,6 +87,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         // Service Vault herite de MainWindow
         private readonly VaultSdkService? _vaultService;
         
+        // Service Inventor pour detection automatique (recu du MainWindow ou nouvelle instance)
+        private readonly InventorService _inventorService;
+        private System.Windows.Threading.DispatcherTimer? _inventorStatusTimer;
+        
         // Chronometre pour la progression style Upload Module
         private DateTime _progressStartTime;
         private System.Windows.Threading.DispatcherTimer? _progressTimer;
@@ -99,9 +103,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         #region Constructor
 
         /// <summary>
-        /// Constructeur par defaut (sans service Vault)
+        /// Constructeur par defaut (sans service Vault/Inventor)
         /// </summary>
-        public DXFVerifierWindow() : this(null)
+        public DXFVerifierWindow() : this(null, null)
         {
         }
 
@@ -109,9 +113,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         /// Constructeur avec service Vault pour heritage du statut de connexion depuis MainWindow
         /// </summary>
         /// <param name="vaultService">Service Vault connecte (optionnel)</param>
-        public DXFVerifierWindow(VaultSdkService? vaultService)
+        /// <param name="inventorService">Service Inventor du formulaire principal (optionnel)</param>
+        public DXFVerifierWindow(VaultSdkService? vaultService, InventorService? inventorService = null)
         {
             _vaultService = vaultService;
+            _inventorService = inventorService ?? new InventorService();
+            
+            // NE PAS appeler ForceReconnect ici - ca ralentit l'ouverture
+            // Le timer de statut gerera la connexion en arriere-plan
             
             InitializeComponent();
             
@@ -140,18 +149,309 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 
         #region Window Events
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            // Charger les listes deroulantes des projets
-            LoadProjectDropdowns();
+            // Afficher immediatement l'interface
+            BasePathTextBox.Text = BasePath;
+            ShowStatus("Initialisation...", StatusType.Info);
             
-            // Mettre a jour le statut Vault herite de MainWindow
+            // Mettre a jour le statut Vault herite de MainWindow (rapide)
             UpdateVaultConnectionStatusFromService();
             
-            LogMessage("[+] DXF-CSV vs PDF Verifier v1.0 initialise");
+            // Timer pour mettre a jour le statut Inventor periodiquement (toutes les 3 secondes)
+            _inventorStatusTimer = new System.Windows.Threading.DispatcherTimer();
+            _inventorStatusTimer.Interval = TimeSpan.FromSeconds(3);
+            _inventorStatusTimer.Tick += (s, args) => UpdateInventorStatusAsync();
+            _inventorStatusTimer.Start();
+            
+            LogMessage("[+] DXF-CSV vs PDF Verifier v1.2 initialise");
+            
+            // Charger les dropdowns et detecter projet en arriere-plan
+            await Task.Run(() =>
+            {
+                // Les dropdowns sont charges dans le thread UI
+            });
+            
+            // Charger les listes deroulantes des projets (rapide)
+            LoadProjectDropdowns();
+            
             LogMessage("[i] Pret pour la detection de projet");
-            BasePathTextBox.Text = BasePath;
+            
+            // Detection automatique en arriere-plan (ne bloque pas l'UI)
+            _ = Task.Run(() => TryAutoDetectProjectAsync());
+            
             ShowStatus("Pret - Detectez un PDF ouvert ou selectionnez un projet manuellement", StatusType.Info);
+        }
+        
+        /// <summary>
+        /// Met a jour le statut Inventor de maniere asynchrone
+        /// </summary>
+        private async void UpdateInventorStatusAsync()
+        {
+            bool isConnected = _inventorService.IsConnected;
+            string? activeFileName = null;
+            
+            // Si pas connecte, tenter connexion en arriere-plan
+            if (!isConnected)
+            {
+                isConnected = await Task.Run(() => _inventorService.TryConnect());
+            }
+            
+            // Recuperer le nom du fichier actif en arriere-plan
+            if (isConnected)
+            {
+                activeFileName = await Task.Run(() => _inventorService.GetActiveDocumentName());
+            }
+            
+            // Mettre a jour l'UI
+            Dispatcher.Invoke(() =>
+            {
+                if (InventorStatusIndicator != null)
+                {
+                    InventorStatusIndicator.Fill = new SolidColorBrush(
+                        isConnected ? (Color)ColorConverter.ConvertFromString("#107C10") : (Color)ColorConverter.ConvertFromString("#E81123"));
+                }
+                
+                if (RunInventorStatus != null)
+                {
+                    if (isConnected && !string.IsNullOrEmpty(activeFileName))
+                    {
+                        // Tronquer si trop long
+                        if (activeFileName.Length > 25)
+                            activeFileName = activeFileName.Substring(0, 22) + "...";
+                        RunInventorStatus.Text = $" Inventor: {activeFileName}";
+                    }
+                    else if (isConnected)
+                    {
+                        RunInventorStatus.Text = " Inventor: Connecte";
+                    }
+                    else
+                    {
+                        RunInventorStatus.Text = " Inventor: Deconnecte";
+                    }
+                }
+            });
+        }
+
+        /// <summary>
+        /// Essaie de detecter automatiquement le projet depuis Inventor ou PDF ouvert (async)
+        /// </summary>
+        private void TryAutoDetectProjectAsync()
+        {
+            // 1. Essayer depuis Inventor si connecte
+            if (_inventorService.IsConnected)
+            {
+                string? activePath = _inventorService.GetActiveDocumentPath();
+                if (!string.IsNullOrEmpty(activePath) && File.Exists(activePath))
+                {
+                    var projectInfo = ExtractProjectInfoFromPath(activePath);
+                    if (projectInfo != null)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            LogMessage($"[+] Projet detecte depuis Inventor: {projectInfo.ProjectNumber}/REF{projectInfo.Reference}/M{projectInfo.ModuleNumber}");
+                            ApplyProjectInfo(projectInfo);
+                        });
+                        return;
+                    }
+                }
+            }
+            
+            // 2. Essayer depuis PDF 02-Machines ouvert
+            string? pdfPath = FindOpenPdf02Machines();
+            if (!string.IsNullOrEmpty(pdfPath))
+            {
+                var projectInfo = ExtractProjectInfoFromPath(pdfPath);
+                if (projectInfo != null)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        LogMessage($"[+] Projet detecte depuis PDF ouvert: {projectInfo.ProjectNumber}/REF{projectInfo.Reference}/M{projectInfo.ModuleNumber}");
+                        ApplyProjectInfo(projectInfo);
+                        _pdfFilePath = pdfPath;
+                        PdfPathLabel.Text = Path.GetFileName(pdfPath);
+                        PdfPathLabel.Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#ADD8E6"));
+                    });
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Recherche un PDF 02-Machines ouvert dans n'importe quel lecteur PDF
+        /// </summary>
+        private string? FindOpenPdf02Machines()
+        {
+            try
+            {
+                // Parcourir TOUS les processus pour trouver les fenetres avec PDF ouvert
+                foreach (var proc in Process.GetProcesses())
+                {
+                    try
+                    {
+                        if (proc.MainWindowHandle != IntPtr.Zero)
+                        {
+                            string title = proc.MainWindowTitle;
+                            if (!string.IsNullOrEmpty(title) &&
+                                title.IndexOf("02-Machines", StringComparison.OrdinalIgnoreCase) >= 0)
+                            {
+                                // Si c'est Adobe, essayer d'obtenir le chemin exact via COM
+                                if (proc.ProcessName.IndexOf("Acro", StringComparison.OrdinalIgnoreCase) == 0)
+                                {
+                                    string? comPath = GetAdobePathDirect();
+                                    if (!string.IsNullOrEmpty(comPath) && File.Exists(comPath))
+                                    {
+                                        return comPath;
+                                    }
+                                }
+                                
+                                // Essayer d'extraire le chemin depuis le titre de la fenetre
+                                string? extractedPath = ExtractPathFromWindowTitle(title);
+                                if (!string.IsNullOrEmpty(extractedPath) && File.Exists(extractedPath))
+                                {
+                                    return extractedPath;
+                                }
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        // Ignorer les erreurs d'acces processus
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"[!] Erreur recherche PDF ouvert: {ex.Message}");
+            }
+            
+            return null;
+        }
+
+        /// <summary>
+        /// Obtient le chemin du PDF actif dans Adobe via COM
+        /// </summary>
+        private string? GetAdobePathDirect()
+        {
+            try
+            {
+                // Se connecter a Adobe
+                dynamic? acroApp = Marshal.GetActiveObject("AcroExch.App");
+                if (acroApp == null) return null;
+                
+                // Obtenir le document actif
+                dynamic? activeDoc = acroApp.GetActiveDoc();
+                if (activeDoc == null) return null;
+                
+                // Obtenir le chemin
+                string? path = activeDoc.GetFileName();
+                return path;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Extrait le chemin du PDF depuis le titre de la fenetre
+        /// </summary>
+        private string? ExtractPathFromWindowTitle(string title)
+        {
+            // Patterns pour extraire le chemin du PDF
+            var patterns = new[]
+            {
+                @"([A-Z]:\\[^*?""<>|]+02-Machines\.pdf)",           // Chemin Windows complet
+                @"\[([^]]+02-Machines\.pdf)\]",                     // Entre crochets
+                @"""([^""]+02-Machines\.pdf)""",                    // Entre guillemets
+                @"^([A-Z]:\\[^-]+02-Machines\.pdf)",                // Au debut du titre
+                @" - ([A-Z]:\\[^*?""<>|]+02-Machines\.pdf)"         // Apres un tiret
+            };
+            
+            foreach (var pattern in patterns)
+            {
+                var match = Regex.Match(title, pattern, RegexOptions.IgnoreCase);
+                if (match.Success && match.Groups.Count > 1)
+                {
+                    string path = match.Groups[1].Value;
+                    if (File.Exists(path))
+                    {
+                        return path;
+                    }
+                }
+            }
+            
+            return null;
+        }
+
+        /// <summary>
+        /// Applique les informations de projet detectees aux ComboBox
+        /// </summary>
+        private void ApplyProjectInfo(ProjectPathInfo projectInfo)
+        {
+            try
+            {
+                var basePath = BasePathTextBox.Text;
+                Logger.Log($"[DXF] ApplyProjectInfo: Projet={projectInfo.ProjectNumber}, Ref={projectInfo.Reference}, Module={projectInfo.ModuleNumber}", Logger.LogLevel.DEBUG);
+                
+                // === ETAPE 1: Charger et selectionner le Projet ===
+                if (!Directory.Exists(basePath))
+                {
+                    Logger.Log($"[DXF] ApplyProjectInfo: [!] BasePath inexistant: {basePath}", Logger.LogLevel.WARNING);
+                    return;
+                }
+                
+                // Charger les projets disponibles si pas deja fait
+                if (ProjectNumberComboBox.ItemsSource == null)
+                {
+                    LoadProjectDropdowns();
+                }
+                
+                SetComboBoxValue(ProjectNumberComboBox, projectInfo.ProjectNumber);
+                Logger.Log($"[DXF] ApplyProjectInfo: Projet selectionne = {ProjectNumberComboBox.SelectedItem}", Logger.LogLevel.DEBUG);
+                
+                // === ETAPE 2: Charger et selectionner la Reference ===
+                var projectPath = Path.Combine(basePath, projectInfo.ProjectNumber);
+                if (Directory.Exists(projectPath))
+                {
+                    // Charger manuellement les references (ne pas attendre l'evenement SelectionChanged)
+                    var refDirs = Directory.GetDirectories(projectPath)
+                        .Select(d => Path.GetFileName(d))
+                        .Where(name => name.StartsWith("REF", StringComparison.OrdinalIgnoreCase))
+                        .Select(name => name.Substring(3)) // Enlever "REF" prefix
+                        .OrderByDescending(x => x)
+                        .ToList();
+                    
+                    Logger.Log($"[DXF] ApplyProjectInfo: {refDirs.Count} references trouvees: [{string.Join(", ", refDirs)}]", Logger.LogLevel.DEBUG);
+                    ReferenceComboBox.ItemsSource = refDirs;
+                    SetComboBoxValue(ReferenceComboBox, projectInfo.Reference);
+                    Logger.Log($"[DXF] ApplyProjectInfo: Reference selectionnee = {ReferenceComboBox.SelectedItem}", Logger.LogLevel.DEBUG);
+                }
+                
+                // === ETAPE 3: Charger et selectionner le Module ===
+                var refPath = Path.Combine(basePath, projectInfo.ProjectNumber, $"REF{projectInfo.Reference}");
+                if (Directory.Exists(refPath))
+                {
+                    // Charger manuellement les modules
+                    var moduleDirs = Directory.GetDirectories(refPath)
+                        .Select(d => Path.GetFileName(d))
+                        .Where(name => name.StartsWith("M", StringComparison.OrdinalIgnoreCase) && name.Length <= 4)
+                        .OrderBy(x => x)
+                        .ToList();
+                    
+                    Logger.Log($"[DXF] ApplyProjectInfo: {moduleDirs.Count} modules trouves: [{string.Join(", ", moduleDirs)}]", Logger.LogLevel.DEBUG);
+                    ModuleNumberComboBox.ItemsSource = moduleDirs;
+                    SetComboBoxValue(ModuleNumberComboBox, $"M{projectInfo.ModuleNumber}"); // AVEC prefixe M
+                    Logger.Log($"[DXF] ApplyProjectInfo: Module selectionne = {ModuleNumberComboBox.SelectedItem}", Logger.LogLevel.DEBUG);
+                }
+                
+                // Detecter les fichiers du projet
+                AutoDetectFiles(projectInfo);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[DXF] ApplyProjectInfo: [-] Erreur: {ex.Message}", Logger.LogLevel.ERROR);
+            }
         }
 
         /// <summary>
@@ -196,18 +496,30 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         /// </summary>
         private void SetComboBoxValue(System.Windows.Controls.ComboBox comboBox, string value)
         {
-            if (string.IsNullOrEmpty(value) || comboBox.ItemsSource == null) return;
+            if (string.IsNullOrEmpty(value) || comboBox.ItemsSource == null)
+            {
+                Logger.Log($"[DXF] SetComboBoxValue({comboBox.Name}, '{value}'): Abort - value empty or ItemsSource null", Logger.LogLevel.DEBUG);
+                return;
+            }
+            
+            Logger.Log($"[DXF] SetComboBoxValue({comboBox.Name}, '{value}'): Searching in {comboBox.Items.Count} items...", Logger.LogLevel.DEBUG);
+            
+            // Liste les elements disponibles pour debug
+            var availableItems = comboBox.ItemsSource.Cast<object>().Select(x => x?.ToString() ?? "null").ToList();
+            Logger.Log($"[DXF] Available items: [{string.Join(", ", availableItems)}]", Logger.LogLevel.DEBUG);
             
             foreach (var item in comboBox.ItemsSource)
             {
                 if (item?.ToString() == value)
                 {
                     comboBox.SelectedItem = item;
+                    Logger.Log($"[DXF] SetComboBoxValue: [+] Found exact match '{value}'", Logger.LogLevel.DEBUG);
                     return;
                 }
             }
-            // If not found in list, try to add it temporarily
-            // For non-editable ComboBox, we can't type a value, so leave unselected
+            
+            // Log si pas trouve
+            Logger.Log($"[DXF] SetComboBoxValue: [!] Value '{value}' NOT found in {comboBox.Name}", Logger.LogLevel.WARNING);
         }
 
         private void LoadProjectDropdowns()
@@ -343,14 +655,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                     var projectInfo = ExtractProjectInfoFromPath(pdfPath);
                     if (projectInfo != null)
                     {
-                        SetComboBoxValue(ProjectNumberComboBox, projectInfo.ProjectNumber);
-                        SetComboBoxValue(ReferenceComboBox, projectInfo.Reference);
-                        SetComboBoxValue(ModuleNumberComboBox, projectInfo.ModuleNumber);
-                        
+                        // Utiliser ApplyProjectInfo qui charge proprement les ComboBox dependants
+                        ApplyProjectInfo(projectInfo);
                         LogMessage($"[+] Projet detecte: {projectInfo.ProjectNumber} REF{projectInfo.Reference} M{projectInfo.ModuleNumber}");
-                        
-                        // Auto-detect CSV and Excel files
-                        AutoDetectFiles(projectInfo);
                     }
                     
                     ShowStatus($"PDF detecte: {Path.GetFileName(pdfPath)}", StatusType.Success);
@@ -505,24 +812,229 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         {
             try
             {
-                // Pattern: C:\Vault\Engineering\Projects\12345\REF01\M01\...
-                var match = Regex.Match(filePath, @"Projects[\\\/](\d+)[\\\/]REF(\d+)[\\\/]M(\d+)", RegexOptions.IgnoreCase);
+                LogMessage($"[?] Analyse chemin: {filePath}");
+                
+                // Pattern principal: C:\Vault\Engineering\Projects\10381\REF13\M02\...
+                // REF peut etre 1 ou 2 chiffres, M peut etre 1 ou 2 chiffres
+                var match = Regex.Match(filePath, @"Projects[\\\/](\d+)[\\\/]REF(\d{1,2})[\\\/]M(\d{1,2})", RegexOptions.IgnoreCase);
                 if (match.Success)
                 {
+                    // Formater avec padding si necessaire (01, 02, etc.)
+                    string refNum = match.Groups[2].Value.PadLeft(2, '0');
+                    string moduleNum = match.Groups[3].Value.PadLeft(2, '0');
+                    
+                    LogMessage($"[+] Detecte: Projet={match.Groups[1].Value}, Ref={refNum}, Module={moduleNum}");
                     return new ProjectPathInfo
                     {
                         ProjectNumber = match.Groups[1].Value,
-                        Reference = match.Groups[2].Value,
-                        ModuleNumber = match.Groups[3].Value,
+                        Reference = refNum,
+                        ModuleNumber = moduleNum,
                         BasePath = Path.GetDirectoryName(filePath) ?? string.Empty
                     };
                 }
+                
+                // Pattern 2: Nom de fichier contient le pattern PROJET-REF-M##
+                var fileNameMatch = Regex.Match(Path.GetFileName(filePath), @"(\d{4,6})-(?:REF)?(\d{1,2})-M(\d{1,2})", RegexOptions.IgnoreCase);
+                if (fileNameMatch.Success)
+                {
+                    string refNum = fileNameMatch.Groups[2].Value.PadLeft(2, '0');
+                    string moduleNum = fileNameMatch.Groups[3].Value.PadLeft(2, '0');
+                    
+                    LogMessage($"[+] Detecte depuis nom fichier: Projet={fileNameMatch.Groups[1].Value}, Ref={refNum}, Module={moduleNum}");
+                    return new ProjectPathInfo
+                    {
+                        ProjectNumber = fileNameMatch.Groups[1].Value,
+                        Reference = refNum,
+                        ModuleNumber = moduleNum,
+                        BasePath = Path.GetDirectoryName(filePath) ?? string.Empty
+                    };
+                }
+                
+                LogMessage("[!] Aucun pattern detecte dans le chemin");
             }
             catch (Exception ex)
             {
                 LogMessage($"[!] Erreur extraction info projet: {ex.Message}");
             }
             return null;
+        }
+
+        /// <summary>
+        /// Ferme Excel s'il est ouvert (necessaire avant de modifier les fichiers)
+        /// Appeler JUSTE AVANT l'ecriture, pas au moment de la detection
+        /// </summary>
+        private void CloseExcelIfOpen()
+        {
+            try
+            {
+                var excelProcesses = System.Diagnostics.Process.GetProcessesByName("EXCEL");
+                if (excelProcesses.Length > 0)
+                {
+                    LogMessage($"[>] Excel detecte ({excelProcesses.Length} instance(s)) - Fermeture...");
+                    
+                    foreach (var process in excelProcesses)
+                    {
+                        try
+                        {
+                            // Essayer de fermer proprement d'abord
+                            process.CloseMainWindow();
+                            
+                            // Attendre un peu que Excel se ferme
+                            if (!process.WaitForExit(3000))
+                            {
+                                // Forcer la fermeture si pas de reponse
+                                process.Kill();
+                                LogMessage($"[!] Excel force a fermer (PID: {process.Id})");
+                            }
+                            else
+                            {
+                                LogMessage($"[+] Excel ferme proprement (PID: {process.Id})");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogMessage($"[!] Erreur fermeture Excel: {ex.Message}");
+                        }
+                        finally
+                        {
+                            process.Dispose();
+                        }
+                    }
+                    
+                    // Petit delai pour s'assurer que les fichiers sont liberes
+                    System.Threading.Thread.Sleep(500);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"[-] Erreur detection Excel: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Ferme Adobe Reader/Acrobat s'il est ouvert (necessaire avant de modifier les PDFs)
+        /// Appeler JUSTE AVANT l'ecriture, pas au moment de la detection
+        /// </summary>
+        private void ClosePdfViewerIfOpen()
+        {
+            try
+            {
+                // Adobe Reader et Acrobat Pro
+                var pdfProcessNames = new[] { "AcroRd32", "AcroRd64", "Acrobat" };
+                
+                foreach (var processName in pdfProcessNames)
+                {
+                    var pdfProcesses = System.Diagnostics.Process.GetProcessesByName(processName);
+                    if (pdfProcesses.Length > 0)
+                    {
+                        LogMessage($"[>] {processName} detecte ({pdfProcesses.Length} instance(s)) - Fermeture...");
+                        
+                        foreach (var process in pdfProcesses)
+                        {
+                            try
+                            {
+                                // Essayer de fermer proprement d'abord
+                                process.CloseMainWindow();
+                                
+                                // Attendre un peu que le processus se ferme
+                                if (!process.WaitForExit(3000))
+                                {
+                                    // Forcer la fermeture si pas de reponse
+                                    process.Kill();
+                                    LogMessage($"[!] {processName} force a fermer (PID: {process.Id})");
+                                }
+                                else
+                                {
+                                    LogMessage($"[+] {processName} ferme proprement (PID: {process.Id})");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                LogMessage($"[!] Erreur fermeture {processName}: {ex.Message}");
+                            }
+                            finally
+                            {
+                                process.Dispose();
+                            }
+                        }
+                    }
+                }
+                
+                // Petit delai pour s'assurer que les fichiers sont liberes
+                System.Threading.Thread.Sleep(500);
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"[-] Erreur detection PDF viewer: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Ferme Excel ET Adobe PDF avant l'ecriture
+        /// Appeler cette methode JUSTE AVANT de modifier les fichiers
+        /// </summary>
+        private void CloseApplicationsBeforeWrite()
+        {
+            LogMessage("[>] Fermeture des applications avant ecriture...");
+            CloseExcelIfOpen();
+            ClosePdfViewerIfOpen();
+        }
+
+        /// <summary>
+        /// Enleve l'attribut ReadOnly d'un fichier (necessaire dans l'environnement Vault)
+        /// </summary>
+        private void RemoveReadOnlyAttribute(string filePath)
+        {
+            try
+            {
+                if (File.Exists(filePath))
+                {
+                    var attributes = File.GetAttributes(filePath);
+                    if ((attributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+                    {
+                        File.SetAttributes(filePath, attributes & ~FileAttributes.ReadOnly);
+                        LogMessage($"[+] ReadOnly enleve: {Path.GetFileName(filePath)}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"[!] Impossible d'enlever ReadOnly: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Copie un fichier template en enlevant l'attribut ReadOnly sur la copie
+        /// </summary>
+        private bool CopyTemplateFile(string sourcePath, string targetPath)
+        {
+            try
+            {
+                if (!File.Exists(sourcePath))
+                {
+                    LogMessage($"[-] Template introuvable: {sourcePath}");
+                    return false;
+                }
+                
+                // Copier le fichier
+                File.Copy(sourcePath, targetPath, overwrite: false);
+                
+                // Enlever le ReadOnly sur la copie (herite du template Vault)
+                RemoveReadOnlyAttribute(targetPath);
+                
+                return true;
+            }
+            catch (IOException ex) when (ex.Message.Contains("existe déjà") || ex.Message.Contains("already exists"))
+            {
+                // Le fichier existe deja, c'est OK
+                RemoveReadOnlyAttribute(targetPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                LogMessage($"[-] Erreur copie template: {ex.Message}");
+                return false;
+            }
         }
 
         private void AutoDetectFiles(ProjectPathInfo projectInfo)
@@ -540,22 +1052,51 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             // Extraire le numero de reference sans le prefixe REF
             var refNumber = projectInfo.Reference;
             
-            // === 1. DETECTION CSV ===
-            // Chemin Vault 2026: 5_Exportation/Sheet_Metal_Nesting/Punch/[PROJECT]-[REF]-M[XX].csv
-            var csvPath = Path.Combine(projectFolder, "5_Exportation", "Sheet_Metal_Nesting", "Punch", 
-                $"{projectInfo.ProjectNumber}-{refNumber}-M{projectInfo.ModuleNumber}.csv");
+            // === FORMATS DE NOMS DE FICHIERS ===
+            // Ancien format: 10381-13-M02 (avec tirets)
+            // Nouveau format: 103811302 (concatene sans tirets)
+            var oldFormat = $"{projectInfo.ProjectNumber}-{refNumber}-M{projectInfo.ModuleNumber}";
+            var newFormat = $"{projectInfo.ProjectNumber}{refNumber}{projectInfo.ModuleNumber}";
             
-            if (File.Exists(csvPath))
+            LogMessage($"[?] Formats recherches: OLD='{oldFormat}' | NEW='{newFormat}'");
+            
+            // === 1. DETECTION CSV ===
+            // Chemin: 5_Exportation/Sheet_Metal_Nesting/Punch/
+            var csvFolder = Path.Combine(projectFolder, "5_Exportation", "Sheet_Metal_Nesting", "Punch");
+            _csvFilePath = null;
+            
+            if (Directory.Exists(csvFolder))
             {
-                _csvFilePath = csvPath;
-                CsvPathLabel.Text = _csvFilePath;
-                CsvPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
-                LogMessage($"[+] CSV detecte: {Path.GetFileName(_csvFilePath)}");
+                // Essayer les deux formats dans le dossier standard
+                var csvOldPath = Path.Combine(csvFolder, $"{oldFormat}.csv");
+                var csvNewPath = Path.Combine(csvFolder, $"{newFormat}.csv");
+                
+                if (File.Exists(csvOldPath))
+                {
+                    _csvFilePath = csvOldPath;
+                    LogMessage($"[+] CSV detecte (ancien format): {Path.GetFileName(_csvFilePath)}");
+                }
+                else if (File.Exists(csvNewPath))
+                {
+                    _csvFilePath = csvNewPath;
+                    LogMessage($"[+] CSV detecte (nouveau format): {Path.GetFileName(_csvFilePath)}");
+                }
+                else
+                {
+                    // Chercher aussi avec pattern Panels.csv (commun)
+                    var panelsCsv = Path.Combine(csvFolder, "Panels.csv");
+                    if (File.Exists(panelsCsv))
+                    {
+                        _csvFilePath = panelsCsv;
+                        LogMessage($"[+] CSV detecte (Panels.csv): {Path.GetFileName(_csvFilePath)}");
+                    }
+                }
             }
-            else
+            
+            // Fallback: recherche dans tout le dossier projet
+            if (string.IsNullOrEmpty(_csvFilePath))
             {
-                // Fallback: recherche par pattern dans tout le dossier
-                var csvPatterns = new[] { "*-DXF.csv", "*_DXF.csv", "*DXF*.csv", "*.csv" };
+                var csvPatterns = new[] { $"{oldFormat}.csv", $"{newFormat}.csv", "Panels.csv", "*-DXF.csv", "*_DXF.csv", "*.csv" };
                 foreach (var pattern in csvPatterns)
                 {
                     try
@@ -564,9 +1105,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                         if (csvFiles.Length > 0)
                         {
                             _csvFilePath = csvFiles[0];
-                            CsvPathLabel.Text = _csvFilePath;
-                            CsvPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
-                            LogMessage($"[+] CSV detecte (fallback): {Path.GetFileName(_csvFilePath)}");
+                            LogMessage($"[+] CSV detecte (fallback '{pattern}'): {Path.GetFileName(_csvFilePath)}");
                             break;
                         }
                     }
@@ -574,7 +1113,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 }
             }
             
-            if (string.IsNullOrEmpty(_csvFilePath))
+            if (!string.IsNullOrEmpty(_csvFilePath))
+            {
+                CsvPathLabel.Text = _csvFilePath;
+                CsvPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
+            }
+            else
             {
                 CsvPathLabel.Text = "Non detecte";
                 CsvPathLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 99, 71)); // Tomato
@@ -582,21 +1126,53 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             }
             
             // === 2. DETECTION EXCEL ===
-            // Chemin Vault 2026: 0-Documents/[PROJECT]-[REF]-M[XX]_Decompte de DXF_DXF Count.xlsx
-            var excelPath = Path.Combine(projectFolder, "0-Documents", 
-                $"{projectInfo.ProjectNumber}-{refNumber}-M{projectInfo.ModuleNumber}_Décompte de DXF_DXF Count.xlsx");
+            // Chemin: 0-Documents/
+            var docsFolder = Path.Combine(projectFolder, "0-Documents");
+            _excelFilePath = null;
             
-            if (File.Exists(excelPath))
+            if (Directory.Exists(docsFolder))
             {
-                _excelFilePath = excelPath;
-                ExcelPathLabel.Text = _excelFilePath;
-                ExcelPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
-                LogMessage($"[+] Excel detecte: {Path.GetFileName(_excelFilePath)}");
+                // Essayer les deux formats de noms de projet
+                var excelOldPath = Path.Combine(docsFolder, $"{oldFormat}_Décompte de DXF_DXF Count.xlsx");
+                var excelNewPath = Path.Combine(docsFolder, $"{newFormat}_Décompte de DXF_DXF Count.xlsx");
+                // Template standard copie
+                var excelTemplatePath = Path.Combine(docsFolder, "XXXXXXXXX_Décompte de DXF_DXF Count.xlsx");
+                
+                if (File.Exists(excelOldPath))
+                {
+                    _excelFilePath = excelOldPath;
+                    LogMessage($"[+] Excel detecte (ancien format): {Path.GetFileName(_excelFilePath)}");
+                }
+                else if (File.Exists(excelNewPath))
+                {
+                    _excelFilePath = excelNewPath;
+                    LogMessage($"[+] Excel detecte (nouveau format): {Path.GetFileName(_excelFilePath)}");
+                }
+                else if (File.Exists(excelTemplatePath))
+                {
+                    _excelFilePath = excelTemplatePath;
+                    LogMessage($"[+] Excel detecte (template): {Path.GetFileName(_excelFilePath)}");
+                }
+                else
+                {
+                    // Chercher n'importe quel fichier DXF Count dans 0-Documents
+                    try
+                    {
+                        var docsExcelFiles = Directory.GetFiles(docsFolder, "*_Décompte de DXF_DXF Count.xlsx");
+                        if (docsExcelFiles.Length > 0)
+                        {
+                            _excelFilePath = docsExcelFiles[0];
+                            LogMessage($"[+] Excel detecte (0-Documents): {Path.GetFileName(_excelFilePath)}");
+                        }
+                    }
+                    catch { /* Ignorer les erreurs d'acces */ }
+                }
             }
-            else
+            
+            // Fallback: recherche par pattern dans tout le dossier projet
+            if (string.IsNullOrEmpty(_excelFilePath))
             {
-                // Fallback: recherche par pattern
-                var excelPatterns = new[] { "*DXF Count*.xlsx", "*_DXF*.xlsx", "*-DXF.xlsx" };
+                var excelPatterns = new[] { "*DXF Count*.xlsx", "*_Décompte de DXF*.xlsx", $"{oldFormat}*.xlsx", $"{newFormat}*.xlsx", "XXXXXXXXX*.xlsx" };
                 foreach (var pattern in excelPatterns)
                 {
                     try
@@ -605,9 +1181,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                         if (excelFiles.Length > 0)
                         {
                             _excelFilePath = excelFiles[0];
-                            ExcelPathLabel.Text = _excelFilePath;
-                            ExcelPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
-                            LogMessage($"[+] Excel detecte (fallback): {Path.GetFileName(_excelFilePath)}");
+                            LogMessage($"[+] Excel detecte (fallback '{pattern}'): {Path.GetFileName(_excelFilePath)}");
                             break;
                         }
                     }
@@ -615,11 +1189,111 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 }
             }
             
-            if (string.IsNullOrEmpty(_excelFilePath))
+            if (!string.IsNullOrEmpty(_excelFilePath))
             {
-                ExcelPathLabel.Text = "Non detecte";
-                ExcelPathLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 215, 0)); // Gold - Excel peut etre cree
-                LogMessage($"[!] Excel non trouve - sera cree automatiquement");
+                // Enlever ReadOnly sur le fichier Excel detecte (environnement Vault)
+                RemoveReadOnlyAttribute(_excelFilePath);
+                ExcelPathLabel.Text = _excelFilePath;
+                ExcelPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
+            }
+            else
+            {
+                // === COPIER DEPUIS TEMPLATE SI PAS TROUVE ===
+                // Template paths - Vault library
+                const string templateDir = @"C:\Vault\Engineering\Library\Xnrgy_Module\0-Documents";
+                var templateExcelPath = Path.Combine(templateDir, "XXXXXXXXX_Décompte de DXF_DXF Count.xlsx");
+                
+                // Nom cible avec nouveau format (sans tirets)
+                var targetExcelName = $"{newFormat}_Décompte de DXF_DXF Count.xlsx";
+                var targetExcelPath = Path.Combine(docsFolder, targetExcelName);
+                
+                // Creer le dossier 0-Documents si necessaire
+                if (!Directory.Exists(docsFolder))
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(docsFolder);
+                        LogMessage($"[+] Dossier cree: 0-Documents");
+                    }
+                    catch (Exception ex)
+                    {
+                        LogMessage($"[-] Erreur creation dossier: {ex.Message}");
+                    }
+                }
+                
+                // Copier le template avec gestion ReadOnly
+                if (CopyTemplateFile(templateExcelPath, targetExcelPath))
+                {
+                    _excelFilePath = targetExcelPath;
+                    ExcelPathLabel.Text = _excelFilePath;
+                    ExcelPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
+                    LogMessage($"[+] Excel DXF Count copie depuis template: {targetExcelName}");
+                }
+                else
+                {
+                    ExcelPathLabel.Text = "Non detecte";
+                    ExcelPathLabel.Foreground = new SolidColorBrush(Color.FromRgb(255, 215, 0)); // Gold
+                    LogMessage($"[!] Excel DXF Count non trouve et template absent");
+                }
+            }
+            
+            // === 2b. EXCEL CHECK LIST (BONUS) - Copier si pas trouve ===
+            string checkListFilePath = null;
+            if (Directory.Exists(docsFolder))
+            {
+                try
+                {
+                    // Chercher le fichier Check List existant (ancien ou nouveau format)
+                    var checkListOld = Path.Combine(docsFolder, $"{oldFormat}_Liste de vérification_Check List.xlsm");
+                    var checkListNew = Path.Combine(docsFolder, $"{newFormat}_Liste de vérification_Check List.xlsm");
+                    
+                    if (File.Exists(checkListOld))
+                    {
+                        checkListFilePath = checkListOld;
+                        RemoveReadOnlyAttribute(checkListFilePath); // Enlever ReadOnly
+                        LogMessage($"[+] Check List detecte: {Path.GetFileName(checkListOld)}");
+                    }
+                    else if (File.Exists(checkListNew))
+                    {
+                        checkListFilePath = checkListNew;
+                        RemoveReadOnlyAttribute(checkListFilePath); // Enlever ReadOnly
+                        LogMessage($"[+] Check List detecte: {Path.GetFileName(checkListNew)}");
+                    }
+                    else
+                    {
+                        // Chercher par pattern
+                        var checkListFiles = Directory.GetFiles(docsFolder, "*_Liste de vérification_Check List.xlsm");
+                        if (checkListFiles.Length > 0)
+                        {
+                            checkListFilePath = checkListFiles[0];
+                            RemoveReadOnlyAttribute(checkListFilePath); // Enlever ReadOnly
+                            LogMessage($"[+] Check List detecte: {Path.GetFileName(checkListFilePath)}");
+                        }
+                    }
+                    
+                    // Si pas trouve, copier depuis template avec gestion ReadOnly
+                    if (string.IsNullOrEmpty(checkListFilePath))
+                    {
+                        const string templateDir = @"C:\Vault\Engineering\Library\Xnrgy_Module\0-Documents";
+                        var templateCheckListPath = Path.Combine(templateDir, "XXXXXXXXX_Liste de vérification_Check List.xlsm");
+                        var targetCheckListName = $"{newFormat}_Liste de vérification_Check List.xlsm";
+                        var targetCheckListPath = Path.Combine(docsFolder, targetCheckListName);
+                        
+                        if (CopyTemplateFile(templateCheckListPath, targetCheckListPath))
+                        {
+                            checkListFilePath = targetCheckListPath;
+                            LogMessage($"[+] Check List copie depuis template: {targetCheckListName}");
+                        }
+                        else
+                        {
+                            LogMessage($"[!] Check List non trouve et template absent");
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogMessage($"[-] Erreur gestion Check List: {ex.Message}");
+                }
             }
             
             // === 3. DETECTION PDF ===
@@ -789,6 +1463,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                     
                     try
                     {
+                        // === FERMER EXCEL AVANT ECRITURE ===
+                        CloseExcelIfOpen();
+                        RemoveReadOnlyAttribute(_excelFilePath);
+                        
                         // Convert results to DxfItem list for ExcelManagerService
                         var dxfItemsForExcel = _csvItems.Select(csv =>
                         {
@@ -814,6 +1492,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 
                 // Arret du timer et affichage final
                 _verificationStopwatch.Stop();
+                StopProgressTimer(); // ARRET DU TIMER pour que le temps ecoule ne continue plus
                 UpdateTimer(100, 5, 5, "Termine");
                 
                 // Step 6: Determine final status
@@ -822,6 +1501,33 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 {
                     ShowStatus($"SUCCES: {_results.Count} tags verifies", StatusType.Success);
                     LogMessage($"[+] VERIFICATION REUSSIE: {_results.Count} tags verifies");
+                    
+                    // NOUVEAU: Remplissage automatique des quantites dans le PDF si resultat 100%
+                    if (!string.IsNullOrEmpty(_pdfFilePath) && File.Exists(_pdfFilePath))
+                    {
+                        int totalCsvQty = _csvItems.Sum(c => c.Quantity);
+                        int totalCsvTags = _csvItems.Count;
+                        int totalPdfQty = _pdfItems.Sum(p => p.Quantity);
+                        int totalPdfTags = _pdfItems.Count;
+                        
+                        if (totalPdfTags == totalCsvTags && totalPdfQty == totalCsvQty)
+                        {
+                            LogMessage("[>] Resultat 100% - Remplissage des quantites dans le PDF...");
+                            
+                            // === FERMER PDF VIEWER AVANT ECRITURE ===
+                            ClosePdfViewerIfOpen();
+                            RemoveReadOnlyAttribute(_pdfFilePath);
+                            
+                            if (PdfFormFillerService.FillQuantityFields(_pdfFilePath, totalCsvQty, totalCsvTags, totalPdfQty, totalPdfTags))
+                            {
+                                LogMessage($"[+] Quantites ecrites dans le PDF avec succes!");
+                            }
+                            else
+                            {
+                                LogMessage("[!] Echec du remplissage des quantites dans le PDF");
+                            }
+                        }
+                    }
                 }
                 else
                 {
@@ -1095,27 +1801,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 {
                     var selectedProject = dialog.SelectedProject;
                     
-                    // Extract reference number (remove REF prefix)
+                    // Extract reference number (remove REF prefix if present)
                     var refNumber = selectedProject.Reference;
                     if (refNumber.StartsWith("REF", StringComparison.OrdinalIgnoreCase))
                         refNumber = refNumber.Substring(3);
                     
-                    SetComboBoxValue(ProjectNumberComboBox, selectedProject.ProjectNumber);
-                    SetComboBoxValue(ReferenceComboBox, refNumber);
-                    SetComboBoxValue(ModuleNumberComboBox, selectedProject.ModuleNumber);
+                    // Extract module number (remove M prefix if present)
+                    var moduleNumber = selectedProject.ModuleNumber;
+                    if (moduleNumber.StartsWith("M", StringComparison.OrdinalIgnoreCase))
+                        moduleNumber = moduleNumber.Substring(1);
                     
-                    LogMessage($"[+] Projet selectionne: {selectedProject.ProjectNumber} REF{refNumber} {selectedProject.ModuleNumber}");
-                    
-                    // Auto-detect files
+                    // Utiliser ApplyProjectInfo qui charge proprement les ComboBox dependants
                     var projectInfo = new ProjectPathInfo
                     {
                         ProjectNumber = selectedProject.ProjectNumber,
                         Reference = refNumber,
-                        ModuleNumber = selectedProject.ModuleNumber.StartsWith("M") ? selectedProject.ModuleNumber.Substring(1) : selectedProject.ModuleNumber,
+                        ModuleNumber = moduleNumber,
                         BasePath = selectedProject.ProjectPath
                     };
-                    AutoDetectFiles(projectInfo);
+                    ApplyProjectInfo(projectInfo);
                     
+                    LogMessage($"[+] Projet selectionne: {selectedProject.ProjectNumber} REF{refNumber} M{moduleNumber}");
                     ShowStatus($"Projet selectionne: {selectedProject.ProjectNumber}", StatusType.Success);
                 }
             }
@@ -1240,14 +1946,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 PdfPathLabel.Foreground = new SolidColorBrush(Colors.LightGreen);
                 LogMessage($"[+] PDF selectionne: {dialog.FileName}");
                 
-                // Try to extract project info
+                // Try to extract project info and apply using centralized method
                 var projectInfo = ExtractProjectInfoFromPath(_pdfFilePath);
                 if (projectInfo != null)
                 {
-                    SetComboBoxValue(ProjectNumberComboBox, projectInfo.ProjectNumber);
-                    SetComboBoxValue(ReferenceComboBox, projectInfo.Reference);
-                    SetComboBoxValue(ModuleNumberComboBox, projectInfo.ModuleNumber);
-                    AutoDetectFiles(projectInfo);
+                    ApplyProjectInfo(projectInfo);
                 }
             }
         }
@@ -1300,7 +2003,22 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             // Add to log builder
             _logBuilder.AppendLine(logLine);
             
-            // Determiner le niveau de log et la couleur
+            // === AUSSI ECRIRE DANS LE LOG PRINCIPAL DE L'APPLICATION ===
+            // Determiner le niveau pour le Logger global
+            Logger.LogLevel globalLevel = Logger.LogLevel.INFO;
+            if (message.StartsWith("[+]") || message.Contains("succes") || message.Contains("Detecte"))
+                globalLevel = Logger.LogLevel.INFO;
+            else if (message.StartsWith("[-]") || message.Contains("erreur") || message.Contains("Error"))
+                globalLevel = Logger.LogLevel.ERROR;
+            else if (message.StartsWith("[!]") || message.Contains("attention") || message.Contains("Warning"))
+                globalLevel = Logger.LogLevel.WARNING;
+            else if (message.StartsWith("[?]") || message.StartsWith("[~]"))
+                globalLevel = Logger.LogLevel.DEBUG;
+            
+            // Prefixer avec [DXF] pour identifier la source
+            Logger.Log($"[DXF] {message}", globalLevel);
+            
+            // Determiner le niveau de log et la couleur pour l'UI
             JournalColorService.LogLevel level = JournalColorService.LogLevel.INFO;
             if (message.StartsWith("[+]") || message.Contains("succes") || message.Contains("trouve") || message.Contains("OK"))
                 level = JournalColorService.LogLevel.SUCCESS;
@@ -1333,7 +2051,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 paragraph.Inlines.Add(messageRun);
                 
                 LogTextBox.Document.Blocks.Add(paragraph);
+                
+                // Auto-scroll vers le bas - double methode pour garantir le scroll
                 LogTextBox.ScrollToEnd();
+                LogScrollViewer?.ScrollToEnd();
             });
             
             // Write to file
@@ -1442,12 +2163,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 var elapsed = _verificationStopwatch.Elapsed;
                 TxtProgressTimeElapsed.Text = FormatTime(elapsed);
                 
-                // Temps estime (basé sur la progression)
+                // Temps estime - calculer des qu'on a un peu de progression
                 if (percentage > 0 && percentage < 100)
                 {
-                    var estimatedTotal = TimeSpan.FromTicks((long)(elapsed.Ticks / (percentage / 100.0)));
-                    var remaining = estimatedTotal - elapsed;
-                    TxtProgressTimeEstimated.Text = FormatTime(remaining);
+                    // Temps total estime = temps ecoule * (100 / pourcentage)
+                    var estimatedTotalSeconds = elapsed.TotalSeconds * (100.0 / percentage);
+                    var remainingSeconds = estimatedTotalSeconds - elapsed.TotalSeconds;
+                    
+                    if (remainingSeconds > 0.5) // Au moins 0.5 seconde restante
+                    {
+                        var remaining = TimeSpan.FromSeconds(remainingSeconds);
+                        TxtProgressTimeEstimated.Text = FormatTime(remaining);
+                    }
+                    else if (elapsed.TotalSeconds < 1)
+                    {
+                        // Debut de l'analyse - afficher estimation initiale
+                        TxtProgressTimeEstimated.Text = "--:--";
+                    }
+                    else
+                    {
+                        TxtProgressTimeEstimated.Text = "00:00";
+                    }
                 }
                 else if (percentage >= 100)
                 {
@@ -1501,16 +2237,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
         {
             Dispatcher.Invoke(() =>
             {
-                // Couleurs selon le type
-                var color = type switch
-                {
-                    StatusType.Success => Colors.LightGreen,
-                    StatusType.Warning => Color.FromRgb(255, 193, 7), // #FFC107 jaune
-                    StatusType.Error => Color.FromRgb(220, 53, 69),   // #DC3545 rouge
-                    _ => Colors.White
-                };
-                
-                TxtProgressStatus.Foreground = new SolidColorBrush(color);
+                // Toujours blanc pour le texte de statut dans la barre de progression
+                TxtProgressStatus.Foreground = new SolidColorBrush(Colors.White);
                 TxtProgressStatus.Text = message;
             });
         }

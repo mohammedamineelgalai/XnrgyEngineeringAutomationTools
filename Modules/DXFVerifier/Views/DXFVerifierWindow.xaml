@@ -357,47 +357,60 @@
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                             <!-- CSV Qty -->
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalCsvQtyLabel" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Total Qte CSV/DXF" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalCsvQtyLabel" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Total Qte CSV/DXF" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <!-- CSV Tags -->
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalCsvTagsLabel" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Total Tags CSV/DXF" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalCsvTagsLabel" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Total Tags CSV/DXF" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <!-- Separateur -->
                             <Border Background="#4A7FBF" Width="2" Height="40" Margin="5,0"/>
                             <!-- PDF Qty -->
                             <StackPanel Margin="20,0,20,0" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalPdfQtyLabel" Text="0" Foreground="#ADD8E6" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Total Qte PDF" Foreground="#ADD8E6" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalPdfQtyLabel" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Total Qte PDF" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <!-- PDF Tags -->
                             <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalPdfTagsLabel" Text="0" Foreground="#ADD8E6" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Total Tags PDF" Foreground="#ADD8E6" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalPdfTagsLabel" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Total Tags PDF" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                             <!-- PDF Pages -->
                             <StackPanel HorizontalAlignment="Center">
-                                <TextBlock x:Name="TotalPdfPagesLabel" Text="0" Foreground="#87CEEB" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock Text="Pages PDF" Foreground="#87CEEB" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="TotalPdfPagesLabel" Text="0" Foreground="White" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock Text="Pages PDF" Foreground="White" FontSize="11" HorizontalAlignment="Center"/>
                             </StackPanel>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <!-- Info + Statut Vault a droite (style SmartTools/CreateModule) -->
-                <StackPanel Grid.Column="2" Orientation="Vertical" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <!-- Bouton Info -->
-                    <Button x:Name="InfoButton" Content="ℹ️ Info" Style="{StaticResource SecondaryButton}" 
-                            Click="InfoButton_Click" Width="80" Padding="10,6" Margin="0,0,0,6" HorizontalAlignment="Right"/>
-                    <!-- Status Connexion Vault (style identique SmartTools/CreateModule) -->
-                    <Border Background="#2D2D44" CornerRadius="4" Padding="10,6"
+                <!-- Info + Statut Inventor (ligne 1) + Vault (ligne 2) - coin droit -->
+                <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <!-- Ligne 1: Statut Inventor + Bouton Info -->
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,6">
+                        <!-- Statut Connexion Inventor -->
+                        <Border Background="#2D2D44" CornerRadius="4" Padding="10,6" Margin="0,0,10,0"
+                                BorderBrush="#4A7FBF" BorderThickness="2">
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse x:Name="InventorStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TxtInventorStatus" FontWeight="SemiBold" FontSize="12">
+                                    <Run Text="⚙️" Foreground="#FF8C00"/><Run x:Name="RunInventorStatus" Text=" Inventor: Deconnecte" Foreground="White"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+                        <!-- Bouton Info (coin droit) -->
+                        <Button x:Name="InfoButton" Content="ℹ️ Info" Style="{StaticResource SecondaryButton}" 
+                                Click="InfoButton_Click" Width="80" Padding="10,6"/>
+                    </StackPanel>
+                    <!-- Ligne 2: Statut Vault (en dessous, aligne a droite) -->
+                    <Border Background="#2D2D44" CornerRadius="4" Padding="10,6" HorizontalAlignment="Right"
                             BorderBrush="#4A7FBF" BorderThickness="2">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="VaultStatusIndicator" Width="10" Height="10" Fill="#E81123" Margin="0,0,8,0" VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtVaultStatus" FontWeight="SemiBold" FontSize="12">
-                                <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault : --  /  " Foreground="White"/><Run Text="👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" Utilisateur : --  /  " Foreground="White"/><Run Text="📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Statut : Deconnecte" Foreground="White"/>
+                                <Run Text="🗄️" Foreground="#00BFFF"/><Run x:Name="RunVaultName" Text=" Vault: --" Foreground="White"/><Run Text="  |  👤" Foreground="#FFB74D"/><Run x:Name="RunUserName" Text=" --" Foreground="White"/><Run Text="  |  📡" Foreground="#90EE90"/><Run x:Name="RunStatus" Text=" Deconnecte" Foreground="White"/>
                             </TextBlock>
                         </StackPanel>
                     </Border>
@@ -449,14 +462,14 @@
                               Style="{StaticResource ModernComboBox}"
                               SelectionChanged="ModuleNumberComboBox_SelectionChanged"/>
 
-                    <Button x:Name="DetectPdfButton" Grid.Column="6" Content="🔍 Detecter" Style="{StaticResource PrimaryButton}" 
+                    <Button x:Name="DetectPdfButton" Grid.Column="6" Content="🔍 Detecter depuis PDF 02-Machines" Style="{StaticResource PrimaryButton}" 
                             Padding="12,6" Margin="15,0,5,0" Click="DetectPdfButton_Click"/>
                     <Button x:Name="SelectProjectButton" Grid.Column="7" Content="📁 Choisir Projet" Style="{StaticResource SecondaryButton}" 
                             Padding="15,6" Margin="0,0,5,0" Click="SelectProjectButton_Click"/>
 
-                    <TextBlock Grid.Column="8" Text="Chemin:" Style="{StaticResource ModernLabel}" Margin="15,0,8,0"/>
+                    <TextBlock Grid.Column="8" Text="Chemin de base:" Style="{StaticResource ModernLabel}" Margin="10,0,5,0"/>
                     <TextBox x:Name="BasePathTextBox" Grid.Column="9" Style="{StaticResource ModernTextBox}" Height="30"
-                             Text="C:\Vault\Engineering\Projects"/>
+                             Text="C:\Vault\Engineering\Projects" MinWidth="180"/>
                     <Button x:Name="BrowsePathButton" Grid.Column="10" Content="📂" Style="{StaticResource SecondaryButton}" 
                             Width="35" Height="30" Padding="5,3" Margin="5,0,0,0" Click="BrowsePathButton_Click"/>
                 </Grid>
@@ -504,13 +517,70 @@
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
         <DataGrid x:Name="ResultDataGrid" Grid.Row="2" Style="{StaticResource ModernDataGrid}" 
                   Margin="0,0,0,8" AutoGenerateColumns="False" IsReadOnly="True"
-                  CanUserAddRows="False" CanUserDeleteRows="False" SelectionMode="Single">
+                  CanUserAddRows="False" CanUserDeleteRows="False" 
+                  SelectionMode="Extended" SelectionUnit="Cell" ClipboardCopyMode="IncludeHeader">
             <DataGrid.Columns>
-                <DataGridTextColumn Header="Qté pièces CSV/DXF" Binding="{Binding Quantity}" Width="*"/>
-                <DataGridTextColumn Header="Tag CSV/DXF" Binding="{Binding Tag}" Width="2*"/>
-                <DataGridTextColumn Header="Matériau CSV/DXF" Binding="{Binding Material}" Width="*"/>
-                <DataGridTextColumn Header="Qté trouvée dans PDF" Binding="{Binding PdfQuantity}" Width="*"/>
-                <DataGridTextColumn Header="Résultat d'analyse PDF ✅" Binding="{Binding Status}" Width="2*"/>
+                <!-- Colonnes avec valeurs et titres CENTRES -->
+                <DataGridTextColumn Header="Qté pièces CSV/DXF" Binding="{Binding Quantity}" Width="*">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Tag CSV/DXF" Binding="{Binding Tag}" Width="2*">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Matériau CSV/DXF" Binding="{Binding Material}" Width="*">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Qté trouvée dans PDF" Binding="{Binding PdfQuantity}" Width="*">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
+                    <DataGridTextColumn.ElementStyle>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextAlignment" Value="Center"/>
+                            <Setter Property="VerticalAlignment" Value="Center"/>
+                        </Style>
+                    </DataGridTextColumn.ElementStyle>
+                </DataGridTextColumn>
+                <!-- Colonne Resultat NON centree (titre et valeurs alignes a gauche) -->
+                <DataGridTextColumn Header="Résultat d'analyse PDF ✅" Binding="{Binding Status}" Width="2*">
+                    <DataGridTextColumn.HeaderStyle>
+                        <Style TargetType="DataGridColumnHeader">
+                            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        </Style>
+                    </DataGridTextColumn.HeaderStyle>
+                </DataGridTextColumn>
             </DataGrid.Columns>
             <DataGrid.ColumnHeaderStyle>
                 <Style TargetType="DataGridColumnHeader">
@@ -604,91 +674,101 @@
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
         <!-- JOURNAL avec boutons Effacer (rose) + Voir Log (bleu clair) dans le header -->
         <!-- ═══════════════════════════════════════════════════════════════════════════════ -->
-        <GroupBox Grid.Row="4" Style="{StaticResource ModernGroupBox}" Margin="0">
-            <GroupBox.Header>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0" Text="Journal des Operations" Foreground="#FFB74D" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
-                    <Button x:Name="ClearLogButton" Grid.Column="1" Content="Effacer" 
-                            Background="#E81123" Foreground="White" BorderBrush="#FF6666" BorderThickness="1"
-                            Padding="12,5" Margin="0,0,8,0" FontSize="11" FontWeight="Bold" Cursor="Hand" Click="ClearLogButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="border" Background="{TemplateBinding Background}" 
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="4" Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#FF4444"/>
-                                                    <Setter TargetName="border" Property="Effect">
-                                                        <Setter.Value>
-                                                            <DropShadowEffect Color="#FF4444" BlurRadius="15" ShadowDepth="0" Opacity="0.7"/>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
+        <Border Grid.Row="4" Background="#12121C" CornerRadius="8" BorderBrush="#4A7FBF" BorderThickness="2" Margin="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                
+                <!-- Header du Journal -->
+                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="📋 Journal des Operations" Foreground="White" FontWeight="Bold" FontSize="13" VerticalAlignment="Center"/>
+                        <Button x:Name="ClearLogButton" Grid.Column="1" Content="Effacer" 
+                                Background="#E81123" Foreground="White" BorderBrush="#FF6666" BorderThickness="1"
+                                Padding="12,5" Margin="0,0,8,0" FontSize="11" FontWeight="Bold" Cursor="Hand" Click="ClearLogButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Background" Value="#FF4444"/>
+                                                        <Setter TargetName="border" Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#FF4444" BlurRadius="15" ShadowDepth="0" Opacity="0.7"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                        <Button x:Name="ViewLogButton" Grid.Column="2" Content="Voir Log" 
+                                Background="#00BFFF" Foreground="White" BorderBrush="#87CEEB" BorderThickness="1"
+                                Padding="12,5" FontSize="11" FontWeight="Bold" Cursor="Hand" Click="ViewLogButton_Click">
+                            <Button.Style>
+                                <Style TargetType="Button">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate TargetType="Button">
+                                                <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                                        BorderThickness="{TemplateBinding BorderThickness}"
+                                                        CornerRadius="4" Padding="{TemplateBinding Padding}">
+                                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsMouseOver" Value="True">
+                                                        <Setter TargetName="border" Property="Background" Value="#1E90FF"/>
+                                                        <Setter TargetName="border" Property="Effect">
+                                                            <Setter.Value>
+                                                                <DropShadowEffect Color="#1E90FF" BlurRadius="15" ShadowDepth="0" Opacity="0.7"/>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </Button.Style>
+                        </Button>
+                    </Grid>
+                </Border>
+                
+                <!-- Contenu du Journal - RichTextBox sans padding -->
+                <ScrollViewer x:Name="LogScrollViewer" Grid.Row="1" VerticalScrollBarVisibility="Auto" Background="Transparent">
+                    <RichTextBox x:Name="LogTextBox" Background="Transparent" FontFamily="Consolas" FontSize="14"
+                             IsReadOnly="True" BorderThickness="0" Padding="10,6"
+                             Foreground="White">
+                        <RichTextBox.Resources>
+                            <Style TargetType="Paragraph">
+                                <Setter Property="Margin" Value="0,2"/>
                             </Style>
-                        </Button.Style>
-                    </Button>
-                    <Button x:Name="ViewLogButton" Grid.Column="2" Content="Voir Log" 
-                            Background="#00BFFF" Foreground="White" BorderBrush="#87CEEB" BorderThickness="1"
-                            Padding="12,5" FontSize="11" FontWeight="Bold" Cursor="Hand" Click="ViewLogButton_Click">
-                        <Button.Style>
-                            <Style TargetType="Button">
-                                <Setter Property="Template">
-                                    <Setter.Value>
-                                        <ControlTemplate TargetType="Button">
-                                            <Border x:Name="border" Background="{TemplateBinding Background}" 
-                                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                                    CornerRadius="4" Padding="{TemplateBinding Padding}">
-                                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                            </Border>
-                                            <ControlTemplate.Triggers>
-                                                <Trigger Property="IsMouseOver" Value="True">
-                                                    <Setter TargetName="border" Property="Background" Value="#1E90FF"/>
-                                                    <Setter TargetName="border" Property="Effect">
-                                                        <Setter.Value>
-                                                            <DropShadowEffect Color="#1E90FF" BlurRadius="15" ShadowDepth="0" Opacity="0.7"/>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </Trigger>
-                                            </ControlTemplate.Triggers>
-                                        </ControlTemplate>
-                                    </Setter.Value>
-                                </Setter>
-                            </Style>
-                        </Button.Style>
-                    </Button>
-                </Grid>
-            </GroupBox.Header>
-            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                <RichTextBox x:Name="LogTextBox" Background="#0D0D15" FontFamily="Consolas" FontSize="11"
-                         IsReadOnly="True" BorderThickness="0" Padding="10,6"
-                         Foreground="#E0E0E0">
-                    <RichTextBox.Resources>
-                        <Style TargetType="Paragraph">
-                            <Setter Property="Margin" Value="0,1"/>
-                        </Style>
-                    </RichTextBox.Resources>
-                    <FlowDocument>
-                        <Paragraph/>
-                    </FlowDocument>
-                </RichTextBox>
-            </ScrollViewer>
-        </GroupBox>
+                        </RichTextBox.Resources>
+                        <FlowDocument>
+                            <Paragraph/>
+                        </FlowDocument>
+                    </RichTextBox>
+                </ScrollViewer>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

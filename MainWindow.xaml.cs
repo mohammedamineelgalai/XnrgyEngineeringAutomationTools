@@ -393,7 +393,10 @@ namespace XnrgyEngineeringAutomationTools
         }
 
         /// <summary>
-        /// Exécute la checklist de démarrage: vérifie/lance Inventor et ouvre connexion Vault
+        /// Exécute la checklist de démarrage:
+        /// 1. Connexion Vault SDK (obligatoire)
+        /// 2. Update Workspace (addins, config)
+        /// 3. Detection Inventor (sans lancement auto - juste detection)
         /// </summary>
         private async Task RunStartupChecklist()
         {
@@ -401,52 +404,10 @@ namespace XnrgyEngineeringAutomationTools
             AddLog("[i] CHECKLIST DE DEMARRAGE", "START");
             AddLog("───────────────────────────────────────────────", "INFO");
 
-            // === ETAPE 1: Verification/Lancement d'Inventor ===
+            // === ETAPE 1: Connexion Vault SDK ===
             AddLog("", "INFO");
-            AddLog("[>] [1/3] Verification d'Inventor Professional 2026...", "INFO");
+            AddLog("[>] [1/3] Connexion a Vault...", "INFO");
             
-            bool inventorOk = await CheckAndLaunchInventorAsync();
-            
-            // === ETAPE 2: Verification/Lancement du Vault Client ===
-            AddLog("", "INFO");
-            AddLog("[>] [2/3] Verification du Vault Client 2026...", "INFO");
-            
-            bool vaultClientOk = await CheckAndLaunchVaultClientAsync();
-            
-            // === RESUME ===
-            AddLog("", "INFO");
-            AddLog("───────────────────────────────────────────────", "INFO");
-            AddLog("[i] RESUME DE LA CHECKLIST:", "INFO");
-            AddLog("   • Inventor 2026: " + (inventorOk ? "OK" : "EN COURS DE DEMARRAGE"), inventorOk ? "SUCCESS" : "WARN");
-            AddLog("   • Vault Client:  " + (vaultClientOk ? "OK" : "EN COURS DE DEMARRAGE"), vaultClientOk ? "SUCCESS" : "WARN");
-            AddLog("───────────────────────────────────────────────", "INFO");
-            
-            if (inventorOk && vaultClientOk)
-            {
-                AddLog("[OK] Environnement pret - Toutes les verifications reussies!", "SUCCESS");
-            }
-            else
-            {
-                AddLog("[~] Applications en cours de demarrage...", "INFO");
-            }
-            
-            AddLog("", "INFO");
-            UpdateConnectionStatus();
-            
-            // Si Inventor pas encore connecté, démarrer le timer de reconnexion automatique
-            if (!_isInventorConnected || !_inventorService.IsConnected)
-            {
-                AddLog("[~] Timer de reconnexion Inventor active (toutes les 3 sec)...", "INFO");
-                _inventorReconnectTimer?.Start();
-            }
-            
-            // === ETAPE 3: Ouvrir la fenetre de connexion (mode auto-connect) ===
-            AddLog("[>] [3/3] Connexion a Vault...", "INFO");
-            await Task.Delay(500); // Petit délai pour laisser le temps aux apps de démarrer
-            
-            // Toujours ouvrir la fenetre de connexion avec auto-connect
-            // Si credentials sauvegardes → connexion auto → fenetre se ferme
-            // Sinon → fenêtre reste pour intervention utilisateur
             if (!_isVaultConnected)
             {
                 AddLog("   [>] Ouverture de la fenetre de connexion...", "INFO");
@@ -514,6 +475,7 @@ namespace XnrgyEngineeringAutomationTools
         /// <summary>
         /// Affiche la fenetre de mise a jour du workspace
         /// Permet de synchroniser les fichiers depuis Vault et installer les outils
+        /// IMPORTANT: Ferme Inventor AVANT l'update, le relance APRES
         /// </summary>
         private void ShowUpdateWorkspaceWindow()
         {
@@ -523,9 +485,39 @@ namespace XnrgyEngineeringAutomationTools
                 if (connection == null)
                 {
                     AddLog("[!] Connexion Vault requise pour la mise a jour du workspace", "WARN");
+                    // Meme sans Vault, on detecte Inventor
+                    DetectAndConnectInventorAsync();
                     return;
                 }
                 
+                // === VERIFIER SI INVENTOR EST OUVERT AVANT UPDATE ===
+                bool wasInventorRunning = false;
+                var inventorProcesses = Process.GetProcessesByName("Inventor");
+                
+                if (inventorProcesses.Length > 0)
+                {
+                    wasInventorRunning = true;
+                    AddLog("[>] [2/3] Preparation Update Workspace...", "INFO");
+                    AddLog("   [!] Inventor detecte - fermeture pour update addins", "WARN");
+                    
+                    // Deconnecter COM d'abord
+                    if (_isInventorConnected)
+                    {
+                        _inventorService?.Disconnect();
+                        _isInventorConnected = false;
+                        UpdateConnectionStatus();
+                    }
+                    
+                    // Tuer directement le processus Inventor (rapide)
+                    foreach (var proc in inventorProcesses)
+                    {
+                        try { proc.Kill(); } catch { }
+                    }
+                    
+                    AddLog("   [+] Inventor ferme", "SUCCESS");
+                }
+                
+                // === UPDATE WORKSPACE ===
                 var updateWindow = new UpdateWorkspaceWindow(connection)
                 {
                     Owner = this
@@ -533,6 +525,7 @@ namespace XnrgyEngineeringAutomationTools
                 
                 AddLog("[>] Ouverture de la fenetre de mise a jour du workspace...", "INFO");
                 
+                bool updateCompleted = false;
                 if (updateWindow.ShowDialog() == true)
                 {
                     if (updateWindow.WasSkipped)
@@ -542,18 +535,303 @@ namespace XnrgyEngineeringAutomationTools
                     else
                     {
                         AddLog("[+] Mise a jour du workspace terminee", "SUCCESS");
+                        updateCompleted = true;
                     }
                 }
                 else
                 {
                     AddLog("[!] Mise a jour du workspace annulee", "WARN");
                 }
+                
+                // === RELANCER INVENTOR SI IL ETAIT OUVERT ===
+                if (wasInventorRunning)
+                {
+                    AddLog("[>] Relancement d'Inventor...", "INFO");
+                    LaunchInventorAsync();
+                }
+                else
+                {
+                    // Inventor n'etait pas ouvert - proposer de le lancer
+                    AddLog("", "INFO");
+                    AddLog("[>] [3/3] Lancement des applications...", "INFO");
+                    LaunchApplicationsAsync();
+                }
             }
             catch (Exception ex)
             {
                 AddLog($"[-] Erreur lors de la mise a jour du workspace: {ex.Message}", "ERROR");
                 Logger.Log($"[-] Erreur UpdateWorkspace: {ex.Message}", Logger.LogLevel.ERROR);
+                // Meme en cas d'erreur, on detecte Inventor
+                DetectAndConnectInventorAsync();
             }
+        }
+        
+        /// <summary>
+        /// Lance Inventor et attend qu'il soit pret pour connexion COM
+        /// </summary>
+        private async void LaunchInventorAsync()
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    string inventorPath = FindInventorExecutable();
+                    if (string.IsNullOrEmpty(inventorPath))
+                    {
+                        Dispatcher.Invoke(() =>
+                            AddLog("   [-] Inventor 2026 non trouve sur ce poste", "ERROR"));
+                        return;
+                    }
+                    
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = inventorPath,
+                        UseShellExecute = true
+                    });
+                    
+                    Dispatcher.Invoke(() =>
+                        AddLog("   [~] Inventor demarre, veuillez patienter...", "INFO"));
+                    
+                    // Attendre que le processus demarre (max 10 sec - check rapide)
+                    bool processStarted = false;
+                    for (int i = 0; i < 20; i++)
+                    {
+                        await Task.Delay(500);
+                        var procs = Process.GetProcessesByName("Inventor");
+                        if (procs.Length > 0)
+                        {
+                            processStarted = true;
+                            break;
+                        }
+                    }
+                    
+                    if (processStarted)
+                    {
+                        Dispatcher.Invoke(() =>
+                            AddLog("   [+] Inventor demarre!", "SUCCESS"));
+                    }
+                    
+                    // Timer de reconnexion gere la connexion COM
+                    Dispatcher.Invoke(() =>
+                    {
+                        _inventorReconnectTimer?.Start();
+                        UpdateConnectionStatus();
+                        ShowFinalResume();
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        AddLog($"   [-] Erreur lancement Inventor: {ex.Message}", "ERROR");
+                        _inventorReconnectTimer?.Start();
+                    });
+                }
+            });
+        }
+        
+        /// <summary>
+        /// Lance Inventor et Vault Client si non detectes
+        /// </summary>
+        private async void LaunchApplicationsAsync()
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    // === INVENTOR ===
+                    var inventorProcesses = Process.GetProcessesByName("Inventor");
+                    bool inventorWasRunning = inventorProcesses.Length > 0;
+                    
+                    if (!inventorWasRunning)
+                    {
+                        Dispatcher.Invoke(() =>
+                            AddLog("   [>] Lancement d'Inventor Professional 2026...", "INFO"));
+                        
+                        string inventorPath = FindInventorExecutable();
+                        if (!string.IsNullOrEmpty(inventorPath))
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = inventorPath,
+                                UseShellExecute = true
+                            });
+                            
+                            Dispatcher.Invoke(() =>
+                                AddLog("   [~] Inventor demarre...", "INFO"));
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() =>
+                                AddLog("   [!] Inventor non trouve", "WARN"));
+                        }
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() =>
+                            AddLog("   [+] Inventor deja en cours", "SUCCESS"));
+                    }
+                    
+                    // === VAULT CLIENT ===
+                    string[] vaultProcessNames = { "Connectivity.VaultPro", "Connectivity.Vault" };
+                    bool vaultFound = false;
+                    
+                    foreach (var pName in vaultProcessNames)
+                    {
+                        if (Process.GetProcessesByName(pName).Length > 0)
+                        {
+                            vaultFound = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!vaultFound)
+                    {
+                        Dispatcher.Invoke(() =>
+                            AddLog("   [>] Lancement de Vault Client 2026...", "INFO"));
+                        
+                        string vaultPath = FindVaultClientExecutable();
+                        if (!string.IsNullOrEmpty(vaultPath))
+                        {
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = vaultPath,
+                                UseShellExecute = true
+                            });
+                            
+                            Dispatcher.Invoke(() =>
+                                AddLog("   [~] Vault Client demarre...", "INFO"));
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() =>
+                                AddLog("   [!] Vault Client non trouve", "WARN"));
+                        }
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() =>
+                            AddLog("   [+] Vault Client deja en cours", "SUCCESS"));
+                    }
+                    
+                    // Attendre un peu et tenter connexion Inventor
+                    await Task.Delay(5000);
+                    
+                    // Detection et connexion Inventor
+                    Dispatcher.Invoke(() => DetectAndConnectInventorAsync());
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        AddLog($"   [-] Erreur lancement applications: {ex.Message}", "ERROR");
+                        _inventorReconnectTimer?.Start();
+                    });
+                }
+            });
+        }
+        
+        /// <summary>
+        /// Affiche le resume final de la checklist
+        /// </summary>
+        private void ShowFinalResume()
+        {
+            AddLog("", "INFO");
+            AddLog("───────────────────────────────────────────────", "INFO");
+            AddLog("[i] RESUME:", "INFO");
+            AddLog("   • Vault:    " + (_isVaultConnected ? "Connecte" : "Deconnecte"), _isVaultConnected ? "SUCCESS" : "WARN");
+            AddLog("   • Inventor: " + (_isInventorConnected ? "Connecte" : "Detection en cours..."), _isInventorConnected ? "SUCCESS" : "INFO");
+            AddLog("───────────────────────────────────────────────", "INFO");
+            AddLog("", "INFO");
+        }
+        
+        /// <summary>
+        /// Detecte si Inventor est en cours d'execution et tente une connexion COM
+        /// </summary>
+        private async void DetectAndConnectInventorAsync()
+        {
+            await Task.Run(() =>
+            {
+                try
+                {
+                    // Verifier si le processus Inventor est en cours
+                    var inventorProcesses = Process.GetProcessesByName("Inventor");
+                    
+                    if (inventorProcesses.Length == 0)
+                    {
+                        // Inventor n'est pas lance - timer activera la reconnexion
+                        Dispatcher.Invoke(() =>
+                        {
+                            _inventorReconnectTimer?.Start();
+                            UpdateConnectionStatus();
+                            ShowFinalResume();
+                        });
+                        return;
+                    }
+                    
+                    // Inventor est en cours - verifier si la fenetre principale est prete
+                    bool windowReady = false;
+                    foreach (var proc in inventorProcesses)
+                    {
+                        try
+                        {
+                            if (proc.MainWindowHandle != IntPtr.Zero)
+                            {
+                                windowReady = true;
+                                break;
+                            }
+                        }
+                        catch { }
+                    }
+                    
+                    if (!windowReady)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            AddLog("   [~] Inventor en cours de demarrage...", "INFO");
+                            _inventorReconnectTimer?.Start();
+                            UpdateConnectionStatus();
+                            ShowFinalResume();
+                        });
+                        return;
+                    }
+                    
+                    // Inventor est pret - tenter connexion COM
+                    if (_inventorService.TryConnect())
+                    {
+                        _isInventorConnected = true;
+                        string version = _inventorService.GetInventorVersion();
+                        
+                        Dispatcher.Invoke(() =>
+                        {
+                            if (!string.IsNullOrEmpty(version))
+                                AddLog("   [i] Inventor " + version, "INFO");
+                            AddLog("   [+] Inventor - Connecte!", "SUCCESS");
+                            UpdateConnectionStatus();
+                            ShowFinalResume();
+                        });
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            AddLog("   [~] Reconnexion automatique activee", "INFO");
+                            _inventorReconnectTimer?.Start();
+                            UpdateConnectionStatus();
+                            ShowFinalResume();
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() =>
+                    {
+                        AddLog($"   [!] Erreur detection Inventor: {ex.Message}", "WARN");
+                        _inventorReconnectTimer?.Start();
+                        ShowFinalResume();
+                    });
+                }
+            });
         }
 
         /// <summary>
@@ -1323,7 +1601,15 @@ namespace XnrgyEngineeringAutomationTools
             StatusText.Text = "Ouverture de DXF Verifier...";
             try
             {
-                var dxfVerifierWindow = new DXFVerifierWindow(_isVaultConnected ? _vaultService : null);
+                // Forcer reconnexion Inventor si connecte
+                if (_isInventorConnected)
+                {
+                    _inventorService.ForceReconnect();
+                }
+                
+                var dxfVerifierWindow = new DXFVerifierWindow(
+                    _isVaultConnected ? _vaultService : null,
+                    _isInventorConnected ? _inventorService : null);
                 dxfVerifierWindow.Owner = this;
                 dxfVerifierWindow.Show();
                 AddLog("[+] DXF Verifier ouvert avec succes", "SUCCESS");

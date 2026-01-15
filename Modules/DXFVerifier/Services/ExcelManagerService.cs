@@ -302,25 +302,25 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
                         worksheet.Cells[currentRow, 3].Value = dxfItems[i].Material;
                         worksheet.Cells[currentRow, 4].Value = dxfItems[i].PdfQuantity;
 
-                        // Écrire le statut
-                        string status = "[-] Tag non trouve dans le PDF";
+                        // Écrire le statut avec emojis pour Excel (autorisés dans UI/Excel)
+                        string status = "❌ Tag non trouve dans le PDF";
                         Color statusColor = Color.FromArgb(255, 102, 102); // Rouge clair
 
                         if (dxfItems[i].FoundInPdf)
                         {
                             if (dxfItems[i].Quantity == dxfItems[i].PdfQuantity)
                             {
-                                status = "[+] Tag trouve, quantite OK";
+                                status = "✅ Tag trouve, quantite OK";
                                 statusColor = Color.FromArgb(144, 238, 144); // Vert clair
                             }
                             else if (dxfItems[i].PdfQuantity > 0)
                             {
-                                status = $"[!] Tag trouve, qty differente: CSV={dxfItems[i].Quantity} vs PDF={dxfItems[i].PdfQuantity}";
+                                status = $"⚠️ Tag trouve, qty differente: CSV={dxfItems[i].Quantity} vs PDF={dxfItems[i].PdfQuantity}";
                                 statusColor = Color.FromArgb(255, 165, 0); // Orange
                             }
                             else
                             {
-                                status = "[?] Tag trouve mais quantite = 0 dans PDF";
+                                status = "❓ Tag trouve mais quantite = 0 dans PDF";
                                 statusColor = Color.FromArgb(173, 216, 230); // Bleu clair
                             }
                         }
@@ -334,7 +334,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
                             rowRange.Style.Fill.BackgroundColor.SetColor(statusColor);
 
                             // Couleur de police appropriée selon le statut
-                            if (status.Contains("[-]") || status.Contains("[!]"))
+                            if (status.Contains("❌") || status.Contains("⚠️"))
                             {
                                 rowRange.Style.Font.Color.SetColor(Color.White);
                             }
@@ -384,6 +384,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
 
         /// <summary>
         /// Gère intelligemment le fichier Excel avec renommage automatique et copie depuis template
+        /// Format nouveau: XXXXXXXXX (ex: 123450101 = projet + ref + module)
         /// </summary>
         public static string ManageExcelFileWithTemplate(string projectNumber, string reference, string moduleNumber, string modulePath)
         {
@@ -396,9 +397,20 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
                     refNumber = refNumber.Substring(3).PadLeft(2, '0');
                 }
 
-                // Nom de fichier cible avec format correct
-                string targetFileName = $"{projectNumber}-{refNumber}-{moduleNumber}_Décompte de DXF_DXF Count.xlsx";
-                string checkListFileName = $"{projectNumber}-{refNumber}-{moduleNumber}_Liste de vérification_Check List.xlsm";
+                // Nettoyer le module (enlever "M" si présent)
+                string modNumber = moduleNumber;
+                if (modNumber.StartsWith("M", StringComparison.OrdinalIgnoreCase))
+                {
+                    modNumber = modNumber.Substring(1).PadLeft(2, '0');
+                }
+
+                // NOUVEAU FORMAT: XXXXXXXXX (projet + ref + module combines)
+                // Exemple: 12345 + 01 + 01 = 123450101
+                string combinedPrefix = $"{projectNumber}{refNumber}{modNumber}";
+
+                // Nom de fichier cible avec nouveau format
+                string targetFileName = $"{combinedPrefix}_Décompte de DXF_DXF Count.xlsx";
+                string checkListFileName = $"{combinedPrefix}_Liste de vérification_Check List.xlsm";
 
                 // Chemins
                 string documentsDir = Path.Combine(modulePath, "0-Documents");
@@ -412,10 +424,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
                     Log("FileIO", $"[i] Dossier cree: {documentsDir}");
                 }
 
-                // Template paths - V1.2 Vault paths
+                // Template paths - V1.2 Vault paths avec NOUVEAU format
                 string templateDir = @"C:\Vault\Engineering\Library\Xnrgy_Module\0-Documents";
-                string templateExcelPath = Path.Combine(templateDir, "XXXXX-XX-MXX_Décompte de DXF_DXF Count.xlsx");
-                string templateCheckListPath = Path.Combine(templateDir, "XXXXX-XX-MXX_Liste de vérification_Check List.xlsm");
+                string templateExcelPath = Path.Combine(templateDir, "XXXXXXXXX_Décompte de DXF_DXF Count.xlsx");
+                string templateCheckListPath = Path.Combine(templateDir, "XXXXXXXXX_Liste de vérification_Check List.xlsm");
 
                 Log("FileIO", $"[>] Gestion fichier Excel pour: {targetFileName}");
 
@@ -424,7 +436,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services
                 // 1. Gérer le fichier Excel principal
                 if (!File.Exists(targetFilePath))
                 {
-                    // Vérifier s'il y a un fichier avec l'ancien format
+                    // Vérifier s'il y a un fichier avec l'ancien ou nouveau format
                     var existingTemplateFiles = Directory.GetFiles(documentsDir, "*_Décompte de DXF_DXF Count.xlsx");
 
                     if (existingTemplateFiles.Length > 0)
