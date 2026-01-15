@@ -5801,35 +5801,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Services
             if (logCallback != null)
                 SetLogCallback(logCallback);
 
-            await Task.Run(() =>
+            await System.Windows.Application.Current.Dispatcher.InvokeAsync(() =>
             {
                 Log("Affichage des informations Smart Tools...", "INFO");
-                string info = @"Smart Tools - Outils d'automatisation Inventor v1.7
-
-Outils disponibles:
-- HideBox V1.5: Masquage intelligent des éléments Dummy, PanFactice, AirFlow, etc.
-- ToggleRefVisibility: Basculer la visibilité des références
-- ToggleSketchVisibility: Basculer la visibilité des esquisses
-- ConstraintReport: Rapport de contraintes d'assemblage
-- iPropertiesSummary V1.3: Résumé des propriétés avec chemin complet
-- SafeClose V1.6: Fermeture sécurisée avec support des éléments Dummy
-- SmartSave V1.0: Sauvegarde intelligente sans fermeture
-- ExportIAMToIPT V1.1: Export d'assemblage vers IPT/STEP
-- ExportIDWtoShopPDF V1.1: Export de dessins en PDF vers 6-Shop Drawing PDF
-- FormCenteringUtility: Centrage des formulaires génériques
-- iLogicFormsCentred V1.1: Détection et centrage des formulaires iLogic
-
-Nouveautés V1.7:
-- Migration vers Inventor 2026
-- Support du nouveau chemin C:\Vault\Engineering\Projects\
-- ExportIAMToIPT V1.1: Bouton Parcourir + édition manuelle du chemin
-- ExportIDWtoShopPDF V1.1: Option Parcourir si dossier non trouvé
-
-Développé par: Mohammed Amine El Galai
-Entreprise: XNRGY Climate Systems ULC
-Date: 2026-01-02";
-
-                MessageBox.Show(info, "Smart Tools - Informations", MessageBoxButton.OK, MessageBoxImage.Information);
+                
+                var infoWindow = new Views.SmartToolsInfoWindow();
+                infoWindow.Owner = System.Windows.Application.Current.MainWindow;
+                infoWindow.ShowDialog();
+                
+                Log("Fenetre d'informations fermee", "INFO");
             });
         }
 

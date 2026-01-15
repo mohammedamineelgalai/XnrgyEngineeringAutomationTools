@@ -29,7 +29,7 @@ using System.Windows.Media;
 using Microsoft.Win32;
 using XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Services;
 using XnrgyEngineeringAutomationTools.Services;
-using MessageBox = System.Windows.MessageBox;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using Binding = System.Windows.Data.Binding;
 
@@ -666,9 +666,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 {
                     LogMessage("[!] Aucun PDF ouvert detecte dans Adobe Reader/Acrobat");
                     ShowStatus("Aucun PDF ouvert detecte - Selectionnez manuellement", StatusType.Warning);
-                    MessageBox.Show("Aucun fichier PDF ouvert detecte dans Adobe Reader ou Acrobat.\n\n" +
+                    XnrgyMessageBox.ShowInfo("Aucun fichier PDF ouvert detecte dans Adobe Reader ou Acrobat.\n\n" +
                                   "Assurez-vous qu'un fichier PDF 03-CutList est ouvert.", 
-                                  "Detection PDF", MessageBoxButton.OK, MessageBoxImage.Information);
+                                  "Detection PDF", this);
                 }
             }
             catch (Exception ex)
@@ -1373,15 +1373,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             // Validate inputs
             if (string.IsNullOrEmpty(_csvFilePath) && string.IsNullOrEmpty(_excelFilePath))
             {
-                MessageBox.Show("Veuillez d'abord detecter ou selectionner un fichier CSV/Excel.", 
-                              "Fichier manquant", MessageBoxButton.OK, MessageBoxImage.Warning);
+                XnrgyMessageBox.ShowWarning("Veuillez d'abord detecter ou selectionner un fichier CSV/Excel.", 
+                              "Fichier manquant", this);
                 return;
             }
             
             if (string.IsNullOrEmpty(_pdfFilePath))
             {
-                MessageBox.Show("Veuillez d'abord detecter ou selectionner un fichier PDF.", 
-                              "Fichier manquant", MessageBoxButton.OK, MessageBoxImage.Warning);
+                XnrgyMessageBox.ShowWarning("Veuillez d'abord detecter ou selectionner un fichier PDF.", 
+                              "Fichier manquant", this);
                 return;
             }
             
@@ -1604,8 +1604,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             {
                 LogMessage($"[-] ERREUR VERIFICATION: {ex.Message}");
                 ShowStatus($"Erreur: {ex.Message}", StatusType.Error);
-                MessageBox.Show($"Erreur lors de la verification:\n{ex.Message}", 
-                              "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError($"Erreur lors de la verification:\n{ex.Message}", 
+                              "Erreur", this);
             }
             finally
             {
@@ -1814,7 +1814,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 var basePath = BasePathTextBox.Text;
                 if (!Directory.Exists(basePath))
                 {
-                    MessageBox.Show($"Le chemin de base n'existe pas:\n{basePath}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                    XnrgyMessageBox.ShowError($"Le chemin de base n'existe pas:\n{basePath}", "Erreur", this);
                     return;
                 }
                 
@@ -1825,9 +1825,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
                 {
                     LogMessage("[!] Aucun projet trouve dans le chemin de base");
                     ShowStatus("Aucun projet trouve", StatusType.Warning);
-                    MessageBox.Show("Aucun projet trouve dans le chemin de base.\n\n" +
+                    XnrgyMessageBox.ShowInfo("Aucun projet trouve dans le chemin de base.\n\n" +
                                   "Structure attendue: Projects\\[XXXXX]\\REF[XX]\\M[XX]",
-                                  "Aucun projet", MessageBoxButton.OK, MessageBoxImage.Information);
+                                  "Aucun projet", this);
                     return;
                 }
                 
@@ -1871,7 +1871,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             {
                 LogMessage($"[-] Erreur lors du chargement des projets: {ex.Message}");
                 ShowStatus("Erreur lors du chargement des projets", StatusType.Error);
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError($"Erreur: {ex.Message}", "Erreur", this);
             }
         }
 
@@ -2012,7 +2012,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             catch (Exception ex)
             {
                 LogMessage($"[-] Erreur ouverture Info: {ex.Message}");
-                MessageBox.Show($"Erreur: {ex.Message}", "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError($"Erreur: {ex.Message}", "Erreur", this);
             }
         }
 
@@ -2122,7 +2122,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             }
             else
             {
-                MessageBox.Show("Le fichier log n'existe pas encore.", "Information", MessageBoxButton.OK, MessageBoxImage.Information);
+                XnrgyMessageBox.ShowInfo("Le fichier log n'existe pas encore.", "Information", this);
             }
         }
 

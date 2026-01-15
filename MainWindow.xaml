@@ -174,13 +174,33 @@
                         <TextBlock x:Name="GroupBox1Header" Text="🔧 Vault &amp; Inventor Tools" FontSize="16" FontWeight="Bold" Foreground="White"/>
                     </GroupBox.Header>
                     <WrapPanel>
+                        <!-- Config Unités (Master Configuration) -->
+                        <Button x:Name="BtnConfigUnits" Style="{StaticResource ModuleButton}" Click="OpenConfigUnits_Click" Width="260" Height="210" Margin="10">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="#6366F1" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
+                                    <TextBlock Text="⚙️" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock x:Name="BtnConfigUnitsTitle" Text="Config Unites" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnConfigUnitsDesc" Text="Configuration Master Unite" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <!-- Ouvrir Projet Vault -->
+                        <Button x:Name="BtnOpenVaultProject" Style="{StaticResource ModuleButton}" Click="OpenVaultProject_Click" Width="260" Height="210" Margin="10">
+                            <StackPanel HorizontalAlignment="Center">
+                                <Border Background="#0EA5E9" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
+                                    <TextBlock Text="📥" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <TextBlock x:Name="BtnOpenVaultProjectTitle" Text="Ouvrir Projet Vault" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnOpenVaultProjectDesc" Text="Telecharger et ouvrir module" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
                         <!-- Créer Module & Équipement (anciennement Pack & Go) -->
                         <Button x:Name="BtnPackAndGo" Style="{StaticResource ModuleButton}" Click="OpenPackAndGo_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
                                 <Border Background="#FF8C00" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
                                     <TextBlock Text="&#x1F4E6;" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnPackAndGoTitle" Text="Créer Module" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnPackAndGoTitle" Text="Creer Module" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
                                 <TextBlock x:Name="BtnPackAndGoDesc" Text="Pack &amp; Go / Copy Design" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Button>

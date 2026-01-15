@@ -316,6 +316,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Modules\SmartTools\Views\SmartToolsInfoWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <!-- ========== MODULE: UPDATE WORKSPACE ========== -->
     <Page Include="Modules\UpdateWorkspace\Views\UpdateWorkspaceWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -331,6 +335,11 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Modules\DXFVerifier\Views\ProjectSelectorWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <!-- ========== MODULE: OPEN VAULT PROJECT ========== -->
+    <Page Include="Modules\OpenVaultProject\Views\OpenVaultProjectWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -467,6 +476,10 @@
       <DependentUpon>FolderBrowserWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Modules\SmartTools\Views\SmartToolsInfoWindow.xaml.cs">
+      <DependentUpon>SmartToolsInfoWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Modules\SmartTools\Services\*.cs" />
     <!-- ========== CODE-BEHIND: MODULE UPDATE WORKSPACE ========== -->
     <Compile Include="Modules\UpdateWorkspace\Views\UpdateWorkspaceWindow.xaml.cs">
@@ -489,6 +502,13 @@
     <Compile Include="Modules\DXFVerifier\Services\PdfAnalyzerService.cs" />
     <Compile Include="Modules\DXFVerifier\Services\ExcelManagerService.cs" />
     <Compile Include="Modules\DXFVerifier\Services\PdfFormFillerService.cs" />
+    <!-- ========== MODULE: OPEN VAULT PROJECT ========== -->
+    <Compile Include="Modules\OpenVaultProject\Views\OpenVaultProjectWindow.xaml.cs">
+      <DependentUpon>OpenVaultProjectWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Modules\OpenVaultProject\Services\VaultDownloadService.cs" />
+    <Compile Include="Modules\OpenVaultProject\Models\VaultProjectItem.cs" />
     <!-- ========== CORE CODE ========== -->
     <Compile Include="ViewModels\*.cs" />
     <Compile Include="Models\*.cs" />

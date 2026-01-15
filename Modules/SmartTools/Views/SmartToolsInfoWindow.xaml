@@ -1,0 +1,418 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Modules.SmartTools.Views.SmartToolsInfoWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Smart Tools - Informations"
+        Width="950" Height="850"
+        MinWidth="850" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="#1a1a2e"
+        ResizeMode="CanResize">
+    
+    <Window.Resources>
+        <!-- Styles pour les cartes d'outils -->
+        <Style x:Key="ToolCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#2d2d44"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Margin" Value="0,8,0,8"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="BorderThickness" Value="0,0,0,3"/>
+            <Setter Property="BorderBrush" Value="#4361ee"/>
+        </Style>
+        
+        <Style x:Key="ToolCardNewStyle" TargetType="Border">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#2d2d44" Offset="0"/>
+                        <GradientStop Color="#3a2d5a" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Margin" Value="0,8,0,8"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="BorderThickness" Value="0,0,0,3"/>
+            <Setter Property="BorderBrush" Value="#e91e63"/>
+        </Style>
+        
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#4cc9f0"/>
+            <Setter Property="Margin" Value="0,20,0,10"/>
+        </Style>
+        
+        <Style x:Key="ToolTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#f8f9fa"/>
+        </Style>
+        
+        <Style x:Key="ToolDescriptionStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#adb5bd"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+        </Style>
+        
+        <Style x:Key="FeatureItemStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#4ade80"/>
+            <Setter Property="Margin" Value="15,3,0,0"/>
+        </Style>
+        
+        <Style x:Key="VersionBadgeStyle" TargetType="Border">
+            <Setter Property="Background" Value="#ff9800"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+        </Style>
+        
+        <Style x:Key="PanelBadgeStyle" TargetType="Border">
+            <Setter Property="Background" Value="#7c3aed"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+        </Style>
+        
+        <Style x:Key="NewBadgeStyle" TargetType="Border">
+            <Setter Property="Background" Value="#e91e63"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+        </Style>
+    </Window.Resources>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- HEADER -->
+        <Border Grid.Row="0" Padding="25,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#667eea" Offset="0"/>
+                    <GradientStop Color="#764ba2" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            
+            <StackPanel>
+                <TextBlock Text="🛠️ Smart Tools - Outils d'automatisation Inventor"
+                           FontSize="24" FontWeight="Bold" Foreground="White"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Suite d'outils d'automatisation pour Vault et Inventor"
+                           FontSize="14" Foreground="#e0e0e0" Margin="0,8,0,0"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+        
+        <!-- CONTENT -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="25,0">
+            <StackPanel>
+                
+                <!-- INFO SYSTEME -->
+                <Border Background="#1e3a5f" CornerRadius="10" Padding="20" Margin="0,20,0,0">
+                    <StackPanel>
+                        <TextBlock Text="Informations Systeme" FontSize="16" FontWeight="Bold" Foreground="#4cc9f0" Margin="0,0,0,15"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="Utilisateur: " FontWeight="SemiBold"/><Run x:Name="TxtUser" Text="N/A"/></TextBlock>
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="Machine: " FontWeight="SemiBold"/><Run x:Name="TxtMachine" Text="N/A"/></TextBlock>
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="Inventor: " FontWeight="SemiBold"/><Run x:Name="TxtInventor" Text="N/A"/></TextBlock>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="📅 Date: " FontWeight="SemiBold"/><Run x:Name="TxtDate" Text="N/A"/></TextBlock>
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="🏢 Entreprise: " FontWeight="SemiBold"/><Run Text="XNRGY Climate Systems ULC"/></TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- NOUVEAUTES -->
+                <Border Background="#2d1b4e" CornerRadius="10" Padding="20" Margin="0,20,0,0" BorderBrush="#e91e63" BorderThickness="2">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="📋 Nouveautes" FontSize="18" FontWeight="Bold" Foreground="#e91e63"/>
+                            <Border Background="#e91e63" CornerRadius="4" Padding="8,2" Margin="10,0,0,0" VerticalAlignment="Center">
+                                <TextBlock Text="NEW" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <StackPanel Margin="0,15,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Migration vers Inventor 2026"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Support du nouveau chemin C:\Vault\Engineering\Projects\"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ ExportIAMToIPT: Bouton Parcourir + edition manuelle du chemin"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ ExportIDWtoShopPDF: Option Parcourir si dossier non trouve"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Compatibilite: Inventor 2023, 2024, 2025 et 2026"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION SMART VISIBILITY -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="👁️ Smart Visibility"/>
+                
+                <!-- HideBox -->
+                <Border Style="{StaticResource ToolCardNewStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📦 Smart Hide Box" Style="{StaticResource ToolTitleStyle}"/>
+                            <Border Style="{StaticResource PanelBadgeStyle}">
+                                <TextBlock Text="Assembly + Part" FontSize="10" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Masquage intelligent des elements Dummy, PanFactice, AirFlow, etc."/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Masque: box, template, multi_opening, cut_opening"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Exclut intelligemment les J_BOX et Cross_Member"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="[+] Support tous types Dummy (DummyRemovable, DummyRehausse, DummySplitWall)"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Detection PanFactice, AirFlow_R/L, External_Swing"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ToggleRefVisibility -->
+                <Border Style="{StaticResource ToolCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📐 Smart Ref Visibility" Style="{StaticResource ToolTitleStyle}"/>
+                            <Border Style="{StaticResource PanelBadgeStyle}">
+                                <TextBlock Text="Assembly + Part" FontSize="10" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Basculer la visibilite des references (Plans, Axes, Points)."/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Detection automatique de l'etat actuel"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Application recursive dans assemblages"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Statistiques detaillees"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ToggleSketchVisibility -->
+                <Border Style="{StaticResource ToolCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="✏️ Smart Sketch Visibility" Style="{StaticResource ToolTitleStyle}"/>
+                            <Border Style="{StaticResource PanelBadgeStyle}">
+                                <TextBlock Text="Assembly + Part" FontSize="10" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Basculer la visibilite de toutes les esquisses (2D et 3D)."/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Support esquisses 2D et 3D"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Fonctionne sur .ipt et .iam"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Traitement recursif sous-composants"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION REPORTS -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="📊 Reports"/>
+                
+                <!-- ConstraintReport -->
+                <Border Style="{StaticResource ToolCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📋 Rapport Contraintes" Style="{StaticResource ToolTitleStyle}"/>
+                            <Border Style="{StaticResource PanelBadgeStyle}">
+                                <TextBlock Text="Assembly seulement" FontSize="10" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Genere un rapport HTML detaille sur l'etat des contraintes de l'assemblage."/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Analyse des degres de liberte (DoF)"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Test des contraintes critiques"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Interface HTML responsive moderne"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION PROPERTIES -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="🏷️ Properties"/>
+                
+                <!-- iPropertiesSummary -->
+                <Border Style="{StaticResource ToolCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📄 Resume iProperties" Style="{StaticResource ToolTitleStyle}"/>
+                            <Border Style="{StaticResource PanelBadgeStyle}">
+                                <TextBlock Text="Assembly seulement" FontSize="10" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Resume des proprietes avec chemin complet."/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Lecture recursive des iProperties"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Affichage chemin complet"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Export HTML"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION SAFE -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="🛡️ Safe Operations"/>
+                
+                <!-- SafeClose -->
+                <Border Style="{StaticResource ToolCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🔒 Safe Close" Style="{StaticResource ToolTitleStyle}"/>
+                            <Border Style="{StaticResource PanelBadgeStyle}">
+                                <TextBlock Text="Tous documents" FontSize="10" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Fermeture securisee avec support des elements Dummy."/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Sauvegarde automatique avant fermeture"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Gestion des references"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Protection contre perte de donnees"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SmartSave -->
+                <Border Style="{StaticResource ToolCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="💾 Smart Save" Style="{StaticResource ToolTitleStyle}"/>
+                            <Border Style="{StaticResource PanelBadgeStyle}">
+                                <TextBlock Text="Tous documents" FontSize="10" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Sauvegarde intelligente sans fermeture."/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Sauvegarde incrementale"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Pas d'interruption du travail"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION EXPORT -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="📤 Export Tools"/>
+                
+                <!-- ExportIAMToIPT -->
+                <Border Style="{StaticResource ToolCardNewStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🔄 Export IAM to IPT/STEP" Style="{StaticResource ToolTitleStyle}"/>
+                            <Border Style="{StaticResource PanelBadgeStyle}">
+                                <TextBlock Text="Assembly" FontSize="10" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Export d'assemblage vers IPT/STEP."/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Bouton Parcourir + edition manuelle du chemin"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Export vers formats IPT et STEP"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Support Inventor 2026"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- ExportIDWtoShopPDF -->
+                <Border Style="{StaticResource ToolCardNewStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📑 Export IDW to Shop PDF" Style="{StaticResource ToolTitleStyle}"/>
+                            <Border Style="{StaticResource PanelBadgeStyle}">
+                                <TextBlock Text="Drawing" FontSize="10" Foreground="White"/>
+                            </Border>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Export de dessins en PDF vers 6-Shop Drawing PDF."/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Option Parcourir si dossier non trouve"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Export PDF automatique"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Nommage intelligent"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION UTILITIES -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="⚙️ Utilities"/>
+                
+                <!-- FormCenteringUtility -->
+                <Border Style="{StaticResource ToolCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🎯 Form Centering Utility" Style="{StaticResource ToolTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Centrage des formulaires generiques."/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- iLogicFormsCentred -->
+                <Border Style="{StaticResource ToolCardStyle}">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="🔲 iLogic Forms Centred" Style="{StaticResource ToolTitleStyle}"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource ToolDescriptionStyle}" 
+                                   Text="Detection et centrage des formulaires iLogic."/>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Spacer at bottom -->
+                <Border Height="20"/>
+                
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- FOOTER -->
+        <Border Grid.Row="2" Background="#16213e" Padding="20">
+            <Grid>
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <TextBlock Text="👨‍💻 Developpe par: Mohammed Amine El Galai" 
+                               FontSize="13" Foreground="#adb5bd" HorizontalAlignment="Center"/>
+                    <TextBlock Text="🏢 XNRGY Climate Systems ULC" 
+                               FontSize="12" Foreground="#6c757d" HorizontalAlignment="Center" Margin="0,5,0,0"/>
+                </StackPanel>
+                <Button Content="✅ OK" 
+                        HorizontalAlignment="Right" 
+                        Width="100" Height="35"
+                        FontSize="14" FontWeight="SemiBold"
+                        Background="#4361ee" Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="BtnOk_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                                CornerRadius="6" Padding="15,8">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#3a56d4"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#2d4bb8"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
+        </Border>
+        
+    </Grid>
+</Window>

@@ -1591,8 +1591,8 @@ namespace XnrgyEngineeringAutomationTools
             catch (Exception ex)
             {
                 AddLog($"Erreur lors de l'ouverture de Smart Tools: {ex.Message}", "ERROR");
-                MessageBox.Show($"Erreur lors de l'ouverture de Smart Tools:\n{ex.Message}", 
-                    "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError($"Erreur lors de l'ouverture de Smart Tools:\n{ex.Message}", 
+                    "Erreur", this);
             }
         }
         
@@ -1682,21 +1682,72 @@ namespace XnrgyEngineeringAutomationTools
 
         private void OpenACP_Click(object sender, RoutedEventArgs e)
         {
-            AddLog("Ouverture de ACP (Assistant de Conception de Projet)...", "START");
-            StatusText.Text = "Ouverture de ACP...";
+            // ACP - Fonctionnalite en cours de developpement
+            AddLog("Module ACP (Assistant de Conception de Projet)...", "START");
+            StatusText.Text = "ACP - En developpement";
+            
+            XnrgyMessageBox.ShowInfo(
+                "Fonctionnalite en Developpement",
+                "Le module ACP (Assistant de Conception de Projet) est actuellement en cours de developpement.\n\n" +
+                "Ce module permettra de:\n" +
+                "[+] Gerer les points critiques des modules\n" +
+                "[+] Suivre l'avancement des conceptions\n" +
+                "[+] Generer des rapports de projet\n\n" +
+                "Disponible dans une prochaine version.",
+                this
+            );
+            
+            AddLog("ACP: Fonctionnalite en cours de developpement", "WARN");
+            StatusText.Text = "Pret";
+        }
+
+        private void OpenConfigUnits_Click(object sender, RoutedEventArgs e)
+        {
+            // Config Unites - Fonctionnalite future (Master Configuration)
+            AddLog("Module Config Unites...", "START");
+            StatusText.Text = "Config Unites - En developpement";
+            
+            XnrgyMessageBox.ShowInfo(
+                "Fonctionnalite en Developpement",
+                "Le module Config Unites est actuellement en cours de developpement.\n\n" +
+                "Ce module sera le MASTER de toutes les configurations:\n" +
+                "[+] Configuration complete de l'unite (SubMetal)\n" +
+                "[+] Parametres partages entre tous les modules\n" +
+                "[+] Source de donnees centralisee\n" +
+                "[+] Gestion des specifications projet\n\n" +
+                "Tous les autres modules se nourriront de cette configuration.\n\n" +
+                "Disponible dans une prochaine version.",
+                this
+            );
+            
+            AddLog("Config Unites: Fonctionnalite en cours de developpement", "WARN");
+            StatusText.Text = "Pret";
+        }
+
+        private void OpenVaultProject_Click(object sender, RoutedEventArgs e)
+        {
+            if (!CheckVaultConnection()) return;
+            if (!CheckInventorConnection()) return;
+            
+            AddLog("Ouverture de Ouvrir Projet Vault...", "START");
+            StatusText.Text = "Ouverture de Ouvrir Projet Vault...";
+            
             try
             {
-                var acpWindow = new XnrgyEngineeringAutomationTools.Modules.ACP.Views.ACPWindow(_isVaultConnected ? _vaultService : null);
-                acpWindow.Show();
-                AddLog("ACP ouvert avec synchronisation Vault", "SUCCESS");
-                AddLog("Synchronisation automatique: " + (_isVaultConnected ? "Active (4 min)" : "Desactivee - Vault non connecte"), 
-                    _isVaultConnected ? "SUCCESS" : "WARN");
-                StatusText.Text = "ACP ouvert";
+                var openVaultWindow = new XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Views.OpenVaultProjectWindow(
+                    _vaultService,
+                    _inventorService
+                );
+                openVaultWindow.Owner = this;
+                openVaultWindow.Show();
+                
+                AddLog("Ouvrir Projet Vault ouvert", "SUCCESS");
+                StatusText.Text = "Ouvrir Projet Vault ouvert";
             }
             catch (Exception ex)
             {
-                AddLog("Erreur ouverture ACP: " + ex.Message, "CRITICAL");
-                Logger.LogException("OpenACP", ex, Logger.LogLevel.ERROR);
+                AddLog("Erreur ouverture Ouvrir Projet Vault: " + ex.Message, "CRITICAL");
+                Logger.LogException("OpenVaultProject", ex, Logger.LogLevel.ERROR);
                 StatusText.Text = "Erreur";
             }
         }

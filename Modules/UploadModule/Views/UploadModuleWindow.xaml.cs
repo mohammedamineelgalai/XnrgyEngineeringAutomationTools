@@ -957,6 +957,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                                 doc.Save();
                                 
                                 successCount++;
+                                file.PropertiesApplied = true; // Marquer le fichier
+                                Dispatcher.Invoke(() => Log($"[+] {fileName} - Proprietes appliquees", LogLevel.SUCCESS));
                             }
                             else
                             {
@@ -1038,9 +1040,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                 BtnCheckIn.IsEnabled = true;
             }
 
+            // Rafraichir le DataGrid et statistiques pour afficher les Props appliquees
+            DgFiles.Items.Refresh();
+            UpdateStatistics();
+
             // Log final
             var elapsed = DateTime.Now - _startTime;
-            Log($"[+] Proprietes appliquees: {successCount}/{totalFiles} fichiers en {elapsed:mm\\:ss}", LogLevel.INFO);
+            Log($"[+] Proprietes appliquees: {successCount}/{totalFiles} fichiers en {elapsed:mm\\:ss}", LogLevel.SUCCESS);
             
             if (failCount > 0)
             {
@@ -1246,18 +1252,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                 return;
             }
 
-            var confirm = XnrgyMessageBox.Show(
-                $"Vous allez uploader {selectedFiles.Count} fichiers vers Vault.\n\n" +
-                $"Projet: {_projectProperties?.ProjectNumber ?? "N/A"}\n" +
-                $"Reference: {_projectProperties?.Reference ?? "N/A"}\n" +
-                $"Module: {_projectProperties?.Module ?? "N/A"}\n\n" +
-                "Continuer?",
-                "Confirmation Upload",
-                XnrgyMessageBoxType.Info,
-                XnrgyMessageBoxButtons.YesNo,
-                this);
+            // Verifier si des fichiers non-Inventor sont selectionnes
+            var nonInventorFiles = selectedFiles.Where(f => !f.IsInventorFile).ToList();
+            
+            // Afficher la confirmation SEULEMENT si des fichiers non-Inventor sont selectionnes
+            // (les fichiers Inventor ont deja leurs proprietes appliquees via "Appliquer Proprietes")
+            if (nonInventorFiles.Count > 0)
+            {
+                var confirm = XnrgyMessageBox.Show(
+                    $"Vous allez uploader {selectedFiles.Count} fichiers vers Vault.\n" +
+                    $"({nonInventorFiles.Count} fichiers non-Inventor recevront les proprietes UDP)\n\n" +
+                    $"Projet: {_projectProperties?.ProjectNumber ?? "N/A"}\n" +
+                    $"Reference: {_projectProperties?.Reference ?? "N/A"}\n" +
+                    $"Module: {_projectProperties?.Module ?? "N/A"}\n\n" +
+                    "Continuer?",
+                    "Confirmation Upload",
+                    XnrgyMessageBoxType.Info,
+                    XnrgyMessageBoxButtons.YesNo,
+                    this);
 
-            if (confirm != XnrgyMessageBoxResult.Yes) return;
+                if (confirm != XnrgyMessageBoxResult.Yes) return;
+            }
 
             await StartUploadAsync(selectedFiles);
         }
@@ -1281,6 +1296,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
             {
                 uploadComment = $"{baseComment} | Project: {_projectProperties.ProjectNumber}, Ref: {_projectProperties.Reference}, Module: {_projectProperties.Module}";
             }
+
+            // Capturer la categorie et le lifecycle state selectionnes (sur le thread UI)
+            var selectedCategory = CmbCategory.SelectedItem as VaultCategoryItem;
+            var selectedState = CmbLifecycleState.SelectedItem as VaultLifecycleStateItem;
+            
+            long? categoryId = selectedCategory?.Id;
+            string? categoryName = selectedCategory?.Name;
+            long? lifecycleStateId = selectedState?.Id;
+            
+            Log($"[i] Categorie: {categoryName ?? "Aucune"} (ID: {categoryId})", LogLevel.INFO);
+            Log($"[i] State: {selectedState?.Name ?? "Aucun"} (ID: {lifecycleStateId})", LogLevel.INFO);
 
             SetProcessingState(true);
 
@@ -1313,8 +1339,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                     {
                         file.Status = "Upload en cours...";
                         
-                        // Upload vers Vault - passer le commentaire en parametre
-                        bool success = await Task.Run(() => UploadFileToVault(file, uploadComment));
+                        // Upload vers Vault - passer le commentaire, categorie et lifecycle en parametres
+                        bool success = await Task.Run(() => UploadFileToVault(file, uploadComment, categoryId, categoryName, lifecycleStateId));
 
                         if (success)
                         {
@@ -1366,7 +1392,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
             }
         }
 
-        private bool UploadFileToVault(VaultUploadFileItem file, string comment)
+        private bool UploadFileToVault(VaultUploadFileItem file, string comment, long? categoryId, string? categoryName, long? lifecycleStateId)
         {
             if (_vaultService == null) return false;
 
@@ -1388,18 +1414,17 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                 string? reference = _projectProperties?.Reference;
                 string? module = _projectProperties?.Module;
 
-                // Upload fichier vers Vault avec proprietes et commentaire
-                // Utilise UploadFile qui applique les proprietes (Check-in/Lifecycle/Properties)
+                // Upload fichier vers Vault avec proprietes, categorie, lifecycle et commentaire
                 return _vaultService.UploadFile(
                     file.FullPath,
                     vaultPath,
                     projectNumber,
                     reference,
                     module,
-                    categoryId: null,
-                    categoryName: null,
+                    categoryId: categoryId,
+                    categoryName: categoryName,
                     lifecycleDefinitionId: null,
-                    lifecycleStateId: null,
+                    lifecycleStateId: lifecycleStateId,
                     revision: null,
                     checkInComment: comment
                 );
@@ -1526,10 +1551,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                 TimeSpan elapsed = DateTime.Now - _startTime;
                 string elapsedStr = FormatTimeSpan(elapsed);
                 
+                // Calcul du temps estime restant
+                string estimatedStr = "--:--";
+                if (progress > 0 && progress < 1)
+                {
+                    double estimatedTotalSeconds = elapsed.TotalSeconds / progress;
+                    double remainingSeconds = estimatedTotalSeconds - elapsed.TotalSeconds;
+                    if (remainingSeconds > 0)
+                    {
+                        TimeSpan remaining = TimeSpan.FromSeconds(remainingSeconds);
+                        estimatedStr = FormatTimeSpan(remaining);
+                    }
+                }
+                else if (progress >= 1)
+                {
+                    estimatedStr = "00:00";
+                }
+                
                 TxtProgress.Text = statusText;
                 TxtCurrentFile.Text = "";
                 TxtProgressTimeElapsed.Text = elapsedStr;
-                TxtProgressTimeEstimated.Text = "--:--";
+                TxtProgressTimeEstimated.Text = estimatedStr;
                 TxtProgressPercent.Text = $"{percent}%";
             });
         }
@@ -1553,11 +1595,13 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Views
                 int inventorCount = _allFilesMaster.Count(f => f.IsInventorFile);
                 int nonInventorCount = totalCount - inventorCount;
                 int selectedCount = _allFilesMaster.Count(f => f.IsSelected);
+                int propsApplied = _allFilesMaster.Count(f => f.PropertiesApplied);
                 
                 if (TxtStatsTotal != null) TxtStatsTotal.Text = totalCount.ToString();
                 TxtStatsInventor.Text = inventorCount.ToString();
                 TxtStatsNonInventor.Text = nonInventorCount.ToString();
                 TxtStatsSelected.Text = selectedCount.ToString();
+                if (TxtStatsProperties != null) TxtStatsProperties.Text = propsApplied.ToString();
             });
         }
 

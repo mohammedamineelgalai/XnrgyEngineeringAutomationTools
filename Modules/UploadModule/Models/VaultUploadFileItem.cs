@@ -54,6 +54,26 @@ namespace XnrgyEngineeringAutomationTools.Modules.UploadModule.Models
             }
         }
 
+        private bool _propertiesApplied;
+        /// <summary>
+        /// Indique si les proprietes Inventor ont ete appliquees au fichier
+        /// </summary>
+        public bool PropertiesApplied
+        {
+            get => _propertiesApplied;
+            set
+            {
+                _propertiesApplied = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(PropertiesAppliedDisplay));
+            }
+        }
+
+        /// <summary>
+        /// Affichage pour le DataGrid (checkmark ou vide)
+        /// </summary>
+        public string PropertiesAppliedDisplay => _propertiesApplied ? "[OK]" : "";
+
         public string Status
         {
             get => _status;

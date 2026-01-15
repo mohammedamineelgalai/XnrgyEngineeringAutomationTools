@@ -3,6 +3,7 @@ using System.IO;
 using System.Windows;
 using System.Runtime.InteropServices;
 using Microsoft.Win32;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
 {
@@ -544,8 +545,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             {
                 System.Diagnostics.Debug.WriteLine($"Erreur ShowOptions: {ex.Message}");
                 System.Diagnostics.Debug.WriteLine($"Stack trace: {ex.StackTrace}");
-                System.Windows.MessageBox.Show($"Erreur lors de l'ouverture de la fenêtre d'export: {ex.Message}", 
-                    "Erreur", System.Windows.MessageBoxButton.OK, System.Windows.MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError($"Erreur lors de l'ouverture de la fenetre d'export:\n{ex.Message}", "Erreur");
             }
 
             return null;

@@ -6,6 +6,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
 {
@@ -59,8 +60,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Erreur FolderBrowserWindow: {ex.Message}");
-                MessageBox.Show($"Erreur lors de l'ouverture de la fenêtre de sélection: {ex.Message}",
-                    "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError($"Erreur lors de l'ouverture de la fenetre de selection:\n{ex.Message}", "Erreur");
                 return null;
             }
         }
@@ -88,8 +88,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur lors du chargement des disques: {ex.Message}",
-                    "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError($"Erreur lors du chargement des disques:\n{ex.Message}", "Erreur");
             }
         }
 
@@ -207,8 +206,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             }
             else
             {
-                MessageBox.Show("Le chemin spécifié n'existe pas ou n'est pas un dossier valide.",
-                    "Chemin invalide", MessageBoxButton.OK, MessageBoxImage.Warning);
+                XnrgyMessageBox.ShowWarning("Le chemin specifie n'existe pas ou n'est pas un dossier valide.", "Chemin invalide");
             }
         }
 
@@ -258,8 +256,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur lors du chargement du chemin: {ex.Message}",
-                    "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError($"Erreur lors du chargement du chemin:\n{ex.Message}", "Erreur");
             }
         }
 
@@ -284,8 +281,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
             
             if (string.IsNullOrEmpty(basePath) || !Directory.Exists(basePath))
             {
-                MessageBox.Show("Veuillez d'abord sélectionner un dossier valide.",
-                    "Aucun dossier sélectionné", MessageBoxButton.OK, MessageBoxImage.Information);
+                XnrgyMessageBox.ShowInfo("Veuillez d'abord selectionner un dossier valide.", "Aucun dossier selectionne");
                 return;
             }
 
@@ -308,13 +304,11 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
                 // Sélectionner le nouveau dossier
                 SelectPath(newFolderPath);
                 
-                MessageBox.Show($"Dossier créé avec succès: {folderName}",
-                    "Succès", MessageBoxButton.OK, MessageBoxImage.Information);
+                XnrgyMessageBox.ShowSuccess($"Dossier cree avec succes: {folderName}", "Succes");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erreur lors de la création du dossier: {ex.Message}",
-                    "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError($"Erreur lors de la creation du dossier:\n{ex.Message}", "Erreur");
             }
         }
 
@@ -358,8 +352,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
         {
             if (string.IsNullOrEmpty(SelectedPath) || !Directory.Exists(SelectedPath))
             {
-                MessageBox.Show("Veuillez sélectionner un dossier valide.",
-                    "Aucun dossier sélectionné", MessageBoxButton.OK, MessageBoxImage.Information);
+                XnrgyMessageBox.ShowInfo("Veuillez selectionner un dossier valide.", "Aucun dossier selectionne");
                 return;
             }
 

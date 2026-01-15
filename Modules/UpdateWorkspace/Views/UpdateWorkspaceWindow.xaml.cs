@@ -327,6 +327,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             // Mettre a jour le pourcentage
             TxtProgressPercent.Text = $"{percent}%";
 
+            // Mettre a jour le temps estime restant
+            if (_stopwatch.IsRunning && percent > 0 && percent < 100)
+            {
+                var elapsed = _stopwatch.Elapsed;
+                double estimatedTotalSeconds = elapsed.TotalSeconds * 100 / percent;
+                double remainingSeconds = estimatedTotalSeconds - elapsed.TotalSeconds;
+                if (remainingSeconds > 0)
+                {
+                    var remaining = TimeSpan.FromSeconds(remainingSeconds);
+                    TxtEstimatedTime.Text = $"{(int)remaining.TotalMinutes:D2}:{remaining.Seconds:D2}";
+                }
+                else
+                {
+                    TxtEstimatedTime.Text = "00:00";
+                }
+            }
+            else if (percent >= 100)
+            {
+                TxtEstimatedTime.Text = "00:00";
+            }
+
             // Mettre a jour le statut
             if (!string.IsNullOrEmpty(status))
             {

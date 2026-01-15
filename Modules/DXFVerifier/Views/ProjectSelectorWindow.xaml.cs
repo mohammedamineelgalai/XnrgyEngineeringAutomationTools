@@ -11,6 +11,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
 {
@@ -104,10 +105,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views
             }
             else
             {
-                MessageBox.Show("Veuillez selectionner un projet dans la liste.", 
-                               "Selection requise", 
-                               MessageBoxButton.OK, 
-                               MessageBoxImage.Warning);
+                XnrgyMessageBox.ShowWarning("Veuillez selectionner un projet dans la liste.", 
+                               "Selection requise", this);
             }
         }
 

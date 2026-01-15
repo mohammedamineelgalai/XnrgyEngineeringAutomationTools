@@ -269,6 +269,83 @@
             </Setter>
         </Style>
         
+        <!-- ========== STYLE COMBOBOX MODERNE (theme sombre) ========== -->
+        <Style x:Key="ModernComboBox" TargetType="ComboBox">
+            <Setter Property="Background" Value="#1E2A3A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="#4A7FBF"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="Border" Background="{TemplateBinding Background}" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="6">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="24"/>
+                                    </Grid.ColumnDefinitions>
+                                    <!-- TextBlock pour afficher le texte de la selection -->
+                                    <TextBlock Grid.Column="0" Margin="8,0,0,0" 
+                                               Text="{TemplateBinding Text}"
+                                               Foreground="{TemplateBinding Foreground}"
+                                               VerticalAlignment="Center"
+                                               HorizontalAlignment="Left"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <ToggleButton Grid.Column="1" x:Name="ToggleButton" 
+                                                  Background="Transparent" BorderThickness="0"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  ClickMode="Press">
+                                        <Path Fill="#888" Data="M0,0 L4,4 L8,0 Z" 
+                                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </ToggleButton>
+                                    <Popup x:Name="Popup" Placement="Bottom" IsOpen="{TemplateBinding IsDropDownOpen}" 
+                                           AllowsTransparency="True" Focusable="False" PopupAnimation="Slide">
+                                        <Border x:Name="DropDownBorder" Background="#1E2A3A" 
+                                                BorderBrush="#0078D4" BorderThickness="2" CornerRadius="6"
+                                                MinWidth="{TemplateBinding ActualWidth}" MaxHeight="300">
+                                            <ScrollViewer>
+                                                <StackPanel IsItemsHost="True"/>
+                                            </ScrollViewer>
+                                        </Border>
+                                    </Popup>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#0078D4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <!-- Style ComboBoxItem moderne -->
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#3D3D56"/>
+                </Trigger>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#0078D4"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
         <!-- ========== TEXTBOX PATH (sans coupure de texte) ========== -->
         <Style x:Key="PathTextBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}">
             <Setter Property="Padding" Value="12,6"/>
@@ -420,6 +497,10 @@
                                     <TextBlock x:Name="TxtStatsUploaded" Text="0" Foreground="#90EE90" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
                                     <TextBlock Text="📤 Uploades" Foreground="#90EE90" FontSize="11" HorizontalAlignment="Center"/>
                                 </StackPanel>
+                                <StackPanel Margin="0,0,20,0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <TextBlock x:Name="TxtStatsProperties" Text="0" Foreground="#00BFFF" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="Proprietes" Foreground="#00BFFF" FontSize="11" HorizontalAlignment="Center"/>
+                                </StackPanel>
                                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <TextBlock x:Name="TxtStatsFailed" Text="0" Foreground="#FF6B6B" FontSize="22" FontWeight="Bold" HorizontalAlignment="Center"/>
                                     <TextBlock Text="❌ Echecs" Foreground="#FF6B6B" FontSize="11" HorizontalAlignment="Center"/>
@@ -537,16 +618,16 @@
                     
                     <!-- Categorie Vault -->
                     <TextBlock Text="📁 Categorie:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                    <ComboBox x:Name="CmbCategory" Width="140" Height="32" DisplayMemberPath="Name" 
+                    <ComboBox x:Name="CmbCategory" Width="160" Height="32" DisplayMemberPath="Name" 
                               Style="{StaticResource ModernComboBox}"
-                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
+                              IsEditable="True" IsReadOnly="True" TextSearch.TextPath="Name"
                               SelectionChanged="CmbCategory_SelectionChanged"/>
                     
                     <!-- Lifecycle State Vault -->
                     <TextBlock Text="🔄 State:" VerticalAlignment="Center" Margin="12,0,4,0" FontSize="11" Foreground="White" FontWeight="Bold"/>
-                    <ComboBox x:Name="CmbLifecycleState" Width="150" Height="32" DisplayMemberPath="Name"
+                    <ComboBox x:Name="CmbLifecycleState" Width="180" Height="32" DisplayMemberPath="Name"
                               Style="{StaticResource ModernComboBox}"
-                              VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+                              IsEditable="True" IsReadOnly="True" TextSearch.TextPath="Name"/>
                 </StackPanel>
 
                 <!-- DataGrid Unifie -->
@@ -567,7 +648,16 @@
                         <DataGridTextColumn Header="📊 Taille" Binding="{Binding FileSizeFormatted}" Width="80" IsReadOnly="True"/>
                         <DataGridTextColumn Header="📁 Chemin local" Binding="{Binding FullPath}" Width="500" IsReadOnly="True"/>
                         <DataGridTextColumn Header="🗄️ Chemin Vault" Binding="{Binding VaultPath}" Width="*" IsReadOnly="True"/>
-                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="100" IsReadOnly="True"/>
+                        <DataGridTextColumn Header="📋 Proprietes" Binding="{Binding PropertiesAppliedDisplay}" Width="100" IsReadOnly="True">
+                            <DataGridTextColumn.ElementStyle>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                    <Setter Property="Foreground" Value="#00FF7F"/>
+                                    <Setter Property="FontWeight" Value="Bold"/>
+                                </Style>
+                            </DataGridTextColumn.ElementStyle>
+                        </DataGridTextColumn>
+                        <DataGridTextColumn Header="🔄 Statut" Binding="{Binding Status}" Width="120" IsReadOnly="True"/>
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
@@ -639,8 +729,8 @@
 
                 <!-- Boutons action -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <Button x:Name="BtnApplyProperties" Content="📝 Appliquer Proprietes" 
-                            Style="{StaticResource SecondaryButton}" Height="34" MinWidth="165" FontSize="12"
+                    <Button x:Name="BtnApplyProperties" Content="📋 Appliquer Proprietes" 
+                            Style="{StaticResource PrimaryButton}" Height="34" MinWidth="175" FontSize="12"
                             Click="ApplyProperties_Click" Margin="0,0,8,0" Padding="10,5" VerticalContentAlignment="Center"
                             ToolTip="Applique les proprietes Project/Reference/Module aux fichiers Inventor via API (requis avant Upload)"/>
                     
@@ -685,11 +775,11 @@
                 
                 <!-- Contenu Journal -->
                 <RichTextBox x:Name="LogBox" Grid.Row="1" IsReadOnly="True" VerticalScrollBarVisibility="Auto"
-                             Background="{DynamicResource InputBackground}" Foreground="{DynamicResource TextPrimary}"
+                             Background="{DynamicResource InputBackground}"
                              BorderThickness="0" FontFamily="Consolas" FontSize="14" Padding="10,5">
                     <FlowDocument>
                         <Paragraph>
-                            <Run Text="ℹ️ Module Upload initialisé - Prêt" Foreground="#4FC3F7"/>
+                            <Run Text="[i] Module Upload initialise - Pret" Foreground="#FFFFFF"/>
                         </Paragraph>
                     </FlowDocument>
                 </RichTextBox>

@@ -7,6 +7,7 @@ using System.Windows.Media;
 using Microsoft.Web.WebView2.Core;
 using XnrgyEngineeringAutomationTools.Services;
 using XnrgyEngineeringAutomationTools.Modules.ACP.Services;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.ACP.Views
 {
@@ -209,7 +210,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.ACP.Views
         {
             try
             {
-                if (_vaultService == null || !_vaultService.IsConnected) { MessageBox.Show("Vault non connecte.", "Vault Deconnecte", MessageBoxButton.OK, MessageBoxImage.Warning); return; }
+                if (_vaultService == null || !_vaultService.IsConnected) { XnrgyMessageBox.ShowWarning("Vault non connecte.", "Vault Deconnecte", this); return; }
                 FilePathText.Text = "[>] Synchronisation en cours...";
                 WebViewControl.CoreWebView2.ExecuteScriptAsync("if(window.ACPBridge) window.ACPBridge.syncData(localStorage.getItem('acp_data'));");
             }
@@ -224,8 +225,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.ACP.Views
 
         private void OpenExternalButton_Click(object sender, RoutedEventArgs e)
         {
-            try { if (File.Exists(_htmlFilePath)) Process.Start(new ProcessStartInfo { FileName = _htmlFilePath, UseShellExecute = true }); else MessageBox.Show("Fichier non trouve:\n" + _htmlFilePath, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error); }
-            catch (Exception ex) { Logger.LogException("ACPWindow.OpenExternalButton_Click", ex, Logger.LogLevel.ERROR); MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error); }
+            try { if (File.Exists(_htmlFilePath)) Process.Start(new ProcessStartInfo { FileName = _htmlFilePath, UseShellExecute = true }); else XnrgyMessageBox.ShowError("Fichier non trouve:\n" + _htmlFilePath, "Erreur", this); }
+            catch (Exception ex) { Logger.LogException("ACPWindow.OpenExternalButton_Click", ex, Logger.LogLevel.ERROR); XnrgyMessageBox.ShowError("Erreur: " + ex.Message, "Erreur", this); }
         }
     }
 }

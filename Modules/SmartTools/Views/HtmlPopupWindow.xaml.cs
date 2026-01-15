@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
 using XnrgyEngineeringAutomationTools.Services;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
 {
@@ -284,11 +285,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.SmartTools.Views
 
         private void ShowFallbackContent()
         {
-            MessageBox.Show(
+            XnrgyMessageBox.ShowWarning(
                 "WebView2 n'est pas disponible. Veuillez installer le runtime Microsoft Edge WebView2.",
-                "Erreur d'affichage",
-                MessageBoxButton.OK,
-                MessageBoxImage.Warning);
+                "Erreur d'affichage");
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)

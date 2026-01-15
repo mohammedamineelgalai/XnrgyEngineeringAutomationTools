@@ -1649,7 +1649,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                                     new object[] {
                                         new[] { file.MasterId },
                                         new[] { categoryId },
-                                        $"Categorie assignee automatiquement: {categoryName}"
+                                        $"MAJ Categorie | {categoryName} | XNRGY Engineering Automation Tools"
                                     });
                                 Logger.Log($"   [+] Categorie '{categoryName}' assignee via DocumentServiceExtensions.UpdateFileCategories", Logger.LogLevel.INFO);
                                 categoryAssigned = true;

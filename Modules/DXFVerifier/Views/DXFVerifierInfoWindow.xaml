@@ -1,55 +1,56 @@
 <Window x:Class="XnrgyEngineeringAutomationTools.Modules.DXFVerifier.Views.DXFVerifierInfoWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="{StaticResource WindowTitleDXFVerifierInfo}"
-        Icon="/Resources/XnrgyEngineeringAutomationTools.ico"
-        Height="900" Width="900"
-        WindowStartupLocation="CenterOwner"
-        ResizeMode="NoResize"
-        ShowInTaskbar="False"
-        Background="#1E1E2E">
-
+        Title="DXF Verifier - Informations"
+        Width="950" Height="850"
+        MinWidth="850" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="#1a1a2e"
+        ResizeMode="CanResize">
+    
     <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="pack://application:,,,/Styles/XnrgyStyles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-            
-            <!-- Style Bouton Fermer avec Glow -->
-            <Style x:Key="CloseButton" TargetType="Button">
-                <Setter Property="Background" Value="#E81123"/>
-                <Setter Property="Foreground" Value="White"/>
-                <Setter Property="FontWeight" Value="Bold"/>
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="Padding" Value="25,10"/>
-                <Setter Property="BorderThickness" Value="2"/>
-                <Setter Property="BorderBrush" Value="#4A7FBF"/>
-                <Setter Property="Cursor" Value="Hand"/>
-                <Setter Property="Template">
-                    <Setter.Value>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="border" Background="{TemplateBinding Background}" 
-                                    BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}"
-                                    CornerRadius="6" Padding="{TemplateBinding Padding}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="border" Property="Background" Value="#FF4444"/>
-                                    <Setter TargetName="border" Property="BorderBrush" Value="#FF6666"/>
-                                    <Setter TargetName="border" Property="Effect">
-                                        <Setter.Value>
-                                            <DropShadowEffect Color="#FF4444" BlurRadius="30" ShadowDepth="0" Opacity="0.9"/>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-        </ResourceDictionary>
+        <!-- Styles pour les cartes de fonctionnalites -->
+        <Style x:Key="FeatureCardStyle" TargetType="Border">
+            <Setter Property="Background" Value="#2d2d44"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Margin" Value="0,8,0,8"/>
+            <Setter Property="Padding" Value="15"/>
+            <Setter Property="BorderThickness" Value="0,0,0,3"/>
+            <Setter Property="BorderBrush" Value="#4361ee"/>
+        </Style>
+        
+        <Style x:Key="SectionHeaderStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#4cc9f0"/>
+            <Setter Property="Margin" Value="0,20,0,10"/>
+        </Style>
+        
+        <Style x:Key="FeatureTitleStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#f8f9fa"/>
+        </Style>
+        
+        <Style x:Key="FeatureDescriptionStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Foreground" Value="#adb5bd"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Margin" Value="0,8,0,0"/>
+        </Style>
+        
+        <Style x:Key="FeatureItemStyle" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#4ade80"/>
+            <Setter Property="Margin" Value="15,3,0,0"/>
+        </Style>
+        
+        <Style x:Key="StatBadgeStyle" TargetType="Border">
+            <Setter Property="Background" Value="#7c3aed"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="Margin" Value="8,0,0,0"/>
+        </Style>
     </Window.Resources>
     
     <Grid>
@@ -57,48 +58,234 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-
-        <!-- HEADER avec style sombre - Utilise les ressources centralisees -->
-        <Border Grid.Row="0" Background="#2A4A6F" Padding="20,15">
+        
+        <!-- HEADER -->
+        <Border Grid.Row="0" Padding="25,20">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#00b4d8" Offset="0"/>
+                    <GradientStop Color="#0077b6" Offset="1"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            
             <StackPanel>
-                <TextBlock Text="DXF-CSV vs PDF Verifier" 
-                           FontSize="24" FontWeight="Bold" Foreground="White" 
+                <TextBlock Text="📊 DXF-CSV vs PDF Verifier"
+                           FontSize="24" FontWeight="Bold" Foreground="White"
                            HorizontalAlignment="Center"/>
-                <TextBlock Text="Outil de verification automatique des quantites et tags" 
-                           FontSize="14" Foreground="#FFB74D" 
-                           HorizontalAlignment="Center" Margin="0,5,0,0"/>
-                <TextBlock FontSize="12" Foreground="#90EE90" HorizontalAlignment="Center" Margin="0,5,0,0">
-                    <Run Text="{StaticResource AppVersion}"/>
-                    <Run Text=" - "/>
-                    <Run Text="{StaticResource AppReleaseDate}"/>
-                    <Run Text=" - XNRGY Climate Systems ULC"/>
-                </TextBlock>
+                <TextBlock Text="Outil de verification automatique des quantites et tags"
+                           FontSize="14" Foreground="#e0e0e0" Margin="0,8,0,0"
+                           HorizontalAlignment="Center"/>
             </StackPanel>
         </Border>
-
-        <!-- CONTENU PRINCIPAL -->
-        <Border Grid.Row="1" Background="#252536" Margin="15,10,15,10" CornerRadius="8" 
-                BorderBrush="#4A7FBF" BorderThickness="2">
-            <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="20">
-                <StackPanel x:Name="ContentPanel">
-                    <!-- Les sections seront ajoutees dynamiquement en code-behind -->
+        
+        <!-- CONTENT -->
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="25,0">
+            <StackPanel>
+                
+                <!-- INFO SYSTEME -->
+                <Border Background="#1e3a5f" CornerRadius="10" Padding="20" Margin="0,20,0,0">
+                    <StackPanel>
+                        <TextBlock Text="ℹ️ Informations" FontSize="16" FontWeight="Bold" Foreground="#4cc9f0" Margin="0,0,0,15"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="🎯 Objectif: " FontWeight="SemiBold"/><Run Text="Verification Cut Lists PDF vs CSV"/></TextBlock>
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="⏱️ Gain de temps: " FontWeight="SemiBold"/><Run Text="30-40 min economisees/module"/></TextBlock>
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="📈 Precision: " FontWeight="SemiBold"/><Run Text="~97% sur projets reels"/></TextBlock>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="🏢 Entreprise: " FontWeight="SemiBold"/><Run Text="XNRGY Climate Systems ULC"/></TextBlock>
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="💻 Compatibilite: " FontWeight="SemiBold"/><Run Text=".NET 9, Windows 10/11"/></TextBlock>
+                                <TextBlock Foreground="#adb5bd" Margin="0,3"><Run Text="📁 Templates: " FontWeight="SemiBold"/><Run Text="Excel XNRGY natifs"/></TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION UTILISATION -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="📋 Utilisation Simple"/>
+                
+                <Border Style="{StaticResource FeatureCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="🔍 Detection Automatique PDF" Style="{StaticResource FeatureTitleStyle}"/>
+                        <TextBlock Style="{StaticResource FeatureDescriptionStyle}" 
+                                   Text="Ouvrez le PDF Cut List dans n'importe quel lecteur (Adobe, Foxit, Chrome, Edge...)"/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Cliquer 'Detecter PDF' pour extraction automatique"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Projet, reference et module extraits automatiquement"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Chemins fichiers construits intelligemment"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Code couleur: VERT = OK, ROUGE = Manquant"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <Border Style="{StaticResource FeatureCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="📁 Selection Manuelle" Style="{StaticResource FeatureTitleStyle}"/>
+                        <TextBlock Style="{StaticResource FeatureDescriptionStyle}" 
+                                   Text="Alternatives si la detection automatique echoue"/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ 'Choisir Projet' - Navigation visuelle projets/references/modules"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Boutons [...] - Selection manuelle CSV, Excel ou PDF"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Chemin de base modifiable pour projets speciaux"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION EXTRACTION -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="⚡ Extraction PDF Avancee"/>
+                
+                <Border Style="{StaticResource FeatureCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="📄 Double Strategie" Style="{StaticResource FeatureTitleStyle}"/>
+                        <TextBlock Style="{StaticResource FeatureDescriptionStyle}" 
+                                   Text="Deux methodes combinees pour precision maximale"/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Strategie 1: Detection tableaux structures (colonnes TAG/QTY)"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Strategie 2: Extraction ballons et cartouches"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Reconnaissance intelligente tags, quantites, materiaux"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Gestion variations mise en page Inventor"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION CODE COULEUR -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="🎨 Code Couleur Universel"/>
+                
+                <Border Style="{StaticResource FeatureCardStyle}">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Foreground="#4ade80" Margin="0,5" FontSize="13">
+                                    <Run Text="🟢 VERT" FontWeight="Bold"/> - Correspondance parfaite (~85%)
+                                </TextBlock>
+                                <TextBlock Foreground="#facc15" Margin="0,5" FontSize="13">
+                                    <Run Text="🟡 JAUNE" FontWeight="Bold"/> - Difference quantite/materiau (~11%)
+                                </TextBlock>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Foreground="#60a5fa" Margin="0,5" FontSize="13">
+                                    <Run Text="🔵 BLEU" FontWeight="Bold"/> - Quantite zero dans PDF (~1%)
+                                </TextBlock>
+                                <TextBlock Foreground="#f87171" Margin="0,5" FontSize="13">
+                                    <Run Text="🔴 ROUGE" FontWeight="Bold"/> - Tag manquant (~3%)
+                                </TextBlock>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION INTEGRATION EXCEL -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="📊 Integration Excel"/>
+                
+                <Border Style="{StaticResource FeatureCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="📋 Gestion Automatique Complete" Style="{StaticResource FeatureTitleStyle}"/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Copie templates depuis C:\Vault\Engineering\Library\"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Renommage automatique selon structure projet"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Mise a jour metadonnees (Date, Projet, Ref, Module)"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Fermeture Excel si fichier verrouille"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Formatage couleurs metier XNRGY"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION PERFORMANCES -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="� Performances Validees"/>
+                
+                <Border Style="{StaticResource FeatureCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="📈 Metriques Production XNRGY" Style="{StaticResource FeatureTitleStyle}"/>
+                        <Grid Margin="0,15,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Extraction: ~97% precision"/>
+                                <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Temps: 3-8 min vs 30-40 min"/>
+                                <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Analyse PDF: &lt;5 secondes"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Detection auto: >95%"/>
+                                <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ ROI: 85% gain temps/module"/>
+                                <TextBlock Style="{StaticResource FeatureItemStyle}" Text="✅ Memoire: &lt;100MB"/>
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+                
+                <!-- SECTION DEVELOPPEUR -->
+                <TextBlock Style="{StaticResource SectionHeaderStyle}" Text="👨‍💻 Developpeur"/>
+                
+                <Border Style="{StaticResource FeatureCardStyle}">
+                    <StackPanel>
+                        <TextBlock Text="Mohammed Amine Elgalai" Style="{StaticResource FeatureTitleStyle}"/>
+                        <TextBlock Style="{StaticResource FeatureDescriptionStyle}" Text="Automation Engineer - XNRGY Climate Systems ULC"/>
+                        <StackPanel Margin="0,10,0,0">
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="📧 mohammedamine.elgalai@xnrgy.com"/>
+                            <TextBlock Style="{StaticResource FeatureItemStyle}" Text="💬 Teams: @Mohammed Amine Elgalai"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+                
+                <!-- Spacer at bottom -->
+                <Border Height="20"/>
+                
+            </StackPanel>
+        </ScrollViewer>
+        
+        <!-- FOOTER -->
+        <Border Grid.Row="2" Background="#16213e" Padding="20">
+            <Grid>
+                <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
+                    <TextBlock Text="👨‍💻 Developpe par: Mohammed Amine El Galai" 
+                               FontSize="13" Foreground="#adb5bd" HorizontalAlignment="Center"/>
+                    <TextBlock Text="🏢 XNRGY Climate Systems ULC" 
+                               FontSize="12" Foreground="#6c757d" HorizontalAlignment="Center" Margin="0,5,0,0"/>
                 </StackPanel>
-            </ScrollViewer>
+                <Button Content="✅ OK" 
+                        HorizontalAlignment="Right" 
+                        Width="100" Height="35"
+                        FontSize="14" FontWeight="SemiBold"
+                        Background="#4361ee" Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"
+                        Click="BtnOk_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                                CornerRadius="6" Padding="15,8">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#3a56d4"/>
+                                            </Trigger>
+                                            <Trigger Property="IsPressed" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#2d4bb8"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </Grid>
         </Border>
-
-        <!-- BOUTON FERMER -->
-        <Button Grid.Row="2" Content="❌ Fermer" 
-                Style="{StaticResource CloseButton}"
-                HorizontalAlignment="Center"
-                Margin="0,10,0,15"
-                Click="CloseButton_Click"/>
-
-        <!-- Copyright Bar -->
-        <Border Grid.Row="3" Style="{StaticResource CopyrightBarBorder}">
-            <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center"
-                       Text="{StaticResource CopyrightDXFVerifierInfo}"/>
-        </Border>
+        
     </Grid>
 </Window>

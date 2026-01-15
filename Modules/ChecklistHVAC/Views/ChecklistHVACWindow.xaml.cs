@@ -8,6 +8,7 @@ using Microsoft.Web.WebView2.Core;
 using XnrgyEngineeringAutomationTools.Services;
 using XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Services;
 using XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Models;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
 {
@@ -141,16 +142,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
                 FilePathText.Text = "Erreur WebView2";
                 
                 // Message d'erreur avec instruction d'installation
-                MessageBox.Show(
-                    "WebView2 Runtime n'est pas installé.\n\n" +
+                XnrgyMessageBox.ShowWarning(
+                    "WebView2 Runtime n'est pas installe.\n\n" +
                     "Pour afficher la checklist, veuillez installer:\n" +
                     "Microsoft Edge WebView2 Runtime\n\n" +
-                    "Téléchargez depuis:\n" +
+                    "Telechargez depuis:\n" +
                     "https://developer.microsoft.com/microsoft-edge/webview2/\n\n" +
                     "Erreur: " + ex.Message,
-                    "WebView2 requis", 
-                    MessageBoxButton.OK, 
-                    MessageBoxImage.Warning);
+                    "WebView2 requis", this);
             }
         }
 
@@ -260,15 +259,15 @@ namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
                 else
                 {
                     FilePathText.Text = "Erreur: Fichier non trouve - " + _htmlFilePath;
-                    MessageBox.Show("Fichier Checklist non trouvé:\n" + _htmlFilePath, 
-                        "Erreur", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    XnrgyMessageBox.ShowWarning("Fichier Checklist non trouve:\n" + _htmlFilePath, 
+                        "Erreur", this);
                 }
             }
             catch (Exception ex)
             {
                 Logger.Log("Erreur chargement ChecklistHVAC: " + ex.Message, Logger.LogLevel.ERROR);
                 FilePathText.Text = "Erreur de chargement";
-                MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError("Erreur: " + ex.Message, "Erreur", this);
             }
         }
 
@@ -302,7 +301,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Erreur: " + ex.Message, "Erreur", MessageBoxButton.OK, MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError("Erreur: " + ex.Message, "Erreur", this);
             }
         }
 
@@ -367,11 +366,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.ChecklistHVAC.Views
         {
             if (_syncService == null || string.IsNullOrEmpty(_currentProjectNumber))
             {
-                MessageBox.Show(
-                    "Veuillez d'abord sélectionner un module dans la checklist.",
-                    "Module requis",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Information);
+                XnrgyMessageBox.ShowInfo(
+                    "Veuillez d'abord selectionner un module dans la checklist.",
+                    "Module requis", this);
                 return;
             }
 

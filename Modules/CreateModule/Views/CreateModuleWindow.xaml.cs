@@ -90,11 +90,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.CreateModule.Views
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show(
-                    $"Erreur lors de l'initialisation de la fenêtre Créer Module:\n\n{ex.Message}\n\nDétails:\n{ex.StackTrace}",
-                    "Erreur d'initialisation",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error);
+                XnrgyMessageBox.ShowError(
+                    $"Erreur lors de l'initialisation de la fenetre Creer Module:\n\n{ex.Message}\n\nDetails:\n{ex.StackTrace}",
+                    "Erreur d'initialisation");
                 throw;
             }
             
