@@ -1711,7 +1711,7 @@ namespace XnrgyEngineeringAutomationTools
                 "Fonctionnalite en Developpement",
                 "Le module Config Unites est actuellement en cours de developpement.\n\n" +
                 "Ce module sera le MASTER de toutes les configurations:\n" +
-                "[+] Configuration complete de l'unite (SubMetal)\n" +
+                "[+] Configuration complete de l'unite (Submittal)\n" +
                 "[+] Parametres partages entre tous les modules\n" +
                 "[+] Source de donnees centralisee\n" +
                 "[+] Gestion des specifications projet\n\n" +

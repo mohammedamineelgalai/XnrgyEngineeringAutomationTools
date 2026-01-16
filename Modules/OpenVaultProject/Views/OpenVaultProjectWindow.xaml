@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="Ouvrir Projet Vault - XNRGY Engineering Automation Tools" 
+        Title="{StaticResource WindowTitleOpenVaultProject}" 
         Height="750" Width="1100"
         MinHeight="600" MinWidth="900"
         WindowStartupLocation="CenterOwner"
@@ -48,10 +48,27 @@
                                     <Setter TargetName="border" Property="Background" Value="#0078D4"/>
                                     <Setter TargetName="border" Property="BorderBrush" Value="#00D4FF"/>
                                 </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter TargetName="border" Property="Background" Value="#252536"/>
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#3A3A4A"/>
+                                    <Setter TargetName="border" Property="Opacity" Value="0.6"/>
+                                </Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>
                 </Setter>
+            </Style>
+
+            <!-- Style ListBox sombre (conserve le fond sombre quand desactive) -->
+            <Style x:Key="DarkListBox" TargetType="ListBox">
+                <Setter Property="Background" Value="Transparent"/>
+                <Setter Property="BorderThickness" Value="0"/>
+                <Style.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Opacity" Value="0.6"/>
+                    </Trigger>
+                </Style.Triggers>
             </Style>
 
             <!-- Style bouton action -->
@@ -114,8 +131,8 @@
                         <TextBlock Text="📥" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Ouvrir Projet Vault" FontSize="22" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock Text="Telecharger et ouvrir un module depuis Vault" FontSize="13" Foreground="#B0B0B0" Margin="0,4,0,0"/>
+                        <TextBlock Text="Ouvrir Projet" FontSize="22" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock x:Name="TxtHeaderSubtitle" Text="Telecharger et ouvrir un module depuis Vault" FontSize="13" Foreground="#B0B0B0" Margin="0,4,0,0"/>
                     </StackPanel>
                 </StackPanel>
 
@@ -125,117 +142,298 @@
             </Grid>
         </Border>
 
-        <!-- Contenu principal - Selection hierarchique -->
-        <Grid Grid.Row="1" Margin="20,15">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+        <!-- TabControl avec 2 onglets: Vault et Local -->
+        <TabControl x:Name="TabSourceSelection" Grid.Row="1" Background="Transparent" BorderThickness="0" 
+                    Margin="20,15" SelectionChanged="TabSourceSelection_SelectionChanged">
+            <TabControl.Resources>
+                <!-- Style onglet XNRGY -->
+                <Style TargetType="TabItem">
+                    <Setter Property="Background" Value="#252536"/>
+                    <Setter Property="Foreground" Value="#B0B0B0"/>
+                    <Setter Property="FontSize" Value="14"/>
+                    <Setter Property="FontWeight" Value="Bold"/>
+                    <Setter Property="Padding" Value="20,10"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="TabItem">
+                                <Border x:Name="TabBorder" Background="{TemplateBinding Background}" 
+                                        CornerRadius="8,8,0,0" BorderBrush="#4A7FBF" BorderThickness="2,2,2,0"
+                                        Padding="{TemplateBinding Padding}" Margin="2,0,2,0">
+                                    <ContentPresenter x:Name="ContentSite" ContentSource="Header" 
+                                                      HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="TabBorder" Property="Background" Value="#0078D4"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                        <Setter TargetName="TabBorder" Property="BorderBrush" Value="#00D4FF"/>
+                                    </Trigger>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="TabBorder" Property="Background" Value="#2A5A8F"/>
+                                        <Setter Property="Foreground" Value="White"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Resources>
 
-            <!-- Colonne 1: Projets -->
-            <GroupBox Grid.Column="0" Style="{StaticResource XnrgyGroupBox}" Margin="0,0,10,0">
-                <GroupBox.Header>
+            <!-- Onglet 1: Vault (par defaut) -->
+            <TabItem x:Name="TabVault" IsSelected="True">
+                <TabItem.Header>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="🗄️" FontSize="16" Margin="0,0,8,0"/>
+                        <TextBlock Text="Vault"/>
+                    </StackPanel>
+                </TabItem.Header>
+                
+                <Grid Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Colonne 1: Projets Vault -->
+                    <GroupBox Grid.Column="0" Style="{StaticResource XnrgyGroupBox}" Margin="0,0,10,0">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📁" FontSize="16" Margin="0,0,8,0"/>
+                                <TextBlock Text="Projets" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock x:Name="TxtProjectCount" Text=" (0)" FontSize="14" Foreground="#B0B0B0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <ListBox x:Name="LstProjects" Style="{StaticResource DarkListBox}"
+                                 ItemContainerStyle="{StaticResource VaultItemStyle}"
+                                 SelectionChanged="LstProjects_SelectionChanged"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding TypeIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="{Binding LastModified, StringFormat='Modifie: {0:dd/MM/yyyy}'}" 
+                                                       FontSize="11" Foreground="#888888"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
+
+                    <!-- Colonne 2: References Vault -->
+                    <GroupBox Grid.Column="1" Style="{StaticResource XnrgyGroupBox}" Margin="5,0">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📂" FontSize="16" Margin="0,0,8,0"/>
+                                <TextBlock Text="References" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock x:Name="TxtRefCount" Text=" (0)" FontSize="14" Foreground="#B0B0B0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <ListBox x:Name="LstReferences" Style="{StaticResource DarkListBox}"
+                                 ItemContainerStyle="{StaticResource VaultItemStyle}"
+                                 SelectionChanged="LstReferences_SelectionChanged"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding TypeIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="{Binding LastModified, StringFormat='Modifie: {0:dd/MM/yyyy}'}" 
+                                                       FontSize="11" Foreground="#888888"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
+
+                    <!-- Colonne 3: Modules Vault -->
+                    <GroupBox Grid.Column="2" Style="{StaticResource XnrgyGroupBox}" Margin="10,0,0,0">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📦" FontSize="16" Margin="0,0,8,0"/>
+                                <TextBlock Text="Modules" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock x:Name="TxtModuleCount" Text=" (0)" FontSize="14" Foreground="#B0B0B0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <ListBox x:Name="LstModules" Style="{StaticResource DarkListBox}"
+                                 ItemContainerStyle="{StaticResource VaultItemStyle}"
+                                 SelectionChanged="LstModules_SelectionChanged"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding TypeIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="{Binding LastModified, StringFormat='Modifie: {0:dd/MM/yyyy}'}" 
+                                                       FontSize="11" Foreground="#888888"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+
+            <!-- Onglet 2: Local -->
+            <TabItem x:Name="TabLocal">
+                <TabItem.Header>
                     <StackPanel Orientation="Horizontal">
                         <TextBlock Text="📁" FontSize="16" Margin="0,0,8,0"/>
-                        <TextBlock Text="Projets" FontSize="16" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock x:Name="TxtProjectCount" Text=" (0)" FontSize="14" Foreground="#B0B0B0" VerticalAlignment="Center"/>
+                        <TextBlock Text="Local"/>
                     </StackPanel>
-                </GroupBox.Header>
-                <ListBox x:Name="LstProjects" Background="Transparent" BorderThickness="0"
-                         ItemContainerStyle="{StaticResource VaultItemStyle}"
-                         SelectionChanged="LstProjects_SelectionChanged"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding TypeIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                                    <TextBlock Text="{Binding LastModified, StringFormat='Modifie: {0:dd/MM/yyyy}'}" 
-                                               FontSize="11" Foreground="#888888"/>
-                                </StackPanel>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </GroupBox>
+                </TabItem.Header>
+                
+                <Grid Margin="0,15,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-            <!-- Colonne 2: References -->
-            <GroupBox Grid.Column="1" Style="{StaticResource XnrgyGroupBox}" Margin="5,0">
-                <GroupBox.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="📂" FontSize="16" Margin="0,0,8,0"/>
-                        <TextBlock Text="References" FontSize="16" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock x:Name="TxtRefCount" Text=" (0)" FontSize="14" Foreground="#B0B0B0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </GroupBox.Header>
-                <ListBox x:Name="LstReferences" Background="Transparent" BorderThickness="0"
-                         ItemContainerStyle="{StaticResource VaultItemStyle}"
-                         SelectionChanged="LstReferences_SelectionChanged"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
+                    <!-- Colonne 1: Projets Local -->
+                    <GroupBox Grid.Column="0" Style="{StaticResource XnrgyGroupBox}" Margin="0,0,10,0">
+                        <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding TypeIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                                    <TextBlock Text="{Binding LastModified, StringFormat='Modifie: {0:dd/MM/yyyy}'}" 
-                                               FontSize="11" Foreground="#888888"/>
-                                </StackPanel>
+                                <TextBlock Text="📁" FontSize="16" Margin="0,0,8,0"/>
+                                <TextBlock Text="Projets" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock x:Name="TxtLocalProjectCount" Text=" (0)" FontSize="14" Foreground="#B0B0B0" VerticalAlignment="Center"/>
                             </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </GroupBox>
+                        </GroupBox.Header>
+                        <ListBox x:Name="LstLocalProjects" Style="{StaticResource DarkListBox}"
+                                 ItemContainerStyle="{StaticResource VaultItemStyle}"
+                                 SelectionChanged="LstLocalProjects_SelectionChanged"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding TypeIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="{Binding LastModified, StringFormat='Modifie: {0:dd/MM/yyyy}'}" 
+                                                       FontSize="11" Foreground="#888888"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
 
-            <!-- Colonne 3: Modules -->
-            <GroupBox Grid.Column="2" Style="{StaticResource XnrgyGroupBox}" Margin="10,0,0,0">
-                <GroupBox.Header>
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="📦" FontSize="16" Margin="0,0,8,0"/>
-                        <TextBlock Text="Modules" FontSize="16" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock x:Name="TxtModuleCount" Text=" (0)" FontSize="14" Foreground="#B0B0B0" VerticalAlignment="Center"/>
-                    </StackPanel>
-                </GroupBox.Header>
-                <ListBox x:Name="LstModules" Background="Transparent" BorderThickness="0"
-                         ItemContainerStyle="{StaticResource VaultItemStyle}"
-                         SelectionChanged="LstModules_SelectionChanged"
-                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
+                    <!-- Colonne 2: References Local -->
+                    <GroupBox Grid.Column="1" Style="{StaticResource XnrgyGroupBox}" Margin="5,0">
+                        <GroupBox.Header>
                             <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding TypeIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
-                                <StackPanel>
-                                    <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                                    <TextBlock Text="{Binding LastModified, StringFormat='Modifie: {0:dd/MM/yyyy}'}" 
-                                               FontSize="11" Foreground="#888888"/>
-                                </StackPanel>
+                                <TextBlock Text="📂" FontSize="16" Margin="0,0,8,0"/>
+                                <TextBlock Text="References" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock x:Name="TxtLocalRefCount" Text=" (0)" FontSize="14" Foreground="#B0B0B0" VerticalAlignment="Center"/>
                             </StackPanel>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </GroupBox>
-        </Grid>
+                        </GroupBox.Header>
+                        <ListBox x:Name="LstLocalReferences" Style="{StaticResource DarkListBox}"
+                                 ItemContainerStyle="{StaticResource VaultItemStyle}"
+                                 SelectionChanged="LstLocalReferences_SelectionChanged"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding TypeIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="{Binding LastModified, StringFormat='Modifie: {0:dd/MM/yyyy}'}" 
+                                                       FontSize="11" Foreground="#888888"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
 
-        <!-- Barre de progression -->
-        <Border Grid.Row="2" Background="#2A4A6F" CornerRadius="6" Margin="20,0,20,10" Padding="15,10">
+                    <!-- Colonne 3: Modules Local -->
+                    <GroupBox Grid.Column="2" Style="{StaticResource XnrgyGroupBox}" Margin="10,0,0,0">
+                        <GroupBox.Header>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="📦" FontSize="16" Margin="0,0,8,0"/>
+                                <TextBlock Text="Modules" FontSize="16" FontWeight="Bold" Foreground="White"/>
+                                <TextBlock x:Name="TxtLocalModuleCount" Text=" (0)" FontSize="14" Foreground="#B0B0B0" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </GroupBox.Header>
+                        <ListBox x:Name="LstLocalModules" Style="{StaticResource DarkListBox}"
+                                 ItemContainerStyle="{StaticResource VaultItemStyle}"
+                                 SelectionChanged="LstLocalModules_SelectionChanged"
+                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding TypeIcon}" FontSize="18" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Name}" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                                            <TextBlock Text="{Binding LastModified, StringFormat='Modifie: {0:dd/MM/yyyy}'}" 
+                                                       FontSize="11" Foreground="#888888"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+        </TabControl>
+
+        <!-- Barre de progression moderne avec temps et pourcentage -->
+        <Border Grid.Row="2" Background="#2A4A6F" CornerRadius="8" Margin="20,10,20,10" Padding="15,10"
+                BorderBrush="#4A7FBF" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtStatus" Text="Pret - Selectionnez un module a telecharger" 
-                               FontSize="13" Foreground="White" VerticalAlignment="Center"/>
-                </StackPanel>
+                <!-- Barre de progression avec texte de statut integre -->
+                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" 
+                        Height="34" Margin="0,0,15,0" ClipToBounds="True"
+                        BorderBrush="#4A7FBF" BorderThickness="2">
+                    <Grid>
+                        <!-- Barre de progression verte avec effet glow -->
+                        <Border x:Name="ProgressBarFill" Background="#28A745" CornerRadius="6" HorizontalAlignment="Left" Width="0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00FF7F" BlurRadius="15" ShadowDepth="0" Opacity="0.45"/>
+                            </Border.Effect>
+                        </Border>
+                        
+                        <!-- Texte de statut -->
+                        <TextBlock x:Name="TxtStatus" 
+                                   Text="Pret - Selectionnez un module a telecharger" 
+                                   Foreground="White" FontSize="12" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"
+                                   Margin="12,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="280"/>
+                        
+                        <!-- Fichier en cours -->
+                        <TextBlock x:Name="TxtCurrentFile" 
+                                   Text="" 
+                                   Foreground="White" FontSize="11" FontWeight="Bold"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left"
+                                   Margin="300,0,0,0" TextTrimming="CharacterEllipsis" MaxWidth="200"/>
+                        
+                        <!-- Temps ecoule et pourcentage -->
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,12,0">
+                            <TextBlock x:Name="TxtTimeLabel" Text="Ecoule: " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <TextBlock x:Name="TxtProgressTimeElapsed" Text="00:00" Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <TextBlock x:Name="TxtEstimatedLabel" Text=" / Estime: " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="4,0,0,0" Visibility="Collapsed"/>
+                            <TextBlock x:Name="TxtProgressTimeEstimated" Text="00:00" Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <TextBlock x:Name="TxtSeparator" Text=" | " Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,8,0" Visibility="Collapsed"/>
+                            <TextBlock x:Name="TxtProgressPercent" Text="0%" Foreground="White" FontSize="12" FontWeight="Bold" VerticalAlignment="Center" Visibility="Collapsed"/>
+                            <TextBlock x:Name="TxtFileProgress" Text="" Foreground="White" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
 
-                <TextBlock x:Name="TxtFileProgress" Grid.Column="1" Text="" FontSize="12" 
-                           Foreground="#00D4FF" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,20,0"/>
-
-                <Button x:Name="BtnDownload" Grid.Column="2" Content="📥 Telecharger et Ouvrir" 
+                <!-- Bouton Telecharger -->
+                <Button x:Name="BtnDownload" Grid.Column="1" Content="📥 Telecharger et Ouvrir" 
                         Style="{StaticResource ActionButton}" Background="#10B981"
                         IsEnabled="False" Click="BtnDownload_Click"/>
             </Grid>
@@ -296,7 +494,7 @@
             <Grid>
                 <TextBlock x:Name="StatusBarText" Text="Pret" Style="{StaticResource StatusTextStyle}"/>
                 <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Right"
-                           Text="© 2025 XNRGY Climate Systems ULC - Mohammed Amine Elgalai"/>
+                           Text="{StaticResource CopyrightOpenVaultProject}"/>
             </Grid>
         </Border>
     </Grid>

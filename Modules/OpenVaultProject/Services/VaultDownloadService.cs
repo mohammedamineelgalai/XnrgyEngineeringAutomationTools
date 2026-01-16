@@ -241,10 +241,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
                 OnProgress?.Invoke($"{files.Count} fichiers a telecharger", "INFO");
                 Logger.Log($"[i] {files.Count} fichiers a telecharger", Logger.LogLevel.INFO);
 
-                // 2. Telecharger les fichiers
+                // 2. Telecharger les fichiers - collecter les .iam et .ipj a la racine
                 int downloaded = 0;
                 int failed = 0;
-                string? masterFile = null;
+                string? masterIam = null;
+                string? projectIpj = null;
+                var rootIamFiles = new List<(string Name, string LocalPath)>();
 
                 foreach (var file in files)
                 {
@@ -258,16 +260,24 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
                         {
                             downloaded++;
                             
-                            // Identifier le fichier master (.iam ou .ipt principal)
-                            if (masterFile == null && 
-                                (file.Name.EndsWith(".iam", StringComparison.OrdinalIgnoreCase) ||
-                                 file.Name.EndsWith(".ipt", StringComparison.OrdinalIgnoreCase)))
+                            // Collecter les fichiers .ipj (projet Inventor)
+                            if (file.Name.EndsWith(".ipj", StringComparison.OrdinalIgnoreCase))
                             {
-                                // Le master est generalement celui qui porte le nom du module
-                                var moduleName = module.Name;
-                                if (file.Name.IndexOf(moduleName, StringComparison.OrdinalIgnoreCase) >= 0)
+                                // Priorite au .ipj a la racine du module
+                                if (projectIpj == null || IsRootLevelFile(file, module.Path))
                                 {
-                                    masterFile = localPath;
+                                    projectIpj = localPath;
+                                    Logger.Log($"   [i] Projet IPJ trouve: {file.Name}", Logger.LogLevel.DEBUG);
+                                }
+                            }
+                            
+                            // Collecter les .iam a la racine pour identifier le master
+                            if (file.Name.EndsWith(".iam", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (IsRootLevelFile(file, module.Path))
+                                {
+                                    rootIamFiles.Add((file.Name, localPath));
+                                    Logger.Log($"   [i] IAM racine trouve: {file.Name}", Logger.LogLevel.DEBUG);
                                 }
                             }
                         }
@@ -283,19 +293,34 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
                     }
                 }
 
+                // 3. Identifier le fichier master (.iam principal)
+                masterIam = IdentifyMasterAssembly(rootIamFiles, module);
+
                 OnProgress?.Invoke($"Telechargement termine: {downloaded} reussi(s), {failed} echec(s)", 
                     failed == 0 ? "SUCCESS" : "WARN");
                 Logger.Log($"[=] Telechargement: {downloaded} reussi(s), {failed} echec(s)", Logger.LogLevel.INFO);
 
-                // 3. Ouvrir le fichier master dans Inventor si trouve
-                if (!string.IsNullOrEmpty(masterFile) && File.Exists(masterFile))
+                // 4. Switch vers le projet IPJ si trouve
+                if (!string.IsNullOrEmpty(projectIpj) && File.Exists(projectIpj))
                 {
-                    OnProgress?.Invoke($"Ouverture dans Inventor: {Path.GetFileName(masterFile)}", "START");
-                    Logger.Log($"[>] Ouverture du master: {masterFile}", Logger.LogLevel.INFO);
+                    OnProgress?.Invoke($"Switch vers projet: {Path.GetFileName(projectIpj)}", "INFO");
+                    Logger.Log($"[>] Switch vers IPJ: {projectIpj}", Logger.LogLevel.INFO);
+                    await Task.Run(() => SwitchToProjectIpj(projectIpj));
+                }
 
-                    bool opened = await Task.Run(() => OpenDocumentInInventor(masterFile));
+                // 5. Ouvrir le fichier master dans Inventor si trouve
+                if (!string.IsNullOrEmpty(masterIam) && File.Exists(masterIam))
+                {
+                    OnProgress?.Invoke($"Ouverture dans Inventor: {Path.GetFileName(masterIam)}", "START");
+                    Logger.Log($"[>] Ouverture du master: {masterIam}", Logger.LogLevel.INFO);
+
+                    bool opened = await Task.Run(() => OpenDocumentInInventor(masterIam));
                     if (opened)
                     {
+                        // 6. Appliquer le nettoyage et zoom all
+                        OnProgress?.Invoke("Preparation de la vue...", "INFO");
+                        await Task.Run(() => PrepareViewAfterOpen());
+                        
                         OnProgress?.Invoke("Module ouvert dans Inventor", "SUCCESS");
                         Logger.Log("[+] Module ouvert avec succes dans Inventor", Logger.LogLevel.INFO);
                         return true;
@@ -310,6 +335,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
                 {
                     OnProgress?.Invoke("Fichiers telecharges (pas de master identifie)", "WARN");
                     Logger.Log("[!] Fichiers telecharges mais pas de master identifie", Logger.LogLevel.WARNING);
+                    Logger.Log($"[i] IAM racine trouves: {rootIamFiles.Count}", Logger.LogLevel.DEBUG);
                 }
 
                 return downloaded > 0;
@@ -478,6 +504,400 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
                 Logger.Log($"[-] Erreur ouverture document: {ex.Message}", Logger.LogLevel.ERROR);
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Verifie si un fichier est a la racine du module (pas dans un sous-dossier)
+        /// </summary>
+        private bool IsRootLevelFile(ACW.File file, string modulePath)
+        {
+            try
+            {
+                // Comparer le chemin du dossier du fichier avec le chemin du module
+                var connection = _vaultService.Connection;
+                if (connection == null) return false;
+
+                var folder = connection.WebServiceManager.DocumentService.GetFolderById(file.FolderId);
+                if (folder == null) return false;
+
+                // Le fichier est a la racine si son dossier parent est le module
+                return folder.FullName.Equals(modulePath, StringComparison.OrdinalIgnoreCase) ||
+                       folder.FullName.Replace("$", "").TrimStart('/').Equals(
+                           modulePath.Replace("$", "").TrimStart('/'), StringComparison.OrdinalIgnoreCase);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Identifie le fichier master .iam parmi les fichiers a la racine
+        /// Logique: Le master est generalement le plus gros .iam ou celui qui a un numero de projet
+        /// </summary>
+        private string? IdentifyMasterAssembly(List<(string Name, string LocalPath)> rootIamFiles, VaultProjectItem module)
+        {
+            if (rootIamFiles.Count == 0) return null;
+            
+            // Si un seul .iam, c'est le master
+            if (rootIamFiles.Count == 1)
+            {
+                Logger.Log($"[+] Master identifie (unique): {rootIamFiles[0].Name}", Logger.LogLevel.INFO);
+                return rootIamFiles[0].LocalPath;
+            }
+
+            // Extraire le numero de projet du chemin (ex: $/Engineering/Projects/12345/REF01/M01 -> 12345)
+            var pathParts = module.Path.Split('/');
+            string? projectNumber = null;
+            for (int i = 0; i < pathParts.Length; i++)
+            {
+                if (pathParts[i].Equals("Projects", StringComparison.OrdinalIgnoreCase) && i + 1 < pathParts.Length)
+                {
+                    projectNumber = pathParts[i + 1];
+                    break;
+                }
+            }
+
+            // Chercher un .iam qui contient le numero de projet (ex: 123450101.iam)
+            if (!string.IsNullOrEmpty(projectNumber))
+            {
+                foreach (var iam in rootIamFiles)
+                {
+                    if (iam.Name.StartsWith(projectNumber, StringComparison.OrdinalIgnoreCase))
+                    {
+                        Logger.Log($"[+] Master identifie (numero projet {projectNumber}): {iam.Name}", Logger.LogLevel.INFO);
+                        return iam.LocalPath;
+                    }
+                }
+            }
+
+            // Sinon, prendre le plus gros fichier .iam
+            var largestIam = rootIamFiles
+                .Where(f => File.Exists(f.LocalPath))
+                .OrderByDescending(f => new FileInfo(f.LocalPath).Length)
+                .FirstOrDefault();
+
+            if (!string.IsNullOrEmpty(largestIam.LocalPath))
+            {
+                Logger.Log($"[+] Master identifie (plus gros fichier): {largestIam.Name}", Logger.LogLevel.INFO);
+                return largestIam.LocalPath;
+            }
+
+            // Fallback: premier .iam
+            Logger.Log($"[+] Master identifie (premier): {rootIamFiles[0].Name}", Logger.LogLevel.INFO);
+            return rootIamFiles[0].LocalPath;
+        }
+
+        /// <summary>
+        /// Switch vers le projet IPJ specifie
+        /// </summary>
+        private void SwitchToProjectIpj(string ipjPath)
+        {
+            try
+            {
+                var inventorAppField = _inventorService.GetType()
+                    .GetField("_inventorApp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (inventorAppField == null) return;
+
+                dynamic? inventorApp = inventorAppField.GetValue(_inventorService);
+                if (inventorApp == null) return;
+
+                // Activer le projet
+                var designProject = inventorApp.DesignProjectManager.DesignProjects.AddExisting(ipjPath);
+                designProject.Activate();
+                
+                Logger.Log($"[+] Projet IPJ active: {Path.GetFileName(ipjPath)}", Logger.LogLevel.INFO);
+            }
+            catch (Exception ex)
+            {
+                // Le projet peut deja etre dans la liste
+                try
+                {
+                    var inventorAppField = _inventorService.GetType()
+                        .GetField("_inventorApp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    
+                    dynamic? inventorApp = inventorAppField?.GetValue(_inventorService);
+                    if (inventorApp != null)
+                    {
+                        foreach (dynamic proj in inventorApp.DesignProjectManager.DesignProjects)
+                        {
+                            if (proj.FullFileName.Equals(ipjPath, StringComparison.OrdinalIgnoreCase))
+                            {
+                                proj.Activate();
+                                Logger.Log($"[+] Projet IPJ active (existant): {Path.GetFileName(ipjPath)}", Logger.LogLevel.INFO);
+                                return;
+                            }
+                        }
+                    }
+                }
+                catch
+                {
+                    Logger.Log($"[!] Impossible de switcher vers IPJ: {ex.Message}", Logger.LogLevel.WARNING);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Ouvre un module local (sans telechargement Vault)
+        /// Switch IPJ, ouvre le fichier, nettoie la vue et zoom
+        /// </summary>
+        public bool OpenLocalModule(string masterIamPath)
+        {
+            try
+            {
+                OnProgress?.Invoke("Switch vers le projet Vault_XNRGY.ipj...", "INFO");
+                
+                // 1. Switch vers Vault_XNRGY.ipj
+                string ipjPath = Path.Combine(_workspacePath, "Vault_XNRGY.ipj");
+                if (File.Exists(ipjPath))
+                {
+                    SwitchToProjectIpj(ipjPath);
+                }
+                else
+                {
+                    Logger.Log($"[!] Fichier IPJ non trouve: {ipjPath}", Logger.LogLevel.WARNING);
+                }
+
+                OnProgress?.Invoke($"Ouverture: {Path.GetFileName(masterIamPath)}", "INFO");
+                
+                // 2. Ouvrir le fichier dans Inventor (mode visible)
+                var inventorAppField = _inventorService.GetType()
+                    .GetField("_inventorApp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (inventorAppField == null)
+                {
+                    Logger.Log("[-] Impossible d'acceder a Inventor", Logger.LogLevel.ERROR);
+                    return false;
+                }
+
+                dynamic? inventorApp = inventorAppField.GetValue(_inventorService);
+                if (inventorApp == null)
+                {
+                    Logger.Log("[-] Inventor n'est pas disponible", Logger.LogLevel.ERROR);
+                    return false;
+                }
+
+                // Ouvrir le document (mode visible)
+                dynamic doc = inventorApp.Documents.Open(masterIamPath, true);
+                if (doc == null)
+                {
+                    Logger.Log("[-] Echec ouverture du document", Logger.LogLevel.ERROR);
+                    return false;
+                }
+
+                Logger.Log($"[+] Document ouvert: {Path.GetFileName(masterIamPath)}", Logger.LogLevel.INFO);
+
+                OnProgress?.Invoke("Preparation de la vue...", "INFO");
+                
+                // 3. Preparer la vue (cacher references, vue ISO, zoom)
+                System.Threading.Thread.Sleep(500);
+                PrepareViewAfterOpen();
+
+                OnProgress?.Invoke("Module local ouvert avec succes", "SUCCESS");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.LogException("OpenLocalModule", ex, Logger.LogLevel.ERROR);
+                OnProgress?.Invoke($"Erreur: {ex.Message}", "ERROR");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Prepare la vue apres ouverture: cache les elements de reference, vue ISO, zoom all
+        /// </summary>
+        private void PrepareViewAfterOpen()
+        {
+            try
+            {
+                var inventorAppField = _inventorService.GetType()
+                    .GetField("_inventorApp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (inventorAppField == null) return;
+
+                dynamic? inventorApp = inventorAppField.GetValue(_inventorService);
+                if (inventorApp == null) return;
+
+                // Attendre que le document soit pret
+                System.Threading.Thread.Sleep(1000);
+
+                dynamic? activeDoc = inventorApp.ActiveDocument;
+                if (activeDoc == null) return;
+
+                // 1. Cacher les elements de reference via ObjectVisibility (methode globale efficace)
+                try
+                {
+                    dynamic asmDocVis = activeDoc;
+                    // Plans de travail utilisateur
+                    asmDocVis.ObjectVisibility.UserWorkPlanes = false;
+                    // Axes de travail utilisateur
+                    asmDocVis.ObjectVisibility.UserWorkAxes = false;
+                    // Points de travail utilisateur
+                    asmDocVis.ObjectVisibility.UserWorkPoints = false;
+                    // Plans d'origine
+                    asmDocVis.ObjectVisibility.OriginWorkPlanes = false;
+                    // Axes d'origine
+                    asmDocVis.ObjectVisibility.OriginWorkAxes = false;
+                    // Points d'origine
+                    asmDocVis.ObjectVisibility.OriginWorkPoints = false;
+                    // Esquisses 2D
+                    asmDocVis.ObjectVisibility.Sketches = false;
+                    // Esquisses 3D
+                    asmDocVis.ObjectVisibility.Sketches3D = false;
+                    
+                    Logger.Log("  [+] ObjectVisibility: References et esquisses cachees (global)", Logger.LogLevel.DEBUG);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"  [!] ObjectVisibility: {ex.Message}", Logger.LogLevel.DEBUG);
+                    
+                    // Fallback: methode recursive
+                    try
+                    {
+                        if (activeDoc.DocumentType == 12290) // kAssemblyDocumentObject
+                        {
+                            HideWorkFeaturesRecursive(activeDoc);
+                        }
+                        else if (activeDoc.DocumentType == 12289) // kPartDocumentObject
+                        {
+                            HideWorkFeatures(activeDoc.ComponentDefinition);
+                        }
+                        Logger.Log("  [+] Elements de reference caches (fallback)", Logger.LogLevel.DEBUG);
+                    }
+                    catch { }
+                }
+
+                // 2. Vue isometrique via commande native (comme CreateModule)
+                try
+                {
+                    dynamic cmdManager = inventorApp.CommandManager;
+                    dynamic controlDefs = cmdManager.ControlDefinitions;
+                    dynamic cmdIso = controlDefs["AppIsometricViewCmd"];
+                    cmdIso.Execute();
+                    Logger.Log("  [+] Vue ISO appliquee (commande native)", Logger.LogLevel.DEBUG);
+                }
+                catch (Exception ex)
+                {
+                    // Fallback: via Camera
+                    try
+                    {
+                        dynamic activeView = inventorApp.ActiveView;
+                        if (activeView != null)
+                        {
+                            dynamic camera = activeView.Camera;
+                            camera.ViewOrientationType = 10764; // kIsoTopRightViewOrientation
+                            camera.Apply();
+                            Logger.Log("  [+] Vue isometrique appliquee (camera)", Logger.LogLevel.DEBUG);
+                        }
+                    }
+                    catch
+                    {
+                        Logger.Log($"  [!] Vue ISO: {ex.Message}", Logger.LogLevel.DEBUG);
+                    }
+                }
+
+                // 3. Zoom All
+                try
+                {
+                    dynamic cmdManager = inventorApp.CommandManager;
+                    dynamic controlDefs = cmdManager.ControlDefinitions;
+                    dynamic cmdZoom = controlDefs["AppZoomAllCmd"];
+                    cmdZoom.Execute();
+                    Logger.Log("  [+] Zoom All applique", Logger.LogLevel.DEBUG);
+                }
+                catch (Exception ex)
+                {
+                    try
+                    {
+                        dynamic activeView = inventorApp.ActiveView;
+                        activeView?.Fit();
+                        Logger.Log("  [+] Zoom All (Fit fallback)", Logger.LogLevel.DEBUG);
+                    }
+                    catch
+                    {
+                        Logger.Log($"  [!] Zoom All: {ex.Message}", Logger.LogLevel.DEBUG);
+                    }
+                }
+
+                OnProgress?.Invoke("Vue preparee (ISO + Zoom All)", "SUCCESS");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur preparation vue: {ex.Message}", Logger.LogLevel.WARNING);
+            }
+        }
+
+        /// <summary>
+        /// Cache les WorkFeatures dans un composant (fallback si ObjectVisibility ne fonctionne pas)
+        /// </summary>
+        private void HideWorkFeatures(dynamic compDef)
+        {
+            try
+            {
+                foreach (dynamic wp in compDef.WorkPlanes)
+                {
+                    try { wp.Visible = false; } catch { }
+                }
+                foreach (dynamic wa in compDef.WorkAxes)
+                {
+                    try { wa.Visible = false; } catch { }
+                }
+                foreach (dynamic wpt in compDef.WorkPoints)
+                {
+                    try { wpt.Visible = false; } catch { }
+                }
+                // Esquisses 2D
+                try
+                {
+                    foreach (dynamic sk in compDef.Sketches)
+                    {
+                        try { sk.Visible = false; } catch { }
+                    }
+                }
+                catch { }
+                // Esquisses 3D
+                try
+                {
+                    foreach (dynamic sk3d in compDef.Sketches3D)
+                    {
+                        try { sk3d.Visible = false; } catch { }
+                    }
+                }
+                catch { }
+            }
+            catch { }
+        }
+
+        /// <summary>
+        /// Cache les WorkFeatures recursivement dans un assemblage (fallback)
+        /// </summary>
+        private void HideWorkFeaturesRecursive(dynamic asmDoc)
+        {
+            try
+            {
+                var compDef = asmDoc.ComponentDefinition;
+                HideWorkFeatures(compDef);
+
+                foreach (dynamic occ in compDef.Occurrences)
+                {
+                    try
+                    {
+                        // Cacher dans les sous-composants
+                        if (occ.DefinitionDocumentType == 12290) // Assembly
+                        {
+                            HideWorkFeaturesRecursive(occ.Definition.Document);
+                        }
+                        else
+                        {
+                            HideWorkFeatures(occ.Definition);
+                        }
+                    }
+                    catch { }
+                }
+            }
+            catch { }
         }
     }
 }

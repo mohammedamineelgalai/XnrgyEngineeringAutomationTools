@@ -184,14 +184,14 @@
                                 <TextBlock x:Name="BtnConfigUnitsDesc" Text="Configuration Master Unite" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Button>
-                        <!-- Ouvrir Projet Vault -->
+                        <!-- Ouvrir Projet (Vault / Local) -->
                         <Button x:Name="BtnOpenVaultProject" Style="{StaticResource ModuleButton}" Click="OpenVaultProject_Click" Width="260" Height="210" Margin="10">
                             <StackPanel HorizontalAlignment="Center">
                                 <Border Background="#0EA5E9" CornerRadius="14" Width="95" Height="95" Margin="0,0,0,15">
                                     <TextBlock Text="📥" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
-                                <TextBlock x:Name="BtnOpenVaultProjectTitle" Text="Ouvrir Projet Vault" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
-                                <TextBlock x:Name="BtnOpenVaultProjectDesc" Text="Telecharger et ouvrir module" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
+                                <TextBlock x:Name="BtnOpenVaultProjectTitle" Text="Ouvrir Projet" FontSize="15" FontWeight="Bold" HorizontalAlignment="Center"/>
+                                <TextBlock x:Name="BtnOpenVaultProjectDesc" Text="Vault ou Local - Module" FontSize="11" HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <!-- Créer Module & Équipement (anciennement Pack & Go) -->

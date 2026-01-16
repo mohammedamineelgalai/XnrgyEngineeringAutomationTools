@@ -9,7 +9,7 @@
         AllowsTransparency="True"
         Background="Transparent"
         SizeToContent="Height"
-        Width="420">
+        Width="520">
     
     <Border Background="#1E1E1E" 
             BorderBrush="#4A7FBF" 
