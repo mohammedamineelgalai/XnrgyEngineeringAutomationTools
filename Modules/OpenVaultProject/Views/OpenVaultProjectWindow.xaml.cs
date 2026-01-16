@@ -78,7 +78,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Views
 
         private void TabSourceSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (TabSourceSelection == null) return;
+            // Ignorer si les controles ne sont pas encore initialises
+            if (TabSourceSelection == null || TabVault == null || TxtHeaderSubtitle == null || 
+                BtnDownload == null || BtnRefresh == null || !IsLoaded)
+                return;
 
             _isVaultMode = TabVault.IsSelected;
             
