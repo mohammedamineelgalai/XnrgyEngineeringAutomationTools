@@ -219,6 +219,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
                     return false;
                 }
 
+                // 0. OBLIGATOIRE: Sauvegarder et fermer tous les documents avant switch IPJ
+                OnProgress?.Invoke("Sauvegarde des documents ouverts...", "INFO");
+                await Task.Run(() => SaveAllAndCloseAllDocuments());
+
                 OnProgress?.Invoke($"Telechargement de {module.Path}...", "START");
                 Logger.Log($"[>] Debut telechargement module: {module.Path}", Logger.LogLevel.INFO);
 
@@ -300,12 +304,32 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
                     failed == 0 ? "SUCCESS" : "WARN");
                 Logger.Log($"[=] Telechargement: {downloaded} reussi(s), {failed} echec(s)", Logger.LogLevel.INFO);
 
-                // 4. Switch vers le projet IPJ si trouve
-                if (!string.IsNullOrEmpty(projectIpj) && File.Exists(projectIpj))
+                // 4. Switch vers le projet IPJ du module
+                // L'IPJ est dans le MEME dossier que le master .iam (format: 123450101.ipj)
+                string? ipjToUse = projectIpj;
+                
+                // Si pas d'IPJ trouve dans le telechargement, chercher dans le dossier du module
+                if (string.IsNullOrEmpty(ipjToUse) || !File.Exists(ipjToUse))
                 {
-                    OnProgress?.Invoke($"Switch vers projet: {Path.GetFileName(projectIpj)}", "INFO");
-                    Logger.Log($"[>] Switch vers IPJ: {projectIpj}", Logger.LogLevel.INFO);
-                    await Task.Run(() => SwitchToProjectIpj(projectIpj));
+                    if (!string.IsNullOrEmpty(masterIam))
+                    {
+                        string? moduleDir = Path.GetDirectoryName(masterIam);
+                        if (!string.IsNullOrEmpty(moduleDir))
+                        {
+                            ipjToUse = FindModuleIpj(moduleDir);
+                        }
+                    }
+                }
+                
+                if (!string.IsNullOrEmpty(ipjToUse) && File.Exists(ipjToUse))
+                {
+                    OnProgress?.Invoke($"Switch vers projet: {Path.GetFileName(ipjToUse)}", "INFO");
+                    Logger.Log($"[>] Switch vers IPJ: {ipjToUse}", Logger.LogLevel.INFO);
+                    await Task.Run(() => SwitchToProjectIpj(ipjToUse));
+                }
+                else
+                {
+                    Logger.Log("[!] Aucun IPJ trouve dans le module, ouverture sans switch...", Logger.LogLevel.WARNING);
                 }
 
                 // 5. Ouvrir le fichier master dans Inventor si trouve
@@ -589,9 +613,10 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
         }
 
         /// <summary>
-        /// Switch vers le projet IPJ specifie
+        /// Sauvegarde et ferme tous les documents ouverts dans Inventor
+        /// OBLIGATOIRE avant de switcher l'IPJ
         /// </summary>
-        private void SwitchToProjectIpj(string ipjPath)
+        private void SaveAllAndCloseAllDocuments()
         {
             try
             {
@@ -603,65 +628,241 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
                 dynamic? inventorApp = inventorAppField.GetValue(_inventorService);
                 if (inventorApp == null) return;
 
-                // Activer le projet
-                var designProject = inventorApp.DesignProjectManager.DesignProjects.AddExisting(ipjPath);
-                designProject.Activate();
-                
-                Logger.Log($"[+] Projet IPJ active: {Path.GetFileName(ipjPath)}", Logger.LogLevel.INFO);
+                int docCount = inventorApp.Documents.Count;
+                if (docCount == 0)
+                {
+                    Logger.Log("[i] Aucun document ouvert", Logger.LogLevel.DEBUG);
+                    return;
+                }
+
+                Logger.Log($"[>] Sauvegarde et fermeture de {docCount} document(s)...", Logger.LogLevel.INFO);
+                OnProgress?.Invoke($"Sauvegarde de {docCount} document(s)...", "INFO");
+
+                // Activer le mode silencieux
+                bool origSilent = inventorApp.SilentOperation;
+                bool origUserDisabled = inventorApp.UserInterfaceManager.UserInteractionDisabled;
+
+                try
+                {
+                    inventorApp.SilentOperation = true;
+                    inventorApp.UserInterfaceManager.UserInteractionDisabled = true;
+
+                    // Sauvegarder tous les documents modifies
+                    foreach (dynamic doc in inventorApp.Documents)
+                    {
+                        try
+                        {
+                            if (doc.IsModifiable && doc.Dirty)
+                            {
+                                doc.Save();
+                                Logger.Log($"   [+] Sauvegarde: {System.IO.Path.GetFileName(doc.FullFileName)}", Logger.LogLevel.DEBUG);
+                            }
+                        }
+                        catch { }
+                    }
+
+                    // Fermer tous les documents (avec sauvegarde au cas ou)
+                    while (inventorApp.Documents.Count > 0)
+                    {
+                        try
+                        {
+                            inventorApp.Documents[1].Close(true); // true = skip save prompt (deja sauvegarde)
+                        }
+                        catch { break; }
+                    }
+
+                    Logger.Log($"[+] {docCount} document(s) ferme(s)", Logger.LogLevel.INFO);
+                }
+                finally
+                {
+                    // Restaurer les modes
+                    inventorApp.SilentOperation = origSilent;
+                    inventorApp.UserInterfaceManager.UserInteractionDisabled = origUserDisabled;
+                }
             }
             catch (Exception ex)
             {
-                // Le projet peut deja etre dans la liste
-                try
+                Logger.Log($"[!] Erreur SaveAllAndClose: {ex.Message}", Logger.LogLevel.WARNING);
+            }
+        }
+
+        /// <summary>
+        /// Trouve le fichier IPJ du module (format: 123450101.ipj ou 12345-01-M01.ipj)
+        /// L'IPJ est TOUJOURS dans le meme dossier que le fichier .iam master
+        /// </summary>
+        private string? FindModuleIpj(string moduleFolder)
+        {
+            try
+            {
+                if (!Directory.Exists(moduleFolder))
                 {
-                    var inventorAppField = _inventorService.GetType()
-                        .GetField("_inventorApp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    
-                    dynamic? inventorApp = inventorAppField?.GetValue(_inventorService);
-                    if (inventorApp != null)
+                    Logger.Log($"[-] Dossier module inexistant: {moduleFolder}", Logger.LogLevel.ERROR);
+                    return null;
+                }
+
+                // Chercher tous les .ipj dans le dossier du module
+                var ipjFiles = Directory.GetFiles(moduleFolder, "*.ipj", SearchOption.TopDirectoryOnly);
+                
+                if (ipjFiles.Length == 0)
+                {
+                    Logger.Log($"[!] Aucun IPJ trouve dans: {moduleFolder}", Logger.LogLevel.WARNING);
+                    return null;
+                }
+
+                if (ipjFiles.Length == 1)
+                {
+                    Logger.Log($"[+] IPJ trouve: {Path.GetFileName(ipjFiles[0])}", Logger.LogLevel.INFO);
+                    return ipjFiles[0];
+                }
+
+                // Si plusieurs IPJ, prendre celui qui correspond au format attendu
+                // Format nouveau: 123450101.ipj (chiffres uniquement)
+                // Format ancien: 12345-01-M01.ipj
+                foreach (var ipj in ipjFiles)
+                {
+                    string fileName = Path.GetFileNameWithoutExtension(ipj);
+                    // Priorite au format nouveau (chiffres uniquement, 8-10 caracteres)
+                    if (fileName.All(char.IsDigit) && fileName.Length >= 8)
                     {
-                        foreach (dynamic proj in inventorApp.DesignProjectManager.DesignProjects)
-                        {
-                            if (proj.FullFileName.Equals(ipjPath, StringComparison.OrdinalIgnoreCase))
-                            {
-                                proj.Activate();
-                                Logger.Log($"[+] Projet IPJ active (existant): {Path.GetFileName(ipjPath)}", Logger.LogLevel.INFO);
-                                return;
-                            }
-                        }
+                        Logger.Log($"[+] IPJ Master trouve (format nouveau): {Path.GetFileName(ipj)}", Logger.LogLevel.INFO);
+                        return ipj;
                     }
                 }
-                catch
+
+                // Sinon prendre le premier
+                Logger.Log($"[+] IPJ trouve: {Path.GetFileName(ipjFiles[0])}", Logger.LogLevel.INFO);
+                return ipjFiles[0];
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur recherche IPJ: {ex.Message}", Logger.LogLevel.ERROR);
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Switch vers le projet IPJ specifie
+        /// Logique identique a EquipmentCopyDesignService.SwitchProject
+        /// </summary>
+        private bool SwitchToProjectIpj(string ipjPath)
+        {
+            try
+            {
+                if (!File.Exists(ipjPath))
                 {
-                    Logger.Log($"[!] Impossible de switcher vers IPJ: {ex.Message}", Logger.LogLevel.WARNING);
+                    Logger.Log($"[-] Fichier IPJ inexistant: {ipjPath}", Logger.LogLevel.ERROR);
+                    return false;
                 }
+
+                var inventorAppField = _inventorService.GetType()
+                    .GetField("_inventorApp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                
+                if (inventorAppField == null)
+                {
+                    Logger.Log("[-] Impossible d'acceder a Inventor", Logger.LogLevel.ERROR);
+                    return false;
+                }
+
+                dynamic? inventorApp = inventorAppField.GetValue(_inventorService);
+                if (inventorApp == null)
+                {
+                    Logger.Log("[-] Instance Inventor null", Logger.LogLevel.ERROR);
+                    return false;
+                }
+
+                var designProjectManager = inventorApp.DesignProjectManager;
+                var projectsCollection = designProjectManager.DesignProjects;
+
+                // 1. Verifier si ce projet est deja actif
+                var activeProject = designProjectManager.ActiveDesignProject;
+                if (activeProject != null && 
+                    activeProject.FullFileName.Equals(ipjPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.Log($"[i] IPJ deja actif: {Path.GetFileName(ipjPath)}", Logger.LogLevel.INFO);
+                    return true;
+                }
+
+                // 2. Chercher si le projet existe deja dans la collection
+                dynamic? targetProject = null;
+                foreach (dynamic project in projectsCollection)
+                {
+                    if (project.FullFileName.Equals(ipjPath, StringComparison.OrdinalIgnoreCase))
+                    {
+                        targetProject = project;
+                        break;
+                    }
+                }
+
+                // 3. Si pas trouve, l'ajouter a la collection
+                if (targetProject == null)
+                {
+                    Logger.Log($"[i] Chargement du projet: {Path.GetFileName(ipjPath)}", Logger.LogLevel.DEBUG);
+                    targetProject = projectsCollection.AddExisting(ipjPath);
+                }
+
+                // 4. Activer le projet avec delai (comme CopyDesign)
+                if (targetProject != null)
+                {
+                    targetProject.Activate();
+                    System.Threading.Thread.Sleep(1000); // Attendre 1s comme dans CopyDesign
+                    Logger.Log($"[+] IPJ active: {Path.GetFileName(ipjPath)}", Logger.LogLevel.INFO);
+                    return true;
+                }
+                else
+                {
+                    Logger.Log("[-] Impossible de charger le projet IPJ", Logger.LogLevel.ERROR);
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[-] Erreur switch IPJ: {ex.Message}", Logger.LogLevel.ERROR);
+                return false;
             }
         }
 
         /// <summary>
         /// Ouvre un module local (sans telechargement Vault)
-        /// Switch IPJ, ouvre le fichier, nettoie la vue et zoom
+        /// SEQUENCE: SaveAll + CloseAll + Switch IPJ + Open + PrepareView
         /// </summary>
         public bool OpenLocalModule(string masterIamPath)
         {
             try
             {
-                OnProgress?.Invoke("Switch vers le projet Vault_XNRGY.ipj...", "INFO");
+                Logger.Log($"[>] Ouverture module local: {Path.GetFileName(masterIamPath)}", Logger.LogLevel.INFO);
                 
-                // 1. Switch vers Vault_XNRGY.ipj
-                string ipjPath = Path.Combine(_workspacePath, "Vault_XNRGY.ipj");
-                if (File.Exists(ipjPath))
+                // 1. OBLIGATOIRE: Sauvegarder et fermer tous les documents avant switch IPJ
+                OnProgress?.Invoke("Sauvegarde des documents ouverts...", "INFO");
+                SaveAllAndCloseAllDocuments();
+                
+                // 2. Trouver l'IPJ du module (dans le MEME dossier que le .iam)
+                // Format: 123450101.ipj ou 12345-01-M01.ipj
+                string? moduleFolder = Path.GetDirectoryName(masterIamPath);
+                if (string.IsNullOrEmpty(moduleFolder))
                 {
-                    SwitchToProjectIpj(ipjPath);
+                    Logger.Log("[-] Impossible de determiner le dossier du module", Logger.LogLevel.ERROR);
+                    return false;
+                }
+                
+                OnProgress?.Invoke("Switch vers le projet IPJ...", "INFO");
+                
+                // 3. Trouver et activer l'IPJ du module
+                string? ipjPath = FindModuleIpj(moduleFolder);
+                if (!string.IsNullOrEmpty(ipjPath))
+                {
+                    if (!SwitchToProjectIpj(ipjPath))
+                    {
+                        Logger.Log("[!] Echec switch IPJ, tentative d'ouverture quand meme...", Logger.LogLevel.WARNING);
+                    }
                 }
                 else
                 {
-                    Logger.Log($"[!] Fichier IPJ non trouve: {ipjPath}", Logger.LogLevel.WARNING);
+                    Logger.Log("[!] Aucun IPJ trouve dans le module, ouverture sans switch...", Logger.LogLevel.WARNING);
                 }
 
                 OnProgress?.Invoke($"Ouverture: {Path.GetFileName(masterIamPath)}", "INFO");
                 
-                // 2. Ouvrir le fichier dans Inventor (mode visible)
+                // 4. Ouvrir le fichier dans Inventor (mode visible)
                 var inventorAppField = _inventorService.GetType()
                     .GetField("_inventorApp", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
                 
@@ -690,11 +891,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Services
 
                 OnProgress?.Invoke("Preparation de la vue...", "INFO");
                 
-                // 3. Preparer la vue (cacher references, vue ISO, zoom)
+                // 5. Preparer la vue (cacher references, vue ISO, zoom)
                 System.Threading.Thread.Sleep(500);
                 PrepareViewAfterOpen();
 
                 OnProgress?.Invoke("Module local ouvert avec succes", "SUCCESS");
+                Logger.Log("[+] Module local ouvert avec succes", Logger.LogLevel.INFO);
                 return true;
             }
             catch (Exception ex)

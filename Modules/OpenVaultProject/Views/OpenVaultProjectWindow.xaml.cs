@@ -78,6 +78,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Views
 
         private void TabSourceSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            // IMPORTANT: Ne traiter que les changements d'onglet du TabControl, pas les ListBox
+            if (e.Source != TabSourceSelection) return;
+            
             // Ignorer si les controles ne sont pas encore initialises
             if (TabSourceSelection == null || TabVault == null || TxtHeaderSubtitle == null || 
                 BtnDownload == null || BtnRefresh == null || !IsLoaded)
@@ -301,17 +304,30 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Views
             TxtModuleCount.Text = " (0)";
             BtnDownload.IsEnabled = false;
 
-            if (_selectedProject != null && _downloadService != null)
+            if (_selectedProject != null)
             {
+                if (_downloadService == null)
+                {
+                    AddLog("[-] Service non initialise!", "ERROR");
+                    return;
+                }
+
                 AddLog($"[>] Chargement des references pour {_selectedProject.Name}...", "INFO");
                 TxtStatus.Text = $"Chargement des references pour {_selectedProject.Name}...";
 
-                var references = _downloadService.GetReferences(_selectedProject.Path);
-                LstReferences.ItemsSource = references;
-                TxtRefCount.Text = $" ({references.Count})";
+                try
+                {
+                    var references = _downloadService.GetReferences(_selectedProject.Path);
+                    LstReferences.ItemsSource = references;
+                    TxtRefCount.Text = $" ({references.Count})";
 
-                AddLog($"[+] {references.Count} references trouvees", "SUCCESS");
-                TxtStatus.Text = $"Projet {_selectedProject.Name} - {references.Count} references";
+                    AddLog($"[+] {references.Count} references trouvees", "SUCCESS");
+                    TxtStatus.Text = $"Projet {_selectedProject.Name} - {references.Count} references";
+                }
+                catch (Exception ex)
+                {
+                    AddLog($"[-] Erreur chargement references: {ex.Message}", "ERROR");
+                }
             }
         }
 

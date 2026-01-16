@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="{StaticResource WindowTitleOpenVaultProject}" 
-        Height="750" Width="1100"
-        MinHeight="600" MinWidth="900"
+        Height="900" Width="1100"
+        MinHeight="700" MinWidth="900"
         WindowStartupLocation="CenterOwner"
         Background="#1E1E2E"
         Loaded="Window_Loaded">
@@ -385,7 +385,7 @@
         </TabControl>
 
         <!-- Barre de progression moderne avec temps et pourcentage -->
-        <Border Grid.Row="2" Background="#2A4A6F" CornerRadius="8" Margin="20,10,20,10" Padding="15,10"
+        <Border Grid.Row="2" Background="#2A4A6F" CornerRadius="8" Margin="20,10,20,10" Padding="15,12"
                 BorderBrush="#4A7FBF" BorderThickness="2">
             <Grid>
                 <Grid.ColumnDefinitions>
@@ -394,12 +394,12 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Barre de progression avec texte de statut integre -->
-                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="6" 
-                        Height="34" Margin="0,0,15,0" ClipToBounds="True"
+                <Border Grid.Column="0" Background="#1E1E2E" CornerRadius="8" 
+                        Height="44" Margin="0,0,15,0" ClipToBounds="True"
                         BorderBrush="#4A7FBF" BorderThickness="2">
                     <Grid>
                         <!-- Barre de progression verte avec effet glow -->
-                        <Border x:Name="ProgressBarFill" Background="#28A745" CornerRadius="6" HorizontalAlignment="Left" Width="0">
+                        <Border x:Name="ProgressBarFill" Background="#28A745" CornerRadius="8" HorizontalAlignment="Left" Width="0">
                             <Border.Effect>
                                 <DropShadowEffect Color="#00FF7F" BlurRadius="15" ShadowDepth="0" Opacity="0.45"/>
                             </Border.Effect>
@@ -432,9 +432,12 @@
                     </Grid>
                 </Border>
 
-                <!-- Bouton Telecharger -->
-                <Button x:Name="BtnDownload" Grid.Column="1" Content="📥 Telecharger et Ouvrir" 
+                <!-- Bouton Telecharger (meme hauteur que barre de progression) -->
+                <Button x:Name="BtnDownload" Grid.Column="1" Content="📥 Ouvrir" 
                         Style="{StaticResource ActionButton}" Background="#10B981"
+                        Height="44" MinWidth="160" FontSize="14" FontWeight="Bold"
+                        HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                        Padding="15,0"
                         IsEnabled="False" Click="BtnDownload_Click"/>
             </Grid>
         </Border>

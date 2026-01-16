@@ -129,6 +129,9 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             _updateService.LogMessage += OnLogMessage;
             _updateService.StepChanged += OnStepChanged;
 
+            // Mettre a jour le statut Vault dans le header
+            UpdateVaultStatusUI();
+
             // Message initial
             AddLog("[i] Pret pour la mise a jour du workspace");
             AddLog($"[i] Connexion Vault: {(_connection != null ? "Active" : "Non connecte")}");
@@ -136,6 +139,29 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             // Activer/desactiver les boutons selon l'etat de connexion
             BtnContinue.IsEnabled = _connection != null;
             BtnContinue.Content = _connection != null ? "Demarrer" : "Connexion requise";
+        }
+
+        /// <summary>
+        /// Met a jour l'affichage du statut Vault dans le header
+        /// </summary>
+        private void UpdateVaultStatusUI()
+        {
+            if (_connection != null)
+            {
+                // Connexion active - afficher les infos reelles
+                VaultStatusIndicator.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#10B981"));
+                RunVaultName.Text = $" Vault: {_connection.Vault}";
+                RunUserName.Text = $" {_connection.UserName}";
+                RunStatus.Text = " Connecte";
+            }
+            else
+            {
+                // Pas de connexion
+                VaultStatusIndicator.Fill = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E81123"));
+                RunVaultName.Text = " Vault: --";
+                RunUserName.Text = " --";
+                RunStatus.Text = " Deconnecte";
+            }
         }
 
         #endregion
