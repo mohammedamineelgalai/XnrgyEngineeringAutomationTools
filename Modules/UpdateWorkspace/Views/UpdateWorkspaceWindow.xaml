@@ -168,7 +168,7 @@
                         </Grid>
                     </Border>
 
-                    <!-- Step 8: Installation des outils -->
+                    <!-- Step 8: Installation des applications -->
                     <Border Background="#252536" CornerRadius="6" Padding="12" Margin="0,3" BorderBrush="#4A7FBF" BorderThickness="1">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -177,7 +177,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="IconStep8" Text="&#x23F3;" FontSize="18" Foreground="White" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-                            <TextBlock x:Name="TxtStep8" Grid.Column="1" Text="Installation des outils (DXF Verifier, SmartTools)" Foreground="White" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0"/>
+                            <TextBlock x:Name="TxtStep8" Grid.Column="1" Text="Installation des applications" Foreground="White" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0"/>
                             <TextBlock x:Name="DetailStep8" Grid.Column="2" Text="" Foreground="#FFB74D" FontSize="11" VerticalAlignment="Center"/>
                         </Grid>
                     </Border>

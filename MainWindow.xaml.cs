@@ -485,11 +485,21 @@ namespace XnrgyEngineeringAutomationTools
         }
         
         /// <summary>
-        /// Affiche la fenetre de mise a jour du workspace
+        /// Affiche la fenetre de mise a jour du workspace (MODE AUTOMATIQUE au demarrage)
         /// Permet de synchroniser les fichiers depuis Vault et installer les outils
         /// IMPORTANT: Ferme Inventor AVANT l'update, le relance APRES
         /// </summary>
         private void ShowUpdateWorkspaceWindow()
+        {
+            ShowUpdateWorkspaceWindow(autoStart: true, autoCloseOnSuccess: true);
+        }
+
+        /// <summary>
+        /// Affiche la fenetre de mise a jour du workspace
+        /// </summary>
+        /// <param name="autoStart">Si true, demarre automatiquement sans attendre un clic</param>
+        /// <param name="autoCloseOnSuccess">Si true, ferme automatiquement apres succes</param>
+        private void ShowUpdateWorkspaceWindow(bool autoStart, bool autoCloseOnSuccess)
         {
             try
             {
@@ -530,12 +540,22 @@ namespace XnrgyEngineeringAutomationTools
                 }
                 
                 // === UPDATE WORKSPACE ===
-                var updateWindow = new UpdateWorkspaceWindow(connection)
+                var updateWindow = new UpdateWorkspaceWindow(
+                    connection, 
+                    autoStart: autoStart, 
+                    autoCloseOnSuccess: autoCloseOnSuccess)
                 {
                     Owner = this
                 };
                 
-                AddLog("[>] Ouverture de la fenetre de mise a jour du workspace...", "INFO");
+                if (autoStart)
+                {
+                    AddLog("[>] Mise a jour automatique du workspace en cours...", "INFO");
+                }
+                else
+                {
+                    AddLog("[>] Ouverture de la fenetre de mise a jour du workspace...", "INFO");
+                }
                 
                 bool updateCompleted = false;
                 if (updateWindow.ShowDialog() == true)
@@ -1752,12 +1772,17 @@ namespace XnrgyEngineeringAutomationTools
             }
         }
 
+        /// <summary>
+        /// Bouton Update Workspace clique par l'utilisateur (mode MANUEL)
+        /// L'utilisateur doit cliquer sur Demarrer et peut voir la progression
+        /// </summary>
         private void UpdateWorkspace_Click(object sender, RoutedEventArgs e)
         {
             if (!CheckVaultConnection()) return;
             
-            // Ouvrir la fenetre de mise a jour du workspace
-            ShowUpdateWorkspaceWindow();
+            // Ouvrir la fenetre de mise a jour du workspace en mode MANUEL
+            // L'utilisateur doit cliquer sur Demarrer, et la fenetre reste ouverte apres
+            ShowUpdateWorkspaceWindow(autoStart: false, autoCloseOnSuccess: false);
         }
 
         private bool CheckVaultConnection()

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,6 +16,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
     /// <summary>
     /// Fenetre de mise a jour du workspace local depuis Vault.
     /// Affiche la progression des telechargements, copies et installations.
+    /// Supporte le mode automatique (au demarrage) et manuel (bouton Update Workspace).
     /// </summary>
     public partial class UpdateWorkspaceWindow : Window
     {
@@ -27,6 +29,8 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
         private readonly Stopwatch _stopwatch;
         private bool _isRunning = false;
         private bool _wasSkipped = false;
+        private readonly bool _autoStart;
+        private readonly bool _autoCloseOnSuccess;
 
         // Elements UI pour les etapes (stockes par numero)
         private readonly TextBlock[] _stepIcons;
@@ -57,12 +61,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
         /// Constructeur de la fenetre UpdateWorkspace
         /// </summary>
         /// <param name="connection">Connexion Vault active (peut etre null pour mode skip)</param>
-        public UpdateWorkspaceWindow(VDF.Vault.Currency.Connections.Connection? connection = null)
+        /// <param name="autoStart">Si true, demarre automatiquement l'update sans attendre un clic</param>
+        /// <param name="autoCloseOnSuccess">Si true, ferme automatiquement la fenetre apres succes</param>
+        public UpdateWorkspaceWindow(
+            VDF.Vault.Currency.Connections.Connection? connection = null,
+            bool autoStart = false,
+            bool autoCloseOnSuccess = false)
         {
             InitializeComponent();
             DataContext = this;
 
             _connection = connection;
+            _autoStart = autoStart;
+            _autoCloseOnSuccess = autoCloseOnSuccess;
             _updateService = new UpdateWorkspaceService();
             _stopwatch = new Stopwatch();
 
@@ -85,7 +96,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
 
         #region Initialization
 
-        private void UpdateWorkspaceWindow_Loaded(object sender, RoutedEventArgs e)
+        private async void UpdateWorkspaceWindow_Loaded(object sender, RoutedEventArgs e)
         {
             // Remplir les tableaux avec les elements XAML
             _stepIcons[0] = IconStep1;
@@ -133,12 +144,33 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             UpdateVaultStatusUI();
 
             // Message initial
-            AddLog("[i] Pret pour la mise a jour du workspace");
+            if (_autoStart)
+            {
+                AddLog("[i] Mode automatique - demarrage immediat de la mise a jour");
+            }
+            else
+            {
+                AddLog("[i] Pret pour la mise a jour du workspace");
+            }
             AddLog($"[i] Connexion Vault: {(_connection != null ? "Active" : "Non connecte")}");
 
             // Activer/desactiver les boutons selon l'etat de connexion
-            BtnContinue.IsEnabled = _connection != null;
-            BtnContinue.Content = _connection != null ? "Demarrer" : "Connexion requise";
+            if (_autoStart)
+            {
+                // Mode auto: demarrer immediatement
+                BtnContinue.IsEnabled = false;
+                BtnContinue.Content = "En cours...";
+                
+                // Delai court pour laisser la fenetre s'afficher
+                await Task.Delay(500);
+                StartUpdate();
+            }
+            else
+            {
+                // Mode manuel: attendre clic utilisateur
+                BtnContinue.IsEnabled = _connection != null;
+                BtnContinue.Content = _connection != null ? "Demarrer" : "Connexion requise";
+            }
         }
 
         /// <summary>
@@ -260,11 +292,25 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
                     AddLog($"[+] Mise a jour terminee avec succes!");
                     AddLog($"    - {result.DownloadedFiles} fichiers telecharges");
                     AddLog($"    - {result.CopiedPluginFiles} fichiers plugins copies");
-                    AddLog($"    - {result.InstalledTools} outils installes");
+                    AddLog($"    - {result.InstalledTools} applications installees");
                     AddLog($"    - Duree: {result.Duration.TotalSeconds:F1}s");
 
                     TxtStatus.Text = "Mise a jour terminee avec succes!";
                     UpdateProgress(100, "Termine!");
+
+                    // Lancer Vault Client et Inventor apres succes
+                    AddLog("[>] Lancement des applications...");
+                    await LaunchApplicationsAfterUpdateAsync();
+
+                    // Mode automatique avec fermeture auto: fermer apres 2 secondes
+                    if (_autoCloseOnSuccess)
+                    {
+                        AddLog("[i] Fermeture automatique dans 2 secondes...");
+                        await Task.Delay(2000);
+                        DialogResult = true;
+                        Close();
+                        return;
+                    }
 
                     BtnContinue.Content = "Continuer";
                     BtnContinue.IsEnabled = true;
@@ -491,6 +537,126 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             _updateService.StepChanged -= OnStepChanged;
 
             base.OnClosed(e);
+        }
+
+        #endregion
+
+        #region Application Launch
+
+        /// <summary>
+        /// Lance Vault Client et Inventor apres la mise a jour reussie
+        /// </summary>
+        private async Task LaunchApplicationsAfterUpdateAsync()
+        {
+            await Task.Run(async () =>
+            {
+                try
+                {
+                    // === LANCER VAULT CLIENT ===
+                    string[] vaultProcessNames = { "Connectivity.VaultPro", "Connectivity.Vault" };
+                    bool vaultRunning = false;
+                    
+                    foreach (var pName in vaultProcessNames)
+                    {
+                        if (Process.GetProcessesByName(pName).Length > 0)
+                        {
+                            vaultRunning = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!vaultRunning)
+                    {
+                        string vaultPath = FindVaultClientExecutable();
+                        if (!string.IsNullOrEmpty(vaultPath))
+                        {
+                            Dispatcher.Invoke(() => AddLog("   [>] Lancement de Vault Client..."));
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = vaultPath,
+                                UseShellExecute = true
+                            });
+                            Dispatcher.Invoke(() => AddLog("   [+] Vault Client demarre"));
+                        }
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() => AddLog("   [i] Vault Client deja en cours"));
+                    }
+
+                    // Petit delai entre les lancements
+                    await Task.Delay(1000);
+
+                    // === LANCER INVENTOR ===
+                    var inventorProcesses = Process.GetProcessesByName("Inventor");
+                    if (inventorProcesses.Length == 0)
+                    {
+                        string inventorPath = FindInventorExecutable();
+                        if (!string.IsNullOrEmpty(inventorPath))
+                        {
+                            Dispatcher.Invoke(() => AddLog("   [>] Lancement d'Inventor Professional 2026..."));
+                            Process.Start(new ProcessStartInfo
+                            {
+                                FileName = inventorPath,
+                                UseShellExecute = true
+                            });
+                            Dispatcher.Invoke(() => AddLog("   [+] Inventor demarre"));
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() => AddLog("   [!] Inventor non trouve", UpdateWorkspaceService.LogLevel.WARNING));
+                        }
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() => AddLog("   [i] Inventor deja en cours"));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Dispatcher.Invoke(() => AddLog($"   [!] Erreur lancement applications: {ex.Message}", UpdateWorkspaceService.LogLevel.WARNING));
+                }
+            });
+        }
+
+        /// <summary>
+        /// Trouve l'executable Inventor 2026
+        /// </summary>
+        private static string? FindInventorExecutable()
+        {
+            string[] possiblePaths = new[]
+            {
+                @"C:\Program Files\Autodesk\Inventor 2026\Bin\Inventor.exe",
+                @"C:\Program Files\Autodesk\Inventor 2025\Bin\Inventor.exe",
+                @"C:\Program Files\Autodesk\Inventor 2024\Bin\Inventor.exe"
+            };
+
+            foreach (var path in possiblePaths)
+            {
+                if (File.Exists(path))
+                    return path;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Trouve l'executable Vault Client
+        /// </summary>
+        private static string? FindVaultClientExecutable()
+        {
+            string[] possiblePaths = new[]
+            {
+                @"C:\Program Files\Autodesk\Vault Client 2026\Explorer\Connectivity.VaultPro.exe",
+                @"C:\Program Files\Autodesk\Vault Client 2025\Explorer\Connectivity.VaultPro.exe",
+                @"C:\Program Files\Autodesk\Vault Client 2024\Explorer\Connectivity.VaultPro.exe"
+            };
+
+            foreach (var path in possiblePaths)
+            {
+                if (File.Exists(path))
+                    return path;
+            }
+            return null;
         }
 
         #endregion

@@ -107,12 +107,17 @@ namespace XnrgyEngineeringAutomationTools.Services
             {
                 Log("[>] Demarrage de la mise a jour du workspace...");
 
-                // Verifier si Inventor est en cours (bloquerait les fichiers)
+                // ETAPE CRITIQUE: Fermer Inventor et tous les processus lies AVANT tout
+                // Ceci est OBLIGATOIRE pour que les plugins puissent etre copies
+                Log("[>] Verification des processus Inventor...");
+                bool inventorWasRunning = false;
+                
                 var inventorProcess = Process.GetProcessesByName("Inventor").FirstOrDefault();
                 if (inventorProcess != null)
                 {
+                    inventorWasRunning = true;
                     Log("[!] Inventor detecte en cours d'execution", LogLevel.WARNING);
-                    Log("[>] Fermeture d'Inventor pour permettre la mise a jour...");
+                    Log("[>] Fermeture d'Inventor OBLIGATOIRE pour la mise a jour des plugins...");
                     
                     try
                     {
@@ -133,16 +138,37 @@ namespace XnrgyEngineeringAutomationTools.Services
                         bool closed = await Task.Run(() => inventorProcess.WaitForExit(30000), cancellationToken);
                         if (!closed)
                         {
+                            Log("[!] Inventor ne repond pas, fermeture forcee...", LogLevel.WARNING);
                             inventorProcess.Kill();
-                            await Task.Delay(2000, cancellationToken);
+                            await Task.Delay(3000, cancellationToken);
                         }
                         Log("[+] Inventor ferme avec succes");
                     }
                     catch (Exception ex)
                     {
-                        Log($"[!] Impossible de fermer Inventor: {ex.Message}", LogLevel.WARNING);
-                        Log("[!] Certains fichiers pourraient etre verouilles", LogLevel.WARNING);
+                        Log($"[!] Impossible de fermer Inventor proprement: {ex.Message}", LogLevel.WARNING);
+                        // Forcer la fermeture
+                        try
+                        {
+                            foreach (var proc in Process.GetProcessesByName("Inventor"))
+                            {
+                                proc.Kill();
+                            }
+                            await Task.Delay(3000, cancellationToken);
+                            Log("[+] Inventor ferme de force");
+                        }
+                        catch { }
                     }
+                }
+
+                // Tuer aussi les processus auxiliaires qui peuvent verrouiller les DLLs
+                KillInventorRelatedProcesses();
+                
+                if (inventorWasRunning)
+                {
+                    // Attendre que Windows libere les handles de fichiers
+                    Log("[>] Attente liberation des fichiers (5s)...");
+                    await Task.Delay(5000, cancellationToken);
                 }
 
                 // Etape 1: Verifier la connexion Vault
@@ -240,17 +266,17 @@ namespace XnrgyEngineeringAutomationTools.Services
                     cancellationToken.ThrowIfCancellationRequested();
                 }
 
-                // Etape 8: Installations silencieuses
-                UpdateStep(8, StepStatus.InProgress, "Installation des outils...");
+                // Etape 8: Installations silencieuses des applications
+                UpdateStep(8, StepStatus.InProgress, "Installation des applications...");
                 try
                 {
                     var installResult = await RunSilentInstallersAsync(cancellationToken);
                     
                     if (installResult.Success)
                     {
-                        UpdateStep(8, StepStatus.Completed, $"{installResult.SuccessCount}/{installResult.TotalCount} installes");
+                        UpdateStep(8, StepStatus.Completed, $"{installResult.SuccessCount}/{installResult.TotalCount} applications");
                         result.InstalledTools = installResult.SuccessCount;
-                        Log($"[+] {installResult.SuccessCount}/{installResult.TotalCount} outils installes avec succes");
+                        Log($"[+] {installResult.SuccessCount}/{installResult.TotalCount} applications installees avec succes");
                     }
                     else
                     {
@@ -487,7 +513,95 @@ namespace XnrgyEngineeringAutomationTools.Services
         #region Plugin Copy
 
         /// <summary>
+        /// Tue tous les processus qui pourraient verrouiller les fichiers plugin
+        /// </summary>
+        private void KillInventorRelatedProcesses()
+        {
+            var processesToKill = new[] 
+            { 
+                "Inventor", 
+                "Inventor.exe",
+                "InventorServer",
+                "AdskIdentityManager",
+                "AdskLicensingAgent",
+                "invproc"
+            };
+
+            foreach (var processName in processesToKill)
+            {
+                try
+                {
+                    var processes = Process.GetProcessesByName(processName.Replace(".exe", ""));
+                    foreach (var proc in processes)
+                    {
+                        try
+                        {
+                            Log($"   [>] Fermeture du processus: {proc.ProcessName}");
+                            proc.Kill();
+                            proc.WaitForExit(5000);
+                        }
+                        catch { /* Ignorer si deja ferme */ }
+                    }
+                }
+                catch { /* Ignorer */ }
+            }
+        }
+
+        /// <summary>
+        /// Supprime un dossier et tout son contenu de facon forcee
+        /// </summary>
+        private void ForceDeleteDirectory(string path)
+        {
+            if (!Directory.Exists(path))
+                return;
+
+            // Enlever tous les attributs ReadOnly recursivement
+            try
+            {
+                foreach (var file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        File.SetAttributes(file, FileAttributes.Normal);
+                    }
+                    catch { /* Ignorer */ }
+                }
+
+                foreach (var dir in Directory.GetDirectories(path, "*", SearchOption.AllDirectories))
+                {
+                    try
+                    {
+                        File.SetAttributes(dir, FileAttributes.Normal);
+                    }
+                    catch { /* Ignorer */ }
+                }
+            }
+            catch { /* Ignorer */ }
+
+            // Supprimer le dossier
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (Exception ex)
+            {
+                Log($"   [!] Impossible de supprimer {path}: {ex.Message}", LogLevel.WARNING);
+                
+                // Tenter une suppression fichier par fichier
+                try
+                {
+                    foreach (var file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
+                    {
+                        try { File.Delete(file); } catch { }
+                    }
+                }
+                catch { }
+            }
+        }
+
+        /// <summary>
         /// Copie un dossier plugin vers ApplicationPlugins avec exclusions
+        /// LOGIQUE ROBUSTE: Supprime destination AVANT copie pour garantir ecrasement complet
         /// </summary>
         private async Task<CopyResult> CopyPluginFolderAsync(
             string sourceSubPath,
@@ -496,7 +610,7 @@ namespace XnrgyEngineeringAutomationTools.Services
         {
             var result = new CopyResult();
 
-            return await Task.Run(() =>
+            return await Task.Run(async () =>
             {
                 try
                 {
@@ -516,23 +630,59 @@ namespace XnrgyEngineeringAutomationTools.Services
                         return result;
                     }
 
-                    // Creer le dossier destination
-                    if (!Directory.Exists(destPath))
+                    // ETAPE CRITIQUE: Supprimer completement le dossier destination AVANT copie
+                    if (Directory.Exists(destPath))
                     {
-                        Directory.CreateDirectory(destPath);
+                        Log($"   [>] Suppression du dossier existant: {destFolderName}");
+                        
+                        // Premiere tentative
+                        ForceDeleteDirectory(destPath);
+                        
+                        // Attendre un peu
+                        await Task.Delay(500);
+                        
+                        // Si encore present, tuer les processus et reessayer
+                        if (Directory.Exists(destPath))
+                        {
+                            Log($"   [!] Dossier verrouille, fermeture des processus...", LogLevel.WARNING);
+                            KillInventorRelatedProcesses();
+                            await Task.Delay(2000);
+                            ForceDeleteDirectory(destPath);
+                        }
+                        
+                        // Derniere verification
+                        if (Directory.Exists(destPath))
+                        {
+                            Log($"   [!] Impossible de supprimer {destFolderName}, copie par ecrasement", LogLevel.WARNING);
+                        }
+                        else
+                        {
+                            Log($"   [+] Dossier existant supprime");
+                        }
                     }
 
-                    // Copier recursivement avec exclusions
+                    // Creer le dossier ApplicationPlugins si necessaire
+                    if (!Directory.Exists(APPLICATION_PLUGINS_PATH))
+                    {
+                        Directory.CreateDirectory(APPLICATION_PLUGINS_PATH);
+                    }
+
+                    // Copier recursivement avec exclusions et ecrasement force
                     int filesCopied = CopyDirectoryWithExclusions(sourcePath, destPath, cancellationToken);
 
-                    result.Success = true;
+                    result.Success = filesCopied > 0;
                     result.FileCount = filesCopied;
+                    
+                    if (filesCopied == 0)
+                    {
+                        result.ErrorMessage = "Aucun fichier copie - verifier permissions";
+                    }
                 }
                 catch (UnauthorizedAccessException uaEx)
                 {
                     result.Success = false;
                     result.ErrorMessage = $"Acces refuse: {uaEx.Message}";
-                    Log($"   [-] Acces refuse lors de la copie. Verifier les permissions admin.", LogLevel.ERROR);
+                    Log($"   [-] Acces refuse lors de la copie. Fermer Inventor et relancer en administrateur.", LogLevel.ERROR);
                 }
                 catch (Exception ex)
                 {
@@ -546,6 +696,7 @@ namespace XnrgyEngineeringAutomationTools.Services
 
         /// <summary>
         /// Copie recursivement un dossier en excluant certains sous-dossiers
+        /// Avec gestion robuste des fichiers verouilles
         /// </summary>
         private int CopyDirectoryWithExclusions(string sourceDir, string destDir, CancellationToken cancellationToken)
         {
@@ -554,7 +705,7 @@ namespace XnrgyEngineeringAutomationTools.Services
             // Creer le dossier destination
             Directory.CreateDirectory(destDir);
 
-            // Copier les fichiers
+            // Copier les fichiers avec retry
             foreach (var file in Directory.GetFiles(sourceDir))
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -562,24 +713,67 @@ namespace XnrgyEngineeringAutomationTools.Services
                 var fileName = Path.GetFileName(file);
                 var destFile = Path.Combine(destDir, fileName);
 
-                try
-                {
-                    // Supprimer le fichier existant s'il est read-only
-                    if (File.Exists(destFile))
-                    {
-                        var fi = new FileInfo(destFile);
-                        if (fi.IsReadOnly)
-                        {
-                            fi.IsReadOnly = false;
-                        }
-                    }
+                bool copied = false;
+                int retries = 3;
 
-                    File.Copy(file, destFile, true);
-                    filesCopied++;
-                }
-                catch (Exception ex)
+                while (!copied && retries > 0)
                 {
-                    Log($"   [!] Erreur copie {fileName}: {ex.Message}", LogLevel.WARNING);
+                    try
+                    {
+                        // Supprimer le fichier existant s'il existe
+                        if (File.Exists(destFile))
+                        {
+                            try
+                            {
+                                File.SetAttributes(destFile, FileAttributes.Normal);
+                                File.Delete(destFile);
+                            }
+                            catch (Exception delEx)
+                            {
+                                Log($"   [!] Impossible de supprimer {fileName}: {delEx.Message}", LogLevel.WARNING);
+                                retries--;
+                                Thread.Sleep(500);
+                                continue;
+                            }
+                        }
+
+                        // Copier le fichier
+                        File.Copy(file, destFile, true);
+                        
+                        // Enlever le flag ReadOnly du fichier copie
+                        try
+                        {
+                            File.SetAttributes(destFile, FileAttributes.Normal);
+                        }
+                        catch { }
+                        
+                        filesCopied++;
+                        copied = true;
+                    }
+                    catch (IOException ioEx)
+                    {
+                        // Fichier verrouille - attendre et reessayer
+                        Log($"   [!] Fichier verrouille {fileName}, retry {4 - retries}/3...", LogLevel.WARNING);
+                        retries--;
+                        Thread.Sleep(1000);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        // Acces refuse - essayer de forcer
+                        Log($"   [!] Acces refuse {fileName}, retry {4 - retries}/3...", LogLevel.WARNING);
+                        retries--;
+                        Thread.Sleep(500);
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"   [!] Erreur copie {fileName}: {ex.Message}", LogLevel.WARNING);
+                        break;
+                    }
+                }
+
+                if (!copied)
+                {
+                    Log($"   [-] ECHEC copie {fileName} apres 3 tentatives", LogLevel.ERROR);
                 }
             }
 
