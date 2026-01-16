@@ -10,6 +10,7 @@ using System.Windows.Media;
 using System.Windows.Threading;
 using VDF = Autodesk.DataManagement.Client.Framework;
 using XnrgyEngineeringAutomationTools.Services;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
 {
@@ -29,6 +30,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
         private readonly Stopwatch _stopwatch;
         private bool _isRunning = false;
         private bool _wasSkipped = false;
+        private bool _closeAllowed = false;
         private readonly bool _autoStart;
         private readonly bool _autoCloseOnSuccess;
 
@@ -174,6 +176,23 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
         }
 
         /// <summary>
+        /// Empeche la fermeture de la fenetre pendant le processus de mise a jour
+        /// </summary>
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Permettre la fermeture si autorisee (succes) ou si pas en cours
+            if (_isRunning && !_closeAllowed)
+            {
+                // Empecher la fermeture pendant le processus
+                e.Cancel = true;
+                XnrgyMessageBox.ShowWarning(
+                    "La mise a jour est en cours.\nVeuillez attendre la fin du processus.",
+                    "Fermeture impossible",
+                    this);
+            }
+        }
+
+        /// <summary>
         /// Met a jour l'affichage du statut Vault dans le header
         /// </summary>
         private void UpdateVaultStatusUI()
@@ -209,6 +228,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             else
             {
                 // Deja termine - fermer la fenetre
+                _closeAllowed = true;
                 DialogResult = true;
                 Close();
             }
@@ -223,6 +243,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             }
             
             _wasSkipped = true;
+            _closeAllowed = true;
             AddLog("[!] Mise a jour ignoree par l'utilisateur");
             DialogResult = true;
             Close();
@@ -238,6 +259,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             }
             else
             {
+                _closeAllowed = true;
                 DialogResult = false;
                 Close();
             }
@@ -269,6 +291,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
 
             // Mettre a jour l'UI
             BtnContinue.IsEnabled = false;
+            BtnCancel.IsEnabled = false;  // Desactiver Annuler des le debut du processus
             BtnSkip.Content = "Interrompre";
 
             // Demarrer le chrono
@@ -307,6 +330,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
                     {
                         AddLog("[i] Fermeture automatique dans 2 secondes...");
                         await Task.Delay(2000);
+                        _closeAllowed = true;  // Autoriser la fermeture apres succes
                         DialogResult = true;
                         Close();
                         return;
@@ -330,12 +354,12 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             {
                 _stopwatch.Stop();
                 _elapsedTimer.Stop();
-                AddLog("[!] Mise a jour annulee");
-                TxtStatus.Text = "Mise a jour annulee";
+                AddLog("[!] Mise a jour interrompue");
+                TxtStatus.Text = "Mise a jour interrompue";
 
                 BtnContinue.Content = "Continuer sans mise a jour";
                 BtnContinue.IsEnabled = true;
-                BtnCancel.IsEnabled = true;
+                // BtnCancel reste desactive - l'utilisateur a deja interrompu le processus
             }
             catch (Exception ex)
             {
@@ -438,7 +462,7 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
 
             if (iconBlock == null || textBlock == null) return;
 
-            // Mettre a jour l'icone selon le statut - COULEURS VIVES
+            // Mettre a jour l'icone selon le statut - COULEURS XNRGY STANDARD
             switch (status)
             {
                 case UpdateWorkspaceService.StepStatus.Pending:
@@ -448,27 +472,27 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
 
                 case UpdateWorkspaceService.StepStatus.InProgress:
                     iconBlock.Text = "🔄";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x40, 0xC4, 0xFF)); // Bleu clair vif
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD4)); // XnrgyBlue #0078D4
                     break;
 
                 case UpdateWorkspaceService.StepStatus.Completed:
                     iconBlock.Text = "✅";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xE6, 0x76)); // Vert vif
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x00, 0xD2, 0x6A)); // XnrgyGreen #00D26A
                     break;
 
                 case UpdateWorkspaceService.StepStatus.Failed:
                     iconBlock.Text = "❌";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0x52, 0x52)); // Rouge vif
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xE8, 0x11, 0x23)); // XnrgyRed #E81123
                     break;
 
                 case UpdateWorkspaceService.StepStatus.Warning:
                     iconBlock.Text = "⚠️";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0xAB, 0x40)); // Orange vif
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xFF, 0x8C, 0x00)); // XnrgyOrange #FF8C00
                     break;
 
                 case UpdateWorkspaceService.StepStatus.Skipped:
                     iconBlock.Text = "⏸️";
-                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0xB0, 0xB0, 0xB0)); // Gris clair
+                    textBlock.Foreground = new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0x88)); // TextMuted #888888
                     break;
             }
 
@@ -476,14 +500,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             if (detailBlock != null && !string.IsNullOrEmpty(message))
             {
                 detailBlock.Text = $"({message})";
-                // Couleur du detail selon le statut
+                // Couleur du detail selon le statut - COULEURS XNRGY STANDARD
                 detailBlock.Foreground = status switch
                 {
-                    UpdateWorkspaceService.StepStatus.Completed => new SolidColorBrush(Color.FromRgb(0x00, 0xE6, 0x76)),
-                    UpdateWorkspaceService.StepStatus.InProgress => new SolidColorBrush(Color.FromRgb(0x40, 0xC4, 0xFF)),
-                    UpdateWorkspaceService.StepStatus.Failed => new SolidColorBrush(Color.FromRgb(0xFF, 0x52, 0x52)),
-                    UpdateWorkspaceService.StepStatus.Warning => new SolidColorBrush(Color.FromRgb(0xFF, 0xAB, 0x40)),
-                    _ => new SolidColorBrush(Color.FromRgb(0xB0, 0xB0, 0xB0))
+                    UpdateWorkspaceService.StepStatus.Completed => new SolidColorBrush(Color.FromRgb(0x00, 0xD2, 0x6A)),   // XnrgyGreen
+                    UpdateWorkspaceService.StepStatus.InProgress => new SolidColorBrush(Color.FromRgb(0x00, 0x78, 0xD4)),  // XnrgyBlue
+                    UpdateWorkspaceService.StepStatus.Failed => new SolidColorBrush(Color.FromRgb(0xE8, 0x11, 0x23)),      // XnrgyRed
+                    UpdateWorkspaceService.StepStatus.Warning => new SolidColorBrush(Color.FromRgb(0xFF, 0x8C, 0x00)),     // XnrgyOrange
+                    _ => new SolidColorBrush(Color.FromRgb(0x88, 0x88, 0x88))                                               // TextMuted
                 };
             }
         }
@@ -493,15 +517,19 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             string timestamp = DateTime.Now.ToString("HH:mm:ss");
             string formattedMessage = $"[{timestamp}]    {message}";
             
-            // Couleur selon le niveau de log
-            var color = level switch
-            {
-                UpdateWorkspaceService.LogLevel.SUCCESS => new SolidColorBrush(Color.FromRgb(0x00, 0xE6, 0x76)),  // Vert vif
-                UpdateWorkspaceService.LogLevel.ERROR => new SolidColorBrush(Color.FromRgb(0xFF, 0x52, 0x52)),    // Rouge vif
-                UpdateWorkspaceService.LogLevel.WARNING => new SolidColorBrush(Color.FromRgb(0xFF, 0xAB, 0x40)),  // Orange vif
-                UpdateWorkspaceService.LogLevel.INFO => new SolidColorBrush(Color.FromRgb(0x40, 0xC4, 0xFF)),     // Bleu clair vif
-                _ => new SolidColorBrush(Colors.White)
-            };
+            // Detection automatique du niveau basee sur le prefixe du message
+            // Utilise JournalColorService pour uniformite avec les autres formulaires
+            var trimmedMsg = message.TrimStart();
+            
+            SolidColorBrush color;
+            if (trimmedMsg.StartsWith("[+]"))
+                color = Services.JournalColorService.SuccessBrush;  // Vert #00FF7F
+            else if (trimmedMsg.StartsWith("[-]"))
+                color = Services.JournalColorService.ErrorBrush;    // Rouge #FF4444
+            else if (trimmedMsg.StartsWith("[!]"))
+                color = Services.JournalColorService.WarningBrush;  // Jaune #FFD700
+            else
+                color = Services.JournalColorService.InfoBrush;     // Blanc #FFFFFF (defaut)
             
             LogEntries.Add(new LogEntry { Message = formattedMessage, Color = color });
 
@@ -510,6 +538,14 @@ namespace XnrgyEngineeringAutomationTools.Modules.UpdateWorkspace.Views
             {
                 LogListBox.ScrollIntoView(LogListBox.Items[LogListBox.Items.Count - 1]);
             }
+        }
+
+        /// <summary>
+        /// Efface le journal des operations
+        /// </summary>
+        private void BtnClearLog_Click(object sender, RoutedEventArgs e)
+        {
+            LogEntries.Clear();
         }
 
         #endregion

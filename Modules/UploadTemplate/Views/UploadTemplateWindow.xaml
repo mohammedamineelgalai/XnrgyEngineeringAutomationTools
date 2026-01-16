@@ -731,15 +731,14 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
-                <!-- Header Journal -->
-                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8">
+                <!-- Header Journal - Compact -->
+                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="8,3">
                     <Grid>
-                        <TextBlock Text="📋 Journal des Opérations" FontSize="14" FontWeight="Bold" 
-                                   Foreground="White"/>
+                        <TextBlock Text="📋 Journal des Opérations" FontSize="12" FontWeight="Bold" 
+                                   Foreground="White" VerticalAlignment="Center"/>
                         <Button x:Name="BtnClearLog" Content="🗑️ Effacer" HorizontalAlignment="Right" 
-                                Background="#DC2626" Foreground="White" FontWeight="Bold"
-                                BorderBrush="#DC2626" BorderThickness="2"
-                                Padding="8,2" Click="BtnClearLog_Click" Cursor="Hand"/>
+                                Style="{StaticResource JournalClearButton}"
+                                Click="BtnClearLog_Click"/>
                     </Grid>
                 </Border>
                 

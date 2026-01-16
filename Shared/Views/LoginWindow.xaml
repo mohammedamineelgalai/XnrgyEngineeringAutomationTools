@@ -8,7 +8,8 @@
         WindowStartupLocation="CenterOwner"
         ResizeMode="NoResize"
         Background="#1E1E2E"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        Closing="Window_Closing">
 
     <Window.Resources>
         <ResourceDictionary>
@@ -259,7 +260,7 @@
         <Border Grid.Row="2" Style="{StaticResource CopyrightBarBorder}">
             <Grid>
                 <TextBlock Style="{StaticResource CopyrightTextStyle}" HorizontalAlignment="Center"
-                           Text="XNRGY Climate Systems - Connexion Vault"/>
+                           Text="{StaticResource CopyrightLogin}"/>
             </Grid>
         </Border>
     </Grid>

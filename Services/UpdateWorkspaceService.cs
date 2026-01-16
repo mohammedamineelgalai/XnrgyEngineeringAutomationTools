@@ -54,6 +54,19 @@ namespace XnrgyEngineeringAutomationTools.Services
             "Automation_Data"
         };
 
+        // Extensions de fichiers a exclure lors de la copie
+        private static readonly string[] ExcludedExtensions = new[]
+        {
+            ".bak", ".old", ".tmp", ".log", ".lck", ".dwl", ".dwl2", ".pdb"
+        };
+
+        // Prefixes de fichiers a exclure (fichiers generes par installateurs Inno Setup, etc.)
+        // Ces fichiers sont crees dans la DESTINATION par les installateurs et ne doivent pas etre supprimes
+        private static readonly string[] ExcludedFilePrefixes = new[]
+        {
+            "unins"    // unins000.dat, unins000.exe - Inno Setup uninstaller files
+        };
+
         // Dossier contenant les installateurs (scan automatique)
         private const string INSTALLERS_FOLDER = @"C:\Vault\Engineering\Inventor_Standards\Automation_Standard\Application_Plugins\XNRGY_ADDINS_2026\Xnrgy_Software";
         
@@ -161,8 +174,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                     }
                 }
 
-                // Tuer aussi les processus auxiliaires qui peuvent verrouiller les DLLs
-                KillInventorRelatedProcesses();
+                // Fermer Inventor s'il reste des processus (methode douce - sans toucher a la licence)
+                CloseInventorOnly();
                 
                 if (inventorWasRunning)
                 {
@@ -323,7 +336,8 @@ namespace XnrgyEngineeringAutomationTools.Services
         #region Vault Download
 
         /// <summary>
-        /// Telecharge recursivement un dossier Vault vers un chemin local
+        /// Telecharge recursivement un dossier Vault vers un chemin local (MODE MIROIR)
+        /// Supprime les fichiers locaux qui n'existent plus dans Vault
         /// </summary>
         private async Task<DownloadResult> DownloadVaultFolderAsync(
             VDF.Vault.Currency.Connections.Connection connection,
@@ -411,6 +425,47 @@ namespace XnrgyEngineeringAutomationTools.Services
                         {
                             Log($"   [!] Erreur batch: {batchEx.Message}", LogLevel.WARNING);
                         }
+                    }
+
+                    // MODE MIROIR COMPLET: Supprimer fichiers ET dossiers locaux qui n'existent plus dans Vault
+                    try
+                    {
+                        // Construire les chemins relatifs complets de tous les fichiers Vault
+                        var vaultRelativeFilePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var file in allFiles)
+                        {
+                            // Trouver le dossier parent du fichier
+                            var parentFolder = allFolders.FirstOrDefault(f => f.Id == file.FolderId);
+                            if (parentFolder != null)
+                            {
+                                var vaultFilePath = parentFolder.FullName.TrimEnd('/') + "/" + file.Name;
+                                var relativePath = vaultFilePath.Substring(vaultFolderPath.TrimEnd('/').Length).TrimStart('/');
+                                relativePath = relativePath.Replace("/", "\\");
+                                vaultRelativeFilePaths.Add(relativePath);
+                            }
+                        }
+
+                        // Construire les chemins relatifs complets de tous les dossiers Vault
+                        var vaultRelativeFolderPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                        foreach (var vaultFolder in allFolders)
+                        {
+                            var relativePath = vaultFolder.FullName.TrimEnd('/').Substring(vaultFolderPath.TrimEnd('/').Length).TrimStart('/');
+                            if (!string.IsNullOrEmpty(relativePath))
+                            {
+                                relativePath = relativePath.Replace("/", "\\");
+                                vaultRelativeFolderPaths.Add(relativePath);
+                            }
+                        }
+
+                        int deletedCount = CleanupLocalMirrorRecursive(localFolderPath, localFolderPath, vaultRelativeFilePaths, vaultRelativeFolderPaths);
+                        if (deletedCount > 0)
+                        {
+                            Log($"   [i] Mode miroir: {deletedCount} fichier(s)/dossier(s) obsolete(s) supprime(s)");
+                        }
+                    }
+                    catch (Exception mirrorEx)
+                    {
+                        Log($"   [!] Erreur mode miroir: {mirrorEx.Message}", LogLevel.WARNING);
                     }
 
                     result.Success = true;
@@ -508,35 +563,159 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
         }
 
+        /// <summary>
+        /// MODE MIROIR COMPLET: Supprime recursivement les fichiers/dossiers locaux qui n'existent plus dans Vault
+        /// Utilise les chemins relatifs complets pour une comparaison precise
+        /// </summary>
+        private int CleanupLocalMirrorRecursive(
+            string localRootPath,
+            string currentLocalPath, 
+            HashSet<string> vaultRelativeFilePaths, 
+            HashSet<string> vaultRelativeFolderPaths)
+        {
+            int deletedCount = 0;
+
+            if (!Directory.Exists(currentLocalPath))
+                return 0;
+
+            try
+            {
+                // 1. Supprimer les FICHIERS locaux qui n'existent plus dans Vault
+                foreach (var localFile in Directory.GetFiles(currentLocalPath))
+                {
+                    var fileName = Path.GetFileName(localFile);
+                    
+                    // Ignorer les fichiers systeme/temporaires
+                    if (fileName.StartsWith(".") || fileName.StartsWith("~$") || fileName.EndsWith(".lck"))
+                        continue;
+
+                    // Calculer le chemin relatif
+                    var relativePath = localFile.Substring(localRootPath.Length).TrimStart('\\');
+                    
+                    // Si le fichier n'existe pas dans Vault, le supprimer
+                    if (!vaultRelativeFilePaths.Contains(relativePath))
+                    {
+                        try
+                        {
+                            File.SetAttributes(localFile, FileAttributes.Normal);
+                            File.Delete(localFile);
+                            deletedCount++;
+                            Log($"      [>] Fichier supprime (obsolete): {relativePath}");
+                        }
+                        catch (Exception delEx)
+                        {
+                            Log($"      [!] Impossible de supprimer {relativePath}: {delEx.Message}", LogLevel.WARNING);
+                        }
+                    }
+                }
+
+                // 2. Traiter les SOUS-DOSSIERS recursivement
+                foreach (var localDir in Directory.GetDirectories(currentLocalPath))
+                {
+                    var dirName = Path.GetFileName(localDir);
+                    
+                    // Ignorer les dossiers systeme
+                    if (dirName.StartsWith(".") || dirName.Equals("OldVersions", StringComparison.OrdinalIgnoreCase))
+                        continue;
+
+                    // Calculer le chemin relatif du dossier
+                    var relativeDirPath = localDir.Substring(localRootPath.Length).TrimStart('\\');
+                    
+                    // Si le dossier n'existe pas dans Vault, le supprimer completement
+                    if (!vaultRelativeFolderPaths.Contains(relativeDirPath))
+                    {
+                        try
+                        {
+                            // Supprimer le dossier et tout son contenu
+                            ForceDeleteDirectoryRecursive(localDir);
+                            deletedCount++;
+                            Log($"      [>] Dossier supprime (obsolete): {relativeDirPath}");
+                        }
+                        catch (Exception delEx)
+                        {
+                            Log($"      [!] Impossible de supprimer dossier {relativeDirPath}: {delEx.Message}", LogLevel.WARNING);
+                        }
+                    }
+                    else
+                    {
+                        // Le dossier existe dans Vault, descendre recursivement pour nettoyer son contenu
+                        deletedCount += CleanupLocalMirrorRecursive(localRootPath, localDir, vaultRelativeFilePaths, vaultRelativeFolderPaths);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log($"   [!] Erreur nettoyage miroir: {ex.Message}", LogLevel.WARNING);
+            }
+
+            return deletedCount;
+        }
+
+        /// <summary>
+        /// Supprime un dossier et tout son contenu de facon forcee
+        /// </summary>
+        private void ForceDeleteDirectoryRecursive(string path)
+        {
+            if (!Directory.Exists(path))
+                return;
+
+            // Enlever tous les attributs ReadOnly recursivement
+            try
+            {
+                foreach (var file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
+                {
+                    try { File.SetAttributes(file, FileAttributes.Normal); } catch { }
+                }
+            }
+            catch { }
+
+            // Supprimer le dossier
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch
+            {
+                // Tenter une suppression fichier par fichier si ca echoue
+                try
+                {
+                    foreach (var file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
+                    {
+                        try { File.Delete(file); } catch { }
+                    }
+                    foreach (var dir in Directory.GetDirectories(path, "*", SearchOption.AllDirectories).OrderByDescending(d => d.Length))
+                    {
+                        try { Directory.Delete(dir); } catch { }
+                    }
+                    Directory.Delete(path);
+                }
+                catch { }
+            }
+        }
+
         #endregion
 
         #region Plugin Copy
 
         /// <summary>
-        /// Tue tous les processus qui pourraient verrouiller les fichiers plugin
+        /// Ferme Inventor UNIQUEMENT pour liberer les DLLs des plugins
+        /// NE TOUCHE PAS aux processus de licence (AdskLicensingAgent, AdskIdentityManager)
         /// </summary>
-        private void KillInventorRelatedProcesses()
+        private void CloseInventorOnly()
         {
-            var processesToKill = new[] 
-            { 
-                "Inventor", 
-                "Inventor.exe",
-                "InventorServer",
-                "AdskIdentityManager",
-                "AdskLicensingAgent",
-                "invproc"
-            };
+            // SEULEMENT Inventor - les processus de licence doivent rester actifs
+            var processesToClose = new[] { "Inventor" };
 
-            foreach (var processName in processesToKill)
+            foreach (var processName in processesToClose)
             {
                 try
                 {
-                    var processes = Process.GetProcessesByName(processName.Replace(".exe", ""));
+                    var processes = Process.GetProcessesByName(processName);
                     foreach (var proc in processes)
                     {
                         try
                         {
-                            Log($"   [>] Fermeture du processus: {proc.ProcessName}");
+                            Log($"   [>] Fermeture de: {proc.ProcessName} (PID: {proc.Id})");
                             proc.Kill();
                             proc.WaitForExit(5000);
                         }
@@ -548,60 +727,60 @@ namespace XnrgyEngineeringAutomationTools.Services
         }
 
         /// <summary>
-        /// Supprime un dossier et tout son contenu de facon forcee
+        /// Copie un dossier avec Robocopy (methode robuste Windows)
         /// </summary>
-        private void ForceDeleteDirectory(string path)
+        private (bool Success, int FilesCopied, string Output) CopyWithRobocopy(string source, string dest)
         {
-            if (!Directory.Exists(path))
-                return;
-
-            // Enlever tous les attributs ReadOnly recursivement
             try
             {
-                foreach (var file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
+                // Robocopy /MIR = Mirror (copie + supprime fichiers obsoletes)
+                // /R:2 = 2 retries, /W:1 = 1 seconde entre retries
+                // /NP = No Progress, /NFL /NDL = No File/Dir List pour moins de verbosity
+                // /XD = exclure dossiers, /XF = exclure fichiers
+                var excludeDirs = string.Join(" ", ExcludedFolders.Select(f => $"\"{f}\""));
+                var excludeFilesByExt = string.Join(" ", ExcludedExtensions.Select(e => $"\"*{e}\""));
+                var excludeFilesByPrefix = string.Join(" ", ExcludedFilePrefixes.Select(p => $"\"{p}*\""));
+                
+                var args = $"\"{source}\" \"{dest}\" /MIR /R:2 /W:1 /NP /NFL /NDL /XD {excludeDirs} /XF {excludeFilesByExt} {excludeFilesByPrefix}";
+                
+                var startInfo = new ProcessStartInfo
                 {
-                    try
-                    {
-                        File.SetAttributes(file, FileAttributes.Normal);
-                    }
-                    catch { /* Ignorer */ }
-                }
+                    FileName = "robocopy",
+                    Arguments = args,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                };
 
-                foreach (var dir in Directory.GetDirectories(path, "*", SearchOption.AllDirectories))
+                using (var process = Process.Start(startInfo))
                 {
-                    try
-                    {
-                        File.SetAttributes(dir, FileAttributes.Normal);
-                    }
-                    catch { /* Ignorer */ }
-                }
-            }
-            catch { /* Ignorer */ }
+                    string output = process.StandardOutput.ReadToEnd();
+                    process.WaitForExit(60000); // 60 sec timeout
 
-            // Supprimer le dossier
-            try
-            {
-                Directory.Delete(path, true);
+                    // Robocopy exit codes: 0-7 = succes, 8+ = erreur
+                    bool success = process.ExitCode < 8;
+                    
+                    // Compter les fichiers copies depuis la sortie
+                    int filesCopied = 0;
+                    var match = System.Text.RegularExpressions.Regex.Match(output, @"Files\s*:\s*(\d+)");
+                    if (match.Success)
+                    {
+                        int.TryParse(match.Groups[1].Value, out filesCopied);
+                    }
+
+                    return (success, filesCopied, output);
+                }
             }
             catch (Exception ex)
             {
-                Log($"   [!] Impossible de supprimer {path}: {ex.Message}", LogLevel.WARNING);
-                
-                // Tenter une suppression fichier par fichier
-                try
-                {
-                    foreach (var file in Directory.GetFiles(path, "*.*", SearchOption.AllDirectories))
-                    {
-                        try { File.Delete(file); } catch { }
-                    }
-                }
-                catch { }
+                return (false, 0, ex.Message);
             }
         }
 
         /// <summary>
-        /// Copie un dossier plugin vers ApplicationPlugins avec exclusions
-        /// LOGIQUE ROBUSTE: Supprime destination AVANT copie pour garantir ecrasement complet
+        /// Copie un dossier plugin vers ApplicationPlugins avec Robocopy
+        /// EXIGENCE: Ferme Inventor AVANT la copie pour liberer les DLLs
         /// </summary>
         private async Task<CopyResult> CopyPluginFolderAsync(
             string sourceSubPath,
@@ -621,7 +800,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                     
                     string destPath = Path.Combine(APPLICATION_PLUGINS_PATH, destFolderName);
 
-                    Log($"   [>] Copie: {sourceSubPath} -> {destFolderName}");
+                    Log($"   [>] Copie avec Robocopy: {sourceSubPath} -> {destFolderName}");
 
                     if (!Directory.Exists(sourcePath))
                     {
@@ -630,59 +809,38 @@ namespace XnrgyEngineeringAutomationTools.Services
                         return result;
                     }
 
-                    // ETAPE CRITIQUE: Supprimer completement le dossier destination AVANT copie
-                    if (Directory.Exists(destPath))
-                    {
-                        Log($"   [>] Suppression du dossier existant: {destFolderName}");
-                        
-                        // Premiere tentative
-                        ForceDeleteDirectory(destPath);
-                        
-                        // Attendre un peu
-                        await Task.Delay(500);
-                        
-                        // Si encore present, tuer les processus et reessayer
-                        if (Directory.Exists(destPath))
-                        {
-                            Log($"   [!] Dossier verrouille, fermeture des processus...", LogLevel.WARNING);
-                            KillInventorRelatedProcesses();
-                            await Task.Delay(2000);
-                            ForceDeleteDirectory(destPath);
-                        }
-                        
-                        // Derniere verification
-                        if (Directory.Exists(destPath))
-                        {
-                            Log($"   [!] Impossible de supprimer {destFolderName}, copie par ecrasement", LogLevel.WARNING);
-                        }
-                        else
-                        {
-                            Log($"   [+] Dossier existant supprime");
-                        }
-                    }
-
                     // Creer le dossier ApplicationPlugins si necessaire
                     if (!Directory.Exists(APPLICATION_PLUGINS_PATH))
                     {
                         Directory.CreateDirectory(APPLICATION_PLUGINS_PATH);
                     }
 
-                    // Copier recursivement avec exclusions et ecrasement force
-                    int filesCopied = CopyDirectoryWithExclusions(sourcePath, destPath, cancellationToken);
-
-                    result.Success = filesCopied > 0;
-                    result.FileCount = filesCopied;
+                    // ETAPE UNIQUE: Fermer Inventor puis Robocopy
+                    CloseInventorOnly();
+                    await Task.Delay(2000); // Attendre que les handles soient liberes
                     
-                    if (filesCopied == 0)
+                    var (success, filesCopied, output) = CopyWithRobocopy(sourcePath, destPath);
+                    
+                    if (success)
                     {
-                        result.ErrorMessage = "Aucun fichier copie - verifier permissions";
+                        result.Success = true;
+                        result.FileCount = filesCopied;
+                        Log($"   [+] Robocopy reussi: {filesCopied} fichiers");
                     }
+                    else
+                    {
+                        result.Success = false;
+                        result.ErrorMessage = $"Robocopy echec: {output}";
+                        Log($"   [-] Robocopy echec: {output}", LogLevel.ERROR);
+                    }
+                    
+                    return result;
                 }
                 catch (UnauthorizedAccessException uaEx)
                 {
                     result.Success = false;
                     result.ErrorMessage = $"Acces refuse: {uaEx.Message}";
-                    Log($"   [-] Acces refuse lors de la copie. Fermer Inventor et relancer en administrateur.", LogLevel.ERROR);
+                    Log($"   [-] Acces refuse lors de la copie. Relancer en administrateur.", LogLevel.ERROR);
                 }
                 catch (Exception ex)
                 {
@@ -692,108 +850,6 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                 return result;
             }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Copie recursivement un dossier en excluant certains sous-dossiers
-        /// Avec gestion robuste des fichiers verouilles
-        /// </summary>
-        private int CopyDirectoryWithExclusions(string sourceDir, string destDir, CancellationToken cancellationToken)
-        {
-            int filesCopied = 0;
-
-            // Creer le dossier destination
-            Directory.CreateDirectory(destDir);
-
-            // Copier les fichiers avec retry
-            foreach (var file in Directory.GetFiles(sourceDir))
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var fileName = Path.GetFileName(file);
-                var destFile = Path.Combine(destDir, fileName);
-
-                bool copied = false;
-                int retries = 3;
-
-                while (!copied && retries > 0)
-                {
-                    try
-                    {
-                        // Supprimer le fichier existant s'il existe
-                        if (File.Exists(destFile))
-                        {
-                            try
-                            {
-                                File.SetAttributes(destFile, FileAttributes.Normal);
-                                File.Delete(destFile);
-                            }
-                            catch (Exception delEx)
-                            {
-                                Log($"   [!] Impossible de supprimer {fileName}: {delEx.Message}", LogLevel.WARNING);
-                                retries--;
-                                Thread.Sleep(500);
-                                continue;
-                            }
-                        }
-
-                        // Copier le fichier
-                        File.Copy(file, destFile, true);
-                        
-                        // Enlever le flag ReadOnly du fichier copie
-                        try
-                        {
-                            File.SetAttributes(destFile, FileAttributes.Normal);
-                        }
-                        catch { }
-                        
-                        filesCopied++;
-                        copied = true;
-                    }
-                    catch (IOException ioEx)
-                    {
-                        // Fichier verrouille - attendre et reessayer
-                        Log($"   [!] Fichier verrouille {fileName}, retry {4 - retries}/3...", LogLevel.WARNING);
-                        retries--;
-                        Thread.Sleep(1000);
-                    }
-                    catch (UnauthorizedAccessException)
-                    {
-                        // Acces refuse - essayer de forcer
-                        Log($"   [!] Acces refuse {fileName}, retry {4 - retries}/3...", LogLevel.WARNING);
-                        retries--;
-                        Thread.Sleep(500);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log($"   [!] Erreur copie {fileName}: {ex.Message}", LogLevel.WARNING);
-                        break;
-                    }
-                }
-
-                if (!copied)
-                {
-                    Log($"   [-] ECHEC copie {fileName} apres 3 tentatives", LogLevel.ERROR);
-                }
-            }
-
-            // Copier les sous-dossiers (avec exclusions)
-            foreach (var subDir in Directory.GetDirectories(sourceDir))
-            {
-                var dirName = Path.GetFileName(subDir);
-                
-                // Verifier si ce dossier doit etre exclu
-                if (ExcludedFolders.Any(ef => ef.Equals(dirName, StringComparison.OrdinalIgnoreCase)))
-                {
-                    Log($"   [i] Dossier exclu: {dirName}");
-                    continue;
-                }
-
-                var destSubDir = Path.Combine(destDir, dirName);
-                filesCopied += CopyDirectoryWithExclusions(subDir, destSubDir, cancellationToken);
-            }
-
-            return filesCopied;
         }
 
         #endregion
@@ -850,7 +906,13 @@ namespace XnrgyEngineeringAutomationTools.Services
             
             if (Directory.Exists(INSTALLERS_FOLDER))
             {
-                // Chercher tous les Setup*.exe dans les sous-dossiers
+                // 1. Chercher les .exe directement a la racine de Xnrgy_Software
+                var rootExeFiles = Directory.GetFiles(INSTALLERS_FOLDER, "*.exe", SearchOption.TopDirectoryOnly)
+                    .Where(f => !Path.GetFileName(f).StartsWith("unins", StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                installers.AddRange(rootExeFiles);
+                
+                // 2. Chercher les .exe dans les sous-dossiers
                 foreach (var subDir in Directory.GetDirectories(INSTALLERS_FOLDER))
                 {
                     var exeFiles = Directory.GetFiles(subDir, "*.exe", SearchOption.TopDirectoryOnly)

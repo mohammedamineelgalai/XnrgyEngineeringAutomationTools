@@ -450,24 +450,12 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
-                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8">
+                <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="8,3">
                     <Grid>
-                        <TextBlock Text="📋 Journal des Operations" FontSize="14" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="📋 Journal des Operations" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                         <Button x:Name="BtnClearLog" Content="🗑️ Effacer" HorizontalAlignment="Right" 
-                                Background="#DC2626" Foreground="White" FontWeight="Bold"
-                                BorderBrush="#DC2626" BorderThickness="2"
-                                Padding="8,4" Click="BtnClearLog_Click" Cursor="Hand">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border Background="{TemplateBinding Background}" 
-                                            BorderBrush="{TemplateBinding BorderBrush}" 
-                                            BorderThickness="{TemplateBinding BorderThickness}"
-                                            CornerRadius="4" Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
+                                Style="{StaticResource JournalClearButton}"
+                                Click="BtnClearLog_Click"/>
                     </Grid>
                 </Border>
                 

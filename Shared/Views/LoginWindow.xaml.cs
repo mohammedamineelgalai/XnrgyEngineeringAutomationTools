@@ -11,6 +11,8 @@ namespace XnrgyEngineeringAutomationTools.Shared.Views
         private readonly VaultSdkService _vaultService;
         private Storyboard _spinnerStoryboard;
         private bool _autoConnectMode = false;
+        private bool _isConnecting = false;
+        private bool _closeAllowed = false;
 
         public LoginWindow(VaultSdkService vaultService, bool autoConnect = false)
         {
@@ -67,6 +69,7 @@ namespace XnrgyEngineeringAutomationTools.Shared.Views
                         
                         await Task.Delay(800); // Délai pour voir le succès
                         
+                        _closeAllowed = true;  // Autoriser la fermeture apres succes
                         DialogResult = true;
                         Close();
                         return;
@@ -164,6 +167,7 @@ namespace XnrgyEngineeringAutomationTools.Shared.Views
                     // Sauvegarder les credentials
                     SaveCredentials(server, vault, user, password);
                     
+                    _closeAllowed = true;  // Autoriser la fermeture apres succes
                     DialogResult = true;
                     Close();
                 }
@@ -214,8 +218,26 @@ namespace XnrgyEngineeringAutomationTools.Shared.Views
             Close();
         }
 
+        /// <summary>
+        /// Empeche la fermeture de la fenetre pendant le processus de connexion
+        /// </summary>
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            // Permettre la fermeture si autorisee (succes) ou si pas en cours de connexion
+            if (_isConnecting && !_closeAllowed)
+            {
+                // Empecher la fermeture pendant le processus
+                e.Cancel = true;
+                XnrgyMessageBox.ShowWarning(
+                    "La connexion est en cours.\nVeuillez attendre la fin du processus.",
+                    "Fermeture impossible",
+                    this);
+            }
+        }
+
         private void SetControlsEnabled(bool enabled)
         {
+            _isConnecting = !enabled;  // Connexion en cours si controles desactives
             ServerTextBox.IsEnabled = enabled;
             VaultTextBox.IsEnabled = enabled;
             UserTextBox.IsEnabled = enabled;

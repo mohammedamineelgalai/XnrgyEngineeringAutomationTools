@@ -315,18 +315,15 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 
-                <Border x:Name="LogHeaderBorder" Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="15,8">
+                <Border x:Name="LogHeaderBorder" Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="8,3">
                     <Grid>
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <TextBlock Text="📋" FontSize="16" Foreground="White" VerticalAlignment="Center" Margin="0,0,8,0"/>
-                            <TextBlock x:Name="LogHeaderText" Text="Journal des Opérations" FontSize="14" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                            <TextBlock Text="📋" FontSize="13" Foreground="White" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                            <TextBlock x:Name="LogHeaderText" Text="Journal des Opérations" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                         </StackPanel>
                         <Button Content="🗑️ Effacer" 
                                 HorizontalAlignment="Right" 
-                                Style="{StaticResource ActionButton}" 
-                                Background="#DC2626" 
-                                Foreground="White"
-                                Padding="10,5"
+                                Style="{StaticResource JournalClearButton}"
                                 Click="ClearLogButton_Click"/>
                     </Grid>
                 </Border>

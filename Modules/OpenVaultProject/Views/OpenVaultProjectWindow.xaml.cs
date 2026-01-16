@@ -689,25 +689,26 @@ namespace XnrgyEngineeringAutomationTools.Modules.OpenVaultProject.Views
                     TextWrapping = TextWrapping.Wrap
                 };
 
-                switch (level)
+                // Detection automatique du niveau basee sur le prefixe du message
+                // Utilise JournalColorService pour uniformite avec les autres formulaires
+                var trimmedMsg = message.TrimStart();
+                
+                if (trimmedMsg.StartsWith("[+]"))
                 {
-                    case "ERROR":
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(239, 68, 68)); // Rouge
-                        textBlock.FontWeight = FontWeights.Bold;
-                        break;
-                    case "WARN":
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(251, 191, 36)); // Orange
-                        break;
-                    case "SUCCESS":
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(34, 197, 94)); // Vert
-                        break;
-                    case "START":
-                        textBlock.Foreground = new SolidColorBrush(Color.FromRgb(59, 130, 246)); // Bleu
-                        textBlock.FontWeight = FontWeights.SemiBold;
-                        break;
-                    default:
-                        textBlock.Foreground = new SolidColorBrush(Colors.White);
-                        break;
+                    textBlock.Foreground = XnrgyEngineeringAutomationTools.Services.JournalColorService.SuccessBrush;  // Vert #00FF7F
+                }
+                else if (trimmedMsg.StartsWith("[-]"))
+                {
+                    textBlock.Foreground = XnrgyEngineeringAutomationTools.Services.JournalColorService.ErrorBrush;    // Rouge #FF4444
+                    textBlock.FontWeight = FontWeights.Bold;
+                }
+                else if (trimmedMsg.StartsWith("[!]"))
+                {
+                    textBlock.Foreground = XnrgyEngineeringAutomationTools.Services.JournalColorService.WarningBrush;  // Jaune #FFD700
+                }
+                else
+                {
+                    textBlock.Foreground = XnrgyEngineeringAutomationTools.Services.JournalColorService.InfoBrush;     // Blanc #FFFFFF (defaut)
                 }
 
                 LstLog.Items.Add(textBlock);

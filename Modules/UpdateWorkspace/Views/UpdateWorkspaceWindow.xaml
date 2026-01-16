@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="{StaticResource WindowTitleUpdateWorkspace}" Height="920" Width="950"
         MinHeight="700" MinWidth="800"
-        WindowStartupLocation="CenterScreen" ResizeMode="CanResize" Background="#1E1E2E">
+        WindowStartupLocation="CenterScreen" ResizeMode="CanResize" Background="#1E1E2E"
+        Closing="Window_Closing">
     <Window.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -278,11 +279,19 @@
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate TargetType="Button">
-                                                <Border Background="{TemplateBinding Background}" 
+                                                <Border x:Name="border" Background="{TemplateBinding Background}" 
                                                         CornerRadius="4" BorderBrush="{TemplateBinding BorderBrush}" 
                                                         BorderThickness="{TemplateBinding BorderThickness}">
                                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                                 </Border>
+                                                <ControlTemplate.Triggers>
+                                                    <Trigger Property="IsEnabled" Value="False">
+                                                        <Setter TargetName="border" Property="Background" Value="#555555"/>
+                                                        <Setter TargetName="border" Property="BorderBrush" Value="#444444"/>
+                                                        <Setter Property="Foreground" Value="#888888"/>
+                                                        <Setter Property="Cursor" Value="Arrow"/>
+                                                    </Trigger>
+                                                </ControlTemplate.Triggers>
                                             </ControlTemplate>
                                         </Setter.Value>
                                     </Setter>
@@ -301,12 +310,17 @@
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     
-                    <!-- Header Journal Bleu Marine -->
-                    <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="12,8">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="&#x1F4CB;" FontSize="16" Margin="0,0,8,0"/>
-                            <TextBlock Text="Journal des Operations" FontSize="14" FontWeight="Bold" Foreground="White"/>
-                        </StackPanel>
+                    <!-- Header Journal Bleu Marine - Compact -->
+                    <Border Grid.Row="0" Background="#2A4A6F" CornerRadius="6,6,0,0" Padding="8,3">
+                        <Grid>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="&#x1F4CB;" FontSize="13" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                                <TextBlock Text="Journal des Operations" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                            </StackPanel>
+                            <Button x:Name="BtnClearLog" Content="🗑️ Effacer" HorizontalAlignment="Right" 
+                                    Style="{StaticResource JournalClearButton}"
+                                    Click="BtnClearLog_Click"/>
+                        </Grid>
                     </Border>
                     
                     <!-- Log Content -->
