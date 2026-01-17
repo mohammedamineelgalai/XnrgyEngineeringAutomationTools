@@ -12,20 +12,22 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Win32;
+using XnrgyEngineeringAutomationTools.Shared.Views;
 
 namespace XnrgyEngineeringAutomationTools.Services
 {
     /// <summary>
     /// Service pour tracker les appareils connectes dans Firebase
     /// Permet de voir en temps reel quels postes utilisent l'application
+    /// Ecoute les commandes admin (blocage, broadcasts) toutes les 30 secondes
     /// </summary>
     public class DeviceTrackingService : IDisposable
     {
         // URL de la Firebase Realtime Database
         private const string FIREBASE_DATABASE_URL = "https://xeat-remote-control-default-rtdb.firebaseio.com";
         
-        // Intervalle de heartbeat en millisecondes (60 secondes)
-        private const int HEARTBEAT_INTERVAL_MS = 60000;
+        // Intervalle de heartbeat en millisecondes (30 secondes pour reactivite)
+        private const int HEARTBEAT_INTERVAL_MS = 30000;
 
         private static readonly HttpClient _httpClient = new HttpClient
         {
@@ -260,11 +262,18 @@ namespace XnrgyEngineeringAutomationTools.Services
                 if (response.IsSuccessStatusCode)
                 {
                     _isRegistered = true;
-                    _heartbeatTimer.Start();
                     Logger.Log($"[+] Appareil enregistre dans Firebase: {_deviceId}");
                     
                     // Enregistrer aussi dans les statistiques
                     await IncrementStatisticAsync("statistics/devices/totalRegistered");
+                    
+                    // === VERIFICATION IMMEDIATE DES COMMANDES ADMIN ===
+                    Logger.Log($"[>] Verification immediate des commandes admin...");
+                    await CheckRemoteCommandsAsync();
+                    
+                    // Demarrer le timer de heartbeat (verification toutes les 30s)
+                    _heartbeatTimer.Start();
+                    Logger.Log($"[+] Timer heartbeat demarre - interval: {HEARTBEAT_INTERVAL_MS}ms");
                 }
                 else
                 {
@@ -285,10 +294,16 @@ namespace XnrgyEngineeringAutomationTools.Services
         /// </summary>
         private async Task SendHeartbeatAsync()
         {
-            if (!_isRegistered) return;
+            if (!_isRegistered) 
+            {
+                Logger.Log("[!] Heartbeat ignore - device non enregistre", Logger.LogLevel.DEBUG);
+                return;
+            }
 
             try
             {
+                Logger.Log($"[>] Heartbeat en cours... (intervalle: {HEARTBEAT_INTERVAL_MS/1000}s)");
+                
                 string nowUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
                 
                 // Heartbeat avec metriques de performance
@@ -318,7 +333,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                 var lastSeenContent = new StringContent($"\"{nowUtc}\"", Encoding.UTF8, "application/json");
                 await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status/lastSeen.json", lastSeenContent);
 
-                Logger.Log($"[~] Heartbeat envoye: {_deviceId}", Logger.LogLevel.DEBUG);
+                Logger.Log($"[+] Heartbeat OK - Verification commandes admin...");
                 
                 // === VERIFICATION DES COMMANDES ADMIN ===
                 await CheckRemoteCommandsAsync();
@@ -337,6 +352,8 @@ namespace XnrgyEngineeringAutomationTools.Services
         {
             try
             {
+                Logger.Log($"[~] Verification commandes admin pour: {_deviceId}", Logger.LogLevel.DEBUG);
+                
                 // Verifier si le device est bloque
                 var statusResponse = await _httpClient.GetStringAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status.json");
                 if (!string.IsNullOrEmpty(statusResponse) && statusResponse != "null")
@@ -346,19 +363,19 @@ namespace XnrgyEngineeringAutomationTools.Services
                         PropertyNameCaseInsensitive = true 
                     });
                     
+                    Logger.Log($"[~] Status lu: blocked={status?.Blocked}, reason={status?.BlockReason}", Logger.LogLevel.DEBUG);
+                    
                     if (status?.Blocked == true)
                     {
                         string reason = status.BlockReason ?? "Suspendu par l'administrateur";
                         Logger.Log($"[-] DEVICE BLOQUE PAR ADMIN: {reason}", Logger.LogLevel.ERROR);
                         
-                        // Afficher le message et fermer l'application
+                        // Afficher le message avec XnrgyMessageBox et fermer l'application
                         System.Windows.Application.Current.Dispatcher.Invoke(() =>
                         {
-                            System.Windows.MessageBox.Show(
+                            XnrgyMessageBox.ShowError(
                                 $"Ce poste a ete bloque par l'administrateur.\n\nRaison: {reason}\n\nL'application va se fermer.",
-                                "Acces refuse - Poste bloque",
-                                System.Windows.MessageBoxButton.OK,
-                                System.Windows.MessageBoxImage.Error);
+                                "🚫 Acces refuse - Poste bloque");
                             
                             System.Windows.Application.Current.Shutdown();
                         });
@@ -376,7 +393,7 @@ namespace XnrgyEngineeringAutomationTools.Services
         }
         
         /// <summary>
-        /// Verifie et affiche les broadcasts actifs
+        /// Verifie et affiche les broadcasts actifs avec XnrgyMessageBox
         /// </summary>
         private async Task CheckBroadcastsAsync()
         {
@@ -387,6 +404,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                 
                 var broadcasts = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(broadcastsResponse);
                 if (broadcasts == null) return;
+                
+                Logger.Log($"[~] {broadcasts.Count} broadcasts trouves", Logger.LogLevel.DEBUG);
                 
                 foreach (var kvp in broadcasts)
                 {
@@ -429,26 +448,29 @@ namespace XnrgyEngineeringAutomationTools.Services
                         string message = broadcast.TryGetProperty("message", out var msgEl) ? msgEl.GetString() : "";
                         string type = broadcast.TryGetProperty("type", out var typeEl) ? typeEl.GetString() : "info";
                         
-                        // Marquer comme affiche
+                        // Marquer comme affiche AVANT d'afficher (eviter race condition)
                         _displayedBroadcasts.Add(broadcastId);
                         
-                        Logger.Log($"[i] Broadcast popup: {title}");
+                        Logger.Log($"[i] Broadcast popup detecte: {title} (type={type})");
                         
-                        // Afficher le message
+                        // Afficher le message avec XnrgyMessageBox
                         System.Windows.Application.Current.Dispatcher.Invoke(() =>
                         {
-                            var icon = type switch
+                            switch (type?.ToLowerInvariant())
                             {
-                                "warning" => System.Windows.MessageBoxImage.Warning,
-                                "error" => System.Windows.MessageBoxImage.Error,
-                                _ => System.Windows.MessageBoxImage.Information
-                            };
-                            
-                            System.Windows.MessageBox.Show(
-                                message,
-                                $"[Admin] {title}",
-                                System.Windows.MessageBoxButton.OK,
-                                icon);
+                                case "warning":
+                                    XnrgyMessageBox.ShowWarning(message, $"⚠️ [Admin] {title}");
+                                    break;
+                                case "error":
+                                    XnrgyMessageBox.ShowError(message, $"❌ [Admin] {title}");
+                                    break;
+                                case "success":
+                                    XnrgyMessageBox.ShowSuccess(message, $"✅ [Admin] {title}");
+                                    break;
+                                default:
+                                    XnrgyMessageBox.ShowInfo(message, $"ℹ️ [Admin] {title}");
+                                    break;
+                            }
                         });
                         
                         // Incrementer le viewCount
