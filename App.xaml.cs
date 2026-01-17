@@ -15,23 +15,34 @@ namespace XnrgyEngineeringAutomationTools
 
         protected override async void OnStartup(StartupEventArgs e)
         {
+            // Configurer les handlers d'erreur AVANT tout
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             DispatcherUnhandledException += App_DispatcherUnhandledException;
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-            base.OnStartup(e);
+            
+            // NE PAS appeler base.OnStartup ici car on a supprime StartupUri
             AddInventorToPath();
 
-            // Verification Firebase au demarrage
+            // VERIFICATION FIREBASE OBLIGATOIRE AVANT DE LANCER L'APPLICATION
             bool canContinue = await CheckFirebaseConfigurationAsync();
             if (!canContinue)
             {
-                Shutdown();
+                // Fermer l'application immediatement
+                Environment.Exit(0);
                 return;
             }
 
-            // Enregistrer l'appareil dans Firebase pour le tracking
+            // Si Firebase OK, enregistrer l'appareil
             _deviceTracker = new DeviceTrackingService();
             await _deviceTracker.RegisterDeviceAsync();
+
+            // MAINTENANT on peut lancer la fenetre principale
+            var mainWindow = new MainWindow();
+            MainWindow = mainWindow;
+            mainWindow.Show();
+            
+            // Changer le mode de fermeture maintenant que la fenetre est ouverte
+            ShutdownMode = ShutdownMode.OnMainWindowClose;
         }
 
         protected override void OnExit(ExitEventArgs e)

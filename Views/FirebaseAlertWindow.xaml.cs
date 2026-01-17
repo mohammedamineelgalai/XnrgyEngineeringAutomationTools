@@ -93,45 +93,57 @@ namespace XnrgyEngineeringAutomationTools.Views
 
         private void ConfigureKillSwitch(string message)
         {
-            AlertIcon.Text = "[X]";
-            AlertTitle.Text = "Application Desactivee";
-            AlertTitle.Foreground = new System.Windows.Media.SolidColorBrush(
+            var redBrush = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromRgb(255, 100, 100));
+            
+            AlertIcon.Text = "⛔";
+            AlertIcon.Foreground = redBrush;
+            AlertTitle.Text = "Application Desactivee";
+            AlertTitle.Foreground = redBrush;
             
             AlertMessage.Text = message ?? "Cette application a ete desactivee par l'administrateur.\n\n" +
                 "Contactez le support technique pour plus d'informations.";
             
             PrimaryButton.Content = "Fermer";
+            PrimaryButton.Background = redBrush;
             SecondaryButton.Visibility = Visibility.Collapsed;
             VersionInfoPanel.Visibility = Visibility.Collapsed;
         }
 
         private void ConfigureUserDisabled(string message)
         {
-            AlertIcon.Text = "[!]";
-            AlertTitle.Text = "Acces refuse";
-            AlertTitle.Foreground = new System.Windows.Media.SolidColorBrush(
+            var redBrush = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromRgb(255, 100, 100));
+            
+            AlertIcon.Text = "🚫";
+            AlertIcon.Foreground = redBrush;
+            AlertTitle.Text = "Acces refuse";
+            AlertTitle.Foreground = redBrush;
             
             AlertMessage.Text = message ?? "Votre compte a ete desactive par l'administrateur.\n\n" +
                 "Contactez votre superviseur pour plus d'informations.";
             
             PrimaryButton.Content = "Fermer";
+            PrimaryButton.Background = redBrush;
             SecondaryButton.Visibility = Visibility.Collapsed;
             VersionInfoPanel.Visibility = Visibility.Collapsed;
         }
 
         private void ConfigureMaintenance(string message)
         {
-            AlertIcon.Text = "[~]";
-            AlertTitle.Text = "Maintenance en cours";
-            AlertTitle.Foreground = new System.Windows.Media.SolidColorBrush(
+            var yellowBrush = new System.Windows.Media.SolidColorBrush(
                 System.Windows.Media.Color.FromRgb(255, 193, 7));
+            
+            AlertIcon.Text = "🔧";
+            AlertIcon.Foreground = yellowBrush;
+            AlertTitle.Text = "Maintenance en cours";
+            AlertTitle.Foreground = yellowBrush;
             
             AlertMessage.Text = message ?? "L'application est actuellement en maintenance.\n\n" +
                 "Veuillez reessayer dans quelques minutes.";
             
             PrimaryButton.Content = "Fermer";
+            PrimaryButton.Background = yellowBrush;
             SecondaryButton.Visibility = Visibility.Collapsed;
             VersionInfoPanel.Visibility = Visibility.Collapsed;
         }
@@ -140,30 +152,41 @@ namespace XnrgyEngineeringAutomationTools.Views
         {
             type = type?.ToLowerInvariant() ?? "info";
             
+            System.Windows.Media.SolidColorBrush colorBrush;
+            
             switch (type)
             {
                 case "error":
-                    AlertIcon.Text = "[-]";
-                    AlertTitle.Foreground = new System.Windows.Media.SolidColorBrush(
+                    colorBrush = new System.Windows.Media.SolidColorBrush(
                         System.Windows.Media.Color.FromRgb(255, 100, 100));
+                    AlertIcon.Text = "❌";
+                    AlertIcon.Foreground = colorBrush;
+                    AlertTitle.Foreground = colorBrush;
                     PrimaryButton.Content = "Fermer";
+                    PrimaryButton.Background = colorBrush;
                     SecondaryButton.Visibility = Visibility.Collapsed;
                     break;
                     
                 case "warning":
-                    AlertIcon.Text = "[!]";
-                    AlertTitle.Foreground = new System.Windows.Media.SolidColorBrush(
+                    colorBrush = new System.Windows.Media.SolidColorBrush(
                         System.Windows.Media.Color.FromRgb(255, 193, 7));
+                    AlertIcon.Text = "⚠️";
+                    AlertIcon.Foreground = colorBrush;
+                    AlertTitle.Foreground = colorBrush;
                     PrimaryButton.Content = "Compris";
+                    PrimaryButton.Background = colorBrush;
                     SecondaryButton.Visibility = Visibility.Collapsed;
                     ShouldContinue = true; // Warning ne bloque pas
                     break;
                     
                 default: // info
-                    AlertIcon.Text = "[i]";
-                    AlertTitle.Foreground = new System.Windows.Media.SolidColorBrush(
+                    colorBrush = new System.Windows.Media.SolidColorBrush(
                         System.Windows.Media.Color.FromRgb(0, 212, 255));
+                    AlertIcon.Text = "ℹ️";
+                    AlertIcon.Foreground = colorBrush;
+                    AlertTitle.Foreground = colorBrush;
                     PrimaryButton.Content = "OK";
+                    PrimaryButton.Background = colorBrush;
                     SecondaryButton.Visibility = Visibility.Collapsed;
                     ShouldContinue = true; // Info ne bloque pas
                     break;
@@ -181,28 +204,36 @@ namespace XnrgyEngineeringAutomationTools.Views
 
             if (forceUpdate)
             {
-                AlertIcon.Text = "[!]";
-                AlertTitle.Text = "Mise a jour requise";
-                AlertTitle.Foreground = new System.Windows.Media.SolidColorBrush(
+                var redBrush = new System.Windows.Media.SolidColorBrush(
                     System.Windows.Media.Color.FromRgb(255, 100, 100));
+                    
+                AlertIcon.Text = "🔄";
+                AlertIcon.Foreground = redBrush;
+                AlertTitle.Text = "Mise a jour requise";
+                AlertTitle.Foreground = redBrush;
                 
                 AlertMessage.Text = "Une mise a jour obligatoire est disponible.\n\n" +
                     "Vous devez telecharger la nouvelle version pour continuer a utiliser l'application.";
                 
                 PrimaryButton.Content = "Telecharger";
+                PrimaryButton.Background = redBrush;
                 SecondaryButton.Visibility = Visibility.Collapsed;
             }
             else
             {
-                AlertIcon.Text = "[+]";
-                AlertTitle.Text = "Mise a jour disponible";
-                AlertTitle.Foreground = new System.Windows.Media.SolidColorBrush(
+                var cyanBrush = new System.Windows.Media.SolidColorBrush(
                     System.Windows.Media.Color.FromRgb(0, 212, 255));
+                    
+                AlertIcon.Text = "✨";
+                AlertIcon.Foreground = cyanBrush;
+                AlertTitle.Text = "Mise a jour disponible";
+                AlertTitle.Foreground = cyanBrush;
                 
                 AlertMessage.Text = "Une nouvelle version est disponible.\n\n" +
                     "Souhaitez-vous telecharger la mise a jour maintenant?";
                 
                 PrimaryButton.Content = "Telecharger";
+                PrimaryButton.Background = cyanBrush;
                 SecondaryButton.Content = "Plus tard";
                 SecondaryButton.Visibility = Visibility.Visible;
             }
