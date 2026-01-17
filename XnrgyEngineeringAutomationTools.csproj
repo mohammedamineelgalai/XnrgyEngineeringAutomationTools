@@ -123,6 +123,7 @@
       <HintPath>packages\System.Memory.4.6.0\lib\net462\System.Memory.dll</HintPath>
     </Reference>
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Management" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
@@ -226,6 +227,10 @@
     </Page>
     <!-- ========== SHARED VIEWS ========== -->
     <Page Include="Views\FirebaseAlertWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Views\UpdateDownloadWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
@@ -364,6 +369,10 @@
     <!-- ========== CODE-BEHIND: SHARED VIEWS ========== -->
     <Compile Include="Views\FirebaseAlertWindow.xaml.cs">
       <DependentUpon>FirebaseAlertWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Views\UpdateDownloadWindow.xaml.cs">
+      <DependentUpon>UpdateDownloadWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Shared\Views\LoginWindow.xaml.cs">

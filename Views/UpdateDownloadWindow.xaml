@@ -1,0 +1,126 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Views.UpdateDownloadWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Mise a jour en cours"
+        Height="280" Width="450"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        Topmost="True">
+    
+    <Border Background="#1a1a2e" CornerRadius="12" BorderBrush="#00d4ff" BorderThickness="2">
+        <Grid Margin="25">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
+                <TextBlock Text="🔄" FontSize="32" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <TextBlock x:Name="TitleText" Text="Telechargement de la mise a jour" 
+                           FontSize="18" FontWeight="Bold" Foreground="#00d4ff" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Version info -->
+            <TextBlock Grid.Row="1" x:Name="VersionText" 
+                       Text="Version 1.0.0 → 1.1.0"
+                       Foreground="#b0b0b0" FontSize="13" 
+                       HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+            <!-- Progress Bar -->
+            <Grid Grid.Row="2" Margin="0,0,0,10">
+                <ProgressBar x:Name="ProgressBar" 
+                             Height="25" 
+                             Minimum="0" Maximum="100" Value="0"
+                             Background="#252540" 
+                             Foreground="#00d4ff"
+                             BorderThickness="0">
+                    <ProgressBar.Style>
+                        <Style TargetType="ProgressBar">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ProgressBar">
+                                        <Border Background="{TemplateBinding Background}" CornerRadius="6">
+                                            <Grid>
+                                                <Border x:Name="PART_Track" CornerRadius="6"/>
+                                                <Border x:Name="PART_Indicator" 
+                                                        Background="{TemplateBinding Foreground}" 
+                                                        CornerRadius="6"
+                                                        HorizontalAlignment="Left"/>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ProgressBar.Style>
+                </ProgressBar>
+                
+                <!-- Percentage overlay -->
+                <TextBlock x:Name="PercentText" 
+                           Text="0%" 
+                           FontSize="12" FontWeight="Bold"
+                           Foreground="White"
+                           HorizontalAlignment="Center" 
+                           VerticalAlignment="Center"/>
+            </Grid>
+
+            <!-- Download info -->
+            <TextBlock Grid.Row="3" x:Name="DownloadInfoText" 
+                       Text="Preparation du telechargement..."
+                       Foreground="#808080" FontSize="11" 
+                       HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+            <!-- Status message -->
+            <TextBlock Grid.Row="4" x:Name="StatusText" 
+                       Text="Ne fermez pas cette fenetre pendant la mise a jour."
+                       Foreground="#e0e0e0" FontSize="12" 
+                       TextWrapping="Wrap" TextAlignment="Center"
+                       VerticalAlignment="Center"/>
+
+            <!-- Cancel button (only visible before download starts) -->
+            <Button Grid.Row="5" x:Name="CancelButton" 
+                    Content="Annuler" 
+                    Width="100" Height="35"
+                    Background="Transparent" 
+                    Foreground="#ff6464" 
+                    FontWeight="Bold"
+                    BorderBrush="#ff6464" BorderThickness="2"
+                    Cursor="Hand" 
+                    Margin="0,15,0,0"
+                    Visibility="Collapsed"
+                    Click="CancelButton_Click">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="border" 
+                                            Background="{TemplateBinding Background}" 
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="6">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="border" Property="Background" Value="#ff6464"/>
+                                            <Setter Property="Foreground" Value="White"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </Grid>
+    </Border>
+</Window>

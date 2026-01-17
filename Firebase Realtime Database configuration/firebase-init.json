@@ -1,51 +1,835 @@
 {
   "appConfig": {
-    "minVersion": "1.0.0",
+    "appName": "XNRGY Engineering Automation Tools",
+    "appShortName": "XEAT",
+    "companyName": "XNRGY Climate Systems ULC",
+    "supportEmail": "mohammedamine.elgalai@xnrgy.com",
     "currentVersion": "1.0.0",
-    "maintenanceMode": false,
-    "maintenanceMessage": "Application en maintenance. Reessayez dans quelques minutes.",
-    "forceUpdate": false,
-    "updateUrl": "https://github.com/mohammedamineelgalai/XnrgyEngineeringAutomationTools/releases/latest",
-    "lastUpdated": 1737043200000
+    "releaseDate": "2026-01-10",
+    "lastUpdated": "2026-01-17",
+    "debugMode": false,
+    "enableTelemetry": true,
+    "heartbeatIntervalMs": 60000,
+    "sessionTimeoutMs": 28800000,
+    "maxSessionsPerUser": 2,
+    "autoLogoutInactiveMs": 3600000,
+    "requireInternetConnection": true,
+    "minimumVersion": "1.0.0",
+    "recommendedVersion": "1.0.0"
+  },
+  "killSwitch": {
+    "global": {
+      "enabled": false,
+      "reason": "none",
+      "message": "Application desactivee par administrateur",
+      "activatedAt": "none",
+      "activatedBy": "none",
+      "allowAdmins": true
+    },
+    "bySite": {
+      "saintHubertQC": {
+        "enabled": false,
+        "reason": "none",
+        "message": "none"
+      },
+      "arizonaUS": {
+        "enabled": false,
+        "reason": "none",
+        "message": "none"
+      },
+      "lavalQC": {
+        "enabled": false,
+        "reason": "none",
+        "message": "none"
+      }
+    },
+    "byDepartment": {
+      "engineering": { "enabled": false, "reason": "none" },
+      "production": { "enabled": false, "reason": "none" },
+      "quality": { "enabled": false, "reason": "none" }
+    }
+  },
+  "maintenance": {
+    "enabled": false,
+    "message": "Application en maintenance",
+    "detailedMessage": "none",
+    "startTime": "none",
+    "estimatedEndTime": "none",
+    "allowReadOnly": false,
+    "allowAdmins": true,
+    "showCountdown": true,
+    "redirectUrl": "none",
+    "scheduledMaintenance": {
+      "enabled": false,
+      "scheduledStart": "none",
+      "scheduledEnd": "none",
+      "notifyBeforeMinutes": 30
+    }
+  },
+  "forceUpdate": {
+    "enabled": false,
+    "message": "Mise a jour obligatoire disponible",
+    "minimumVersion": "1.0.0",
+    "criticalUpdate": false,
+    "blockAppUntilUpdated": false,
+    "gracePeriodHours": 24,
+    "downloadUrl": "none",
+    "sha256Checksum": "none"
+  },
+  "updates": {
+    "latest": {
+      "version": "1.0.0",
+      "downloadUrl": "none",
+      "downloadUrlMirror": "none",
+      "releaseNotes": "Version initiale XEAT v1.0.0",
+      "releaseNotesUrl": "none",
+      "publishedAt": "2026-01-10",
+      "publishedBy": "Mohammed Amine Elgalai",
+      "isCritical": false,
+      "fileSize": "none",
+      "sha256": "none",
+      "minOsVersion": "Windows 10",
+      "requiredDotNet": "4.8",
+      "changelogText": "Version initiale"
+    },
+    "history": {
+      "v1r0r0": {
+        "version": "1.0.0",
+        "publishedAt": "2026-01-10",
+        "notes": "Version initiale"
+      }
+    },
+    "channels": {
+      "stable": "1.0.0",
+      "beta": "1.0.0",
+      "dev": "1.0.0"
+    }
+  },
+  "featureFlags": {
+    "vaultUploadModule": {
+      "enabled": true,
+      "enabledForRoles": "admin-adminDesigner-designer-user",
+      "enabledForSites": "all",
+      "betaOnly": false
+    },
+    "copyDesignModule": {
+      "enabled": true,
+      "enabledForRoles": "admin-adminDesigner-designer",
+      "enabledForSites": "all",
+      "betaOnly": false
+    },
+    "vaultSettingsModule": {
+      "enabled": true,
+      "enabledForRoles": "admin-adminDesigner",
+      "enabledForSites": "all",
+      "betaOnly": false
+    },
+    "smartToolsModule": {
+      "enabled": true,
+      "enabledForRoles": "admin-adminDesigner-designer",
+      "enabledForSites": "all",
+      "betaOnly": false
+    },
+    "checklistHVAC": {
+      "enabled": true,
+      "enabledForRoles": "admin-adminDesigner-designer-user",
+      "enabledForSites": "all",
+      "betaOnly": false
+    },
+    "telemetryCollection": {
+      "enabled": true,
+      "enabledForRoles": "all",
+      "enabledForSites": "all",
+      "betaOnly": false
+    },
+    "autoUpdate": {
+      "enabled": true,
+      "enabledForRoles": "all",
+      "enabledForSites": "all",
+      "betaOnly": false
+    },
+    "darkTheme": {
+      "enabled": true,
+      "enabledForRoles": "all",
+      "enabledForSites": "all",
+      "betaOnly": false
+    }
+  },
+  "sites": {
+    "saintHubertQC": {
+      "name": "Saint-Hubert QC",
+      "fullName": "XNRGY Climate Systems Saint-Hubert",
+      "country": "Canada",
+      "region": "Quebec",
+      "city": "Saint-Hubert",
+      "timezone": "America-Montreal",
+      "enabled": true,
+      "isPrimary": true,
+      "contactEmail": "none",
+      "contactPhone": "none",
+      "address": "none",
+      "maxUsers": 50,
+      "maxDevices": 60
+    },
+    "arizonaUS": {
+      "name": "Arizona US",
+      "fullName": "XNRGY Climate Systems Arizona",
+      "country": "USA",
+      "region": "Arizona",
+      "city": "Phoenix",
+      "timezone": "America-Phoenix",
+      "enabled": true,
+      "isPrimary": false,
+      "contactEmail": "none",
+      "contactPhone": "none",
+      "address": "none",
+      "maxUsers": 30,
+      "maxDevices": 40
+    },
+    "lavalQC": {
+      "name": "Laval QC",
+      "fullName": "XNRGY Climate Systems Laval",
+      "country": "Canada",
+      "region": "Quebec",
+      "city": "Laval",
+      "timezone": "America-Montreal",
+      "enabled": true,
+      "isPrimary": false,
+      "contactEmail": "none",
+      "contactPhone": "none",
+      "address": "none",
+      "maxUsers": 20,
+      "maxDevices": 25
+    }
+  },
+  "departments": {
+    "engineering": {
+      "name": "Engineering",
+      "description": "Equipe de design et ingenierie",
+      "enabled": true,
+      "defaultRole": "designer"
+    },
+    "production": {
+      "name": "Production",
+      "description": "Equipe de production",
+      "enabled": true,
+      "defaultRole": "user"
+    },
+    "quality": {
+      "name": "Quality",
+      "description": "Controle qualite",
+      "enabled": true,
+      "defaultRole": "user"
+    },
+    "it": {
+      "name": "IT",
+      "description": "Technologies de l information",
+      "enabled": true,
+      "defaultRole": "admin"
+    },
+    "administration": {
+      "name": "Administration",
+      "description": "Administration generale",
+      "enabled": true,
+      "defaultRole": "user"
+    }
+  },
+  "roles": {
+    "admin": {
+      "name": "Administrateur",
+      "level": 100,
+      "colorHex": "E81123",
+      "permissions": {
+        "vaultUpload": true,
+        "copyDesign": true,
+        "vaultSettings": true,
+        "smartTools": true,
+        "checklistHVAC": true,
+        "manageUsers": true,
+        "manageDevices": true,
+        "viewLogs": true,
+        "sendBroadcasts": true,
+        "manageUpdates": true,
+        "manageConfig": true,
+        "killSwitch": true,
+        "viewTelemetry": true,
+        "exportData": true
+      }
+    },
+    "adminDesigner": {
+      "name": "Admin Designer",
+      "level": 80,
+      "colorHex": "FF8C00",
+      "permissions": {
+        "vaultUpload": true,
+        "copyDesign": true,
+        "vaultSettings": true,
+        "smartTools": true,
+        "checklistHVAC": true,
+        "manageUsers": false,
+        "manageDevices": true,
+        "viewLogs": true,
+        "sendBroadcasts": false,
+        "manageUpdates": false,
+        "manageConfig": false,
+        "killSwitch": false,
+        "viewTelemetry": true,
+        "exportData": true
+      }
+    },
+    "developer": {
+      "name": "Developpeur",
+      "level": 60,
+      "colorHex": "7C4DFF",
+      "permissions": {
+        "vaultUpload": true,
+        "copyDesign": true,
+        "vaultSettings": false,
+        "smartTools": true,
+        "checklistHVAC": true,
+        "manageUsers": false,
+        "manageDevices": false,
+        "viewLogs": true,
+        "sendBroadcasts": false,
+        "manageUpdates": false,
+        "manageConfig": false,
+        "killSwitch": false,
+        "viewTelemetry": false,
+        "exportData": false
+      }
+    },
+    "designer": {
+      "name": "Designer",
+      "level": 40,
+      "colorHex": "0078D4",
+      "permissions": {
+        "vaultUpload": true,
+        "copyDesign": true,
+        "vaultSettings": false,
+        "smartTools": true,
+        "checklistHVAC": true,
+        "manageUsers": false,
+        "manageDevices": false,
+        "viewLogs": false,
+        "sendBroadcasts": false,
+        "manageUpdates": false,
+        "manageConfig": false,
+        "killSwitch": false,
+        "viewTelemetry": false,
+        "exportData": false
+      }
+    },
+    "user": {
+      "name": "Utilisateur",
+      "level": 20,
+      "colorHex": "00D26A",
+      "permissions": {
+        "vaultUpload": true,
+        "copyDesign": false,
+        "vaultSettings": false,
+        "smartTools": false,
+        "checklistHVAC": true,
+        "manageUsers": false,
+        "manageDevices": false,
+        "viewLogs": false,
+        "sendBroadcasts": false,
+        "manageUpdates": false,
+        "manageConfig": false,
+        "killSwitch": false,
+        "viewTelemetry": false,
+        "exportData": false
+      }
+    },
+    "viewer": {
+      "name": "Lecteur",
+      "level": 10,
+      "colorHex": "6B7A8F",
+      "permissions": {
+        "vaultUpload": false,
+        "copyDesign": false,
+        "vaultSettings": false,
+        "smartTools": false,
+        "checklistHVAC": false,
+        "manageUsers": false,
+        "manageDevices": false,
+        "viewLogs": false,
+        "sendBroadcasts": false,
+        "manageUpdates": false,
+        "manageConfig": false,
+        "killSwitch": false,
+        "viewTelemetry": false,
+        "exportData": false
+      }
+    }
   },
   "users": {
-    "user_mohammedamine_elgalai": {
-      "email": "mohammedamine.elgalai@xnrgy.com",
-      "displayName": "Mohammed Amine Elgalai",
-      "enabled": true,
-      "role": "admin",
-      "site": "Laval",
-      "disabledMessage": "",
-      "createdAt": 1737043200000
+    "LeIel3jEkwaj0UFwUjxPHJRS20w2": {
+      "profile": {
+        "username": "mohammedamineElgalai",
+        "fullName": "Mohammed Amine Elgalai",
+        "email": "mohammedamine.elgalai@xnrgy.com",
+        "phone": "none",
+        "employeeId": "none",
+        "title": "Engineering Automation Developer",
+        "avatar": "none"
+      },
+      "organization": {
+        "role": "admin",
+        "department": "engineering",
+        "site": "lavalQC",
+        "team": "none",
+        "manager": "none",
+        "hireDate": "2024-01-01"
+      },
+      "status": {
+        "enabled": true,
+        "blocked": false,
+        "blockReason": "none",
+        "blockedAt": "none",
+        "blockedBy": "none",
+        "blockExpiresAt": "none",
+        "verified": true,
+        "lastActive": "none"
+      },
+      "sessions": {
+        "currentSessions": 0,
+        "maxSessions": 5,
+        "lastLogin": "none",
+        "lastLogout": "none",
+        "lastIpAddress": "none",
+        "lastDeviceId": "none",
+        "totalLogins": 0,
+        "failedLogins": 0,
+        "lastFailedLogin": "none"
+      },
+      "preferences": {
+        "theme": "dark",
+        "language": "fr",
+        "notifications": true,
+        "emailAlerts": true,
+        "autoUpdate": true,
+        "betaChannel": false
+      },
+      "permissions": {
+        "vaultUpload": true,
+        "copyDesign": true,
+        "vaultSettings": true,
+        "smartTools": true,
+        "checklistHVAC": true,
+        "manageUsers": true,
+        "manageDevices": true,
+        "viewLogs": true,
+        "sendBroadcasts": true,
+        "manageUpdates": true,
+        "manageConfig": true,
+        "killSwitch": true,
+        "viewTelemetry": true,
+        "exportData": true
+      },
+      "quotas": {
+        "dailyUploads": -1,
+        "dailyModulesCreated": -1,
+        "maxStorageMB": -1,
+        "uploadsToday": 0,
+        "modulesCreatedToday": 0,
+        "storageUsedMB": 0
+      },
+      "metadata": {
+        "createdAt": "2026-01-10",
+        "createdBy": "system",
+        "updatedAt": "none",
+        "updatedBy": "none",
+        "notes": "Compte administrateur principal"
+      }
+    }
+  },
+  "userActiveSessions": {
+    "LeIel3jEkwaj0UFwUjxPHJRS20w2": {
+      "placeholder": {
+        "sessionId": "none",
+        "deviceId": "none",
+        "startedAt": "none"
+      }
     }
   },
   "devices": {
-  },
-  "commands": {
-    "global": {
-      "killSwitch": false,
-      "killSwitchMessage": "Application desactivee par l'administrateur. Contactez le support technique.",
-      "forceUpdate": false
+    "templateDevice": {
+      "registration": {
+        "deviceId": "templateDevice",
+        "machineName": "TEMPLATE-PC",
+        "registeredAt": "2026-01-10",
+        "registeredBy": "system",
+        "approved": true,
+        "approvedAt": "none",
+        "approvedBy": "none"
+      },
+      "organization": {
+        "site": "saintHubertQC",
+        "department": "engineering",
+        "location": "none",
+        "assignedTo": "none",
+        "assetTag": "none",
+        "purchaseDate": "none",
+        "warrantyExpires": "none"
+      },
+      "status": {
+        "enabled": true,
+        "blocked": false,
+        "blockReason": "none",
+        "blockedAt": "none",
+        "blockedBy": "none",
+        "online": false,
+        "lastSeen": "none",
+        "currentUser": "none",
+        "currentUserId": "none"
+      },
+      "system": {
+        "osName": "Windows 11 Pro",
+        "osVersion": "23H2",
+        "osBuild": "22631",
+        "osArchitecture": "64-bit",
+        "computerName": "none",
+        "domain": "XNRGY",
+        "manufacturer": "none",
+        "model": "none",
+        "serialNumber": "none"
+      },
+      "hardware": {
+        "processor": "none",
+        "processorCores": 0,
+        "processorSpeed": "none",
+        "ramTotalGB": 0,
+        "ramAvailableGB": 0,
+        "gpuName": "none",
+        "gpuMemoryGB": 0,
+        "diskTotalGB": 0,
+        "diskFreeGB": 0,
+        "diskType": "none"
+      },
+      "network": {
+        "ipAddressLocal": "none",
+        "ipAddressPublic": "none",
+        "macAddress": "none",
+        "hostname": "none",
+        "domainName": "XNRGY",
+        "dnsServers": "none",
+        "networkSpeed": "none"
+      },
+      "software": {
+        "xeatVersion": "1.0.0",
+        "xeatInstalledAt": "none",
+        "xeatLastUpdated": "none",
+        "inventorVersion": "none",
+        "inventorYear": "none",
+        "vaultVersion": "none",
+        "vaultServer": "none",
+        "dotnetVersion": "none",
+        "officeVersion": "none"
+      },
+      "heartbeat": {
+        "lastHeartbeat": "none",
+        "intervalMs": 60000,
+        "missedHeartbeats": 0,
+        "status": "offline",
+        "cpuUsage": 0,
+        "ramUsage": 0,
+        "diskUsage": 0
+      },
+      "usage": {
+        "totalSessions": 0,
+        "totalUploads": 0,
+        "totalModulesCreated": 0,
+        "lastModuleCreated": "none",
+        "lastUpload": "none"
+      },
+      "security": {
+        "lastLoginAttempt": "none",
+        "failedLoginAttempts": 0,
+        "trustedDevice": false,
+        "requiresApproval": false
+      },
+      "metadata": {
+        "notes": "Template device do not delete",
+        "tags": "template",
+        "createdAt": "2026-01-10",
+        "updatedAt": "none"
+      }
     }
   },
-  "versionInfo": {
-    "latest": {
-      "version": "1.0.0",
-      "downloadUrl": "https://github.com/mohammedamineelgalai/XnrgyEngineeringAutomationTools/releases/download/v1.0.0/XNRGYEngineeringAutomationToolsSetup.exe",
-      "releaseDate": "2026-01-16",
-      "changelog": "Version initiale - XNRGY Engineering Automation Tools v1.0.0"
+  "deviceCommands": {
+    "templateDevice": {
+      "pending": {
+        "placeholder": {
+          "commandId": "none",
+          "command": "none",
+          "createdAt": "none"
+        }
+      },
+      "history": {
+        "placeholder": {
+          "commandId": "none",
+          "command": "none",
+          "executedAt": "none",
+          "result": "none"
+        }
+      }
     }
   },
   "broadcasts": {
-    "welcome_message": {
-      "active": false,
-      "title": "Bienvenue",
-      "message": "Bienvenue dans XNRGY Engineering Automation Tools!",
+    "placeholder": {
+      "id": "placeholder",
       "type": "info",
-      "createdAt": 1737043200000,
-      "expiresAt": 0,
-      "targetUser": "",
-      "targetDevice": ""
+      "priority": "normal",
+      "title": "Bienvenue",
+      "message": "Bienvenue dans XEAT",
+      "detailedMessage": "none",
+      "actionUrl": "none",
+      "actionLabel": "none",
+      "targetType": "all",
+      "targetSites": "all",
+      "targetDepartments": "all",
+      "targetRoles": "all",
+      "targetUsers": "none",
+      "targetDevices": "none",
+      "showAsPopup": false,
+      "showAsBanner": true,
+      "dismissible": true,
+      "requireAcknowledgment": false,
+      "startAt": "none",
+      "expiresAt": "none",
+      "repeatDaily": false,
+      "active": false,
+      "sentAt": "2026-01-10",
+      "sentBy": "system",
+      "viewCount": 0,
+      "dismissCount": 0,
+      "acknowledgedByList": "none"
+    }
+  },
+  "notifications": {
+    "templates": {
+      "updateAvailable": {
+        "title": "Mise a jour disponible",
+        "message": "Une nouvelle version de XEAT est disponible",
+        "type": "info"
+      },
+      "maintenanceScheduled": {
+        "title": "Maintenance planifiee",
+        "message": "Une maintenance est prevue prochainement",
+        "type": "warning"
+      },
+      "accountBlocked": {
+        "title": "Compte bloque",
+        "message": "Votre compte a ete bloque",
+        "type": "error"
+      },
+      "sessionExpired": {
+        "title": "Session expiree",
+        "message": "Votre session a expire",
+        "type": "warning"
+      }
+    }
+  },
+  "telemetry": {
+    "enabled": true,
+    "collectCrashReports": true,
+    "collectUsageStats": true,
+    "collectPerformanceMetrics": true,
+    "retentionDays": 90,
+    "aggregation": {
+      "lastUpdated": "none",
+      "totalSessions": 0,
+      "totalErrors": 0,
+      "averageSessionDuration": 0,
+      "mostUsedModule": "none",
+      "peakUsageHour": 0
+    }
+  },
+  "telemetryEvents": {
+    "placeholder": {
+      "eventId": "placeholder",
+      "eventType": "none",
+      "timestamp": "none",
+      "userId": "none",
+      "deviceId": "none",
+      "data": "none"
+    }
+  },
+  "errorReports": {
+    "placeholder": {
+      "errorId": "placeholder",
+      "errorType": "none",
+      "message": "none",
+      "stackTrace": "none",
+      "timestamp": "none",
+      "userId": "none",
+      "deviceId": "none",
+      "appVersion": "none"
+    }
+  },
+  "statistics": {
+    "global": {
+      "totalUsers": 1,
+      "activeUsers": 0,
+      "totalDevices": 1,
+      "onlineDevices": 0,
+      "totalSessions": 0,
+      "totalUploads": 0,
+      "totalModulesCreated": 0,
+      "totalErrors": 0,
+      "lastUpdated": "none"
+    },
+    "today": {
+      "date": "none",
+      "logins": 0,
+      "uploads": 0,
+      "modulesCreated": 0,
+      "errors": 0,
+      "activeUsers": 0,
+      "peakOnlineDevices": 0
+    },
+    "bySite": {
+      "saintHubertQC": {
+        "users": 0,
+        "devices": 0,
+        "onlineDevices": 0,
+        "todayLogins": 0
+      },
+      "arizonaUS": {
+        "users": 0,
+        "devices": 0,
+        "onlineDevices": 0,
+        "todayLogins": 0
+      },
+      "lavalQC": {
+        "users": 1,
+        "devices": 0,
+        "onlineDevices": 0,
+        "todayLogins": 0
+      }
+    },
+    "byModule": {
+      "vaultUpload": { "usageCount": 0, "lastUsed": "none" },
+      "copyDesign": { "usageCount": 0, "lastUsed": "none" },
+      "vaultSettings": { "usageCount": 0, "lastUsed": "none" },
+      "smartTools": { "usageCount": 0, "lastUsed": "none" },
+      "checklistHVAC": { "usageCount": 0, "lastUsed": "none" }
+    }
+  },
+  "audit": {
+    "enabled": true,
+    "retentionDays": 90,
+    "logLevel": "info",
+    "logActions": {
+      "login": true,
+      "logout": true,
+      "configChange": true,
+      "userChange": true,
+      "deviceChange": true,
+      "moduleUsage": true,
+      "errors": true,
+      "adminActions": true
+    }
+  },
+  "auditLog": {
+    "placeholder": {
+      "id": "placeholder",
+      "timestamp": "2026-01-10",
+      "action": "system_init",
+      "category": "system",
+      "userId": "system",
+      "userName": "System",
+      "deviceId": "none",
+      "ipAddress": "none",
+      "details": "Database initialized",
+      "oldValue": "none",
+      "newValue": "none",
+      "success": true,
+      "errorMessage": "none"
+    }
+  },
+  "security": {
+    "settings": {
+      "maxLoginAttempts": 5,
+      "lockoutDurationMinutes": 30,
+      "sessionTimeoutMinutes": 480,
+      "requireStrongPassword": true,
+      "passwordMinLength": 8,
+      "allowRememberMe": true,
+      "enforceDeviceApproval": false,
+      "allowMultipleSessions": true,
+      "maxSessionsPerUser": 3
+    },
+    "ipWhitelist": {
+      "enabled": false,
+      "addressesList": "none"
+    },
+    "ipBlacklist": {
+      "enabled": false,
+      "addressesList": "none"
+    },
+    "blockedUsersList": "none",
+    "blockedDevicesList": "none"
+  },
+  "scheduling": {
+    "maintenanceWindows": {
+      "weekly": {
+        "enabled": false,
+        "dayOfWeek": 0,
+        "startHour": 2,
+        "durationHours": 2,
+        "message": "Maintenance hebdomadaire"
+      }
+    },
+    "operatingHours": {
+      "enabled": false,
+      "timezone": "America-Montreal",
+      "monday": { "start": "0600", "end": "2200" },
+      "tuesday": { "start": "0600", "end": "2200" },
+      "wednesday": { "start": "0600", "end": "2200" },
+      "thursday": { "start": "0600", "end": "2200" },
+      "friday": { "start": "0600", "end": "2200" },
+      "saturday": { "start": "0800", "end": "1800" },
+      "sunday": { "start": "0000", "end": "0000" }
+    },
+    "holidaysList": "none"
+  },
+  "integrations": {
+    "github": {
+      "enabled": true,
+      "repoOwner": "none",
+      "repoName": "none",
+      "releasesUrl": "none"
+    },
+    "vault": {
+      "server": "VAULTPOC",
+      "vaultName": "PROD_XNGRY"
+    },
+    "email": {
+      "enabled": false,
+      "smtpServer": "none",
+      "fromAddress": "none"
+    },
+    "slack": {
+      "enabled": false,
+      "webhookUrl": "none"
+    }
+  },
+  "systemInfo": {
+    "databaseVersion": "1.0.0",
+    "lastMigration": "2026-01-10",
+    "createdAt": "2026-01-10",
+    "lastBackup": "none",
+    "adminContact": "mohammedamine.elgalai@xnrgy.com"
+  },
+  "commands": {
+    "forceLogoutAll": {
+      "enabled": false,
+      "timestamp": "none"
+    },
+    "forceRefreshAll": {
+      "enabled": false,
+      "timestamp": "none"
     }
   }
 }

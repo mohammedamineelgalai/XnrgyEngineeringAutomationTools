@@ -12,6 +12,7 @@ namespace XnrgyEngineeringAutomationTools
     public partial class App : Application
     {
         private DeviceTrackingService _deviceTracker;
+        private AutoUpdateService _autoUpdateService;
 
         protected override async void OnStartup(StartupEventArgs e)
         {
@@ -36,6 +37,11 @@ namespace XnrgyEngineeringAutomationTools
             _deviceTracker = new DeviceTrackingService();
             await _deviceTracker.RegisterDeviceAsync();
 
+            // Demarrer le service de mise a jour automatique
+            _autoUpdateService = new AutoUpdateService();
+            _autoUpdateService.UpdateAvailable += OnUpdateAvailable;
+            _autoUpdateService.Start();
+
             // MAINTENANT on peut lancer la fenetre principale
             var mainWindow = new MainWindow();
             MainWindow = mainWindow;
@@ -45,9 +51,31 @@ namespace XnrgyEngineeringAutomationTools
             ShutdownMode = ShutdownMode.OnMainWindowClose;
         }
 
+        /// <summary>
+        /// Gere la notification de mise a jour disponible (verification periodique)
+        /// </summary>
+        private void OnUpdateAvailable(object sender, UpdateAvailableEventArgs e)
+        {
+            // Afficher la notification de mise a jour
+            var (shouldContinue, shouldDownload) = FirebaseAlertWindow.ShowUpdateAvailable(
+                e.CurrentVersion,
+                e.NewVersion,
+                e.Changelog,
+                e.DownloadUrl,
+                e.IsForced);
+
+            // Si mise a jour forcee et l'utilisateur refuse, forcer la fermeture
+            if (e.IsForced && !shouldDownload)
+            {
+                Environment.Exit(0);
+            }
+        }
+
         protected override void OnExit(ExitEventArgs e)
         {
-            // Desenregistrer l'appareil a la fermeture
+            // Arreter les services
+            _autoUpdateService?.Stop();
+            _autoUpdateService?.Dispose();
             _deviceTracker?.Dispose();
             base.OnExit(e);
         }
@@ -74,21 +102,35 @@ namespace XnrgyEngineeringAutomationTools
                     return false;
                 }
 
-                // 2. Utilisateur desactive - Bloque cet utilisateur specifique
+                // 2a. Device suspendu - Bloque ce poste de travail entier
+                if (result.DeviceDisabled)
+                {
+                    FirebaseAlertWindow.ShowDeviceDisabled(result.DeviceDisabledMessage, result.DeviceDisabledReason);
+                    return false;
+                }
+
+                // 2b. Utilisateur suspendu SUR CE DEVICE - Bloque cet utilisateur sur ce poste
+                if (result.DeviceUserDisabled)
+                {
+                    FirebaseAlertWindow.ShowDeviceUserDisabled(result.DeviceUserDisabledMessage, result.DeviceUserDisabledReason);
+                    return false;
+                }
+
+                // 3. Utilisateur desactive globalement (optionnel - pour compatibilite)
                 if (result.UserDisabled)
                 {
                     FirebaseAlertWindow.ShowUserDisabled(result.UserDisabledMessage);
                     return false;
                 }
 
-                // 3. Mode Maintenance - Bloque temporairement
+                // 4. Mode Maintenance - Bloque temporairement
                 if (result.MaintenanceMode)
                 {
                     FirebaseAlertWindow.ShowMaintenance(result.MaintenanceMessage);
                     return false;
                 }
 
-                // 4. Mise a jour disponible
+                // 5. Mise a jour disponible
                 if (result.UpdateAvailable)
                 {
                     string currentVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "1.0.0";
@@ -111,7 +153,7 @@ namespace XnrgyEngineeringAutomationTools
                     if (!shouldContinue) return false;
                 }
 
-                // 5. Message broadcast - Afficher sans bloquer (sauf si type "error")
+                // 6. Message broadcast - Afficher sans bloquer (sauf si type "error")
                 if (result.HasBroadcastMessage)
                 {
                     bool shouldBlock = FirebaseAlertWindow.ShowBroadcastMessage(

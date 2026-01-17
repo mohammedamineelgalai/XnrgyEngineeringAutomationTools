@@ -97,6 +97,7 @@ namespace XnrgyEngineeringAutomationTools.Services
 
         /// <summary>
         /// Enregistre l'appareil au demarrage de l'application
+        /// Structure alignee avec firebase-init.json
         /// </summary>
         public async Task RegisterDeviceAsync()
         {
@@ -108,45 +109,146 @@ namespace XnrgyEngineeringAutomationTools.Services
                 var networkInfo = CollectNetworkInfo();
                 var storageInfo = CollectStorageInfo();
                 var memoryInfo = CollectMemoryInfo();
+                var hardwareInfo = CollectHardwareInfo();
 
+                string nowUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                string nowLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+
+                // Structure alignee avec firebase-init.json
                 var deviceInfo = new
                 {
-                    // === INFORMATIONS MACHINE ===
-                    machineName = Environment.MachineName,
-                    userName = Environment.UserName,
-                    userDomainName = Environment.UserDomainName,
-                    osVersion = Environment.OSVersion.ToString(),
-                    osFriendlyName = systemInfo.OsFriendlyName,
-                    processorCount = Environment.ProcessorCount,
-                    processorName = systemInfo.ProcessorName,
-                    is64BitOS = Environment.Is64BitOperatingSystem,
-                    systemDirectory = Environment.SystemDirectory,
+                    // === REGISTRATION ===
+                    registration = new
+                    {
+                        deviceId = _deviceId,
+                        machineName = Environment.MachineName,
+                        registeredAt = nowUtc,
+                        registeredBy = Environment.UserName,
+                        approved = true,
+                        approvedAt = nowUtc,
+                        approvedBy = "auto"
+                    },
                     
-                    // === INFORMATIONS APPLICATION ===
-                    appVersion = GetAppVersion(),
-                    dotNetVersion = Environment.Version.ToString(),
+                    // === ORGANIZATION ===
+                    organization = new
+                    {
+                        site = GetSiteFromMachineName(),
+                        department = GetDepartmentFromMachineName(),
+                        location = "none",
+                        assignedTo = Environment.UserName,
+                        assetTag = "none",
+                        purchaseDate = "none",
+                        warrantyExpires = "none"
+                    },
                     
-                    // === INFORMATIONS SESSION ===
-                    startTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                    startTimeLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                    lastHeartbeat = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                    status = "online",
+                    // === STATUS ===
+                    status = new
+                    {
+                        enabled = true,
+                        blocked = false,
+                        blockReason = "none",
+                        blockedAt = "none",
+                        blockedBy = "none",
+                        online = true,
+                        lastSeen = nowUtc,
+                        currentUser = Environment.UserName,
+                        currentUserId = SanitizeForFirebase($"{Environment.UserDomainName}_{Environment.UserName}")
+                    },
                     
-                    // === INFORMATIONS XNRGY ===
-                    site = GetSiteFromMachineName(),
-                    workingDirectory = Environment.CurrentDirectory,
+                    // === SYSTEM ===
+                    system = new
+                    {
+                        osName = systemInfo.OsFriendlyName,
+                        osVersion = systemInfo.OsVersion,
+                        osBuild = systemInfo.OsBuild,
+                        osArchitecture = Environment.Is64BitOperatingSystem ? "64-bit" : "32-bit",
+                        computerName = Environment.MachineName,
+                        domain = Environment.UserDomainName,
+                        manufacturer = hardwareInfo.Manufacturer,
+                        model = hardwareInfo.Model,
+                        serialNumber = hardwareInfo.SerialNumber
+                    },
                     
-                    // === MEMOIRE ===
-                    memory = memoryInfo,
+                    // === HARDWARE ===
+                    hardware = new
+                    {
+                        processor = systemInfo.ProcessorName,
+                        processorCores = Environment.ProcessorCount,
+                        processorSpeed = hardwareInfo.ProcessorSpeed,
+                        ramTotalGB = hardwareInfo.RamTotalGB,
+                        ramAvailableGB = hardwareInfo.RamAvailableGB,
+                        gpuName = hardwareInfo.GpuName,
+                        gpuMemoryGB = hardwareInfo.GpuMemoryGB,
+                        diskTotalGB = GetPrimaryDiskTotalGB(storageInfo),
+                        diskFreeGB = GetPrimaryDiskFreeGB(storageInfo),
+                        diskType = hardwareInfo.DiskType
+                    },
                     
-                    // === STOCKAGE ===
-                    storage = storageInfo,
+                    // === NETWORK ===
+                    network = new
+                    {
+                        ipAddressLocal = GetNetworkValue(networkInfo, "ipAddress"),
+                        ipAddressPublic = "none",
+                        macAddress = GetNetworkValue(networkInfo, "macAddress"),
+                        hostname = Environment.MachineName,
+                        domainName = Environment.UserDomainName,
+                        dnsServers = "none",
+                        networkSpeed = GetNetworkValue(networkInfo, "speedDescription")
+                    },
                     
-                    // === RESEAU ===
-                    network = networkInfo,
+                    // === SOFTWARE ===
+                    software = new
+                    {
+                        xeatVersion = GetAppVersion(),
+                        xeatInstalledAt = nowUtc,
+                        xeatLastUpdated = nowUtc,
+                        inventorVersion = GetAutodeskValue(autodeskInfo, "inventor", "version"),
+                        inventorYear = GetAutodeskValue(autodeskInfo, "inventor", "year"),
+                        vaultVersion = GetAutodeskValue(autodeskInfo, "vault", "version"),
+                        vaultServer = GetVaultServerName(),
+                        dotnetVersion = Environment.Version.ToString(),
+                        officeVersion = GetOfficeVersion()
+                    },
                     
-                    // === LOGICIELS AUTODESK ===
-                    autodesk = autodeskInfo
+                    // === HEARTBEAT ===
+                    heartbeat = new
+                    {
+                        lastHeartbeat = nowUtc,
+                        intervalMs = HEARTBEAT_INTERVAL_MS,
+                        missedHeartbeats = 0,
+                        status = "online",
+                        cpuUsage = GetCurrentCpuUsage(),
+                        ramUsage = GetCurrentRamUsage(),
+                        diskUsage = GetPrimaryDiskUsage(storageInfo)
+                    },
+                    
+                    // === USAGE ===
+                    usage = new
+                    {
+                        totalSessions = 1,
+                        totalUploads = 0,
+                        totalModulesCreated = 0,
+                        lastModuleCreated = "none",
+                        lastUpload = "none"
+                    },
+                    
+                    // === SECURITY ===
+                    security = new
+                    {
+                        lastLoginAttempt = nowUtc,
+                        failedLoginAttempts = 0,
+                        trustedDevice = true,
+                        requiresApproval = false
+                    },
+                    
+                    // === METADATA ===
+                    metadata = new
+                    {
+                        notes = "Auto-registered by XEAT",
+                        tags = $"auto,{GetSiteFromMachineName()}",
+                        createdAt = nowUtc,
+                        updatedAt = nowUtc
+                    }
                 };
 
                 string json = JsonSerializer.Serialize(deviceInfo, new JsonSerializerOptions { WriteIndented = false });
@@ -160,6 +262,9 @@ namespace XnrgyEngineeringAutomationTools.Services
                     _isRegistered = true;
                     _heartbeatTimer.Start();
                     Logger.Log($"[+] Appareil enregistre dans Firebase: {_deviceId}");
+                    
+                    // Enregistrer aussi dans les statistiques
+                    await IncrementStatisticAsync("statistics/devices/totalRegistered");
                 }
                 else
                 {
@@ -175,6 +280,8 @@ namespace XnrgyEngineeringAutomationTools.Services
 
         /// <summary>
         /// Envoie un heartbeat pour indiquer que l'appareil est toujours actif
+        /// Structure alignee avec firebase-init.json
+        /// Verifie aussi les commandes (blocage, broadcasts) depuis la console admin
         /// </summary>
         private async Task SendHeartbeatAsync()
         {
@@ -182,26 +289,232 @@ namespace XnrgyEngineeringAutomationTools.Services
 
             try
             {
-                // Utiliser PUT sur un sous-noeud pour mise a jour partielle (compatible .NET 4.8)
+                string nowUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                
+                // Heartbeat avec metriques de performance
                 var heartbeat = new
                 {
-                    lastHeartbeat = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                    status = "online"
+                    lastHeartbeat = nowUtc,
+                    intervalMs = HEARTBEAT_INTERVAL_MS,
+                    missedHeartbeats = 0,
+                    status = "online",
+                    cpuUsage = GetCurrentCpuUsage(),
+                    ramUsage = GetCurrentRamUsage(),
+                    diskUsage = GetPrimaryDiskUsageSimple()
                 };
 
                 string json = JsonSerializer.Serialize(heartbeat);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                // PUT sur /devices/{id}/heartbeat.json pour mise a jour partielle
+                // PUT sur /devices/{id}/heartbeat.json
                 string url = $"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/heartbeat.json";
                 await _httpClient.PutAsync(url, content);
+                
+                // Aussi mettre a jour le status.online et status.lastSeen via PUT individuel
+                // (PATCH non disponible en .NET 4.8 HttpClient standard)
+                var onlineContent = new StringContent("true", Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status/online.json", onlineContent);
+                
+                var lastSeenContent = new StringContent($"\"{nowUtc}\"", Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status/lastSeen.json", lastSeenContent);
 
                 Logger.Log($"[~] Heartbeat envoye: {_deviceId}", Logger.LogLevel.DEBUG);
+                
+                // === VERIFICATION DES COMMANDES ADMIN ===
+                await CheckRemoteCommandsAsync();
             }
             catch (Exception ex)
             {
                 Logger.Log($"[!] Erreur heartbeat: {ex.Message}", Logger.LogLevel.DEBUG);
             }
+        }
+        
+        /// <summary>
+        /// Verifie les commandes distantes (blocage, broadcasts) depuis la console admin
+        /// Appele a chaque heartbeat (toutes les 60 secondes)
+        /// </summary>
+        private async Task CheckRemoteCommandsAsync()
+        {
+            try
+            {
+                // Verifier si le device est bloque
+                var statusResponse = await _httpClient.GetStringAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status.json");
+                if (!string.IsNullOrEmpty(statusResponse) && statusResponse != "null")
+                {
+                    var status = JsonSerializer.Deserialize<DeviceStatusCheck>(statusResponse, new JsonSerializerOptions 
+                    { 
+                        PropertyNameCaseInsensitive = true 
+                    });
+                    
+                    if (status?.Blocked == true)
+                    {
+                        string reason = status.BlockReason ?? "Suspendu par l'administrateur";
+                        Logger.Log($"[-] DEVICE BLOQUE PAR ADMIN: {reason}", Logger.LogLevel.ERROR);
+                        
+                        // Afficher le message et fermer l'application
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            System.Windows.MessageBox.Show(
+                                $"Ce poste a ete bloque par l'administrateur.\n\nRaison: {reason}\n\nL'application va se fermer.",
+                                "Acces refuse - Poste bloque",
+                                System.Windows.MessageBoxButton.OK,
+                                System.Windows.MessageBoxImage.Error);
+                            
+                            System.Windows.Application.Current.Shutdown();
+                        });
+                        return;
+                    }
+                }
+                
+                // Verifier les broadcasts actifs
+                await CheckBroadcastsAsync();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur verification commandes: {ex.Message}", Logger.LogLevel.DEBUG);
+            }
+        }
+        
+        /// <summary>
+        /// Verifie et affiche les broadcasts actifs
+        /// </summary>
+        private async Task CheckBroadcastsAsync()
+        {
+            try
+            {
+                var broadcastsResponse = await _httpClient.GetStringAsync($"{FIREBASE_DATABASE_URL}/broadcasts.json");
+                if (string.IsNullOrEmpty(broadcastsResponse) || broadcastsResponse == "null") return;
+                
+                var broadcasts = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(broadcastsResponse);
+                if (broadcasts == null) return;
+                
+                foreach (var kvp in broadcasts)
+                {
+                    if (kvp.Key == "placeholder") continue;
+                    
+                    try
+                    {
+                        var broadcast = kvp.Value;
+                        
+                        // Verifier si actif (status.active)
+                        bool isActive = false;
+                        if (broadcast.TryGetProperty("status", out var statusEl))
+                        {
+                            if (statusEl.TryGetProperty("active", out var activeEl))
+                            {
+                                isActive = activeEl.GetBoolean();
+                            }
+                        }
+                        
+                        if (!isActive) continue;
+                        
+                        // Verifier si doit afficher en popup (display.showAsPopup)
+                        bool showPopup = false;
+                        if (broadcast.TryGetProperty("display", out var displayEl))
+                        {
+                            if (displayEl.TryGetProperty("showAsPopup", out var popupEl))
+                            {
+                                showPopup = popupEl.GetBoolean();
+                            }
+                        }
+                        
+                        if (!showPopup) continue;
+                        
+                        // Verifier si deja affiche (eviter doublons)
+                        string broadcastId = kvp.Key;
+                        if (_displayedBroadcasts.Contains(broadcastId)) continue;
+                        
+                        // Recuperer titre et message
+                        string title = broadcast.TryGetProperty("title", out var titleEl) ? titleEl.GetString() : "Message";
+                        string message = broadcast.TryGetProperty("message", out var msgEl) ? msgEl.GetString() : "";
+                        string type = broadcast.TryGetProperty("type", out var typeEl) ? typeEl.GetString() : "info";
+                        
+                        // Marquer comme affiche
+                        _displayedBroadcasts.Add(broadcastId);
+                        
+                        Logger.Log($"[i] Broadcast popup: {title}");
+                        
+                        // Afficher le message
+                        System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            var icon = type switch
+                            {
+                                "warning" => System.Windows.MessageBoxImage.Warning,
+                                "error" => System.Windows.MessageBoxImage.Error,
+                                _ => System.Windows.MessageBoxImage.Information
+                            };
+                            
+                            System.Windows.MessageBox.Show(
+                                message,
+                                $"[Admin] {title}",
+                                System.Windows.MessageBoxButton.OK,
+                                icon);
+                        });
+                        
+                        // Incrementer le viewCount
+                        await IncrementBroadcastViewCountAsync(broadcastId);
+                    }
+                    catch { /* Ignorer les broadcasts mal formes */ }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur check broadcasts: {ex.Message}", Logger.LogLevel.DEBUG);
+            }
+        }
+        
+        /// <summary>
+        /// Incremente le compteur de vues d'un broadcast
+        /// </summary>
+        private async Task IncrementBroadcastViewCountAsync(string broadcastId)
+        {
+            try
+            {
+                // Lire le viewCount actuel
+                var response = await _httpClient.GetStringAsync($"{FIREBASE_DATABASE_URL}/broadcasts/{broadcastId}/status/viewCount.json");
+                int currentCount = 0;
+                if (!string.IsNullOrEmpty(response) && response != "null")
+                {
+                    int.TryParse(response, out currentCount);
+                }
+                
+                // Incrementer
+                var content = new StringContent((currentCount + 1).ToString(), Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/broadcasts/{broadcastId}/status/viewCount.json", content);
+            }
+            catch { }
+        }
+        
+        // Liste des broadcasts deja affiches pour eviter les doublons
+        private readonly HashSet<string> _displayedBroadcasts = new HashSet<string>();
+        
+        /// <summary>
+        /// Classe interne pour deserialiser le status du device
+        /// </summary>
+        private class DeviceStatusCheck
+        {
+            public bool Blocked { get; set; }
+            public string BlockReason { get; set; }
+            public bool Enabled { get; set; } = true;
+        }
+        
+        /// <summary>
+        /// Obtient l'utilisation disque de facon simple (sans l'objet storageInfo)
+        /// </summary>
+        private int GetPrimaryDiskUsageSimple()
+        {
+            try
+            {
+                var drive = new DriveInfo("C");
+                if (drive.IsReady)
+                {
+                    double totalGB = drive.TotalSize / 1024.0 / 1024.0 / 1024.0;
+                    double freeGB = drive.AvailableFreeSpace / 1024.0 / 1024.0 / 1024.0;
+                    return (int)(((totalGB - freeGB) * 100) / totalGB);
+                }
+            }
+            catch { }
+            return 0;
         }
 
         /// <summary>
@@ -215,25 +528,25 @@ namespace XnrgyEngineeringAutomationTools.Services
             {
                 _heartbeatTimer.Stop();
 
-                // Mettre le statut principal a "offline"
-                var offlineData = new
+                string nowUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+
+                // Mettre a jour status.online = false et status.lastSeen
+                var onlineContent = new StringContent("false", Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status/online.json", onlineContent);
+                
+                var lastSeenContent = new StringContent($"\"{nowUtc}\"", Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status/lastSeen.json", lastSeenContent);
+
+                // Mettre a jour heartbeat.status = offline
+                var heartbeatStatus = new
                 {
+                    lastHeartbeat = nowUtc,
                     status = "offline",
-                    lastHeartbeat = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                    disconnectTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
-                    disconnectTimeLocal = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                    missedHeartbeats = 0
                 };
-
-                string json = JsonSerializer.Serialize(offlineData);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                // Mettre a jour le statut a la racine du device (pas dans heartbeat)
-                string url = $"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/session.json";
-                var response = await _httpClient.PutAsync(url, content);
-
-                // Aussi mettre a jour le statut principal
-                var statusContent = new StringContent("\"offline\"", Encoding.UTF8, "application/json");
-                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status.json", statusContent);
+                string heartbeatJson = JsonSerializer.Serialize(heartbeatStatus);
+                var heartbeatContent = new StringContent(heartbeatJson, Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/heartbeat.json", heartbeatContent);
 
                 _isRegistered = false;
                 Logger.Log($"[+] Appareil desenregistre: {_deviceId}");
@@ -262,21 +575,21 @@ namespace XnrgyEngineeringAutomationTools.Services
 
         /// <summary>
         /// Detecte le site XNRGY base sur le nom de machine
+        /// Utilise les identifiants du firebase-init.json (saintHubertQC, arizonaUS, lavalQC)
         /// </summary>
         private string GetSiteFromMachineName()
         {
             string machine = Environment.MachineName?.ToUpperInvariant() ?? "";
             
             if (machine.Contains("LAV") || machine.Contains("LAVAL"))
-                return "Laval";
-            if (machine.Contains("MTL") || machine.Contains("MONTREAL"))
-                return "Montreal";
-            if (machine.Contains("QC") || machine.Contains("QUEBEC"))
-                return "Quebec";
-            if (machine.Contains("TOR") || machine.Contains("TORONTO"))
-                return "Toronto";
+                return "lavalQC";
+            if (machine.Contains("AZ") || machine.Contains("ARIZONA") || machine.Contains("PHX") || machine.Contains("PHOENIX"))
+                return "arizonaUS";
+            if (machine.Contains("HUB") || machine.Contains("STH") || machine.Contains("SH"))
+                return "saintHubertQC";
             
-            return "Unknown";
+            // Default to Saint-Hubert (primary site)
+            return "saintHubertQC";
         }
 
         #region System Info Collection
@@ -284,9 +597,11 @@ namespace XnrgyEngineeringAutomationTools.Services
         /// <summary>
         /// Collecte les informations systeme generales
         /// </summary>
-        private (string OsFriendlyName, string ProcessorName) CollectSystemInfo()
+        private (string OsFriendlyName, string OsVersion, string OsBuild, string ProcessorName) CollectSystemInfo()
         {
             string osFriendlyName = "Windows";
+            string osVersion = "";
+            string osBuild = "";
             string processorName = "Unknown";
 
             try
@@ -298,9 +613,13 @@ namespace XnrgyEngineeringAutomationTools.Services
                     {
                         string productName = key.GetValue("ProductName")?.ToString() ?? "";
                         string displayVersion = key.GetValue("DisplayVersion")?.ToString() ?? "";
+                        string currentBuild = key.GetValue("CurrentBuild")?.ToString() ?? "";
+                        
                         osFriendlyName = string.IsNullOrEmpty(displayVersion) 
                             ? productName 
                             : $"{productName} ({displayVersion})";
+                        osVersion = displayVersion;
+                        osBuild = currentBuild;
                     }
                 }
 
@@ -316,7 +635,396 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
             catch { }
 
-            return (osFriendlyName, processorName);
+            return (osFriendlyName, osVersion, osBuild, processorName);
+        }
+        
+        /// <summary>
+        /// Collecte les informations hardware detaillees (manufacturer, model, GPU, etc.)
+        /// </summary>
+        private (string Manufacturer, string Model, string SerialNumber, string ProcessorSpeed, 
+                 double RamTotalGB, double RamAvailableGB, string GpuName, double GpuMemoryGB, string DiskType) CollectHardwareInfo()
+        {
+            string manufacturer = "Unknown";
+            string model = "Unknown";
+            string serialNumber = "Unknown";
+            string processorSpeed = "Unknown";
+            double ramTotalGB = 0;
+            double ramAvailableGB = 0;
+            string gpuName = "Unknown";
+            double gpuMemoryGB = 0;
+            string diskType = "Unknown";
+
+            try
+            {
+                // Manufacturer et Model
+                using (var searcher = new ManagementObjectSearcher("SELECT Manufacturer, Model FROM Win32_ComputerSystem"))
+                {
+                    foreach (var obj in searcher.Get())
+                    {
+                        manufacturer = obj["Manufacturer"]?.ToString() ?? "Unknown";
+                        model = obj["Model"]?.ToString() ?? "Unknown";
+                        break;
+                    }
+                }
+
+                // Serial Number
+                using (var searcher = new ManagementObjectSearcher("SELECT SerialNumber FROM Win32_BIOS"))
+                {
+                    foreach (var obj in searcher.Get())
+                    {
+                        serialNumber = obj["SerialNumber"]?.ToString() ?? "Unknown";
+                        break;
+                    }
+                }
+
+                // Processor Speed
+                using (var searcher = new ManagementObjectSearcher("SELECT MaxClockSpeed FROM Win32_Processor"))
+                {
+                    foreach (var obj in searcher.Get())
+                    {
+                        int speed = Convert.ToInt32(obj["MaxClockSpeed"]);
+                        processorSpeed = $"{speed / 1000.0:F2} GHz";
+                        break;
+                    }
+                }
+
+                // RAM
+                using (var searcher = new ManagementObjectSearcher("SELECT TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem"))
+                {
+                    foreach (var obj in searcher.Get())
+                    {
+                        ulong totalKB = Convert.ToUInt64(obj["TotalVisibleMemorySize"]);
+                        ulong freeKB = Convert.ToUInt64(obj["FreePhysicalMemory"]);
+                        ramTotalGB = Math.Round(totalKB / 1024.0 / 1024.0, 1);
+                        ramAvailableGB = Math.Round(freeKB / 1024.0 / 1024.0, 1);
+                        break;
+                    }
+                }
+
+                // GPU
+                using (var searcher = new ManagementObjectSearcher("SELECT Name, AdapterRAM FROM Win32_VideoController"))
+                {
+                    foreach (var obj in searcher.Get())
+                    {
+                        gpuName = obj["Name"]?.ToString() ?? "Unknown";
+                        try
+                        {
+                            ulong adapterRam = Convert.ToUInt64(obj["AdapterRAM"]);
+                            gpuMemoryGB = Math.Round(adapterRam / 1024.0 / 1024.0 / 1024.0, 1);
+                        }
+                        catch { }
+                        break;
+                    }
+                }
+
+                // Disk Type (SSD vs HDD)
+                using (var searcher = new ManagementObjectSearcher("SELECT MediaType FROM Win32_DiskDrive WHERE Index=0"))
+                {
+                    foreach (var obj in searcher.Get())
+                    {
+                        string mediaType = obj["MediaType"]?.ToString() ?? "";
+                        diskType = mediaType.Contains("SSD") ? "SSD" : 
+                                   mediaType.Contains("HDD") ? "HDD" : 
+                                   DetectDiskTypeAlternative();
+                        break;
+                    }
+                }
+            }
+            catch { }
+
+            return (manufacturer, model, serialNumber, processorSpeed, ramTotalGB, ramAvailableGB, gpuName, gpuMemoryGB, diskType);
+        }
+        
+        /// <summary>
+        /// Detection alternative du type de disque si MediaType n'est pas disponible
+        /// </summary>
+        private string DetectDiskTypeAlternative()
+        {
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("SELECT Model FROM Win32_DiskDrive WHERE Index=0"))
+                {
+                    foreach (var obj in searcher.Get())
+                    {
+                        string model = obj["Model"]?.ToString()?.ToUpper() ?? "";
+                        if (model.Contains("SSD") || model.Contains("NVME") || model.Contains("SOLID"))
+                            return "SSD";
+                        if (model.Contains("HDD") || model.Contains("HARD"))
+                            return "HDD";
+                    }
+                }
+            }
+            catch { }
+            return "Unknown";
+        }
+        
+        /// <summary>
+        /// Detecte le departement base sur le nom de machine
+        /// </summary>
+        private string GetDepartmentFromMachineName()
+        {
+            string machine = Environment.MachineName?.ToUpperInvariant() ?? "";
+            
+            if (machine.Contains("ENG") || machine.Contains("CAD") || machine.Contains("DESIGN"))
+                return "engineering";
+            if (machine.Contains("PROD") || machine.Contains("SHOP"))
+                return "production";
+            if (machine.Contains("QA") || machine.Contains("QC") || machine.Contains("QUAL"))
+                return "quality";
+            if (machine.Contains("IT") || machine.Contains("ADMIN") || machine.Contains("SRV"))
+                return "it";
+            
+            return "engineering"; // Default pour XNRGY
+        }
+        
+        /// <summary>
+        /// Obtient le nom du serveur Vault depuis le fichier de config ou le registre
+        /// </summary>
+        private string GetVaultServerName()
+        {
+            try
+            {
+                // Essayer de lire depuis le registre Vault
+                using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Autodesk\VaultClient"))
+                {
+                    if (key != null)
+                    {
+                        return key.GetValue("LastServer")?.ToString() ?? "XNRGY-SRV";
+                    }
+                }
+            }
+            catch { }
+            return "XNRGY-SRV";
+        }
+        
+        /// <summary>
+        /// Obtient la version de Microsoft Office installee
+        /// </summary>
+        private string GetOfficeVersion()
+        {
+            try
+            {
+                // Office 365/2019/2021
+                string[] paths = {
+                    @"SOFTWARE\Microsoft\Office\ClickToRun\Configuration",
+                    @"SOFTWARE\Microsoft\Office\16.0\Common\InstallRoot",
+                    @"SOFTWARE\Microsoft\Office\15.0\Common\InstallRoot"
+                };
+                
+                foreach (var path in paths)
+                {
+                    using (var key = Registry.LocalMachine.OpenSubKey(path))
+                    {
+                        if (key != null)
+                        {
+                            string version = key.GetValue("VersionToReport")?.ToString() ?? 
+                                           key.GetValue("ProductReleaseIds")?.ToString() ?? "";
+                            if (!string.IsNullOrEmpty(version))
+                                return version;
+                        }
+                    }
+                }
+            }
+            catch { }
+            return "none";
+        }
+        
+        /// <summary>
+        /// Obtient l'utilisation CPU actuelle
+        /// </summary>
+        private int GetCurrentCpuUsage()
+        {
+            try
+            {
+                using (var cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total"))
+                {
+                    cpuCounter.NextValue();
+                    Thread.Sleep(100);
+                    return (int)cpuCounter.NextValue();
+                }
+            }
+            catch { }
+            return 0;
+        }
+        
+        /// <summary>
+        /// Obtient l'utilisation RAM actuelle en pourcentage
+        /// </summary>
+        private int GetCurrentRamUsage()
+        {
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("SELECT TotalVisibleMemorySize, FreePhysicalMemory FROM Win32_OperatingSystem"))
+                {
+                    foreach (var obj in searcher.Get())
+                    {
+                        ulong totalKB = Convert.ToUInt64(obj["TotalVisibleMemorySize"]);
+                        ulong freeKB = Convert.ToUInt64(obj["FreePhysicalMemory"]);
+                        return (int)(((totalKB - freeKB) * 100) / totalKB);
+                    }
+                }
+            }
+            catch { }
+            return 0;
+        }
+        
+        /// <summary>
+        /// Helper pour obtenir une valeur du dictionnaire network
+        /// </summary>
+        private string GetNetworkValue(object networkInfo, string key)
+        {
+            try
+            {
+                var dict = networkInfo as IDictionary<string, object>;
+                if (dict != null && dict.TryGetValue(key, out var value))
+                    return value?.ToString() ?? "none";
+                    
+                // Fallback avec reflexion pour les types anonymes
+                var prop = networkInfo.GetType().GetProperty(key);
+                if (prop != null)
+                    return prop.GetValue(networkInfo)?.ToString() ?? "none";
+            }
+            catch { }
+            return "none";
+        }
+        
+        /// <summary>
+        /// Helper pour obtenir une valeur de l'objet autodesk
+        /// </summary>
+        private string GetAutodeskValue(object autodeskInfo, string software, string property)
+        {
+            try
+            {
+                var softwareProp = autodeskInfo.GetType().GetProperty(software);
+                if (softwareProp != null)
+                {
+                    var softwareObj = softwareProp.GetValue(autodeskInfo);
+                    if (softwareObj != null)
+                    {
+                        var valueProp = softwareObj.GetType().GetProperty(property);
+                        if (valueProp != null)
+                            return valueProp.GetValue(softwareObj)?.ToString() ?? "none";
+                    }
+                }
+            }
+            catch { }
+            return "none";
+        }
+        
+        /// <summary>
+        /// Helper pour obtenir la taille totale du disque principal
+        /// </summary>
+        private double GetPrimaryDiskTotalGB(object storageInfo)
+        {
+            try
+            {
+                var drivesProp = storageInfo.GetType().GetProperty("drives");
+                if (drivesProp != null)
+                {
+                    var drives = drivesProp.GetValue(storageInfo) as System.Collections.IEnumerable;
+                    if (drives != null)
+                    {
+                        foreach (var drive in drives)
+                        {
+                            var letterProp = drive.GetType().GetProperty("letter");
+                            if (letterProp?.GetValue(drive)?.ToString()?.StartsWith("C") == true)
+                            {
+                                var totalProp = drive.GetType().GetProperty("totalGB");
+                                return Convert.ToDouble(totalProp?.GetValue(drive) ?? 0);
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+            return 0;
+        }
+        
+        /// <summary>
+        /// Helper pour obtenir l'espace libre du disque principal
+        /// </summary>
+        private double GetPrimaryDiskFreeGB(object storageInfo)
+        {
+            try
+            {
+                var drivesProp = storageInfo.GetType().GetProperty("drives");
+                if (drivesProp != null)
+                {
+                    var drives = drivesProp.GetValue(storageInfo) as System.Collections.IEnumerable;
+                    if (drives != null)
+                    {
+                        foreach (var drive in drives)
+                        {
+                            var letterProp = drive.GetType().GetProperty("letter");
+                            if (letterProp?.GetValue(drive)?.ToString()?.StartsWith("C") == true)
+                            {
+                                var freeProp = drive.GetType().GetProperty("freeGB");
+                                return Convert.ToDouble(freeProp?.GetValue(drive) ?? 0);
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+            return 0;
+        }
+        
+        /// <summary>
+        /// Helper pour obtenir l'utilisation du disque principal
+        /// </summary>
+        private int GetPrimaryDiskUsage(object storageInfo)
+        {
+            try
+            {
+                var drivesProp = storageInfo.GetType().GetProperty("drives");
+                if (drivesProp != null)
+                {
+                    var drives = drivesProp.GetValue(storageInfo) as System.Collections.IEnumerable;
+                    if (drives != null)
+                    {
+                        foreach (var drive in drives)
+                        {
+                            var letterProp = drive.GetType().GetProperty("letter");
+                            if (letterProp?.GetValue(drive)?.ToString()?.StartsWith("C") == true)
+                            {
+                                var usageProp = drive.GetType().GetProperty("usagePercent");
+                                return Convert.ToInt32(usageProp?.GetValue(drive) ?? 0);
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+            return 0;
+        }
+        
+        /// <summary>
+        /// Incremente une statistique dans Firebase
+        /// </summary>
+        private async Task IncrementStatisticAsync(string path)
+        {
+            try
+            {
+                // Lire la valeur actuelle
+                var response = await _httpClient.GetAsync($"{FIREBASE_DATABASE_URL}/{path}.json");
+                int currentValue = 0;
+                if (response.IsSuccessStatusCode)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(content) && content != "null")
+                    {
+                        int.TryParse(content, out currentValue);
+                    }
+                }
+                
+                // Incrementer
+                currentValue++;
+                
+                // Sauvegarder
+                var putContent = new StringContent(currentValue.ToString(), Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/{path}.json", putContent);
+            }
+            catch { }
         }
 
         /// <summary>
@@ -546,138 +1254,56 @@ namespace XnrgyEngineeringAutomationTools.Services
         }
 
         /// <summary>
-        /// Collecte les logiciels Autodesk installes
+        /// Collecte les logiciels Autodesk installes EN VERIFIANT QUE LES FICHIERS EXISTENT REELLEMENT
+        /// Ne se fie PAS uniquement au registre (peut contenir des anciennes installations)
         /// </summary>
         private object CollectAutodeskSoftware()
         {
-            var software = new List<object>();
-            var vaultInfo = new { installed = false, version = "", path = "" };
-            var inventorInfo = new { installed = false, version = "", year = "", path = "" };
-
             try
             {
-                // Parcourir le registre pour trouver les logiciels Autodesk
-                string[] registryPaths = new[]
-                {
-                    @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall",
-                    @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall"
-                };
-
-                var foundSoftware = new HashSet<string>();
-
-                foreach (string regPath in registryPaths)
-                {
-                    using (var key = Registry.LocalMachine.OpenSubKey(regPath))
-                    {
-                        if (key == null) continue;
-
-                        foreach (string subKeyName in key.GetSubKeyNames())
-                        {
-                            using (var subKey = key.OpenSubKey(subKeyName))
-                            {
-                                if (subKey == null) continue;
-
-                                string displayName = subKey.GetValue("DisplayName")?.ToString() ?? "";
-                                string publisher = subKey.GetValue("Publisher")?.ToString() ?? "";
-                                string version = subKey.GetValue("DisplayVersion")?.ToString() ?? "";
-                                string installLocation = subKey.GetValue("InstallLocation")?.ToString() ?? "";
-
-                                // Filtrer les logiciels Autodesk
-                                if (publisher.Contains("Autodesk") && !string.IsNullOrEmpty(displayName))
-                                {
-                                    // Eviter les doublons
-                                    string key2 = $"{displayName}|{version}";
-                                    if (foundSoftware.Contains(key2)) continue;
-                                    foundSoftware.Add(key2);
-
-                                    // Filtrer les composants internes
-                                    if (displayName.Contains("Material Library") ||
-                                        displayName.Contains("Content Pack") ||
-                                        displayName.Contains("Genuine Service") ||
-                                        displayName.Contains("Single Sign") ||
-                                        displayName.Contains("Identity Manager") ||
-                                        displayName.Contains("Licensing") ||
-                                        displayName.Contains("Application Manager"))
-                                        continue;
-
-                                    // Detecter Inventor
-                                    if (displayName.Contains("Inventor") && !displayName.Contains("Content") && !displayName.Contains("Add-in"))
-                                    {
-                                        var yearMatch = System.Text.RegularExpressions.Regex.Match(displayName, @"20\d{2}");
-                                        inventorInfo = new
-                                        {
-                                            installed = true,
-                                            version = version,
-                                            year = yearMatch.Success ? yearMatch.Value : "",
-                                            path = installLocation
-                                        };
-                                    }
-
-                                    // Detecter Vault
-                                    if (displayName.Contains("Vault") && (displayName.Contains("Professional") || displayName.Contains("Client")))
-                                    {
-                                        vaultInfo = new
-                                        {
-                                            installed = true,
-                                            version = version,
-                                            path = installLocation
-                                        };
-                                    }
-
-                                    software.Add(new
-                                    {
-                                        name = displayName,
-                                        version = version,
-                                        installPath = installLocation
-                                    });
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // Verifier si Inventor et Vault sont en cours d'execution
+                // === DETECTION INVENTOR - VERIFICATION PHYSIQUE ===
+                var inventorInfo = DetectInventorInstallation();
+                
+                // === DETECTION VAULT - VERIFICATION PHYSIQUE ===
+                var vaultInfo = DetectVaultInstallation();
+                
+                // === AUTRES LOGICIELS AUTODESK (seulement si installPath existe) ===
+                var otherSoftware = DetectOtherAutodeskSoftware();
+                
+                // === PROCESSUS EN COURS ===
                 bool inventorRunning = Process.GetProcessesByName("Inventor").Length > 0;
                 bool vaultRunning = Process.GetProcessesByName("Connectivity.VaultPro").Length > 0 ||
                                    Process.GetProcessesByName("Autodesk.Connectivity.Explorer").Length > 0;
-
-                // Verifier les chemins Inventor/Vault standards
-                string inventorPath2026 = @"C:\Program Files\Autodesk\Inventor 2026\Bin\Inventor.exe";
-                string inventorPath2025 = @"C:\Program Files\Autodesk\Inventor 2025\Bin\Inventor.exe";
-                string inventorPath2024 = @"C:\Program Files\Autodesk\Inventor 2024\Bin\Inventor.exe";
-
-                string detectedInventorPath = "";
-                if (File.Exists(inventorPath2026)) detectedInventorPath = inventorPath2026;
-                else if (File.Exists(inventorPath2025)) detectedInventorPath = inventorPath2025;
-                else if (File.Exists(inventorPath2024)) detectedInventorPath = inventorPath2024;
 
                 return new
                 {
                     inventor = new
                     {
-                        inventorInfo.installed,
-                        inventorInfo.version,
-                        inventorInfo.year,
-                        path = !string.IsNullOrEmpty(inventorInfo.path) ? inventorInfo.path : detectedInventorPath,
-                        running = inventorRunning
+                        installed = inventorInfo.Installed,
+                        version = inventorInfo.Version,
+                        year = inventorInfo.Year,
+                        path = inventorInfo.Path,
+                        running = inventorRunning,
+                        verifiedOnDisk = inventorInfo.Installed // Toujours verifie physiquement
                     },
                     vault = new
                     {
-                        vaultInfo.installed,
-                        vaultInfo.version,
-                        vaultInfo.path,
-                        running = vaultRunning
+                        installed = vaultInfo.Installed,
+                        version = vaultInfo.Version,
+                        path = vaultInfo.Path,
+                        running = vaultRunning,
+                        verifiedOnDisk = vaultInfo.Installed
                     },
-                    allSoftware = software.OrderBy(s => ((dynamic)s).name).ToList(),
-                    totalAutodeskProducts = software.Count
+                    allSoftware = otherSoftware.OrderBy(s => s.Name).ToList(),
+                    totalAutodeskProducts = otherSoftware.Count + (inventorInfo.Installed ? 1 : 0) + (vaultInfo.Installed ? 1 : 0)
                 };
             }
             catch (Exception ex)
             {
                 return new
                 {
-                    inventor = new { installed = false, version = "", year = "", path = "", running = false },
-                    vault = new { installed = false, version = "", path = "", running = false },
+                    inventor = new { installed = false, version = "", year = "", path = "", running = false, verifiedOnDisk = false },
+                    vault = new { installed = false, version = "", path = "", running = false, verifiedOnDisk = false },
                     allSoftware = new List<object>(),
                     totalAutodeskProducts = 0,
                     error = ex.Message
@@ -685,10 +1311,194 @@ namespace XnrgyEngineeringAutomationTools.Services
             }
         }
 
+        /// <summary>
+        /// Detecte Inventor en verifiant que l'executable existe reellement
+        /// </summary>
+        private (bool Installed, string Version, string Year, string Path) DetectInventorInstallation()
+        {
+            // Chemins standards Inventor (du plus recent au plus ancien)
+            var inventorPaths = new[]
+            {
+                (@"C:\Program Files\Autodesk\Inventor 2026\Bin\Inventor.exe", "2026"),
+                (@"C:\Program Files\Autodesk\Inventor 2025\Bin\Inventor.exe", "2025"),
+                (@"C:\Program Files\Autodesk\Inventor 2024\Bin\Inventor.exe", "2024"),
+                (@"C:\Program Files\Autodesk\Inventor 2023\Bin\Inventor.exe", "2023"),
+                (@"C:\Program Files\Autodesk\Inventor 2022\Bin\Inventor.exe", "2022"),
+            };
+
+            foreach (var (exePath, year) in inventorPaths)
+            {
+                if (File.Exists(exePath))
+                {
+                    // Obtenir la version du fichier
+                    string version = "";
+                    try
+                    {
+                        var versionInfo = FileVersionInfo.GetVersionInfo(exePath);
+                        version = versionInfo.FileVersion ?? "";
+                    }
+                    catch { }
+
+                    string installPath = Path.GetDirectoryName(Path.GetDirectoryName(exePath)) ?? "";
+                    
+                    return (true, version, year, installPath);
+                }
+            }
+
+            return (false, "", "", "");
+        }
+
+        /// <summary>
+        /// Detecte Vault en verifiant que l'executable existe reellement
+        /// </summary>
+        private (bool Installed, string Version, string Path) DetectVaultInstallation()
+        {
+            // Chemins standards Vault (du plus recent au plus ancien)
+            var vaultPaths = new[]
+            {
+                @"C:\Program Files\Autodesk\Vault Client 2026\Explorer\Connectivity.VaultPro.exe",
+                @"C:\Program Files\Autodesk\Vault Client 2025\Explorer\Connectivity.VaultPro.exe",
+                @"C:\Program Files\Autodesk\Vault Client 2024\Explorer\Connectivity.VaultPro.exe",
+                @"C:\Program Files\Autodesk\Vault Client 2023\Explorer\Connectivity.VaultPro.exe",
+                // Vault Professional
+                @"C:\Program Files\Autodesk\Vault Professional 2026\Explorer\Connectivity.VaultPro.exe",
+                @"C:\Program Files\Autodesk\Vault Professional 2025\Explorer\Connectivity.VaultPro.exe",
+            };
+
+            foreach (var exePath in vaultPaths)
+            {
+                if (File.Exists(exePath))
+                {
+                    string version = "";
+                    try
+                    {
+                        var versionInfo = FileVersionInfo.GetVersionInfo(exePath);
+                        version = versionInfo.FileVersion ?? "";
+                    }
+                    catch { }
+
+                    string installPath = Path.GetDirectoryName(Path.GetDirectoryName(exePath)) ?? "";
+                    
+                    return (true, version, installPath);
+                }
+            }
+
+            return (false, "", "");
+        }
+
+        /// <summary>
+        /// Detecte les autres logiciels Autodesk (AutoCAD, etc.) en verifiant physiquement
+        /// </summary>
+        private List<(string Name, string Version, string Path)> DetectOtherAutodeskSoftware()
+        {
+            var software = new List<(string Name, string Version, string Path)>();
+            var foundPaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // AutoCAD
+            var autocadPaths = new[]
+            {
+                (@"C:\Program Files\Autodesk\AutoCAD 2026\acad.exe", "AutoCAD 2026"),
+                (@"C:\Program Files\Autodesk\AutoCAD 2025\acad.exe", "AutoCAD 2025"),
+                (@"C:\Program Files\Autodesk\AutoCAD 2024\acad.exe", "AutoCAD 2024"),
+            };
+
+            foreach (var (exePath, name) in autocadPaths)
+            {
+                if (File.Exists(exePath) && !foundPaths.Contains(exePath))
+                {
+                    foundPaths.Add(exePath);
+                    string version = GetFileVersion(exePath);
+                    software.Add((name, version, Path.GetDirectoryName(exePath) ?? ""));
+                }
+            }
+
+            // Revit
+            var revitPaths = new[]
+            {
+                (@"C:\Program Files\Autodesk\Revit 2026\Revit.exe", "Revit 2026"),
+                (@"C:\Program Files\Autodesk\Revit 2025\Revit.exe", "Revit 2025"),
+                (@"C:\Program Files\Autodesk\Revit 2024\Revit.exe", "Revit 2024"),
+            };
+
+            foreach (var (exePath, name) in revitPaths)
+            {
+                if (File.Exists(exePath) && !foundPaths.Contains(exePath))
+                {
+                    foundPaths.Add(exePath);
+                    string version = GetFileVersion(exePath);
+                    software.Add((name, version, Path.GetDirectoryName(exePath) ?? ""));
+                }
+            }
+
+            // Navisworks
+            var navisworksPaths = new[]
+            {
+                (@"C:\Program Files\Autodesk\Navisworks Manage 2026\Navisworks.exe", "Navisworks Manage 2026"),
+                (@"C:\Program Files\Autodesk\Navisworks Manage 2025\Navisworks.exe", "Navisworks Manage 2025"),
+            };
+
+            foreach (var (exePath, name) in navisworksPaths)
+            {
+                if (File.Exists(exePath) && !foundPaths.Contains(exePath))
+                {
+                    foundPaths.Add(exePath);
+                    string version = GetFileVersion(exePath);
+                    software.Add((name, version, Path.GetDirectoryName(exePath) ?? ""));
+                }
+            }
+
+            // 3ds Max
+            var maxPaths = new[]
+            {
+                (@"C:\Program Files\Autodesk\3ds Max 2026\3dsmax.exe", "3ds Max 2026"),
+                (@"C:\Program Files\Autodesk\3ds Max 2025\3dsmax.exe", "3ds Max 2025"),
+            };
+
+            foreach (var (exePath, name) in maxPaths)
+            {
+                if (File.Exists(exePath) && !foundPaths.Contains(exePath))
+                {
+                    foundPaths.Add(exePath);
+                    string version = GetFileVersion(exePath);
+                    software.Add((name, version, Path.GetDirectoryName(exePath) ?? ""));
+                }
+            }
+
+            // Fusion 360
+            string fusion360Path = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                @"Autodesk\webdeploy\production\Fusion360.exe");
+            
+            if (File.Exists(fusion360Path))
+            {
+                string version = GetFileVersion(fusion360Path);
+                software.Add(("Fusion 360", version, Path.GetDirectoryName(fusion360Path) ?? ""));
+            }
+
+            return software;
+        }
+
+        /// <summary>
+        /// Obtient la version d'un fichier executable
+        /// </summary>
+        private string GetFileVersion(string filePath)
+        {
+            try
+            {
+                var versionInfo = FileVersionInfo.GetVersionInfo(filePath);
+                return versionInfo.FileVersion ?? "";
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
         #endregion
 
         /// <summary>
         /// Libere les ressources et met le statut offline
+        /// Structure alignee avec firebase-init.json
         /// </summary>
         public void Dispose()
         {
@@ -698,21 +1508,32 @@ namespace XnrgyEngineeringAutomationTools.Services
             _heartbeatTimer?.Stop();
             _heartbeatTimer?.Dispose();
             
+            string nowUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            
             // Envoyer le statut offline de facon synchrone avec timeout
             try
             {
-                // Utiliser un HttpClient synchrone pour s'assurer que ca part avant la fermeture
                 using (var client = new HttpClient { Timeout = TimeSpan.FromSeconds(5) })
                 {
-                    var statusContent = new StringContent("\"offline\"", Encoding.UTF8, "application/json");
-                    var task = client.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status.json", statusContent);
-                    task.Wait(3000);
+                    // Mettre status.online = false
+                    var onlineContent = new StringContent("false", Encoding.UTF8, "application/json");
+                    var task1 = client.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status/online.json", onlineContent);
+                    task1.Wait(1500);
                     
-                    var disconnectContent = new StringContent(
-                        $"{{\"time\":\"{DateTime.UtcNow:yyyy-MM-ddTHH:mm:ssZ}\",\"timeLocal\":\"{DateTime.Now:yyyy-MM-dd HH:mm:ss}\"}}",
-                        Encoding.UTF8, "application/json");
-                    var task2 = client.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/lastDisconnect.json", disconnectContent);
-                    task2.Wait(2000);
+                    // Mettre status.lastSeen
+                    var lastSeenContent = new StringContent($"\"{nowUtc}\"", Encoding.UTF8, "application/json");
+                    var task2 = client.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/status/lastSeen.json", lastSeenContent);
+                    task2.Wait(1500);
+                    
+                    // Mettre heartbeat.status = offline
+                    var heartbeatContent = new StringContent("\"offline\"", Encoding.UTF8, "application/json");
+                    var task3 = client.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/heartbeat/status.json", heartbeatContent);
+                    task3.Wait(1500);
+                    
+                    // Mettre heartbeat.lastHeartbeat
+                    var lastHeartbeatContent = new StringContent($"\"{nowUtc}\"", Encoding.UTF8, "application/json");
+                    var task4 = client.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/heartbeat/lastHeartbeat.json", lastHeartbeatContent);
+                    task4.Wait(1500);
                 }
                 
                 Logger.Log($"[+] Statut offline envoye pour: {_deviceId}");
@@ -722,5 +1543,180 @@ namespace XnrgyEngineeringAutomationTools.Services
                 Logger.Log($"[!] Erreur envoi statut offline: {ex.Message}", Logger.LogLevel.DEBUG);
             }
         }
+        
+        #region Public Methods for Telemetry
+        
+        /// <summary>
+        /// Incremente le compteur d'uploads pour cet appareil
+        /// </summary>
+        public async Task IncrementUploadsAsync()
+        {
+            try
+            {
+                // Lire la valeur actuelle
+                var response = await _httpClient.GetAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/usage/totalUploads.json");
+                int currentValue = 0;
+                if (response.IsSuccessStatusCode)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(content) && content != "null")
+                    {
+                        int.TryParse(content, out currentValue);
+                    }
+                }
+                
+                currentValue++;
+                
+                var putContent = new StringContent(currentValue.ToString(), Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/usage/totalUploads.json", putContent);
+                
+                // Aussi mettre a jour lastUpload
+                string nowUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                var lastUploadContent = new StringContent($"\"{nowUtc}\"", Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/usage/lastUpload.json", lastUploadContent);
+                
+                // Incrementer aussi dans les statistiques globales
+                await IncrementStatisticAsync("statistics/usage/totalUploads");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur increment uploads: {ex.Message}", Logger.LogLevel.DEBUG);
+            }
+        }
+        
+        /// <summary>
+        /// Incremente le compteur de modules crees pour cet appareil
+        /// </summary>
+        public async Task IncrementModulesCreatedAsync()
+        {
+            try
+            {
+                // Lire la valeur actuelle
+                var response = await _httpClient.GetAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/usage/totalModulesCreated.json");
+                int currentValue = 0;
+                if (response.IsSuccessStatusCode)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(content) && content != "null")
+                    {
+                        int.TryParse(content, out currentValue);
+                    }
+                }
+                
+                currentValue++;
+                
+                var putContent = new StringContent(currentValue.ToString(), Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/usage/totalModulesCreated.json", putContent);
+                
+                // Aussi mettre a jour lastModuleCreated
+                string nowUtc = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+                var lastModuleContent = new StringContent($"\"{nowUtc}\"", Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/usage/lastModuleCreated.json", lastModuleContent);
+                
+                // Incrementer aussi dans les statistiques globales
+                await IncrementStatisticAsync("statistics/usage/totalModulesCreated");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur increment modules: {ex.Message}", Logger.LogLevel.DEBUG);
+            }
+        }
+        
+        /// <summary>
+        /// Incremente le compteur de sessions pour cet appareil
+        /// </summary>
+        public async Task IncrementSessionsAsync()
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/usage/totalSessions.json");
+                int currentValue = 0;
+                if (response.IsSuccessStatusCode)
+                {
+                    string content = await response.Content.ReadAsStringAsync();
+                    if (!string.IsNullOrEmpty(content) && content != "null")
+                    {
+                        int.TryParse(content, out currentValue);
+                    }
+                }
+                
+                currentValue++;
+                
+                var putContent = new StringContent(currentValue.ToString(), Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/devices/{_deviceId}/usage/totalSessions.json", putContent);
+                
+                // Incrementer aussi dans les statistiques globales
+                await IncrementStatisticAsync("statistics/sessions/total");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur increment sessions: {ex.Message}", Logger.LogLevel.DEBUG);
+            }
+        }
+        
+        /// <summary>
+        /// Log un evenement de telemetrie
+        /// </summary>
+        public async Task LogTelemetryEventAsync(string category, string action, string label = null, int? value = null)
+        {
+            try
+            {
+                string eventId = $"evt_{DateTime.UtcNow:yyyyMMddHHmmssfff}";
+                var eventData = new
+                {
+                    timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    deviceId = _deviceId,
+                    userId = SanitizeForFirebase($"{Environment.UserDomainName}_{Environment.UserName}"),
+                    category = category,
+                    action = action,
+                    label = label ?? "none",
+                    value = value ?? 0,
+                    site = GetSiteFromMachineName()
+                };
+
+                string json = JsonSerializer.Serialize(eventData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/telemetry/events/{eventId}.json", content);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur log telemetry: {ex.Message}", Logger.LogLevel.DEBUG);
+            }
+        }
+        
+        /// <summary>
+        /// Log une erreur dans Firebase
+        /// </summary>
+        public async Task LogErrorAsync(string errorType, string message, string stackTrace = null)
+        {
+            try
+            {
+                string errorId = $"err_{DateTime.UtcNow:yyyyMMddHHmmssfff}";
+                var errorData = new
+                {
+                    timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                    deviceId = _deviceId,
+                    userId = SanitizeForFirebase($"{Environment.UserDomainName}_{Environment.UserName}"),
+                    errorType = errorType,
+                    message = message,
+                    stackTrace = stackTrace ?? "none",
+                    appVersion = GetAppVersion(),
+                    site = GetSiteFromMachineName()
+                };
+
+                string json = JsonSerializer.Serialize(errorData);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                await _httpClient.PutAsync($"{FIREBASE_DATABASE_URL}/telemetry/errors/{errorId}.json", content);
+                
+                // Incrementer le compteur d'erreurs
+                await IncrementStatisticAsync("statistics/errors/total");
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur log error: {ex.Message}", Logger.LogLevel.DEBUG);
+            }
+        }
+        
+        #endregion
     }
 }

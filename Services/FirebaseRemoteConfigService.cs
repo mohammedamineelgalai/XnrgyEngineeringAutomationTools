@@ -63,27 +63,50 @@ namespace XnrgyEngineeringAutomationTools.Services
                     return result;
                 }
 
-                // 2. Verifier si l'utilisateur est desactive
+                // 2. Verifier le DEVICE et l'UTILISATEUR sur ce device (structure hierarchique)
+                var deviceStatus = await CheckDeviceStatusAsync();
+                
+                // 2a. Device entier suspendu
+                if (deviceStatus.deviceDisabled)
+                {
+                    result.DeviceDisabled = true;
+                    result.DeviceDisabledMessage = deviceStatus.deviceMessage;
+                    result.DeviceDisabledReason = deviceStatus.deviceReason;
+                    Logger.Log($"[-] Device suspendu: {CURRENT_DEVICE} - {deviceStatus.deviceReason}", Logger.LogLevel.ERROR);
+                    return result;
+                }
+                
+                // 2b. Utilisateur suspendu sur ce device specifique
+                if (deviceStatus.userDisabled)
+                {
+                    result.DeviceUserDisabled = true;
+                    result.DeviceUserDisabledMessage = deviceStatus.userMessage;
+                    result.DeviceUserDisabledReason = deviceStatus.userReason;
+                    Logger.Log($"[-] Utilisateur suspendu sur device: {CURRENT_USER}@{Environment.MachineName} - {deviceStatus.userReason}", Logger.LogLevel.ERROR);
+                    return result;
+                }
+
+                // 3. Verifier si l'utilisateur est desactive globalement (optionnel - garde pour compatibilite)
                 var userStatus = await CheckUserStatusAsync();
                 if (userStatus.isDisabled)
                 {
                     result.UserDisabled = true;
                     result.UserDisabledMessage = userStatus.message;
-                    Logger.Log($"[-] Utilisateur desactive: {CURRENT_USER}", Logger.LogLevel.ERROR);
+                    Logger.Log($"[-] Utilisateur desactive globalement: {CURRENT_USER}", Logger.LogLevel.ERROR);
                     return result;
                 }
 
-                // 3. Verifier le mode maintenance
+                // 4. Verifier le mode maintenance
                 if (config.AppConfig?.MaintenanceMode == true)
                 {
-                    result.MaintenanceMode = true;
+                    result.MaintenanceMode = true;;
                     result.MaintenanceMessage = config.AppConfig.MaintenanceMessage 
                         ?? "Application en maintenance. Reessayez dans quelques minutes.";
                     Logger.Log("[!] Mode maintenance actif: " + result.MaintenanceMessage, Logger.LogLevel.WARNING);
                     return result;
                 }
 
-                // 4. Verifier les mises a jour
+                // 5. Verifier les mises a jour
                 string latestVersion = config.VersionInfo?.Latest?.Version;
                 if (!string.IsNullOrEmpty(latestVersion))
                 {
@@ -110,7 +133,7 @@ namespace XnrgyEngineeringAutomationTools.Services
                     }
                 }
 
-                // 5. Verifier les messages broadcast
+                // 6. Verifier les messages broadcast
                 var broadcast = await CheckBroadcastMessageAsync();
                 if (broadcast.hasMessage)
                 {
@@ -133,6 +156,7 @@ namespace XnrgyEngineeringAutomationTools.Services
 
         /// <summary>
         /// Verifie si l'utilisateur actuel est desactive
+        /// Compatible avec l'ancienne ET la nouvelle structure Firebase
         /// </summary>
         private static async Task<(bool isDisabled, string message)> CheckUserStatusAsync()
         {
@@ -147,17 +171,22 @@ namespace XnrgyEngineeringAutomationTools.Services
                     var user = kvp.Value;
                     if (user == null) continue;
 
-                    // Verifier par email ou nom d'utilisateur
-                    string userEmail = user.Email?.ToLowerInvariant() ?? "";
-                    string userName = user.DisplayName?.ToLowerInvariant() ?? "";
+                    // Utiliser les methodes de compatibilite pour lire les valeurs
+                    string userEmail = user.GetEmail().ToLowerInvariant();
+                    string userName = user.GetDisplayName().ToLowerInvariant();
 
                     if (userEmail.Contains(CURRENT_USER) || userName.Contains(CURRENT_USER) ||
-                        CURRENT_USER.Contains(userEmail.Split('@')[0]))
+                        (!string.IsNullOrEmpty(userEmail) && userEmail.Contains("@") && 
+                         CURRENT_USER.Contains(userEmail.Split('@')[0])))
                     {
-                        if (!user.Enabled)
+                        // Verifier si le compte est desactive OU bloque
+                        bool isBlocked = user.status?.blocked == true;
+                        bool isDisabled = !user.IsEnabled();
+                        
+                        if (isDisabled || isBlocked)
                         {
-                            string message = user.DisabledMessage ?? 
-                                $"Votre compte ({user.DisplayName ?? CURRENT_USER}) a ete desactive par l'administrateur.";
+                            string message = user.GetDisabledMessage() ?? 
+                                $"Votre compte ({user.GetDisplayName()}) a ete desactive par l'administrateur.";
                             return (true, message);
                         }
                         break;
@@ -170,6 +199,102 @@ namespace XnrgyEngineeringAutomationTools.Services
             {
                 Logger.Log($"[!] Erreur verification utilisateur: {ex.Message}", Logger.LogLevel.DEBUG);
                 return (false, null);
+            }
+        }
+
+        /// <summary>
+        /// Verifie si le DEVICE (poste de travail) actuel est desactive dans Firebase
+        /// Verifie AUSSI si l'utilisateur Windows actuel est desactive sur ce device
+        /// Structure hierarchique: devices/[ID]/enabled (poste) + devices/[ID]/users/[USER]/enabled (user sur poste)
+        /// </summary>
+        private static async Task<(bool deviceDisabled, string deviceMessage, string deviceReason, 
+                                   bool userDisabled, string userMessage, string userReason)> CheckDeviceStatusAsync()
+        {
+            try
+            {
+                // Lire tous les devices depuis Firebase
+                var devices = await FetchJsonAsync<Dictionary<string, FirebaseDevice>>("/devices.json");
+                if (devices == null) return (false, null, null, false, null, null);
+
+                // Chercher ce device par son ID ou par MachineName
+                string currentUserLower = CURRENT_USER.ToLowerInvariant();
+                
+                foreach (var kvp in devices)
+                {
+                    var deviceId = kvp.Key;
+                    var device = kvp.Value;
+                    if (device == null) continue;
+
+                    // Correspondance par ID complet (MACHINE_user) ou par MachineName seul
+                    bool isThisDevice = 
+                        deviceId.Equals(CURRENT_DEVICE, StringComparison.OrdinalIgnoreCase) ||
+                        (device.MachineName?.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase) ?? false);
+
+                    if (isThisDevice)
+                    {
+                        // === ETAPE 1: Verifier si le DEVICE ENTIER est bloque ===
+                        // Utiliser la nouvelle methode IsBlocked() qui gere les deux structures
+                        if (device.IsBlocked())
+                        {
+                            string message = device.GetBlockedMessage();
+                            string reason = device.Status?.BlockReason ?? device.DisabledReason ?? "suspended";
+
+                            Logger.Log($"[-] Device bloque: {CURRENT_DEVICE} - Raison: {reason}", Logger.LogLevel.ERROR);
+                            return (true, message, reason, false, null, null);
+                        }
+
+                        // === ETAPE 2: Verifier si l'UTILISATEUR est desactive sur ce device ===
+                        if (device.Users != null && device.Users.Count > 0)
+                        {
+                            foreach (var userKvp in device.Users)
+                            {
+                                string userId = userKvp.Key?.ToLowerInvariant() ?? "";
+                                var deviceUser = userKvp.Value;
+                                if (deviceUser == null) continue;
+
+                                // Correspondance par username
+                                bool isThisUser = 
+                                    userId.Contains(currentUserLower) || 
+                                    currentUserLower.Contains(userId) ||
+                                    userId.Equals(currentUserLower);
+
+                                if (isThisUser && deviceUser.Enabled == false)
+                                {
+                                    string userReason = deviceUser.DisabledReason ?? "suspended";
+                                    string userMessage = deviceUser.DisabledMessage;
+
+                                    if (string.IsNullOrEmpty(userMessage))
+                                    {
+                                        switch (userReason.ToLowerInvariant())
+                                        {
+                                            case "unauthorized":
+                                                userMessage = $"Votre compte ({CURRENT_USER}) n'est pas autorise sur ce poste.";
+                                                break;
+                                            case "revoked":
+                                                userMessage = $"L'acces de {CURRENT_USER} a ce poste a ete revoque.";
+                                                break;
+                                            case "suspended":
+                                            default:
+                                                userMessage = $"Votre compte ({CURRENT_USER}) a ete suspendu sur ce poste.";
+                                                break;
+                                        }
+                                    }
+
+                                    return (false, null, null, true, userMessage, userReason);
+                                }
+                            }
+                        }
+
+                        break;
+                    }
+                }
+
+                return (false, null, null, false, null, null);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur verification device: {ex.Message}", Logger.LogLevel.DEBUG);
+                return (false, null, null, false, null, null);
             }
         }
 
@@ -187,35 +312,44 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                 foreach (var kvp in broadcasts)
                 {
+                    if (kvp.Key == "placeholder") continue; // Ignorer le placeholder
+                    
                     var broadcast = kvp.Value;
-                    if (broadcast == null || !broadcast.Active) continue;
+                    if (broadcast == null) continue;
+                    
+                    // Utiliser la methode IsActive() qui gere les deux structures
+                    if (!broadcast.IsActive()) continue;
 
-                    // Verifier l'expiration
+                    // Verifier l'expiration (si definie)
                     if (broadcast.ExpiresAt > 0 && broadcast.ExpiresAt < currentTime) continue;
 
-                    // Verifier si le message est cible
+                    // Verifier le ciblage
+                    string targetType = broadcast.GetTargetType();
                     bool isTargeted = false;
 
-                    // Message global (pas de cible)
-                    if (string.IsNullOrEmpty(broadcast.TargetUser) && string.IsNullOrEmpty(broadcast.TargetDevice))
+                    switch (targetType.ToLowerInvariant())
                     {
-                        isTargeted = true;
-                    }
-                    // Cible par utilisateur
-                    else if (!string.IsNullOrEmpty(broadcast.TargetUser) && 
-                             broadcast.TargetUser.ToLowerInvariant().Contains(CURRENT_USER))
-                    {
-                        isTargeted = true;
-                    }
-                    // Cible par device
-                    else if (!string.IsNullOrEmpty(broadcast.TargetDevice) && 
-                             CURRENT_DEVICE.ToLowerInvariant().Contains(broadcast.TargetDevice.ToLowerInvariant()))
-                    {
-                        isTargeted = true;
+                        case "all":
+                            isTargeted = true;
+                            break;
+                        case "user":
+                            string targetUser = broadcast.Target?.UserId ?? broadcast.TargetUser ?? "";
+                            isTargeted = !string.IsNullOrEmpty(targetUser) && 
+                                        targetUser.ToLowerInvariant().Contains(CURRENT_USER);
+                            break;
+                        case "device":
+                            string targetDevice = broadcast.Target?.DeviceId ?? broadcast.TargetDevice ?? "";
+                            isTargeted = !string.IsNullOrEmpty(targetDevice) && 
+                                        CURRENT_DEVICE.ToLowerInvariant().Contains(targetDevice.ToLowerInvariant());
+                            break;
+                        default:
+                            isTargeted = true; // Par defaut, cibler tout le monde
+                            break;
                     }
 
                     if (isTargeted)
                     {
+                        Logger.Log($"[i] Broadcast recu: {broadcast.Title} - Type: {broadcast.Type}");
                         return (true, broadcast.Title ?? "Message", broadcast.Message, broadcast.Type ?? "info");
                     }
                 }

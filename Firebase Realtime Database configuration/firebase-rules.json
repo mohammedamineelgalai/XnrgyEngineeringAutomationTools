@@ -1,28 +1,227 @@
 {
   "rules": {
+    ".read": true,
+    
     "appConfig": {
       ".read": true,
-      ".write": false
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
     },
-    "commands": {
+    
+    "killSwitch": {
       ".read": true,
-      ".write": false
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
     },
-    "versionInfo": {
+    
+    "maintenance": {
       ".read": true,
-      ".write": false
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
     },
+    
+    "forceUpdate": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "updates": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "featureFlags": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "sites": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "departments": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "roles": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
     "users": {
-      ".read": true,
-      ".write": false
+      ".read": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        "sessions": {
+          ".write": "auth != null && auth.uid == $userId"
+        },
+        "preferences": {
+          ".write": "auth != null && auth.uid == $userId"
+        },
+        "status": {
+          "lastActive": {
+            ".write": "auth != null && auth.uid == $userId"
+          }
+        }
+      }
     },
+    
+    "userActiveSessions": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      "$userId": {
+        ".read": "auth != null && auth.uid == $userId",
+        ".write": "auth != null && auth.uid == $userId"
+      }
+    },
+    
     "devices": {
       ".read": true,
-      ".write": true
+      ".indexOn": ["organization/site", "status/online", "heartbeat/status"],
+      "$deviceId": {
+        ".write": true,
+        "registration": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+        },
+        "organization": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+        },
+        "status": {
+          ".write": true
+        },
+        "system": {
+          ".write": true
+        },
+        "hardware": {
+          ".write": true
+        },
+        "network": {
+          ".write": true
+        },
+        "software": {
+          ".write": true
+        },
+        "heartbeat": {
+          ".write": true
+        },
+        "usage": {
+          ".write": true
+        },
+        "security": {
+          ".write": true
+        },
+        "metadata": {
+          ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+        }
+      }
     },
+    
+    "deviceCommands": {
+      ".read": true,
+      "$deviceId": {
+        ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+        "pending": {
+          "$commandId": {
+            ".write": true
+          }
+        },
+        "history": {
+          ".write": true
+        }
+      }
+    },
+    
     "broadcasts": {
       ".read": true,
-      ".write": false
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      "$broadcastId": {
+        "status": {
+          "viewCount": {
+            ".write": true
+          },
+          "dismissCount": {
+            ".write": true
+          },
+          "acknowledgedBy": {
+            ".write": true
+          }
+        }
+      }
+    },
+    
+    "notifications": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "telemetry": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      "aggregation": {
+        ".write": true
+      }
+    },
+    
+    "telemetryEvents": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      ".write": true
+    },
+    
+    "errorReports": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      ".write": true
+    },
+    
+    "statistics": {
+      ".read": true,
+      ".write": true,
+      "global": {
+        ".write": true
+      },
+      "today": {
+        ".write": true
+      },
+      "bySite": {
+        ".write": true
+      },
+      "byModule": {
+        ".write": true
+      }
+    },
+    
+    "audit": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "auditLog": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      ".write": true,
+      ".indexOn": ["timestamp", "action", "userId"]
+    },
+    
+    "security": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "scheduling": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "integrations": {
+      ".read": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'",
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "systemInfo": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
+    },
+    
+    "commands": {
+      ".read": true,
+      ".write": "auth != null && root.child('users').child(auth.uid).child('organization').child('role').val() == 'admin'"
     }
   }
 }

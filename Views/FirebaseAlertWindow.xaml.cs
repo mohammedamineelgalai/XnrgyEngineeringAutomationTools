@@ -16,6 +16,7 @@ namespace XnrgyEngineeringAutomationTools.Views
             UpdateAvailable,
             ForceUpdate,
             UserDisabled,
+            DeviceDisabled,
             BroadcastInfo,
             BroadcastWarning,
             BroadcastError
@@ -50,6 +51,28 @@ namespace XnrgyEngineeringAutomationTools.Views
         {
             var window = new FirebaseAlertWindow();
             window.ConfigureUserDisabled(message);
+            window.ShowDialog();
+            return false; // Toujours bloquer l'application
+        }
+
+        /// <summary>
+        /// Configure et affiche l'alerte Device (poste de travail) suspendu
+        /// </summary>
+        public static bool ShowDeviceDisabled(string message, string reason)
+        {
+            var window = new FirebaseAlertWindow();
+            window.ConfigureDeviceDisabled(message, reason);
+            window.ShowDialog();
+            return false; // Toujours bloquer l'application
+        }
+
+        /// <summary>
+        /// Configure et affiche l'alerte Utilisateur suspendu SUR UN DEVICE specifique
+        /// </summary>
+        public static bool ShowDeviceUserDisabled(string message, string reason)
+        {
+            var window = new FirebaseAlertWindow();
+            window.ConfigureDeviceUserDisabled(message, reason);
             window.ShowDialog();
             return false; // Toujours bloquer l'application
         }
@@ -129,6 +152,94 @@ namespace XnrgyEngineeringAutomationTools.Views
             VersionInfoPanel.Visibility = Visibility.Collapsed;
         }
 
+        private void ConfigureDeviceDisabled(string message, string reason)
+        {
+            // Couleur selon la raison
+            System.Windows.Media.SolidColorBrush colorBrush;
+            string icon;
+            string title;
+
+            switch (reason?.ToLowerInvariant())
+            {
+                case "maintenance":
+                    colorBrush = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(255, 193, 7)); // Jaune
+                    icon = "🔧";
+                    title = "Poste en Maintenance";
+                    break;
+                case "unauthorized":
+                    colorBrush = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(255, 100, 100)); // Rouge
+                    icon = "⛔";
+                    title = "Poste Non Autorise";
+                    break;
+                case "suspended":
+                default:
+                    colorBrush = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(255, 152, 0)); // Orange
+                    icon = "🖥️";
+                    title = "Poste Suspendu";
+                    break;
+            }
+            
+            AlertIcon.Text = icon;
+            AlertIcon.Foreground = colorBrush;
+            AlertTitle.Text = title;
+            AlertTitle.Foreground = colorBrush;
+            
+            AlertMessage.Text = message ?? $"Ce poste de travail ({System.Environment.MachineName}) a ete suspendu.\n\n" +
+                "Contactez l'administrateur systeme pour plus d'informations.";
+            
+            PrimaryButton.Content = "Fermer";
+            PrimaryButton.Background = colorBrush;
+            SecondaryButton.Visibility = Visibility.Collapsed;
+            VersionInfoPanel.Visibility = Visibility.Collapsed;
+        }
+
+        private void ConfigureDeviceUserDisabled(string message, string reason)
+        {
+            // Couleur selon la raison - toujours nuance de rouge/orange pour utilisateur
+            System.Windows.Media.SolidColorBrush colorBrush;
+            string icon;
+            string title;
+
+            switch (reason?.ToLowerInvariant())
+            {
+                case "unauthorized":
+                    colorBrush = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(255, 100, 100)); // Rouge
+                    icon = "🚷";
+                    title = "Acces Non Autorise";
+                    break;
+                case "revoked":
+                    colorBrush = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(220, 53, 69)); // Rouge fonce
+                    icon = "🔐";
+                    title = "Acces Revoque";
+                    break;
+                case "suspended":
+                default:
+                    colorBrush = new System.Windows.Media.SolidColorBrush(
+                        System.Windows.Media.Color.FromRgb(255, 152, 0)); // Orange
+                    icon = "👤";
+                    title = "Utilisateur Suspendu";
+                    break;
+            }
+            
+            AlertIcon.Text = icon;
+            AlertIcon.Foreground = colorBrush;
+            AlertTitle.Text = title;
+            AlertTitle.Foreground = colorBrush;
+            
+            AlertMessage.Text = message ?? $"Votre compte ({System.Environment.UserName}) n'est pas autorise sur ce poste ({System.Environment.MachineName}).\n\n" +
+                "Contactez l'administrateur pour obtenir l'acces.";
+            
+            PrimaryButton.Content = "Fermer";
+            PrimaryButton.Background = colorBrush;
+            SecondaryButton.Visibility = Visibility.Collapsed;
+            VersionInfoPanel.Visibility = Visibility.Collapsed;
+        }
+
         private void ConfigureMaintenance(string message)
         {
             var yellowBrush = new System.Windows.Media.SolidColorBrush(
@@ -201,6 +312,9 @@ namespace XnrgyEngineeringAutomationTools.Views
             string changelog, string downloadUrl, bool forceUpdate)
         {
             _downloadUrl = downloadUrl;
+            _currentVersion = currentVersion;
+            _newVersion = newVersion;
+            _isForceUpdate = forceUpdate;
 
             if (forceUpdate)
             {
@@ -213,7 +327,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                 AlertTitle.Foreground = redBrush;
                 
                 AlertMessage.Text = "Une mise a jour obligatoire est disponible.\n\n" +
-                    "Vous devez telecharger la nouvelle version pour continuer a utiliser l'application.";
+                    "Cliquez sur 'Installer' pour telecharger et installer automatiquement.";
                 
                 PrimaryButton.Content = "Telecharger";
                 PrimaryButton.Background = redBrush;
@@ -230,7 +344,7 @@ namespace XnrgyEngineeringAutomationTools.Views
                 AlertTitle.Foreground = cyanBrush;
                 
                 AlertMessage.Text = "Une nouvelle version est disponible.\n\n" +
-                    "Souhaitez-vous telecharger la mise a jour maintenant?";
+                    "Cliquez sur 'Installer' pour telecharger et installer automatiquement.";
                 
                 PrimaryButton.Content = "Telecharger";
                 PrimaryButton.Background = cyanBrush;
@@ -251,13 +365,23 @@ namespace XnrgyEngineeringAutomationTools.Views
             VersionDetails.Text = versionText;
         }
 
+        private string _currentVersion;
+        private string _newVersion;
+        private bool _isForceUpdate;
+
         private void PrimaryButton_Click(object sender, RoutedEventArgs e)
         {
             // Si c'est un bouton de telechargement
             if (PrimaryButton.Content.ToString() == "Telecharger" && !string.IsNullOrEmpty(_downloadUrl))
             {
                 ShouldDownload = true;
-                FirebaseRemoteConfigService.OpenDownloadUrl(_downloadUrl);
+                
+                // Fermer cette fenetre d'abord
+                Close();
+                
+                // Lancer le telechargement automatique
+                UpdateDownloadWindow.ShowAndDownload(_downloadUrl, _currentVersion, _newVersion, _isForceUpdate);
+                return;
             }
 
             // Pour Kill Switch et Maintenance, ne pas continuer

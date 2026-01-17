@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace XnrgyEngineeringAutomationTools.Models
 {
@@ -65,9 +66,19 @@ namespace XnrgyEngineeringAutomationTools.Models
         public string Changelog { get; set; }
         public string ErrorMessage { get; set; }
         
-        // Controle par utilisateur
+        // Controle par utilisateur (global - optionnel)
         public bool UserDisabled { get; set; }
         public string UserDisabledMessage { get; set; }
+        
+        // Controle par device (poste de travail entier)
+        public bool DeviceDisabled { get; set; }
+        public string DeviceDisabledMessage { get; set; }
+        public string DeviceDisabledReason { get; set; }
+        
+        // Controle par utilisateur SUR un device specifique (devices/[ID]/users/[USER])
+        public bool DeviceUserDisabled { get; set; }
+        public string DeviceUserDisabledMessage { get; set; }
+        public string DeviceUserDisabledReason { get; set; }
         
         // Messages personnalises
         public bool HasBroadcastMessage { get; set; }
@@ -94,31 +105,232 @@ namespace XnrgyEngineeringAutomationTools.Models
     }
 
     /// <summary>
-    /// Utilisateur Firebase
+    /// Utilisateur Firebase - Structure compatible ancienne ET nouvelle
+    /// Ancienne: { Email, DisplayName, Enabled, ... }
+    /// Nouvelle: { profile: { email, fullName }, status: { enabled }, organization: { role, site } }
     /// </summary>
     public class FirebaseUser
     {
+        // Ancienne structure (compatibilite)
         public string Email { get; set; }
         public string DisplayName { get; set; }
-        public bool Enabled { get; set; }
+        public bool Enabled { get; set; } = true; // Par defaut ACTIF
         public string Role { get; set; }
         public string Site { get; set; }
         public string DisabledMessage { get; set; }
         public long CreatedAt { get; set; }
+        
+        // Nouvelle structure
+        public FirebaseUserProfile profile { get; set; }
+        public FirebaseUserStatus status { get; set; }
+        public FirebaseUserOrganization organization { get; set; }
+        
+        // Proprietes calculees pour compatibilite
+        public string GetEmail() => profile?.email ?? Email ?? "";
+        public string GetDisplayName() => profile?.fullName ?? profile?.username ?? DisplayName ?? "";
+        public bool IsEnabled() => status?.enabled ?? Enabled;
+        public string GetRole() => organization?.role ?? Role ?? "user";
+        public string GetSite() => organization?.site ?? Site ?? "";
+        public string GetDisabledMessage() => status?.disabledMessage ?? DisabledMessage;
+    }
+    
+    public class FirebaseUserProfile
+    {
+        public string email { get; set; }
+        public string fullName { get; set; }
+        public string username { get; set; }
+        public string createdAt { get; set; }
+    }
+    
+    public class FirebaseUserStatus
+    {
+        public bool enabled { get; set; } = true;
+        public bool blocked { get; set; } = false;
+        public bool online { get; set; }
+        public string lastActive { get; set; }
+        public string disabledMessage { get; set; }
+    }
+    
+    public class FirebaseUserOrganization
+    {
+        public string role { get; set; }
+        public string site { get; set; }
+        public string department { get; set; }
+        public string team { get; set; }
     }
 
     /// <summary>
-    /// Message broadcast
+    /// Message broadcast - Structure mise a jour pour correspondre a Firebase
     /// </summary>
     public class BroadcastMessage
     {
+        // Proprietes directes (ancienne structure)
         public bool Active { get; set; }
         public string Title { get; set; }
         public string Message { get; set; }
         public string Type { get; set; } // "info", "warning", "error"
         public long CreatedAt { get; set; }
         public long ExpiresAt { get; set; }
-        public string TargetUser { get; set; } // null = tous, sinon username specifique
-        public string TargetDevice { get; set; } // null = tous, sinon deviceId specifique
+        public string TargetUser { get; set; }
+        public string TargetDevice { get; set; }
+        
+        // Nouvelle structure Firebase imbriquee
+        public BroadcastStatus Status { get; set; }
+        public BroadcastTarget Target { get; set; }
+        public BroadcastDisplay Display { get; set; }
+        public string Priority { get; set; }
+        public string Id { get; set; }
+        
+        /// <summary>
+        /// Retourne si le broadcast est actif (compatible ancienne et nouvelle structure)
+        /// </summary>
+        public bool IsActive()
+        {
+            // Nouvelle structure: status.active
+            if (Status != null)
+                return Status.Active;
+            // Ancienne structure: Active direct
+            return Active;
+        }
+        
+        /// <summary>
+        /// Retourne le type de cible (compatible ancienne et nouvelle structure)
+        /// </summary>
+        public string GetTargetType()
+        {
+            if (Target != null)
+                return Target.Type ?? "all";
+            return "all";
+        }
+        
+        /// <summary>
+        /// Verifie si doit afficher en popup
+        /// </summary>
+        public bool ShouldShowPopup()
+        {
+            return Display?.ShowAsPopup ?? false;
+        }
+    }
+    
+    public class BroadcastStatus
+    {
+        public bool Active { get; set; }
+        public string SentAt { get; set; }
+        public string SentBy { get; set; }
+        public int ViewCount { get; set; }
+    }
+    
+    public class BroadcastTarget
+    {
+        public string Type { get; set; } // "all", "user", "device", "site"
+        public string UserId { get; set; }
+        public string DeviceId { get; set; }
+        public string Site { get; set; }
+    }
+    
+    public class BroadcastDisplay
+    {
+        public bool Dismissible { get; set; } = true;
+        public bool RequireAcknowledgment { get; set; }
+        public bool ShowAsBanner { get; set; }
+        public bool ShowAsPopup { get; set; }
+    }
+
+    /// <summary>
+    /// Device enregistre dans Firebase - Structure mise a jour
+    /// </summary>
+    public class FirebaseDevice
+    {
+        // Proprietes directes (ancienne structure)
+        public string MachineName { get; set; }
+        public string UserName { get; set; }
+        public string AppVersion { get; set; }
+        public bool Enabled { get; set; } = true;
+        public string DisabledMessage { get; set; }
+        public string DisabledReason { get; set; }
+        public long DisabledAt { get; set; }
+        public string DisabledBy { get; set; }
+        public object Heartbeat { get; set; }
+        public object SystemInfo { get; set; }
+        
+        // Nouvelle structure Firebase imbriquee
+        public FirebaseDeviceRegistration Registration { get; set; }
+        public FirebaseDeviceStatus Status { get; set; }
+        public Dictionary<string, DeviceUser> Users { get; set; }
+        
+        /// <summary>
+        /// Retourne si le device est bloque (compatible ancienne et nouvelle structure)
+        /// </summary>
+        public bool IsBlocked()
+        {
+            // Nouvelle structure: status.blocked
+            if (Status != null)
+                return Status.Blocked;
+            // Ancienne structure: Enabled = false
+            return !Enabled;
+        }
+        
+        /// <summary>
+        /// Retourne le message de blocage
+        /// </summary>
+        public string GetBlockedMessage()
+        {
+            if (Status != null && Status.Blocked)
+            {
+                string reason = Status.BlockReason ?? "suspended";
+                switch (reason.ToLowerInvariant())
+                {
+                    case "maintenance":
+                        return $"Ce poste ({GetMachineName()}) est en maintenance.";
+                    case "unauthorized":
+                        return $"Ce poste ({GetMachineName()}) n'est pas autorise.";
+                    case "security":
+                        return $"Ce poste ({GetMachineName()}) a ete bloque pour raison de securite.";
+                    default:
+                        return $"Ce poste ({GetMachineName()}) a ete suspendu par l'administrateur.";
+                }
+            }
+            return DisabledMessage ?? "Ce poste a ete desactive.";
+        }
+        
+        /// <summary>
+        /// Retourne le nom de la machine
+        /// </summary>
+        public string GetMachineName()
+        {
+            return Registration?.MachineName ?? MachineName ?? Environment.MachineName;
+        }
+    }
+    
+    public class FirebaseDeviceRegistration
+    {
+        public string MachineName { get; set; }
+        public string RegisteredAt { get; set; }
+        public string AppVersion { get; set; }
+    }
+    
+    public class FirebaseDeviceStatus
+    {
+        public bool Online { get; set; }
+        public bool Enabled { get; set; } = true;
+        public bool Blocked { get; set; }
+        public string BlockReason { get; set; }
+        public string BlockedAt { get; set; }
+        public string BlockedBy { get; set; }
+        public string CurrentUser { get; set; }
+        public string LastSeen { get; set; }
+    }
+
+    /// <summary>
+    /// Utilisateur specifique sur un device - permet de bloquer un utilisateur Windows sur un poste precis
+    /// </summary>
+    public class DeviceUser
+    {
+        public bool Enabled { get; set; } = true;
+        public string DisabledMessage { get; set; }
+        public string DisabledReason { get; set; } // "suspended", "unauthorized", "revoked"
+        public long DisabledAt { get; set; }
+        public string DisabledBy { get; set; }
+        public long LastSeen { get; set; }
     }
 }

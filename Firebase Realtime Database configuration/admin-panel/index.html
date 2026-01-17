@@ -1,0 +1,2993 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XEAT Admin Console - Remote Control Center</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <style>
+        /* =====================================================
+           XNRGY Engineering Automation Tools - Theme Colors
+           ===================================================== */
+        :root {
+            --xnrgy-bg-dark: #1a1a2e;
+            --xnrgy-bg-panel: #252540;
+            --xnrgy-bg-header: #2A4A6F;
+            --xnrgy-bg-card: #252536;
+            --xnrgy-bg-input: #1A3A5C;
+            --xnrgy-cyan: #00d4ff;
+            --xnrgy-cyan-glow: rgba(0, 212, 255, 0.3);
+            --xnrgy-blue: #0078D4;
+            --xnrgy-blue-hover: #1E90FF;
+            --xnrgy-green: #00D26A;
+            --xnrgy-green-hover: #00FF7F;
+            --xnrgy-orange: #FF8C00;
+            --xnrgy-red: #E81123;
+            --xnrgy-red-hover: #FF4444;
+            --xnrgy-purple: #7C4DFF;
+            --xnrgy-border: #4A7FBF;
+            --xnrgy-border-light: rgba(74, 127, 191, 0.3);
+            --xnrgy-text: #FFFFFF;
+            --xnrgy-text-secondary: #B0B0C0;
+            --xnrgy-text-muted: #6B7A8F;
+            --shadow-glow: 0 0 20px var(--xnrgy-cyan-glow);
+            --transition: all 0.3s ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--xnrgy-bg-dark);
+            color: var(--xnrgy-text);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--xnrgy-bg-header);
+            border-bottom: 2px solid var(--xnrgy-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+        }
+
+        .logo-text h1 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .logo-text span {
+            font-size: 0.65rem;
+            color: var(--xnrgy-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.online {
+            background: rgba(0, 210, 106, 0.15);
+            color: var(--xnrgy-green);
+            border: 1px solid rgba(0, 210, 106, 0.4);
+        }
+
+        .status-badge.offline {
+            background: rgba(232, 17, 35, 0.15);
+            color: var(--xnrgy-red);
+            border: 1px solid rgba(232, 17, 35, 0.4);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 220px;
+            height: calc(100vh - 60px);
+            background: var(--xnrgy-bg-card);
+            border-right: 1px solid var(--xnrgy-border-light);
+            padding: 15px 0;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 20px;
+        }
+
+        .nav-section-title {
+            padding: 0 15px;
+            margin-bottom: 8px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--xnrgy-text-muted);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            color: var(--xnrgy-text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--xnrgy-cyan);
+        }
+
+        .nav-item.active {
+            background: rgba(0, 212, 255, 0.15);
+            color: var(--xnrgy-cyan);
+            border-left-color: var(--xnrgy-cyan);
+        }
+
+        .nav-item svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .nav-badge.danger { background: var(--xnrgy-red); color: white; }
+        .nav-badge.warning { background: var(--xnrgy-orange); color: white; }
+        .nav-badge.success { background: var(--xnrgy-green); color: white; }
+
+        /* Main Content */
+        .main {
+            margin-left: 220px;
+            margin-top: 60px;
+            padding: 20px;
+            min-height: calc(100vh - 60px);
+        }
+
+        .page { display: none; }
+        .page.active { display: block; }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .page-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+
+        .page-subtitle {
+            color: var(--xnrgy-text-secondary);
+            font-size: 0.85rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--xnrgy-bg-card);
+            border: 1px solid var(--xnrgy-border-light);
+            border-radius: 10px;
+            padding: 15px;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            border-color: var(--xnrgy-cyan);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            color: var(--xnrgy-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-card .value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 5px 0;
+        }
+
+        .stat-card .change {
+            font-size: 0.75rem;
+        }
+
+        .stat-card .change.up { color: var(--xnrgy-green); }
+        .stat-card .change.down { color: var(--xnrgy-red); }
+
+        /* Cards */
+        .card {
+            background: var(--xnrgy-bg-card);
+            border: 1px solid var(--xnrgy-border-light);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: var(--xnrgy-bg-header);
+            border-bottom: 1px solid var(--xnrgy-border-light);
+        }
+
+        .card-header h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-body {
+            padding: 15px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            color: var(--xnrgy-text-secondary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--xnrgy-bg-input);
+            border: 1px solid var(--xnrgy-border-light);
+            border-radius: 6px;
+            color: var(--xnrgy-text);
+            font-size: 0.9rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--xnrgy-cyan);
+            box-shadow: 0 0 0 3px var(--xnrgy-cyan-glow);
+        }
+
+        textarea.form-control {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        select.form-control {
+            cursor: pointer;
+        }
+
+        /* Toggle Switch */
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: var(--xnrgy-bg-panel);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-label {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .toggle-label .title {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .toggle-label .desc {
+            font-size: 0.75rem;
+            color: var(--xnrgy-text-muted);
+        }
+
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #3a3a50;
+            border-radius: 26px;
+            transition: var(--transition);
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: var(--transition);
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background: var(--xnrgy-green);
+        }
+
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .toggle.danger input:checked + .toggle-slider {
+            background: var(--xnrgy-red);
+        }
+
+        .toggle.warning input:checked + .toggle-slider {
+            background: var(--xnrgy-orange);
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn-primary {
+            background: var(--xnrgy-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--xnrgy-blue-hover);
+            box-shadow: 0 0 15px rgba(0, 120, 212, 0.4);
+        }
+
+        .btn-success {
+            background: var(--xnrgy-green);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: var(--xnrgy-green-hover);
+        }
+
+        .btn-danger {
+            background: var(--xnrgy-red);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: var(--xnrgy-red-hover);
+        }
+
+        .btn-warning {
+            background: var(--xnrgy-orange);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--xnrgy-bg-panel);
+            color: var(--xnrgy-text);
+            border: 1px solid var(--xnrgy-border-light);
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.75rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--xnrgy-border-light);
+        }
+
+        th {
+            background: var(--xnrgy-bg-header);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--xnrgy-text-secondary);
+        }
+
+        tr:hover {
+            background: rgba(0, 212, 255, 0.05);
+        }
+        
+        /* Device Details Row - Ligne depliable */
+        .device-details-row {
+            background: #1a2332 !important;
+        }
+        .device-details-row:hover {
+            background: #1a2332 !important;
+        }
+        .device-details-row td {
+            padding: 0 !important;
+            border-bottom: 2px solid var(--xnrgy-orange) !important;
+        }
+        
+        /* Device Details Panel - Panneau depliable */
+        .device-details-panel {
+            background: #1a2332;
+            border: 1px solid var(--xnrgy-border-light);
+            border-left: 4px solid var(--xnrgy-orange);
+            border-radius: 0 0 8px 8px;
+            margin: -1px 0 15px 0;
+            overflow: hidden;
+        }
+        
+        /* User Details Panel - Panneau depliable */
+        .user-details-panel {
+            background: #1a2332;
+            border: 1px solid var(--xnrgy-border-light);
+            border-left: 4px solid var(--xnrgy-cyan);
+            border-radius: 0 0 8px 8px;
+            margin: -1px 0 15px 0;
+            overflow: hidden;
+        }
+
+        .status-online { color: var(--xnrgy-green); }
+        .status-offline { color: var(--xnrgy-text-muted); }
+        .status-blocked { color: var(--xnrgy-red); }
+        .status-warning { color: var(--xnrgy-orange); }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-danger {
+            background: rgba(232, 17, 35, 0.15);
+            border: 1px solid rgba(232, 17, 35, 0.3);
+            color: var(--xnrgy-red);
+        }
+
+        .alert-warning {
+            background: rgba(255, 140, 0, 0.15);
+            border: 1px solid rgba(255, 140, 0, 0.3);
+            color: var(--xnrgy-orange);
+        }
+
+        .alert-success {
+            background: rgba(0, 210, 106, 0.15);
+            border: 1px solid rgba(0, 210, 106, 0.3);
+            color: var(--xnrgy-green);
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 1200px) {
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3 { grid-template-columns: 1fr; }
+            .sidebar { width: 60px; }
+            .sidebar .nav-section-title, .sidebar .nav-item span { display: none; }
+            .main { margin-left: 60px; }
+        }
+
+        /* User/Device Cards */
+        .item-card {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--xnrgy-bg-panel);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .item-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--xnrgy-bg-header);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--xnrgy-cyan);
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-info .name {
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .item-info .meta {
+            font-size: 0.75rem;
+            color: var(--xnrgy-text-muted);
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: var(--xnrgy-bg-card);
+            border-radius: 8px;
+            border-left: 4px solid;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: slideIn 0.3s ease;
+            min-width: 280px;
+        }
+
+        .toast.success { border-left-color: var(--xnrgy-green); }
+        .toast.error { border-left-color: var(--xnrgy-red); }
+        .toast.warning { border-left-color: var(--xnrgy-orange); }
+        .toast.info { border-left-color: var(--xnrgy-blue); }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(26, 26, 46, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.hidden { display: none; }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--xnrgy-border-light);
+            border-top-color: var(--xnrgy-cyan);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Quick Actions Panel */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .quick-action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            padding: 15px;
+            background: var(--xnrgy-bg-card);
+            border: 1px solid var(--xnrgy-border-light);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .quick-action-btn:hover {
+            border-color: var(--xnrgy-cyan);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .quick-action-btn svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .quick-action-btn span {
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--xnrgy-border-light);
+        }
+
+        .tab {
+            padding: 10px 15px;
+            background: transparent;
+            border: none;
+            color: var(--xnrgy-text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-bottom: 2px solid transparent;
+            transition: var(--transition);
+        }
+
+        .tab:hover {
+            color: var(--xnrgy-text);
+        }
+
+        .tab.active {
+            color: var(--xnrgy-cyan);
+            border-bottom-color: var(--xnrgy-cyan);
+        }
+
+        /* Search */
+        .search-box {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 10px 12px 10px 40px;
+            background: var(--xnrgy-bg-input);
+            border: 1px solid var(--xnrgy-border-light);
+            border-radius: 6px;
+            color: var(--xnrgy-text);
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--xnrgy-text-muted);
+        }
+
+        /* Filters */
+        .filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-chip {
+            padding: 5px 12px;
+            background: var(--xnrgy-bg-panel);
+            border: 1px solid var(--xnrgy-border-light);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-chip:hover, .filter-chip.active {
+            background: var(--xnrgy-cyan);
+            color: var(--xnrgy-bg-dark);
+            border-color: var(--xnrgy-cyan);
+        }
+
+        /* Activity Feed */
+        .activity-item {
+            display: flex;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--xnrgy-border-light);
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.login { background: rgba(0, 210, 106, 0.2); color: var(--xnrgy-green); }
+        .activity-icon.logout { background: rgba(107, 122, 143, 0.2); color: var(--xnrgy-text-muted); }
+        .activity-icon.error { background: rgba(232, 17, 35, 0.2); color: var(--xnrgy-red); }
+        .activity-icon.warning { background: rgba(255, 140, 0, 0.2); color: var(--xnrgy-orange); }
+        .activity-icon.info { background: rgba(0, 120, 212, 0.2); color: var(--xnrgy-blue); }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-content .text {
+            font-size: 0.85rem;
+        }
+
+        .activity-content .time {
+            font-size: 0.7rem;
+            color: var(--xnrgy-text-muted);
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="logo.png" alt="XEAT">
+            <div class="logo-text">
+                <h1>XEAT Admin Console</h1>
+                <span>Remote Control Center</span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="status-badge online" id="connectionStatus">
+                <div class="status-dot"></div>
+                <span id="connectionText">Connecte</span>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="refreshData()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                </svg>
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="logout()">Deconnexion</button>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="nav-section">
+            <div class="nav-section-title">Vue d'ensemble</div>
+            <a class="nav-item active" onclick="showPage('dashboard')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/>
+                    <rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a class="nav-item" onclick="showPage('activity')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+                </svg>
+                <span>Activite</span>
+                <span class="nav-badge success" id="activityBadge">0</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Controle</div>
+            <a class="nav-item" onclick="showPage('killswitch')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+                <span>Kill Switch</span>
+            </a>
+            <a class="nav-item" onclick="showPage('maintenance')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+                <span>Maintenance</span>
+            </a>
+            <a class="nav-item" onclick="showPage('updates')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Mises a jour</span>
+            </a>
+            <a class="nav-item" onclick="showPage('features')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                <span>Features</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Gestion</div>
+            <a class="nav-item" onclick="showPage('users')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+                <span>Utilisateurs</span>
+                <span class="nav-badge success" id="usersBadge">0</span>
+            </a>
+            <a class="nav-item" onclick="showPage('devices')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                <span>Postes</span>
+                <span class="nav-badge success" id="devicesBadge">0</span>
+            </a>
+            <a class="nav-item" onclick="showPage('sites')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>Sites</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Communication</div>
+            <a class="nav-item" onclick="showPage('broadcasts')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9 22 2z"/>
+                </svg>
+                <span>Broadcasts</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Monitoring</div>
+            <a class="nav-item" onclick="showPage('telemetry')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/>
+                    <line x1="6" y1="20" x2="6" y2="14"/>
+                </svg>
+                <span>Telemetrie</span>
+            </a>
+            <a class="nav-item" onclick="showPage('audit')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <span>Audit Logs</span>
+            </a>
+            <a class="nav-item" onclick="showPage('security')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>Securite</span>
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-title">Configuration</div>
+            <a class="nav-item" onclick="showPage('settings')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+                <span>Parametres</span>
+            </a>
+            <a class="nav-item" onclick="exportDatabase()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <span>Exporter</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main">
+        <!-- Dashboard Page -->
+        <div class="page active" id="page-dashboard">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Dashboard</h2>
+                    <p class="page-subtitle">Vue d'ensemble en temps reel</p>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshData()">Actualiser</button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">Utilisateurs Total</div>
+                    <div class="value" id="statTotalUsers">0</div>
+                    <div class="change up">↑ Actifs: <span id="statActiveUsers">0</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Postes Enregistres</div>
+                    <div class="value" id="statTotalDevices">0</div>
+                    <div class="change up">🟢 En ligne: <span id="statOnlineDevices">0</span></div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Sessions Actives</div>
+                    <div class="value" id="statActiveSessions">0</div>
+                    <div class="change">Aujourd'hui</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Version Actuelle</div>
+                    <div class="value" id="statCurrentVersion">-</div>
+                    <div class="change">Deployee</div>
+                </div>
+            </div>
+
+            <!-- Status Alerts -->
+            <div id="statusAlerts"></div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>⚡ Actions Rapides</h3>
+                </div>
+                <div class="card-body">
+                    <div class="quick-actions">
+                        <div class="quick-action-btn" onclick="toggleKillSwitch()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--xnrgy-red)" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                            </svg>
+                            <span>Kill Switch</span>
+                        </div>
+                        <div class="quick-action-btn" onclick="toggleMaintenance()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--xnrgy-orange)" stroke-width="2">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                            </svg>
+                            <span>Maintenance</span>
+                        </div>
+                        <div class="quick-action-btn" onclick="showPage('broadcasts')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--xnrgy-blue)" stroke-width="2">
+                                <path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9 22 2z"/>
+                            </svg>
+                            <span>Broadcast</span>
+                        </div>
+                        <div class="quick-action-btn" onclick="showPage('updates')">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--xnrgy-green)" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            <span>Publier MAJ</span>
+                        </div>
+                        <div class="quick-action-btn" onclick="forceLogoutAll()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="var(--xnrgy-purple)" stroke-width="2">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                                <polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>
+                            </svg>
+                            <span>Deconnecter Tous</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Activity & Online Devices -->
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📊 Activite Recente</h3>
+                    </div>
+                    <div class="card-body" id="recentActivity">
+                        <p style="color: var(--xnrgy-text-muted);">Aucune activite</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🖥️ Postes En Ligne</h3>
+                    </div>
+                    <div class="card-body" id="onlineDevicesList">
+                        <p style="color: var(--xnrgy-text-muted);">Aucun poste en ligne</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kill Switch Page -->
+        <div class="page" id="page-killswitch">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">🚫 Kill Switch</h2>
+                    <p class="page-subtitle">Desactiver l'application globalement ou par site/departement</p>
+                </div>
+            </div>
+
+            <div class="alert alert-danger" id="killswitchWarning" style="display: none;">
+                ⚠️ Le Kill Switch GLOBAL est ACTIF - Tous les utilisateurs sont bloques!
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>🌍 Kill Switch Global</h3>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Desactiver TOUTE l'application</span>
+                            <span class="desc">Bloque immediatement tous les utilisateurs (sauf admins si configure)</span>
+                        </div>
+                        <label class="toggle danger">
+                            <input type="checkbox" id="killSwitchGlobal" onchange="updateKillSwitch('global', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Message affiche aux utilisateurs</label>
+                        <textarea class="form-control" id="killSwitchMessage" placeholder="Application temporairement indisponible..."></textarea>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Autoriser les administrateurs</span>
+                            <span class="desc">Les admins peuvent toujours utiliser l'app</span>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="killSwitchAllowAdmins" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <button class="btn btn-danger" onclick="applyKillSwitch()">Appliquer Kill Switch</button>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>📍 Par Site</h3>
+                    </div>
+                    <div class="card-body" id="killSwitchBySite">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🏢 Par Departement</h3>
+                    </div>
+                    <div class="card-body" id="killSwitchByDept">
+                        <!-- Dynamic content -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Maintenance Page -->
+        <div class="page" id="page-maintenance">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">🔧 Mode Maintenance</h2>
+                    <p class="page-subtitle">Planifier et activer la maintenance</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Activation Immediate</h3>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Mode Maintenance</span>
+                            <span class="desc">Affiche un message de maintenance a tous les utilisateurs</span>
+                        </div>
+                        <label class="toggle warning">
+                            <input type="checkbox" id="maintenanceToggle" onchange="updateMaintenance(this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Message de maintenance</label>
+                        <textarea class="form-control" id="maintenanceMessage" placeholder="L'application est en maintenance..."></textarea>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Heure de fin estimee</label>
+                            <input type="datetime-local" class="form-control" id="maintenanceEndTime">
+                        </div>
+                        <div class="form-group">
+                            <label>&nbsp;</label>
+                            <div class="toggle-container" style="margin: 0;">
+                                <span>Afficher compte a rebours</span>
+                                <label class="toggle">
+                                    <input type="checkbox" id="maintenanceShowCountdown" checked>
+                                    <span class="toggle-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Mode lecture seule</span>
+                            <span class="desc">Permet aux utilisateurs de consulter mais pas de modifier</span>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="maintenanceReadOnly">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <button class="btn btn-warning" onclick="applyMaintenance()">Activer Maintenance</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>📅 Maintenance Planifiee</h3>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Activer la planification</span>
+                            <span class="desc">Maintenance automatique selon le planning</span>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="scheduledMaintenanceEnabled">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Date/Heure de debut</label>
+                            <input type="datetime-local" class="form-control" id="scheduledStart">
+                        </div>
+                        <div class="form-group">
+                            <label>Date/Heure de fin</label>
+                            <input type="datetime-local" class="form-control" id="scheduledEnd">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notifier les utilisateurs (minutes avant)</label>
+                        <select class="form-control" id="notifyBefore">
+                            <option value="15">15 minutes</option>
+                            <option value="30" selected>30 minutes</option>
+                            <option value="60">1 heure</option>
+                            <option value="120">2 heures</option>
+                            <option value="1440">1 jour</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="scheduleMaintenace()">Planifier</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Updates Page -->
+        <div class="page" id="page-updates">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">📦 Mises a Jour</h2>
+                    <p class="page-subtitle">Gerer les versions et forcer les mises a jour</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">Version Deployee</div>
+                    <div class="value" id="deployedVersion">1.0.0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Version Minimum</div>
+                    <div class="value" id="minimumVersion">1.0.0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Utilisateurs a jour</div>
+                    <div class="value" id="upToDateUsers">0%</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>🚀 Publier une Mise a Jour</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Numero de version</label>
+                            <input type="text" class="form-control" id="newVersion" placeholder="1.1.0">
+                        </div>
+                        <div class="form-group">
+                            <label>URL de telechargement (GitHub)</label>
+                            <input type="text" class="form-control" id="downloadUrl" placeholder="https://github.com/.../releases/download/...">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes de version</label>
+                        <textarea class="form-control" id="releaseNotes" placeholder="- Correction de bugs&#10;- Nouvelles fonctionnalites"></textarea>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>SHA256 Checksum (optionnel)</label>
+                            <input type="text" class="form-control" id="sha256" placeholder="abc123...">
+                        </div>
+                        <div class="form-group">
+                            <label>Taille du fichier</label>
+                            <input type="text" class="form-control" id="fileSize" placeholder="45 MB">
+                        </div>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Mise a jour critique</span>
+                            <span class="desc">Marquer comme mise a jour de securite</span>
+                        </div>
+                        <label class="toggle danger">
+                            <input type="checkbox" id="isCritical">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <button class="btn btn-success" onclick="publishUpdate()">Publier la Mise a Jour</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>⚠️ Forcer la Mise a Jour</h3>
+                </div>
+                <div class="card-body">
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Activer Force Update</span>
+                            <span class="desc">Oblige les utilisateurs a mettre a jour</span>
+                        </div>
+                        <label class="toggle warning">
+                            <input type="checkbox" id="forceUpdateToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Version minimum requise</label>
+                        <input type="text" class="form-control" id="forceMinVersion" placeholder="1.0.0">
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Bloquer l'application</span>
+                            <span class="desc">Empeche l'utilisation tant que non mis a jour</span>
+                        </div>
+                        <label class="toggle danger">
+                            <input type="checkbox" id="blockUntilUpdated">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <button class="btn btn-warning" onclick="applyForceUpdate()">Appliquer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features Page -->
+        <div class="page" id="page-features">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">🎛️ Feature Flags</h2>
+                    <p class="page-subtitle">Activer/desactiver les modules par role ou site</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Modules de l'Application</h3>
+                </div>
+                <div class="card-body" id="featureFlagsList">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Users Page -->
+        <div class="page" id="page-users">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">👥 Gestion des Utilisateurs</h2>
+                    <p class="page-subtitle">Gerer les comptes et permissions</p>
+                </div>
+                <button class="btn btn-primary" onclick="showAddUserModal()">+ Ajouter</button>
+            </div>
+
+            <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="userSearch" placeholder="Rechercher un utilisateur..." oninput="filterUsers()">
+            </div>
+
+            <div class="filters">
+                <span class="filter-chip active" onclick="filterUsersByRole('all')">Tous</span>
+                <span class="filter-chip" onclick="filterUsersByRole('admin')">Admins</span>
+                <span class="filter-chip" onclick="filterUsersByRole('designer')">Designers</span>
+                <span class="filter-chip" onclick="filterUsersByRole('user')">Users</span>
+                <span class="filter-chip" onclick="filterUsersByStatus('blocked')">Bloques</span>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Utilisateur</th>
+                                    <th>Role</th>
+                                    <th>Site</th>
+                                    <th>Statut</th>
+                                    <th>Derniere connexion</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTable">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Devices Page -->
+        <div class="page" id="page-devices">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">🖥️ Gestion des Postes</h2>
+                    <p class="page-subtitle">Monitorer et controler les machines</p>
+                </div>
+                <button class="btn btn-primary" onclick="showAddDeviceModal()">+ Ajouter</button>
+            </div>
+
+            <div class="search-box">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" id="deviceSearch" placeholder="Rechercher un poste..." oninput="filterDevices()">
+            </div>
+
+            <div class="filters">
+                <span class="filter-chip active" onclick="filterDevicesByStatus('all')">Tous</span>
+                <span class="filter-chip" onclick="filterDevicesByStatus('online')">🟢 En ligne</span>
+                <span class="filter-chip" onclick="filterDevicesByStatus('offline')">⚫ Hors ligne</span>
+                <span class="filter-chip" onclick="filterDevicesByStatus('blocked')">🔴 Bloques</span>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Machine</th>
+                                    <th>Site</th>
+                                    <th>Utilisateur actuel</th>
+                                    <th>Version XEAT</th>
+                                    <th>Statut</th>
+                                    <th>Dernier heartbeat</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="devicesTable">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sites Page -->
+        <div class="page" id="page-sites">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">📍 Gestion des Sites</h2>
+                    <p class="page-subtitle">Configurer les sites XNRGY</p>
+                </div>
+            </div>
+
+            <div class="grid-3" id="sitesGrid">
+                <!-- Dynamic content -->
+            </div>
+        </div>
+
+        <!-- Broadcasts Page -->
+        <div class="page" id="page-broadcasts">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">📢 Broadcasts</h2>
+                    <p class="page-subtitle">Envoyer des messages aux utilisateurs</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Nouveau Message</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Type de message</label>
+                            <select class="form-control" id="broadcastType">
+                                <option value="info">ℹ️ Information</option>
+                                <option value="warning">⚠️ Avertissement</option>
+                                <option value="success">✅ Succes</option>
+                                <option value="error">❌ Erreur/Urgent</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Priorite</label>
+                            <select class="form-control" id="broadcastPriority">
+                                <option value="low">Basse</option>
+                                <option value="normal" selected>Normale</option>
+                                <option value="high">Haute</option>
+                                <option value="critical">Critique</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Titre</label>
+                        <input type="text" class="form-control" id="broadcastTitle" placeholder="Titre du message">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea class="form-control" id="broadcastMessage" placeholder="Contenu du message..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Cible</label>
+                        <select class="form-control" id="broadcastTarget">
+                            <option value="all">Tous les utilisateurs</option>
+                            <option value="site">Par site</option>
+                            <option value="department">Par departement</option>
+                            <option value="role">Par role</option>
+                        </select>
+                    </div>
+                    <div class="grid-2">
+                        <div class="toggle-container">
+                            <span>Afficher comme popup</span>
+                            <label class="toggle">
+                                <input type="checkbox" id="broadcastPopup">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <span>Accusé de reception requis</span>
+                            <label class="toggle">
+                                <input type="checkbox" id="broadcastAck">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="sendBroadcast()">Envoyer</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Messages Actifs</h3>
+                </div>
+                <div class="card-body" id="activeBroadcasts">
+                    <p style="color: var(--xnrgy-text-muted);">Aucun message actif</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Telemetry Page -->
+        <div class="page" id="page-telemetry">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">📊 Telemetrie</h2>
+                    <p class="page-subtitle">Statistiques d'utilisation et performance</p>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="label">Sessions Totales</div>
+                    <div class="value" id="teleTotalSessions">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Uploads Totaux</div>
+                    <div class="value" id="teleTotalUploads">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Modules Crees</div>
+                    <div class="value" id="teleTotalModules">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="label">Erreurs</div>
+                    <div class="value" id="teleTotalErrors">0</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Utilisation par Module</h3>
+                </div>
+                <div class="card-body" id="moduleUsage">
+                    <!-- Dynamic content -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Audit Page -->
+        <div class="page" id="page-audit">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">📋 Audit Logs</h2>
+                    <p class="page-subtitle">Historique des actions</p>
+                </div>
+                <button class="btn btn-secondary" onclick="exportAuditLogs()">Exporter</button>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Date/Heure</th>
+                                    <th>Action</th>
+                                    <th>Utilisateur</th>
+                                    <th>Details</th>
+                                    <th>IP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="auditTable">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Page -->
+        <div class="page" id="page-security">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">🔒 Securite</h2>
+                    <p class="page-subtitle">Parametres de securite et acces</p>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Parametres de Connexion</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>Tentatives max avant blocage</label>
+                            <input type="number" class="form-control" id="maxLoginAttempts" value="5">
+                        </div>
+                        <div class="form-group">
+                            <label>Duree de blocage (minutes)</label>
+                            <input type="number" class="form-control" id="lockoutDuration" value="30">
+                        </div>
+                        <div class="form-group">
+                            <label>Timeout session (minutes)</label>
+                            <input type="number" class="form-control" id="sessionTimeout" value="480">
+                        </div>
+                        <div class="form-group">
+                            <label>Sessions max par utilisateur</label>
+                            <input type="number" class="form-control" id="maxSessions" value="3">
+                        </div>
+                        <button class="btn btn-primary" onclick="saveSecuritySettings()">Sauvegarder</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Options</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="toggle-container">
+                            <div class="toggle-label">
+                                <span class="title">Approbation des appareils</span>
+                                <span class="desc">Nouveaux appareils doivent etre approuves</span>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="enforceDeviceApproval">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <div class="toggle-label">
+                                <span class="title">Sessions multiples</span>
+                                <span class="desc">Autoriser plusieurs sessions par utilisateur</span>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="allowMultipleSessions" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="toggle-container">
+                            <div class="toggle-label">
+                                <span class="title">Whitelist IP</span>
+                                <span class="desc">Restreindre l'acces a certaines IPs</span>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="enableIpWhitelist">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Page -->
+        <div class="page" id="page-settings">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">⚙️ Parametres</h2>
+                    <p class="page-subtitle">Configuration generale de l'application</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3>Configuration Application</h3>
+                </div>
+                <div class="card-body">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Nom de l'application</label>
+                            <input type="text" class="form-control" id="appName" value="XNRGY Engineering Automation Tools">
+                        </div>
+                        <div class="form-group">
+                            <label>Nom court</label>
+                            <input type="text" class="form-control" id="appShortName" value="XEAT">
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Email support</label>
+                            <input type="email" class="form-control" id="supportEmail">
+                        </div>
+                        <div class="form-group">
+                            <label>Intervalle heartbeat (ms)</label>
+                            <input type="number" class="form-control" id="heartbeatInterval" value="60000">
+                        </div>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Mode Debug</span>
+                            <span class="desc">Activer les logs detailles</span>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="debugMode">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">Telemetrie</span>
+                            <span class="desc">Collecter les statistiques d'utilisation</span>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" id="enableTelemetry" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" onclick="saveSettings()">Sauvegarder</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Page -->
+        <div class="page" id="page-activity">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">📈 Activite en Temps Reel</h2>
+                    <p class="page-subtitle">Flux d'activite live</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body" id="activityFeed">
+                    <p style="color: var(--xnrgy-text-muted);">En attente d'activite...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Login Screen (Overlay) -->
+    <div id="loginOverlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:var(--xnrgy-bg-dark); z-index:2000; display:flex; justify-content:center; align-items:center;">
+        <div style="background:var(--xnrgy-bg-card); border-radius:16px; padding:40px; width:100%; max-width:400px; border:2px solid var(--xnrgy-border); box-shadow:0 0 40px var(--xnrgy-cyan-glow);">
+            <div style="text-align:center; margin-bottom:30px;">
+                <img src="logo.png" alt="XNRGY" style="width:80px; height:80px; border-radius:12px; margin-bottom:15px;">
+                <h1 style="color:var(--xnrgy-cyan); margin:0; font-size:1.5rem;">XEAT Admin Console</h1>
+                <p style="color:var(--xnrgy-text-muted); margin-top:5px; font-size:0.85rem;">Connexion Securisee Firebase</p>
+            </div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div style="margin-bottom:15px;">
+                    <label style="display:block; margin-bottom:8px; color:var(--xnrgy-text-secondary); font-size:0.9rem;">Email Admin</label>
+                    <input type="email" id="loginEmail" placeholder="admin@xnrgy.com" 
+                           style="width:100%; padding:12px 15px; border:1px solid var(--xnrgy-border); border-radius:8px; background:var(--xnrgy-bg-input); color:var(--xnrgy-text); font-size:1rem;"
+                           autocomplete="email" required>
+                </div>
+                <div style="margin-bottom:20px;">
+                    <label style="display:block; margin-bottom:8px; color:var(--xnrgy-text-secondary); font-size:0.9rem;">Mot de passe</label>
+                    <input type="password" id="loginPassword" placeholder="Mot de passe" 
+                           style="width:100%; padding:12px 15px; border:1px solid var(--xnrgy-border); border-radius:8px; background:var(--xnrgy-bg-input); color:var(--xnrgy-text); font-size:1rem;"
+                           autocomplete="current-password" required>
+                </div>
+                <div id="loginError" style="display:none; color:var(--xnrgy-red); background:rgba(232,17,35,0.1); padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.85rem;"></div>
+                <button type="submit" id="loginBtn" style="width:100%; padding:14px; background:linear-gradient(135deg, var(--xnrgy-blue), var(--xnrgy-cyan)); border:none; border-radius:8px; color:white; font-size:1rem; font-weight:600; cursor:pointer; transition:all 0.3s;">
+                    Se Connecter
+                </button>
+            </form>
+            <div style="margin-top:20px; text-align:center;">
+                <p style="color:var(--xnrgy-text-muted); font-size:0.75rem;">XNRGY Climate Systems ULC - 2026</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (CDN) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    
+    <script>
+        // ==================== FIREBASE CONFIG ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAiooksjw55ike9nQ4zB8oPPI_bjpaq2gQ",
+            authDomain: "xeat-remote-control.firebaseapp.com",
+            databaseURL: "https://xeat-remote-control-default-rtdb.firebaseio.com",
+            projectId: "xeat-remote-control",
+            storageBucket: "xeat-remote-control.firebasestorage.app",
+            messagingSenderId: "407683391369",
+            appId: "1:407683391369:web:f7bd4ea6551224bc6f4b58"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+        
+        const FIREBASE_URL = "https://xeat-remote-control-default-rtdb.firebaseio.com";
+        
+        let appData = {};
+        let currentUser = null;
+        let refreshInterval = null;
+        let isAuthenticated = false;
+
+        // ==================== FIREBASE AUTHENTICATION ====================
+        async function handleLogin(event) {
+            event.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const errorDiv = document.getElementById('loginError');
+            const loginBtn = document.getElementById('loginBtn');
+            
+            errorDiv.style.display = 'none';
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Connexion en cours...';
+            
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                currentUser = userCredential.user;
+                
+                // Verifier que l'utilisateur est admin
+                const userSnapshot = await database.ref(`users/${currentUser.uid}/organization/role`).once('value');
+                const role = userSnapshot.val();
+                
+                if (role === 'admin') {
+                    isAuthenticated = true;
+                    document.getElementById('loginOverlay').style.display = 'none';
+                    setupFirebaseListeners();
+                    showToast('Connexion reussie - Bienvenue Admin!', 'success');
+                } else {
+                    // Pas admin - deconnecter
+                    await auth.signOut();
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = '[-] Acces refuse - Compte non administrateur';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.style.display = 'block';
+                
+                switch(error.code) {
+                    case 'auth/user-not-found':
+                        errorDiv.textContent = '[-] Utilisateur non trouve';
+                        break;
+                    case 'auth/wrong-password':
+                        errorDiv.textContent = '[-] Mot de passe incorrect';
+                        break;
+                    case 'auth/invalid-email':
+                        errorDiv.textContent = '[-] Email invalide';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorDiv.textContent = '[-] Trop de tentatives - Reessayez plus tard';
+                        break;
+                    default:
+                        errorDiv.textContent = '[-] Erreur: ' + error.message;
+                }
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Se Connecter';
+            }
+        }
+        
+        async function logout() {
+            try {
+                await auth.signOut();
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            isAuthenticated = false;
+            currentUser = null;
+            document.getElementById('loginOverlay').style.display = 'flex';
+            showToast('Deconnexion reussie', 'info');
+        }
+
+        // ==================== INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            // Observer l'etat d'authentification Firebase
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    // Utilisateur connecte - verifier le role admin
+                    try {
+                        const userSnapshot = await database.ref(`users/${user.uid}/organization/role`).once('value');
+                        const role = userSnapshot.val();
+                        
+                        console.log('[+] Utilisateur connecte:', user.email, 'UID:', user.uid, 'Role:', role);
+                        
+                        if (role === 'admin') {
+                            currentUser = user;
+                            isAuthenticated = true;
+                            document.getElementById('loginOverlay').style.display = 'none';
+                            setupFirebaseListeners();
+                            showToast('Session restauree - Bienvenue!', 'success');
+                        } else {
+                            // Pas admin - deconnecter
+                            console.log('[-] Utilisateur non admin, deconnexion...');
+                            await auth.signOut();
+                            document.getElementById('loginError').style.display = 'block';
+                            document.getElementById('loginError').textContent = '[-] Acces refuse - Compte non administrateur';
+                        }
+                    } catch (error) {
+                        console.error('[-] Erreur verification role:', error);
+                        // En cas d'erreur de lecture, on laisse passer (regles Firebase peuvent bloquer)
+                        currentUser = user;
+                        isAuthenticated = true;
+                        document.getElementById('loginOverlay').style.display = 'none';
+                        setupFirebaseListeners();
+                    }
+                } else {
+                    // Pas connecte - afficher le login
+                    console.log('[i] Aucun utilisateur connecte');
+                    document.getElementById('loginOverlay').style.display = 'flex';
+                }
+                hideLoading();
+            });
+        });
+
+        // ==================== REST API FUNCTIONS (Fallback) ====================
+        let connectionErrorShown = false;
+        
+        async function loadDataFromFirebase() {
+            try {
+                const response = await fetch(`${FIREBASE_URL}/.json`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                appData = await response.json() || {};
+                updateDashboard();
+                setConnectionStatus(true);
+                connectionErrorShown = false; // Reset error flag on success
+            } catch (error) {
+                console.error('Firebase REST error:', error);
+                setConnectionStatus(false);
+                // Only show toast once, not on every retry
+                if (!connectionErrorShown) {
+                    showToast('Erreur de connexion Firebase: ' + error.message, 'error');
+                    connectionErrorShown = true;
+                }
+            }
+        }
+
+        async function writeToFirebase(path, data) {
+            try {
+                const response = await fetch(`${FIREBASE_URL}/${path}.json`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                await loadDataFromFirebase(); // Refresh data
+                return true;
+            } catch (error) {
+                console.error('Firebase write error:', error);
+                showToast('Erreur d\'ecriture Firebase', 'error');
+                return false;
+            }
+        }
+
+        async function updateFirebaseValue(path, value) {
+            return writeToFirebase(path, value);
+        }
+
+        async function deleteFromFirebase(path) {
+            try {
+                const response = await fetch(`${FIREBASE_URL}/${path}.json`, {
+                    method: 'DELETE'
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                await loadDataFromFirebase();
+                return true;
+            } catch (error) {
+                console.error('Firebase delete error:', error);
+                showToast('Erreur de suppression Firebase', 'error');
+                return false;
+            }
+        }
+
+        function setupFirebaseListeners() {
+            console.log('[>] Configuration des listeners Firebase...');
+            
+            // Real-time listener using Firebase SDK
+            database.ref('/').on('value', (snapshot) => {
+                console.log('[+] Donnees Firebase recues');
+                appData = snapshot.val() || {};
+                console.log('[i] Devices:', Object.keys(appData.devices || {}).length);
+                console.log('[i] Users:', Object.keys(appData.users || {}).length);
+                updateDashboard();
+                connectionErrorShown = false;
+                setConnectionStatus(true);
+            }, (error) => {
+                console.error('[-] Firebase listener error:', error);
+                console.error('[-] Code:', error.code);
+                setConnectionStatus(false);
+                showToast('Erreur Firebase: ' + error.message, 'error');
+            });
+        }
+
+        // ==================== DASHBOARD ====================
+        function updateDashboard() {
+            // Stats
+            const users = appData.users || {};
+            const devices = appData.devices || {};
+            const stats = appData.statistics?.global || {};
+
+            const userCount = Object.keys(users).filter(k => k !== 'placeholder').length;
+            const deviceCount = Object.keys(devices).filter(k => k !== 'templateDevice').length;
+            const onlineDevices = Object.entries(devices).filter(([k, d]) => k !== 'templateDevice' && d?.status?.online === true);
+            const onlineCount = onlineDevices.length;
+
+            document.getElementById('statTotalUsers').textContent = userCount;
+            document.getElementById('statActiveUsers').textContent = Object.values(users).filter(u => u?.status?.enabled !== false).length;
+            document.getElementById('statTotalDevices').textContent = deviceCount;
+            document.getElementById('statOnlineDevices').textContent = onlineCount;
+            document.getElementById('statActiveSessions').textContent = stats.totalSessions || 0;
+            document.getElementById('statCurrentVersion').textContent = appData.appConfig?.currentVersion || '1.0.0';
+
+            // Badges
+            document.getElementById('usersBadge').textContent = userCount;
+            document.getElementById('devicesBadge').textContent = deviceCount;
+
+            // Online Devices List
+            updateOnlineDevicesList(onlineDevices);
+
+            // Status Alerts
+            updateStatusAlerts();
+
+            // Update all pages
+            updateUsersTable();
+            updateDevicesTable();
+            updateSitesGrid();
+            updateFeatureFlags();
+        }
+        
+        function updateOnlineDevicesList(onlineDevices) {
+            const container = document.getElementById('onlineDevicesList');
+            if (!container) return;
+            
+            if (onlineDevices.length === 0) {
+                container.innerHTML = '<p style="color: var(--xnrgy-text-muted);">Aucun poste en ligne</p>';
+                return;
+            }
+            
+            let html = '';
+            onlineDevices.forEach(([deviceId, device]) => {
+                const machineName = device.registration?.machineName || device.system?.computerName || deviceId;
+                const userName = device.status?.currentUser || 'Inconnu';
+                const site = device.organization?.site || 'N/A';
+                const lastSeen = device.status?.lastSeen || device.heartbeat?.lastHeartbeat || '-';
+                const cpuUsage = device.heartbeat?.cpuUsage || 0;
+                const ramUsage = device.heartbeat?.ramUsage || 0;
+                
+                html += `
+                    <div class="activity-item">
+                        <div class="activity-icon login">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 1a1 1 0 0 1 1 1v5.268l.854-.854a.5.5 0 1 1 .707.707l-1.414 1.414a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 1 1 .707-.707L8 7.268V2a1 1 0 0 1-1-1z"/>
+                                <rect width="14" height="3" x="1" y="12" rx="1"/>
+                            </svg>
+                        </div>
+                        <div class="activity-content">
+                            <div class="text"><strong>${machineName}</strong> - ${userName}</div>
+                            <div class="time">${site} | CPU: ${cpuUsage}% | RAM: ${ramUsage}%</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        function updateStatusAlerts() {
+            const alerts = [];
+            
+            if (appData.killSwitch?.global?.enabled) {
+                alerts.push({ type: 'danger', text: '🚫 KILL SWITCH GLOBAL ACTIF - Application bloquee!' });
+                document.getElementById('killswitchWarning').style.display = 'flex';
+                document.getElementById('killSwitchGlobal').checked = true;
+            } else {
+                document.getElementById('killswitchWarning').style.display = 'none';
+                document.getElementById('killSwitchGlobal').checked = false;
+            }
+
+            if (appData.maintenance?.enabled) {
+                alerts.push({ type: 'warning', text: '🔧 MODE MAINTENANCE ACTIF' });
+                document.getElementById('maintenanceToggle').checked = true;
+            } else {
+                document.getElementById('maintenanceToggle').checked = false;
+            }
+
+            if (appData.forceUpdate?.enabled) {
+                alerts.push({ type: 'warning', text: '⚠️ MISE A JOUR FORCEE ACTIVE - Version min: ' + appData.forceUpdate.minimumVersion });
+            }
+
+            const container = document.getElementById('statusAlerts');
+            container.innerHTML = alerts.map(a => `<div class="alert alert-${a.type}">${a.text}</div>`).join('');
+        }
+
+        // ==================== USERS ====================
+        function updateUsersTable() {
+            const users = appData.users || {};
+            const tbody = document.getElementById('usersTable');
+            
+            let html = '';
+            Object.entries(users).forEach(([uid, user]) => {
+                if (uid === 'placeholder') return;
+                
+                const profile = user.profile || user;
+                const status = user.status || {};
+                const org = user.organization || {};
+                
+                const isEnabled = status.enabled !== false;
+                const isBlocked = status.blocked === true;
+                const statusClass = isBlocked ? 'status-blocked' : (isEnabled ? 'status-online' : 'status-offline');
+                const statusText = isBlocked ? '🚫 Bloqué' : (isEnabled ? '✅ Actif' : '⏸️ Inactif');
+                
+                const lastLogin = user.sessions?.lastLogin || profile.lastLogin || '-';
+                
+                html += `
+                    <tr id="user-row-${uid}">
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="item-avatar">${(profile.fullName || profile.username || 'U')[0].toUpperCase()}</div>
+                                <div>
+                                    <div style="font-weight: 500;">${profile.fullName || profile.username || uid}</div>
+                                    <div style="font-size: 0.75rem; color: var(--xnrgy-text-muted);">${profile.email || ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span style="color: ${getRoleColor(org.role || profile.role)}">${getRoleIcon(org.role || profile.role)} ${org.role || profile.role || 'user'}</span></td>
+                        <td>📍 ${org.site || profile.site || '-'}</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>🕐 ${formatDate(lastLogin)}</td>
+                        <td>
+                            <div class="btn-group">
+                                ${isBlocked 
+                                    ? `<button class="btn btn-success btn-sm" onclick="unblockUser('${uid}')">✅ Débloquer</button>`
+                                    : `<button class="btn btn-warning btn-sm" onclick="blockUser('${uid}')">🚫 Bloquer</button>`
+                                }
+                                <button class="btn btn-secondary btn-sm" id="btn-details-user-${uid}" onclick="toggleUserDetails('${uid}')">📋 Details</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            // Ajouter le HTML principal au tbody
+            tbody.innerHTML = html || '<tr><td colspan="6" style="text-align: center; color: var(--xnrgy-text-muted);">Aucun utilisateur</td></tr>';
+            
+            // Créer les conteneurs de détails APRÈS le tableau
+            let detailsContainer = document.getElementById('userDetailsContainer');
+            if (!detailsContainer) {
+                detailsContainer = document.createElement('div');
+                detailsContainer.id = 'userDetailsContainer';
+                tbody.parentElement.parentElement.appendChild(detailsContainer);
+            }
+            detailsContainer.innerHTML = '';
+            
+            Object.keys(users).forEach(uid => {
+                if (uid === 'placeholder') return;
+                const detailDiv = document.createElement('div');
+                detailDiv.id = `user-details-${uid}`;
+                detailDiv.className = 'user-details-panel';
+                detailDiv.style.display = 'none';
+                detailDiv.innerHTML = `<div id="user-details-content-${uid}" style="padding: 20px;"><p style="color: #888;">⏳ Chargement...</p></div>`;
+                detailsContainer.appendChild(detailDiv);
+            });
+        }
+        
+        function getRoleIcon(role) {
+            const icons = {
+                'admin': '👑',
+                'manager': '📊',
+                'engineer': '🔧',
+                'technician': '🛠️',
+                'user': '👤',
+                'viewer': '👁️'
+            };
+            return icons[role] || '👤';
+        }
+
+        // ==================== DEVICES ====================
+        function updateDevicesTable() {
+            const devices = appData.devices || {};
+            const tbody = document.getElementById('devicesTable');
+            
+            let html = '';
+            Object.entries(devices).forEach(([id, device]) => {
+                if (id === 'templateDevice') return;
+                
+                const reg = device.registration || device;
+                const status = device.status || device;
+                const software = device.software || device;
+                const heartbeat = device.heartbeat || {};
+                
+                const isOnline = status.online === true || heartbeat.status === 'online';
+                const isBlocked = status.blocked === true;
+                const statusClass = isBlocked ? 'status-blocked' : (isOnline ? 'status-online' : 'status-offline');
+                const statusText = isBlocked ? '🚫 Bloqué' : (isOnline ? '🟢 En ligne' : '⚫ Hors ligne');
+                
+                html += `
+                    <tr id="device-row-${id}">
+                        <td>
+                            <div style="font-weight: 500;">💻 ${reg.machineName || id}</div>
+                            <div style="font-size: 0.75rem; color: var(--xnrgy-text-muted);">${device.organization?.assetTag ? '🏷️ ' + device.organization.assetTag : ''}</div>
+                        </td>
+                        <td>📍 ${device.organization?.site || status.site || '-'}</td>
+                        <td>👤 ${status.currentUser || '-'}</td>
+                        <td>📦 ${software.xeatVersion || device.appVersion || '-'}</td>
+                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td>🕐 ${formatDate(heartbeat.lastHeartbeat || status.lastSeen)}</td>
+                        <td>
+                            <div class="btn-group">
+                                ${isBlocked 
+                                    ? `<button class="btn btn-success btn-sm" onclick="unblockDevice('${id}')">✅ Débloquer</button>`
+                                    : `<button class="btn btn-warning btn-sm" onclick="blockDevice('${id}')">🚫 Bloquer</button>`
+                                }
+                                <button class="btn btn-secondary btn-sm" id="btn-details-${id}" onclick="toggleDeviceDetails('${id}')">📋 Details</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            // Ajouter le HTML principal au tbody
+            tbody.innerHTML = html || '<tr><td colspan="7" style="text-align: center; color: var(--xnrgy-text-muted);">Aucun poste</td></tr>';
+            
+            // Creer les conteneurs de details APRES le tableau
+            let detailsContainer = document.getElementById('deviceDetailsContainer');
+            if (!detailsContainer) {
+                detailsContainer = document.createElement('div');
+                detailsContainer.id = 'deviceDetailsContainer';
+                tbody.parentElement.parentElement.appendChild(detailsContainer);
+            }
+            detailsContainer.innerHTML = '';
+            
+            Object.keys(devices).forEach(id => {
+                if (id === 'templateDevice') return;
+                const detailDiv = document.createElement('div');
+                detailDiv.id = `device-details-${id}`;
+                detailDiv.className = 'device-details-panel';
+                detailDiv.style.display = 'none';
+                detailDiv.innerHTML = `<div id="device-details-content-${id}" style="padding: 20px;"><p style="color: #888;">Chargement...</p></div>`;
+                detailsContainer.appendChild(detailDiv);
+            });
+        }
+
+        // ==================== SITES ====================
+        function updateSitesGrid() {
+            const sites = appData.sites || {};
+            const container = document.getElementById('sitesGrid');
+            
+            let html = '';
+            Object.entries(sites).forEach(([id, site]) => {
+                const stats = appData.statistics?.bySite?.[id] || {};
+                html += `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>📍 ${site.name}</h3>
+                            <label class="toggle">
+                                <input type="checkbox" ${site.enabled ? 'checked' : ''} onchange="toggleSite('${id}', this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="card-body">
+                            <p style="color: var(--xnrgy-text-muted); margin-bottom: 15px;">${site.fullName || site.name}</p>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                <div class="stat-card" style="padding: 10px;">
+                                    <div class="label">Utilisateurs</div>
+                                    <div class="value" style="font-size: 1.2rem;">${stats.users || 0}</div>
+                                </div>
+                                <div class="stat-card" style="padding: 10px;">
+                                    <div class="label">Postes</div>
+                                    <div class="value" style="font-size: 1.2rem;">${stats.devices || 0}</div>
+                                </div>
+                            </div>
+                            <p style="margin-top: 10px; font-size: 0.8rem;">
+                                <strong>Pays:</strong> ${site.country}<br>
+                                <strong>Timezone:</strong> ${site.timezone?.replace('-', '/')}
+                            </p>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // ==================== FEATURE FLAGS ====================
+        function updateFeatureFlags() {
+            const features = appData.featureFlags || {};
+            const container = document.getElementById('featureFlagsList');
+            
+            const featureNames = {
+                vaultUploadModule: 'Vault Upload',
+                copyDesignModule: 'Copy Design / Creer Module',
+                vaultSettingsModule: 'Vault Settings (Admin)',
+                smartToolsModule: 'Smart Tools',
+                checklistHVAC: 'Checklist HVAC',
+                telemetryCollection: 'Collecte Telemetrie',
+                autoUpdate: 'Mise a jour automatique',
+                darkTheme: 'Theme sombre'
+            };
+            
+            let html = '';
+            Object.entries(features).forEach(([id, feature]) => {
+                // enabledForRoles peut etre une string "admin-designer-user" ou un array
+                const roles = Array.isArray(feature.enabledForRoles) 
+                    ? feature.enabledForRoles.join(', ') 
+                    : (feature.enabledForRoles || 'all').replace(/-/g, ', ');
+                
+                html += `
+                    <div class="toggle-container">
+                        <div class="toggle-label">
+                            <span class="title">${featureNames[id] || id}</span>
+                            <span class="desc">Roles: ${roles}</span>
+                        </div>
+                        <label class="toggle">
+                            <input type="checkbox" ${feature.enabled ? 'checked' : ''} onchange="toggleFeature('${id}', this.checked)">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p style="color: var(--xnrgy-text-muted);">Aucun feature flag configure</p>';
+        }
+
+        // ==================== ACTIONS ====================
+        function toggleKillSwitch() {
+            const current = appData.killSwitch?.global?.enabled || false;
+            if (!current && !confirm('⚠️ ATTENTION: Activer le Kill Switch bloquera TOUS les utilisateurs!\n\nContinuer?')) return;
+            
+            database.ref('killSwitch/global/enabled').set(!current)
+                .then(() => showToast(!current ? 'Kill Switch ACTIVE!' : 'Kill Switch desactive', !current ? 'warning' : 'success'))
+                .catch(err => showToast('Erreur: ' + err.message, 'error'));
+        }
+
+        function updateKillSwitch(scope, enabled) {
+            if (enabled && !confirm('⚠️ Activer le Kill Switch?')) {
+                document.getElementById('killSwitchGlobal').checked = false;
+                return;
+            }
+            database.ref(`killSwitch/${scope}/enabled`).set(enabled);
+        }
+
+        function applyKillSwitch() {
+            const enabled = document.getElementById('killSwitchGlobal').checked;
+            const message = document.getElementById('killSwitchMessage').value;
+            const allowAdmins = document.getElementById('killSwitchAllowAdmins').checked;
+            
+            database.ref('killSwitch/global').update({
+                enabled: enabled,
+                message: message,
+                allowAdmins: allowAdmins,
+                activatedAt: enabled ? new Date().toISOString() : '',
+                activatedBy: 'Admin Panel'
+            }).then(() => {
+                showToast(enabled ? 'Kill Switch applique!' : 'Kill Switch desactive', enabled ? 'warning' : 'success');
+                logAudit('killswitch_toggle', enabled ? 'activated' : 'deactivated');
+            });
+        }
+
+        function toggleMaintenance() {
+            const current = appData.maintenance?.enabled || false;
+            database.ref('maintenance/enabled').set(!current)
+                .then(() => showToast(!current ? 'Maintenance activee' : 'Maintenance desactivee', 'info'));
+        }
+
+        function updateMaintenance(enabled) {
+            database.ref('maintenance/enabled').set(enabled);
+        }
+
+        function applyMaintenance() {
+            const enabled = document.getElementById('maintenanceToggle').checked;
+            const message = document.getElementById('maintenanceMessage').value;
+            const endTime = document.getElementById('maintenanceEndTime').value;
+            const showCountdown = document.getElementById('maintenanceShowCountdown').checked;
+            const readOnly = document.getElementById('maintenanceReadOnly').checked;
+            
+            database.ref('maintenance').update({
+                enabled: enabled,
+                message: message,
+                estimatedEndTime: endTime,
+                showCountdown: showCountdown,
+                allowReadOnly: readOnly,
+                startTime: enabled ? new Date().toISOString() : ''
+            }).then(() => {
+                showToast('Configuration maintenance appliquee', 'success');
+                logAudit('maintenance_toggle', enabled ? 'activated' : 'deactivated');
+            });
+        }
+
+        function publishUpdate() {
+            const version = document.getElementById('newVersion').value.trim();
+            const url = document.getElementById('downloadUrl').value.trim();
+            const notes = document.getElementById('releaseNotes').value.trim();
+            const sha256 = document.getElementById('sha256').value.trim();
+            const fileSize = document.getElementById('fileSize').value.trim();
+            const isCritical = document.getElementById('isCritical').checked;
+            
+            if (!version) {
+                showToast('Version requise', 'warning');
+                return;
+            }
+            
+            database.ref('updates/latest').update({
+                version: version,
+                downloadUrl: url,
+                releaseNotes: notes,
+                sha256: sha256,
+                fileSize: fileSize,
+                isCritical: isCritical,
+                publishedAt: new Date().toISOString(),
+                publishedBy: 'Admin Panel'
+            }).then(() => {
+                database.ref('appConfig/currentVersion').set(version);
+                showToast(`Version ${version} publiee!`, 'success');
+                logAudit('update_published', `Version ${version}`);
+                
+                // Clear form
+                document.getElementById('newVersion').value = '';
+                document.getElementById('downloadUrl').value = '';
+                document.getElementById('releaseNotes').value = '';
+            });
+        }
+
+        function applyForceUpdate() {
+            const enabled = document.getElementById('forceUpdateToggle').checked;
+            const minVersion = document.getElementById('forceMinVersion').value.trim();
+            const blockApp = document.getElementById('blockUntilUpdated').checked;
+            
+            database.ref('forceUpdate').update({
+                enabled: enabled,
+                minimumVersion: minVersion,
+                blockAppUntilUpdated: blockApp
+            }).then(() => {
+                showToast('Force Update configure', 'success');
+            });
+        }
+
+        function blockUser(uid) {
+            const reason = prompt('Raison du blocage:');
+            if (reason === null) return;
+            
+            database.ref(`users/${uid}/status`).update({
+                blocked: true,
+                blockReason: reason,
+                blockedAt: new Date().toISOString(),
+                blockedBy: 'Admin Panel'
+            }).then(() => {
+                showToast('Utilisateur bloque', 'warning');
+                logAudit('user_blocked', uid);
+            });
+        }
+
+        function unblockUser(uid) {
+            database.ref(`users/${uid}/status`).update({
+                blocked: false,
+                blockReason: '',
+                blockedAt: '',
+                blockedBy: ''
+            }).then(() => {
+                showToast('Utilisateur debloque', 'success');
+                logAudit('user_unblocked', uid);
+            });
+        }
+
+        function blockDevice(id) {
+            const reason = prompt('Raison du blocage:');
+            if (reason === null) return;
+            
+            database.ref(`devices/${id}/status`).update({
+                blocked: true,
+                blockReason: reason,
+                blockedAt: new Date().toISOString(),
+                blockedBy: 'Admin Panel'
+            }).then(() => {
+                showToast('Poste bloque', 'warning');
+                logAudit('device_blocked', id);
+            });
+        }
+
+        function unblockDevice(id) {
+            database.ref(`devices/${id}/status`).update({
+                blocked: false,
+                blockReason: '',
+                blockedAt: '',
+                blockedBy: ''
+            }).then(() => {
+                showToast('Poste debloque', 'success');
+                logAudit('device_unblocked', id);
+            });
+        }
+
+        function toggleFeature(id, enabled) {
+            database.ref(`featureFlags/${id}/enabled`).set(enabled)
+                .then(() => showToast(`Feature ${id} ${enabled ? 'activee' : 'desactivee'}`, 'info'));
+        }
+
+        function toggleSite(id, enabled) {
+            database.ref(`sites/${id}/enabled`).set(enabled)
+                .then(() => showToast(`Site ${id} ${enabled ? 'active' : 'desactive'}`, 'info'));
+        }
+
+        function sendBroadcast() {
+            const type = document.getElementById('broadcastType').value;
+            const priority = document.getElementById('broadcastPriority').value;
+            const title = document.getElementById('broadcastTitle').value.trim();
+            const message = document.getElementById('broadcastMessage').value.trim();
+            const target = document.getElementById('broadcastTarget').value;
+            const showPopup = document.getElementById('broadcastPopup').checked;
+            const requireAck = document.getElementById('broadcastAck').checked;
+            
+            if (!title || !message) {
+                showToast('Titre et message requis', 'warning');
+                return;
+            }
+            
+            const broadcastId = 'msg_' + Date.now();
+            database.ref(`broadcasts/${broadcastId}`).set({
+                id: broadcastId,
+                type: type,
+                priority: priority,
+                title: title,
+                message: message,
+                target: { type: target },
+                display: {
+                    showAsPopup: showPopup,
+                    showAsBanner: true,
+                    dismissible: true,
+                    requireAcknowledgment: requireAck
+                },
+                status: {
+                    active: true,
+                    sentAt: new Date().toISOString(),
+                    sentBy: 'Admin Panel',
+                    viewCount: 0
+                }
+            }).then(() => {
+                showToast('Broadcast envoye!', 'success');
+                document.getElementById('broadcastTitle').value = '';
+                document.getElementById('broadcastMessage').value = '';
+                logAudit('broadcast_sent', title);
+            });
+        }
+
+        function forceLogoutAll() {
+            if (!confirm('⚠️ Deconnecter TOUS les utilisateurs?')) return;
+            
+            database.ref('commands/forceLogoutAll').set({
+                enabled: true,
+                timestamp: new Date().toISOString()
+            }).then(() => {
+                showToast('Commande de deconnexion envoyee', 'warning');
+                logAudit('force_logout_all', 'all users');
+            });
+        }
+
+        // ==================== UTILITIES ====================
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            document.getElementById('page-' + pageId).classList.add('active');
+            event.target.closest('.nav-item')?.classList.add('active');
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 4000);
+        }
+
+        function setConnectionStatus(connected) {
+            const el = document.getElementById('connectionStatus');
+            const text = document.getElementById('connectionText');
+            el.className = `status-badge ${connected ? 'online' : 'offline'}`;
+            text.textContent = connected ? 'Connecte' : 'Deconnecte';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.add('hidden');
+        }
+
+        function refreshData() {
+            showToast('Actualisation...', 'info');
+        }
+
+        function exportDatabase() {
+            const dataStr = JSON.stringify(appData, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `xeat-firebase-export-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            showToast('Export telecharge', 'success');
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '-';
+            try {
+                const date = new Date(dateStr);
+                return date.toLocaleString('fr-CA');
+            } catch {
+                return dateStr;
+            }
+        }
+
+        function getRoleColor(role) {
+            const colors = {
+                admin: '#E81123',
+                adminDesigner: '#FF8C00',
+                developer: '#7C4DFF',
+                designer: '#0078D4',
+                user: '#00D26A',
+                viewer: '#6B7A8F'
+            };
+            return colors[role] || '#6B7A8F';
+        }
+
+        function logAudit(action, details) {
+            const logId = 'log_' + Date.now();
+            database.ref(`auditLog/${logId}`).set({
+                id: logId,
+                timestamp: new Date().toISOString(),
+                action: action,
+                details: details,
+                userId: 'admin',
+                userName: 'Admin Panel'
+            });
+        }
+
+        function logout() {
+            if (confirm('Se deconnecter?')) {
+                auth.signOut().then(() => {
+                    window.location.reload();
+                });
+            }
+        }
+
+        // Placeholder functions for modal dialogs
+        function showAddUserModal() { alert('Fonctionnalite a implementer: Ajouter utilisateur'); }
+        function showAddDeviceModal() { alert('Fonctionnalité à implémenter: Ajouter poste'); }
+        
+        // ==================== VIEW USER DETAILS (INLINE) ====================
+        function toggleUserDetails(uid) {
+            console.log('[>] toggleUserDetails appelé pour:', uid);
+            
+            const detailsPanel = document.getElementById(`user-details-${uid}`);
+            const btn = document.getElementById(`btn-details-user-${uid}`);
+            
+            console.log('[i] detailsPanel:', detailsPanel);
+            
+            if (!detailsPanel) {
+                console.error('[-] Panel de details utilisateur non trouvé pour:', uid);
+                return;
+            }
+            
+            const isHidden = detailsPanel.style.display === 'none' || detailsPanel.style.display === '';
+            
+            if (isHidden) {
+                // Fermer tous les autres details ouverts
+                document.querySelectorAll('.user-details-panel').forEach(panel => {
+                    panel.style.display = 'none';
+                });
+                document.querySelectorAll('[id^="btn-details-user-"]').forEach(b => {
+                    b.innerHTML = '📋 Details';
+                });
+                
+                // Charger et afficher les details
+                loadUserDetails(uid);
+                detailsPanel.style.display = 'block';
+                if (btn) btn.innerHTML = '🔼 Masquer';
+                console.log('[+] Details utilisateur affiches');
+            } else {
+                detailsPanel.style.display = 'none';
+                if (btn) btn.innerHTML = '📋 Details';
+                console.log('[+] Details utilisateur masques');
+            }
+        }
+        
+        function loadUserDetails(uid) {
+            const user = appData.users?.[uid];
+            if (!user) return;
+            
+            const profile = user.profile || user;
+            const org = user.organization || {};
+            const status = user.status || {};
+            const prefs = user.preferences || {};
+            const sessions = user.sessions || {};
+            
+            const html = `
+                <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:15px;">
+                    <!-- Profil -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-cyan);">
+                        <h4 style="color:var(--xnrgy-cyan); margin:0 0 10px 0;">👤 Profil</h4>
+                        <p><strong>Nom complet:</strong> ${profile.fullName || 'N/A'}</p>
+                        <p><strong>Email:</strong> ${profile.email || 'N/A'}</p>
+                        <p><strong>Utilisateur:</strong> ${profile.username || 'N/A'}</p>
+                        <p><strong>UID:</strong> <code style="font-size:0.7rem;">${uid}</code></p>
+                    </div>
+                    
+                    <!-- Organisation -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-purple);">
+                        <h4 style="color:var(--xnrgy-purple); margin:0 0 10px 0;">🏢 Organisation</h4>
+                        <p><strong>Rôle:</strong> <span style="color:${getRoleColor(org.role)}">${getRoleIcon(org.role)} ${org.role || 'user'}</span></p>
+                        <p><strong>Site:</strong> 📍 ${org.site || 'N/A'}</p>
+                        <p><strong>Département:</strong> ${org.department || 'N/A'}</p>
+                        <p><strong>Équipe:</strong> ${org.team || 'N/A'}</p>
+                    </div>
+                    
+                    <!-- Statut -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid ${status.online ? 'var(--xnrgy-green)' : 'var(--xnrgy-red)'};">
+                        <h4 style="color:${status.online ? 'var(--xnrgy-green)' : 'var(--xnrgy-red)'}; margin:0 0 10px 0;">${status.online ? '🟢' : '🔴'} Statut</h4>
+                        <p><strong>En ligne:</strong> ${status.online ? '✅ Oui' : '❌ Non'}</p>
+                        <p><strong>Dernière activité:</strong> 🕐 ${formatDate(status.lastActive)}</p>
+                        <p><strong>Dernière connexion:</strong> 🕐 ${formatDate(sessions.lastLogin)}</p>
+                        <p><strong>Poste actuel:</strong> 💻 ${sessions.currentDevice || 'N/A'}</p>
+                    </div>
+                    
+                    <!-- Preferences -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-orange);">
+                        <h4 style="color:var(--xnrgy-orange); margin:0 0 10px 0;">⚙️ Préférences</h4>
+                        <p><strong>Thème:</strong> ${prefs.theme || 'default'}</p>
+                        <p><strong>Langue:</strong> 🌐 ${prefs.language || 'fr'}</p>
+                        <p><strong>Notifications:</strong> ${prefs.notifications ? '🔔 Activées' : '🔕 Désactivées'}</p>
+                        <p><strong>Auto-update:</strong> ${prefs.autoUpdate !== false ? '✅ Actif' : '❌ Inactif'}</p>
+                    </div>
+                    
+                    <!-- Sessions -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-blue);">
+                        <h4 style="color:var(--xnrgy-blue); margin:0 0 10px 0;">📊 Sessions</h4>
+                        <p><strong>Total sessions:</strong> ${sessions.totalSessions || 0}</p>
+                        <p><strong>Session actuelle:</strong> ${sessions.currentSessionId || 'Aucune'}</p>
+                        <p><strong>IP dernière co:</strong> 🌐 ${sessions.lastIpAddress || 'N/A'}</p>
+                    </div>
+                    
+                    <!-- Compte -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-text-muted);">
+                        <h4 style="color:var(--xnrgy-text-muted); margin:0 0 10px 0;">🔐 Compte</h4>
+                        <p><strong>Créé le:</strong> 📅 ${profile.createdAt || 'N/A'}</p>
+                        <p><strong>Mis à jour:</strong> 📅 ${formatDate(profile.updatedAt)}</p>
+                        <p><strong>Bloqué:</strong> ${status.blocked ? '<span style="color:var(--xnrgy-red)">🚫 Oui</span>' : '✅ Non'}</p>
+                    </div>
+                </div>
+            `;
+            
+            const container = document.getElementById(`user-details-content-${uid}`);
+            if (container) container.innerHTML = html;
+        }
+        
+        function viewUser(uid) {
+            toggleUserDetails(uid);
+        }
+        
+        // ==================== VIEW DEVICE DETAILS (INLINE) ====================
+        function toggleDeviceDetails(id) {
+            console.log('[>] toggleDeviceDetails appelé pour:', id);
+            
+            const detailsPanel = document.getElementById(`device-details-${id}`);
+            const btn = document.getElementById(`btn-details-${id}`);
+            
+            console.log('[i] detailsPanel:', detailsPanel);
+            
+            if (!detailsPanel) {
+                console.error('[-] Panel de details non trouvé pour:', id);
+                return;
+            }
+            
+            const isHidden = detailsPanel.style.display === 'none' || detailsPanel.style.display === '';
+            console.log('[i] isHidden:', isHidden);
+            
+            if (isHidden) {
+                // Fermer tous les autres details ouverts
+                document.querySelectorAll('.device-details-panel').forEach(panel => {
+                    panel.style.display = 'none';
+                });
+                document.querySelectorAll('[id^="btn-details-"]').forEach(b => {
+                    if (!b.id.includes('user')) b.innerHTML = '&#9660; Details';
+                });
+                
+                // Charger et afficher les details
+                loadDeviceDetails(id);
+                detailsPanel.style.display = 'block';
+                if (btn) btn.innerHTML = '🔼 Masquer';
+                console.log('[+] Details affiches');
+            } else {
+                detailsPanel.style.display = 'none';
+                if (btn) btn.innerHTML = '📋 Details';
+                console.log('[+] Details masques');
+            }
+        }
+        
+        function loadDeviceDetails(id) {
+            console.log('[>] loadDeviceDetails appelé pour:', id);
+            
+            const device = appData.devices?.[id];
+            console.log('[i] Device trouvé:', device ? 'OUI' : 'NON');
+            
+            if (!device) {
+                console.error('[-] Device non trouvé dans appData.devices');
+                console.log('[i] Devices disponibles:', Object.keys(appData.devices || {}));
+                return;
+            }
+            
+            const reg = device.registration || {};
+            const org = device.organization || {};
+            const status = device.status || {};
+            const sys = device.system || {};
+            const hw = device.hardware || {};
+            const net = device.network || {};
+            const sw = device.software || {};
+            const hb = device.heartbeat || {};
+            const usage = device.usage || {};
+            
+            const html = `
+                <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:15px;">
+                    <!-- Systeme -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-cyan);">
+                        <h4 style="color:var(--xnrgy-cyan); margin:0 0 10px 0;">🖥️ Système</h4>
+                        <p><strong>OS:</strong> ${sys.osName || 'N/A'}</p>
+                        <p><strong>Version:</strong> ${sys.osVersion || 'N/A'}</p>
+                        <p><strong>Build:</strong> ${sys.osBuild || 'N/A'}</p>
+                        <p><strong>Archi:</strong> ${sys.osArchitecture || 'N/A'}</p>
+                        <p><strong>Fabricant:</strong> ${sys.manufacturer || 'N/A'}</p>
+                        <p><strong>Modèle:</strong> ${sys.model || 'N/A'}</p>
+                        <p><strong>S/N:</strong> ${sys.serialNumber || 'N/A'}</p>
+                    </div>
+                    
+                    <!-- Hardware -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-orange);">
+                        <h4 style="color:var(--xnrgy-orange); margin:0 0 10px 0;">⚙️ Hardware</h4>
+                        <p><strong>CPU:</strong> ${hw.processor || 'N/A'}</p>
+                        <p><strong>Coeurs:</strong> ${hw.processorCores || 'N/A'}</p>
+                        <p><strong>Fréq:</strong> ${hw.processorSpeed || 'N/A'}</p>
+                        <p><strong>RAM:</strong> ${hw.ramTotalGB || 0} GB</p>
+                        <p><strong>GPU:</strong> ${hw.gpuName || 'N/A'}</p>
+                        <p><strong>VRAM:</strong> ${hw.gpuMemoryGB || 0} GB</p>
+                        <p><strong>Disque:</strong> 💾 ${hw.diskTotalGB || 0} GB (${hw.diskFreeGB || 0} libre)</p>
+                    </div>
+                    
+                    <!-- Reseau -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-blue);">
+                        <h4 style="color:var(--xnrgy-blue); margin:0 0 10px 0;">🌐 Réseau</h4>
+                        <p><strong>IP:</strong> ${net.ipAddressLocal || 'N/A'}</p>
+                        <p><strong>MAC:</strong> ${net.macAddress || 'N/A'}</p>
+                        <p><strong>Hostname:</strong> ${net.hostname || 'N/A'}</p>
+                        <p><strong>Vitesse:</strong> ${net.networkSpeed || 'N/A'}</p>
+                        <p><strong>Domaine:</strong> ${sys.domain || 'N/A'}</p>
+                    </div>
+                    
+                    <!-- Logiciels -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-green);">
+                        <h4 style="color:var(--xnrgy-green); margin:0 0 10px 0;">📦 Logiciels</h4>
+                        <p><strong>XEAT:</strong> ${sw.xeatVersion || 'N/A'}</p>
+                        <p><strong>Inventor:</strong> ${sw.inventorYear || 'N/A'} (${sw.inventorVersion || 'N/A'})</p>
+                        <p><strong>Vault:</strong> ${sw.vaultVersion || 'N/A'}</p>
+                        <p><strong>Serveur:</strong> 🖥️ ${sw.vaultServer || 'N/A'}</p>
+                        <p><strong>.NET:</strong> ${sw.dotnetVersion || 'N/A'}</p>
+                        <p><strong>Office:</strong> ${sw.officeVersion || 'N/A'}</p>
+                    </div>
+                    
+                    <!-- Organisation -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-purple);">
+                        <h4 style="color:var(--xnrgy-purple); margin:0 0 10px 0;">🏢 Organisation</h4>
+                        <p><strong>Site:</strong> 📍 ${org.site || 'N/A'}</p>
+                        <p><strong>Dept:</strong> ${org.department || 'N/A'}</p>
+                        <p><strong>Assigné à:</strong> 👤 ${org.assignedTo || 'N/A'}</p>
+                        <p><strong>Asset Tag:</strong> 🏷️ ${org.assetTag || 'N/A'}</p>
+                    </div>
+                    
+                    <!-- Performance -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid ${hb.status === 'online' ? 'var(--xnrgy-green)' : 'var(--xnrgy-red)'};">
+                        <h4 style="color:${hb.status === 'online' ? 'var(--xnrgy-green)' : 'var(--xnrgy-red)'}; margin:0 0 10px 0;">${hb.status === 'online' ? '🟢' : '🔴'} Performance</h4>
+                        <p><strong>Statut:</strong> ${hb.status === 'online' ? '✅ En ligne' : '❌ Hors ligne'}</p>
+                        <p><strong>CPU:</strong> 📊 ${hb.cpuUsage || 0}%</p>
+                        <p><strong>RAM:</strong> 📊 ${hb.ramUsage || 0}%</p>
+                        <p><strong>Disque:</strong> 📊 ${hb.diskUsage || 0}%</p>
+                        <p><strong>Heartbeat:</strong> 🕐 ${formatDate(hb.lastHeartbeat)}</p>
+                    </div>
+                    
+                    <!-- Utilisation -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-text-muted);">
+                        <h4 style="color:var(--xnrgy-text-muted); margin:0 0 10px 0;">📈 Utilisation</h4>
+                        <p><strong>Sessions:</strong> ${usage.totalSessions || 0}</p>
+                        <p><strong>Uploads:</strong> ⬆️ ${usage.totalUploads || 0}</p>
+                        <p><strong>Modules:</strong> 📐 ${usage.totalModulesCreated || 0}</p>
+                        <p><strong>Enregistré:</strong> 📅 ${reg.registeredAt || 'N/A'}</p>
+                    </div>
+                    
+                    <!-- Utilisateur actuel -->
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border-left:3px solid var(--xnrgy-cyan);">
+                        <h4 style="color:var(--xnrgy-cyan); margin:0 0 10px 0;">👤 Utilisateur</h4>
+                        <p><strong>Actuel:</strong> ${status.currentUser || 'Aucun'}</p>
+                        <p><strong>Dernière co:</strong> 🕐 ${formatDate(status.lastSeen)}</p>
+                        <p><strong>ID Machine:</strong> <code style="font-size:0.65rem;">${id}</code></p>
+                    </div>
+                </div>
+            `;
+            
+            const container = document.getElementById(`device-details-content-${id}`);
+            console.log('[i] Container trouvé:', container ? 'OUI' : 'NON');
+            if (container) {
+                container.innerHTML = html;
+                console.log('[+] Contenu HTML injecté avec succes');
+            } else {
+                console.error('[-] Container non trouvé: device-details-content-' + id);
+            }
+        }
+        
+        function viewDevice(id) {
+            toggleDeviceDetails(id);
+        }
+        
+        function filterUsers() { /* TODO */ }
+        function filterDevices() { /* TODO */ }
+        function filterUsersByRole(role) { /* TODO */ }
+        function filterUsersByStatus(status) { /* TODO */ }
+        function filterDevicesByStatus(status) { /* TODO */ }
+        function saveSecuritySettings() { showToast('Parametres sauvegardes', 'success'); }
+        function saveSettings() { showToast('Parametres sauvegardes', 'success'); }
+        function scheduleMaintenace() { showToast('Maintenance planifiee', 'success'); }
+        function exportAuditLogs() { showToast('Export des logs...', 'info'); }
+    </script>
+</body>
+</html>
