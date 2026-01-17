@@ -1,0 +1,28 @@
+{
+  "rules": {
+    "appConfig": {
+      ".read": true,
+      ".write": false
+    },
+    "commands": {
+      ".read": true,
+      ".write": false
+    },
+    "versionInfo": {
+      ".read": true,
+      ".write": false
+    },
+    "users": {
+      ".read": true,
+      ".write": false
+    },
+    "devices": {
+      ".read": true,
+      ".write": true
+    },
+    "broadcasts": {
+      ".read": true,
+      ".write": false
+    }
+  }
+}

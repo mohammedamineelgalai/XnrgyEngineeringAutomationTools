@@ -3,18 +3,19 @@
     "minVersion": "1.0.0",
     "currentVersion": "1.0.0",
     "maintenanceMode": false,
-    "maintenanceMessage": "Application en maintenance. Réessayez dans quelques minutes.",
+    "maintenanceMessage": "Application en maintenance. Reessayez dans quelques minutes.",
     "forceUpdate": false,
     "updateUrl": "https://github.com/mohammedamineelgalai/XnrgyEngineeringAutomationTools/releases/latest",
     "lastUpdated": 1737043200000
   },
   "users": {
-    "LeIel3jEkwaj0UFwUjxPHJRS20w2": {
+    "user_mohammedamine_elgalai": {
       "email": "mohammedamine.elgalai@xnrgy.com",
       "displayName": "Mohammed Amine Elgalai",
       "enabled": true,
       "role": "admin",
       "site": "Laval",
+      "disabledMessage": "",
       "createdAt": 1737043200000
     }
   },
@@ -23,16 +24,28 @@
   "commands": {
     "global": {
       "killSwitch": false,
-      "killSwitchMessage": "Application désactivée par l'administrateur.",
+      "killSwitchMessage": "Application desactivee par l'administrateur. Contactez le support technique.",
       "forceUpdate": false
     }
   },
   "versionInfo": {
     "latest": {
       "version": "1.0.0",
-      "downloadUrl": "https://github.com/mohammedamineelgalai/XnrgyEngineeringAutomationTools/releases/download/v1.0.0/XnrgyEngineeringAutomationTools-v1.0.0-Setup.exe",
+      "downloadUrl": "https://github.com/mohammedamineelgalai/XnrgyEngineeringAutomationTools/releases/download/v1.0.0/XNRGYEngineeringAutomationToolsSetup.exe",
       "releaseDate": "2026-01-16",
       "changelog": "Version initiale - XNRGY Engineering Automation Tools v1.0.0"
+    }
+  },
+  "broadcasts": {
+    "welcome_message": {
+      "active": false,
+      "title": "Bienvenue",
+      "message": "Bienvenue dans XNRGY Engineering Automation Tools!",
+      "type": "info",
+      "createdAt": 1737043200000,
+      "expiresAt": 0,
+      "targetUser": "",
+      "targetDevice": ""
     }
   }
 }

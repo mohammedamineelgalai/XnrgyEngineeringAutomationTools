@@ -1,0 +1,109 @@
+<Window x:Class="XnrgyEngineeringAutomationTools.Views.FirebaseAlertWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="XNRGY Engineering Automation Tools"
+        Height="320" Width="500"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent">
+    
+    <Border Background="#1a1a2e" CornerRadius="12" BorderBrush="#00d4ff" BorderThickness="2">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Header avec icone -->
+            <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
+                <TextBlock x:Name="AlertIcon" Text="⚠️" FontSize="36" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                <TextBlock x:Name="AlertTitle" Text="Alerte" FontSize="24" FontWeight="Bold" 
+                           Foreground="White" VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Ligne separatrice -->
+            <Border Grid.Row="1" Height="2" Background="#00d4ff" Opacity="0.5" Margin="0,0,0,20"/>
+
+            <!-- Message principal -->
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock x:Name="AlertMessage" 
+                               Text="Message d'alerte"
+                               Foreground="#e0e0e0"
+                               FontSize="14"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               LineHeight="22"/>
+                    
+                    <!-- Version info (visible pour les mises a jour) -->
+                    <Border x:Name="VersionInfoPanel" Visibility="Collapsed" 
+                            Background="#252540" CornerRadius="8" 
+                            Margin="0,15,0,0" Padding="15">
+                        <StackPanel>
+                            <TextBlock Text="Informations de version" FontWeight="SemiBold" 
+                                       Foreground="#00d4ff" FontSize="13" Margin="0,0,0,8"/>
+                            <TextBlock x:Name="VersionDetails" 
+                                       Foreground="#b0b0b0" FontSize="12" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- Boutons -->
+            <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
+                <Button x:Name="PrimaryButton" Content="OK" Width="120" Height="40"
+                        Background="#00d4ff" Foreground="#1a1a2e" FontWeight="Bold"
+                        BorderThickness="0" Cursor="Hand" Click="PrimaryButton_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                                CornerRadius="6" BorderThickness="0">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#33e6ff"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+
+                <Button x:Name="SecondaryButton" Content="Ignorer" Width="120" Height="40"
+                        Background="Transparent" Foreground="#00d4ff" FontWeight="Bold"
+                        BorderThickness="2" Cursor="Hand" Margin="15,0,0,0"
+                        Visibility="Collapsed" Click="SecondaryButton_Click">
+                    <Button.Style>
+                        <Style TargetType="Button">
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="Button">
+                                        <Border x:Name="border" Background="{TemplateBinding Background}" 
+                                                CornerRadius="6" BorderBrush="#00d4ff" BorderThickness="2">
+                                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="border" Property="Background" Value="#252540"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </Button.Style>
+                </Button>
+            </StackPanel>
+        </Grid>
+    </Border>
+</Window>

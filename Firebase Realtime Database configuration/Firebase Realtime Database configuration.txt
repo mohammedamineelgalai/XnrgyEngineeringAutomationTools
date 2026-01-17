@@ -1,0 +1,44 @@
+LeIel3jEkwaj0UFwUjxPHJRS20w2
+
+Ah oui, tu as raison ! Je t'avais expliqué que ce lien pointe vers v1.0.0 fixe et non vers la dernière version.
+
+Mais c'est normal et c'est la bonne approche ! Voici pourquoi :
+
+Comment ça fonctionne :
+Quand tu publies v1.1.0 :
+Tu modifies dans Firebase Console (pas dans le fichier local) :
+
+L'application fait :
+Lit Firebase → version: "1.1.0"
+Compare avec sa version locale → "1.0.0"
+Si différent → Propose la mise à jour avec downloadUrl
+Résumé
+Élément	Valeur actuelle	Comportement
+downloadUrl	.../v1.0.0/...	✅ Correct pour v1.0.0
+Prochaine version	Tu modifies dans Firebase Console	✅ Pas besoin de recompiler
+Le fichier est prêt à importer tel quel.
+
+Quand tu publieras v1.1.0, tu iras simplement dans Firebase Console et tu changeras les 2 valeurs (version et downloadUrl). C'est tout ! 🚀
+
+Tu peux importer maintenant.
+
+Ah donc je suis obligé de changer la version Et les liens dans Firebase
+
+Oui, exactement ! Mais c'est très simple - juste 3 clics dans Firebase Console :
+
+Quand tu publies une nouvelle version (ex: v1.1.0) :
+Étape 1 : GitHub
+Créer tag v1.1.0
+Créer release avec XNRGYEngineeringAutomationToolsSetup.exe
+Étape 2 : Firebase Console (3 champs à modifier)
+C'est tout ! Pas besoin de recompiler l'application.
+
+Avantage de cette méthode :
+Action	Où	Temps
+Nouvelle release GitHub	GitHub	2 min
+Modifier 3 champs Firebase	Firebase Console	30 sec
+Total		~3 min
+Alternative automatique (future amélioration)
+Si tu veux automatiser ça plus tard, on pourrait créer un script PowerShell ou GitHub Action qui met à jour Firebase automatiquement quand tu crées une release. Mais pour l'instant, 3 clics dans Firebase c'est rapide et fiable.
+
+Tu peux importer le fichier maintenant - il est prêt pour v1.0.0 ! 🚀

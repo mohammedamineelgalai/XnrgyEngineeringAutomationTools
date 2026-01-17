@@ -225,6 +225,10 @@
       <SubType>Designer</SubType>
     </Page>
     <!-- ========== SHARED VIEWS ========== -->
+    <Page Include="Views\FirebaseAlertWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Shared\Views\LoginWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -358,6 +362,10 @@
       <SubType>Code</SubType>
     </Compile>
     <!-- ========== CODE-BEHIND: SHARED VIEWS ========== -->
+    <Compile Include="Views\FirebaseAlertWindow.xaml.cs">
+      <DependentUpon>FirebaseAlertWindow.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Shared\Views\LoginWindow.xaml.cs">
       <DependentUpon>LoginWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
