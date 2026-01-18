@@ -473,20 +473,33 @@ Write-Host "        [>] Signature de l'executable..." -ForegroundColor Cyan
 Sign-Executable -ExePath (Join-Path $PSScriptRoot $exePath)
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ETAPE 4: Compilation de l'installateur (si demande)
+# ETAPE 4: Compilation de l'installateur AUTO-EXTRACTIBLE (si demande)
 # ═══════════════════════════════════════════════════════════════════════════════
 if ($WithInstaller -or $InstallerOnly -or $CreatePackage) {
     Write-Host ""
-    Write-Host "  [4/$TotalSteps] Preparation de l'installateur..." -ForegroundColor Yellow
+    Write-Host "  [4/$TotalSteps] Preparation de l'installateur AUTO-EXTRACTIBLE..." -ForegroundColor Yellow
     
     $InstallerBinRelease = "Installer\bin\$Configuration"
     $FilesDir = "$InstallerBinRelease\Files"
     $SourceBinDir = "bin\$Configuration"
+    $EmbeddedZipPath = "Installer\Resources\AppFiles.zip"
     
     # Utiliser la nouvelle fonction qui copie TOUT
     $fileCount = Copy-AllDependencies -SourceDir $SourceBinDir -DestDir $FilesDir
     
-    # Compiler l'installateur
+    # NOUVEAU: Creer le ZIP embarque pour l'installateur auto-extractible
+    Write-Host "        [>] Creation du ZIP embarque pour installateur..." -ForegroundColor Cyan
+    
+    # Supprimer l'ancien ZIP s'il existe
+    if (Test-Path $EmbeddedZipPath) { Remove-Item $EmbeddedZipPath -Force }
+    
+    # Creer le ZIP des fichiers de l'application
+    Compress-Archive -Path "$FilesDir\*" -DestinationPath $EmbeddedZipPath -CompressionLevel Optimal -Force
+    
+    $zipSize = [math]::Round((Get-Item $EmbeddedZipPath).Length / 1MB, 2)
+    Write-Host "        [+] ZIP embarque cree: $zipSize MB" -ForegroundColor Green
+    
+    # Compiler l'installateur (avec le ZIP embarque)
     Write-Host ""
     Write-Host "  [5/$TotalSteps] Compilation de l'installateur..." -ForegroundColor Yellow
     
@@ -512,7 +525,15 @@ if ($WithInstaller -or $InstallerOnly -or $CreatePackage) {
     $setupExe = "$InstallerBinRelease\XNRGYEngineeringAutomationToolsSetup.exe"
     if (Test-Path $setupExe) {
         $setupSize = [math]::Round((Get-Item $setupExe).Length / 1MB, 2)
-        Write-Host "        [+] Installateur compile ($setupSize MB)" -ForegroundColor Green
+        Write-Host "        [+] Installateur AUTO-EXTRACTIBLE compile ($setupSize MB)" -ForegroundColor Green
+        
+        # Verifier que la taille est coherente (doit etre > taille du ZIP)
+        if ($setupSize -lt $zipSize) {
+            Write-Host "        [!] ATTENTION: Taille installateur ($setupSize MB) < ZIP ($zipSize MB)" -ForegroundColor Yellow
+            Write-Host "        [!] Le ZIP n'est peut-etre pas embarque correctement" -ForegroundColor Yellow
+        } else {
+            Write-Host "        [+] Verification OK: Installateur contient les fichiers embarques" -ForegroundColor Green
+        }
         
         # Signer l'installateur
         Write-Host "        [>] Signature de l'installateur..." -ForegroundColor Cyan
@@ -521,10 +542,10 @@ if ($WithInstaller -or $InstallerOnly -or $CreatePackage) {
         Write-Host "        [-] Installateur non trouve" -ForegroundColor Red
     }
     
-    # Creer package ZIP si demande
+    # Creer package ZIP additionnel si demande (pour distribution alternative)
     if ($CreatePackage) {
         Write-Host ""
-        Write-Host "  [6/$TotalSteps] Creation du package ZIP..." -ForegroundColor Yellow
+        Write-Host "  [6/$TotalSteps] Creation du package ZIP (distribution alternative)..." -ForegroundColor Yellow
         
         $ZipName = "XNRGYEngineeringAutomationToolsSetup_v1.0.0.zip"
         $ZipPath = "$InstallerBinRelease\$ZipName"
@@ -654,6 +675,7 @@ if ($Deploy) {
         
         # ─────────────────────────────────────────────────────────────────────
         # ETAPE C: Deployer Config initiale (firebase-init.json) via CLI
+        # NOTE: Cette etape est OPTIONNELLE car Sync-Firebase preserve les donnees
         # ─────────────────────────────────────────────────────────────────────
         Write-Host ""
         Write-Host "  [$($baseStep + 3)/$TotalSteps] Deploiement CONFIG (firebase-init.json)..." -ForegroundColor Yellow
@@ -662,19 +684,37 @@ if ($Deploy) {
             Write-Host "        [>] Fichier: $FirebaseInitFile" -ForegroundColor Gray
             Write-Host "        [>] Database: $FirebaseDatabaseURL" -ForegroundColor Gray
             
-            # Compacter le JSON sur une seule ligne (Firebase CLI gere mieux)
+            # Convertir en JSON standard (sans les doubles espaces de PowerShell)
             $tempJsonFile = "$FirebaseDir\config-deploy.json"
-            $jsonContent = Get-Content $FirebaseInitFile -Raw -Encoding UTF8 | ConvertFrom-Json | ConvertTo-Json -Depth 100 -Compress
-            $jsonContent | Out-File $tempJsonFile -Encoding UTF8 -NoNewline
+            $jsonObject = Get-Content $FirebaseInitFile -Raw -Encoding UTF8 | ConvertFrom-Json
+            
+            # Utiliser Newtonsoft.Json si disponible, sinon compacter avec regex
+            $jsonCompact = $jsonObject | ConvertTo-Json -Depth 100 -Compress
+            # Nettoyer les artefacts PowerShell (doubles espaces apres :)
+            $jsonCompact = $jsonCompact -replace ':\s+', ':'
+            $jsonCompact = $jsonCompact -replace ',\s+', ','
+            
+            # Ecrire en UTF-8 sans BOM
+            $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+            [System.IO.File]::WriteAllText($tempJsonFile, $jsonCompact, $utf8NoBom)
             
             $jsonSize = [math]::Round((Get-Item $tempJsonFile).Length / 1KB, 2)
-            Write-Host "        [i] JSON compacte: $jsonSize KB (1 ligne)" -ForegroundColor DarkGray
+            Write-Host "        [i] JSON nettoye: $jsonSize KB (UTF-8 sans BOM)" -ForegroundColor DarkGray
             
-            # Utiliser database:set avec -y (--yes) pour eviter la confirmation interactive
-            [System.Windows.Forms.SendKeys]::SendWait("firebase database:set / config-deploy.json -y")
+            # Utiliser database:set avec le fichier
+            [System.Windows.Forms.SendKeys]::SendWait("firebase database:set / config-deploy.json")
             [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
             
-            Write-Host "        [+] Commande config envoyee!" -ForegroundColor Green
+            # Attendre que la question de confirmation apparaisse
+            Start-Sleep -Seconds 3
+            
+            # Repondre "y" a la confirmation "You are about to overwrite all data..."
+            $wshell.AppActivate($proc.Id) | Out-Null
+            Start-Sleep -Milliseconds 300
+            [System.Windows.Forms.SendKeys]::SendWait("y")
+            [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+            
+            Write-Host "        [+] Commande config envoyee + confirmation 'y'!" -ForegroundColor Green
             Write-Host "        [~] Attente deploiement config (~20 sec pour gros fichier)..." -ForegroundColor DarkGray
             Start-Sleep -Seconds 20
             
@@ -692,7 +732,27 @@ if ($Deploy) {
         Write-Host "        [i] Admin Panel: https://xeat-remote-control.web.app/" -ForegroundColor Cyan
         Write-Host "        [i] Database:    $FirebaseDatabaseURL" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "        [!] Verifiez la fenetre Firebase pour confirmer le succes" -ForegroundColor Yellow
+        
+        # Fermer automatiquement le terminal Firebase CLI
+        Write-Host "        [>] Fermeture du terminal Firebase CLI..." -ForegroundColor Gray
+        try {
+            if ($proc -and -not $proc.HasExited) {
+                # Envoyer "exit" pour fermer proprement
+                $wshell.AppActivate($proc.Id) | Out-Null
+                Start-Sleep -Milliseconds 300
+                [System.Windows.Forms.SendKeys]::SendWait("exit")
+                [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+                Start-Sleep -Seconds 2
+                
+                # Si toujours actif, forcer la fermeture
+                if (-not $proc.HasExited) {
+                    $proc.Kill()
+                }
+                Write-Host "        [+] Terminal Firebase CLI ferme" -ForegroundColor Green
+            }
+        } catch {
+            Write-Host "        [!] Impossible de fermer le terminal Firebase: $($_.Exception.Message)" -ForegroundColor Yellow
+        }
     }
 }
 
@@ -713,13 +773,45 @@ if ($Publish) {
     $InstallerBinRelease = "Installer\bin\$Configuration"
     $setupExe = "$InstallerBinRelease\XNRGYEngineeringAutomationToolsSetup.exe"
     $setupExeFullPath = Join-Path $PSScriptRoot $setupExe
+    $filesDir = Join-Path $PSScriptRoot "$InstallerBinRelease\Files"
     
     if (-not (Test-Path $setupExeFullPath)) {
         Write-Host "        [-] Installateur introuvable: $setupExe" -ForegroundColor Red
         Write-Host "        [!] Utilisez -WithInstaller pour creer l'installateur d'abord" -ForegroundColor Yellow
+    } elseif (-not (Test-Path $filesDir)) {
+        Write-Host "        [-] Dossier Files introuvable: $filesDir" -ForegroundColor Red
     } else {
+        # CREER UN ZIP contenant Setup.exe + Files/
         Write-Host ""
-        Write-Host "  [$publishStep/$TotalSteps] Publication via GitHub API..." -ForegroundColor Yellow
+        Write-Host "  [$publishStep/$TotalSteps] Creation du package ZIP pour GitHub..." -ForegroundColor Yellow
+        
+        $zipFileName = "XNRGYEngineeringAutomationToolsSetup.zip"
+        $zipPath = Join-Path $PSScriptRoot "$InstallerBinRelease\$zipFileName"
+        
+        # Supprimer l'ancien ZIP s'il existe
+        if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+        
+        # Creer un dossier temporaire pour le ZIP
+        $tempZipDir = Join-Path $env:TEMP "XnrgySetupPackage_$(Get-Date -Format 'yyyyMMdd_HHmmss')"
+        if (Test-Path $tempZipDir) { Remove-Item $tempZipDir -Recurse -Force }
+        New-Item -ItemType Directory -Path $tempZipDir -Force | Out-Null
+        
+        # Copier Setup.exe et Files/
+        Copy-Item $setupExeFullPath -Destination $tempZipDir -Force
+        Copy-Item $filesDir -Destination (Join-Path $tempZipDir "Files") -Recurse -Force
+        
+        # Creer le ZIP
+        Compress-Archive -Path "$tempZipDir\*" -DestinationPath $zipPath -Force
+        
+        # Nettoyer
+        Remove-Item $tempZipDir -Recurse -Force
+        
+        $zipSize = [math]::Round((Get-Item $zipPath).Length / 1MB, 2)
+        Write-Host "        [+] Package ZIP cree: $zipFileName ($zipSize MB)" -ForegroundColor Green
+        
+        # Maintenant uploader le ZIP au lieu du .exe seul
+        Write-Host ""
+        Write-Host "  Publication via GitHub API..." -ForegroundColor Yellow
         
         # Token GitHub - Ordre de priorite:
         # 1. Variable d'environnement GITHUB_TOKEN (comme backup-all-projects-complete.ps1)

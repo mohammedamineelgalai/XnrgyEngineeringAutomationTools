@@ -1,0 +1,1053 @@
+﻿{
+    "appConfig":  {
+                      "appName":  "XNRGY Engineering Automation Tools",
+                      "appShortName":  "XEAT",
+                      "autoLogoutInactiveMs":  3600000,
+                      "companyName":  "XNRGY Climate Systems ULC",
+                      "currentVersion":  "1.0.0",
+                      "debugMode":  false,
+                      "enableTelemetry":  true,
+                      "heartbeatIntervalMs":  60000,
+                      "lastUpdated":  "2026-01-17",
+                      "maxSessionsPerUser":  2,
+                      "minimumVersion":  "1.0.0",
+                      "recommendedVersion":  "1.0.0",
+                      "releaseDate":  "2026-01-10",
+                      "requireInternetConnection":  true,
+                      "sessionTimeoutMs":  28800000,
+                      "supportEmail":  "mohammedamine.elgalai@xnrgy.com"
+                  },
+    "audit":  {
+                  "enabled":  true,
+                  "logActions":  {
+                                     "adminActions":  true,
+                                     "configChange":  true,
+                                     "deviceChange":  true,
+                                     "errors":  true,
+                                     "login":  true,
+                                     "logout":  true,
+                                     "moduleUsage":  true,
+                                     "userChange":  true
+                                 },
+                  "logLevel":  "info",
+                  "retentionDays":  90
+              },
+    "auditLog":  {
+                     "log_1768707244390":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768707244390",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T03:34:04.0576750Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768707574995":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768707574995",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T03:39:34.6831724Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768708939287":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768708939287",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:02:18.9628615Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768709991656":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768709991656",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:19:51.3366863Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "placeholder":  {
+                                         "action":  "system_init",
+                                         "category":  "system",
+                                         "details":  "Database initialized",
+                                         "deviceId":  "none",
+                                         "errorMessage":  "none",
+                                         "id":  "placeholder",
+                                         "ipAddress":  "none",
+                                         "newValue":  "none",
+                                         "oldValue":  "none",
+                                         "success":  true,
+                                         "timestamp":  "2026-01-10",
+                                         "userId":  "system",
+                                         "userName":  "System"
+                                     }
+                 },
+    "broadcasts":  {
+                       "placeholder":  {
+                                           "acknowledgedByList":  "none",
+                                           "actionLabel":  "none",
+                                           "actionUrl":  "none",
+                                           "active":  false,
+                                           "detailedMessage":  "none",
+                                           "dismissCount":  0,
+                                           "dismissible":  true,
+                                           "expiresAt":  "none",
+                                           "id":  "placeholder",
+                                           "message":  "Template broadcast - do not delete",
+                                           "priority":  "normal",
+                                           "repeatDaily":  false,
+                                           "requireAcknowledgment":  false,
+                                           "sentAt":  "2026-01-10",
+                                           "sentBy":  "system",
+                                           "showAsBanner":  false,
+                                           "showAsPopup":  false,
+                                           "startAt":  "none",
+                                           "targetDepartments":  "all",
+                                           "targetDevices":  "none",
+                                           "targetRoles":  "all",
+                                           "targetSites":  "all",
+                                           "targetType":  "all",
+                                           "targetUsers":  "none",
+                                           "title":  "Placeholder",
+                                           "type":  "info",
+                                           "viewCount":  0
+                                       }
+                   },
+    "commands":  {
+                     "forceLogoutAll":  {
+                                            "enabled":  false,
+                                            "timestamp":  "none"
+                                        },
+                     "forceRefreshAll":  {
+                                             "enabled":  false,
+                                             "timestamp":  "none"
+                                         }
+                 },
+    "departments":  {
+                        "administration":  {
+                                               "defaultRole":  "user",
+                                               "description":  "Administration generale",
+                                               "enabled":  true,
+                                               "name":  "Administration"
+                                           },
+                        "engineering":  {
+                                            "defaultRole":  "designer",
+                                            "description":  "Equipe de design et ingenierie",
+                                            "enabled":  true,
+                                            "name":  "Engineering"
+                                        },
+                        "it":  {
+                                   "defaultRole":  "admin",
+                                   "description":  "Technologies de l information",
+                                   "enabled":  true,
+                                   "name":  "IT"
+                               },
+                        "production":  {
+                                           "defaultRole":  "user",
+                                           "description":  "Equipe de production",
+                                           "enabled":  true,
+                                           "name":  "Production"
+                                       },
+                        "quality":  {
+                                        "defaultRole":  "user",
+                                        "description":  "Controle qualite",
+                                        "enabled":  true,
+                                        "name":  "Quality"
+                                    }
+                    },
+    "deviceCommands":  {
+                           "templateDevice":  {
+                                                  "history":  {
+                                                                  "placeholder":  {
+                                                                                      "command":  "none",
+                                                                                      "commandId":  "none",
+                                                                                      "executedAt":  "none",
+                                                                                      "result":  "none"
+                                                                                  }
+                                                              },
+                                                  "pending":  {
+                                                                  "placeholder":  {
+                                                                                      "command":  "none",
+                                                                                      "commandId":  "none",
+                                                                                      "createdAt":  "none"
+                                                                                  }
+                                                              }
+                                              }
+                       },
+    "devices":  {
+                    "LAPTOP-MOHAMMED_mohammedamine_elgala":  {
+                                                                 "hardware":  {
+                                                                                  "diskFreeGB":  325.9,
+                                                                                  "diskTotalGB":  951.6,
+                                                                                  "diskType":  "Unknown",
+                                                                                  "gpuMemoryGB":  4,
+                                                                                  "gpuName":  "NVIDIA RTX 3000 Ada Generation Laptop GPU",
+                                                                                  "processor":  "Intel(R) Core(TM) Ultra 9 185H",
+                                                                                  "processorCores":  22,
+                                                                                  "processorSpeed":  "2.30 GHz",
+                                                                                  "ramAvailableGB":  34.8,
+                                                                                  "ramTotalGB":  63.4
+                                                                              },
+                                                                 "heartbeat":  {
+                                                                                   "cpuUsage":  1,
+                                                                                   "diskUsage":  65,
+                                                                                   "intervalMs":  30000,
+                                                                                   "lastHeartbeat":  "2026-01-18T04:22:51Z",
+                                                                                   "missedHeartbeats":  0,
+                                                                                   "ramUsage":  45,
+                                                                                   "status":  "online"
+                                                                               },
+                                                                 "metadata":  {
+                                                                                  "createdAt":  "2026-01-18T04:19:46Z",
+                                                                                  "notes":  "Auto-registered by XEAT",
+                                                                                  "tags":  "auto,saintHubertQC",
+                                                                                  "updatedAt":  "2026-01-18T04:19:46Z"
+                                                                              },
+                                                                 "network":  {
+                                                                                 "dnsServers":  "none",
+                                                                                 "domainName":  "XNRGY",
+                                                                                 "hostname":  "LAPTOP-MOHAMMED",
+                                                                                 "ipAddressLocal":  "10.254.0.10",
+                                                                                 "ipAddressPublic":  "none",
+                                                                                 "macAddress":  "00:09:0F:AA:00:01",
+                                                                                 "networkSpeed":  "100 Gbps"
+                                                                             },
+                                                                 "organization":  {
+                                                                                      "assetTag":  "none",
+                                                                                      "assignedTo":  "mohammedamine.elgala",
+                                                                                      "department":  "engineering",
+                                                                                      "location":  "none",
+                                                                                      "purchaseDate":  "none",
+                                                                                      "site":  "saintHubertQC",
+                                                                                      "warrantyExpires":  "none"
+                                                                                  },
+                                                                 "registration":  {
+                                                                                      "approved":  true,
+                                                                                      "approvedAt":  "2026-01-18T04:19:46Z",
+                                                                                      "approvedBy":  "auto",
+                                                                                      "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                                                                      "machineName":  "LAPTOP-MOHAMMED",
+                                                                                      "registeredAt":  "2026-01-18T04:19:46Z",
+                                                                                      "registeredBy":  "mohammedamine.elgala"
+                                                                                  },
+                                                                 "security":  {
+                                                                                  "failedLoginAttempts":  0,
+                                                                                  "lastLoginAttempt":  "2026-01-18T04:19:46Z",
+                                                                                  "requiresApproval":  false,
+                                                                                  "trustedDevice":  true
+                                                                              },
+                                                                 "software":  {
+                                                                                  "dotnetVersion":  "4.0.30319.42000",
+                                                                                  "inventorVersion":  "30.20.29800.0000",
+                                                                                  "inventorYear":  "2026",
+                                                                                  "officeVersion":  "16.0.19530.20144",
+                                                                                  "vaultServer":  "XNRGY-SRV",
+                                                                                  "vaultVersion":  "31.2.115.0",
+                                                                                  "xeatInstalledAt":  "2026-01-18T04:19:46Z",
+                                                                                  "xeatLastUpdated":  "2026-01-18T04:19:51.3366863Z",
+                                                                                  "xeatVersion":  "1.0.0"
+                                                                              },
+                                                                 "status":  {
+                                                                                "blockReason":  "none",
+                                                                                "blocked":  false,
+                                                                                "blockedAt":  "none",
+                                                                                "blockedBy":  "none",
+                                                                                "currentUser":  "mohammedamine.elgala",
+                                                                                "currentUserId":  "XNRGY_mohammedamine_elgala",
+                                                                                "enabled":  true,
+                                                                                "lastSeen":  "2026-01-18T04:23:04.4167872Z",
+                                                                                "online":  false
+                                                                            },
+                                                                 "system":  {
+                                                                                "computerName":  "LAPTOP-MOHAMMED",
+                                                                                "domain":  "XNRGY",
+                                                                                "manufacturer":  "LENOVO",
+                                                                                "model":  "21KX002GCA",
+                                                                                "osArchitecture":  "64-bit",
+                                                                                "osBuild":  "26100",
+                                                                                "osName":  "Windows 10 Pro (24H2)",
+                                                                                "osVersion":  "24H2",
+                                                                                "serialNumber":  "PF5HYEKK"
+                                                                            },
+                                                                 "usage":  {
+                                                                               "lastModuleCreated":  "none",
+                                                                               "lastUpload":  "none",
+                                                                               "totalModulesCreated":  0,
+                                                                               "totalSessions":  1,
+                                                                               "totalUploads":  0
+                                                                           }
+                                                             },
+                    "templateDevice":  {
+                                           "hardware":  {
+                                                            "diskFreeGB":  0,
+                                                            "diskTotalGB":  0,
+                                                            "diskType":  "none",
+                                                            "gpuMemoryGB":  0,
+                                                            "gpuName":  "none",
+                                                            "processor":  "none",
+                                                            "processorCores":  0,
+                                                            "processorSpeed":  "none",
+                                                            "ramAvailableGB":  0,
+                                                            "ramTotalGB":  0
+                                                        },
+                                           "heartbeat":  {
+                                                             "cpuUsage":  0,
+                                                             "diskUsage":  0,
+                                                             "intervalMs":  60000,
+                                                             "lastHeartbeat":  "none",
+                                                             "missedHeartbeats":  0,
+                                                             "ramUsage":  0,
+                                                             "status":  "offline"
+                                                         },
+                                           "metadata":  {
+                                                            "createdAt":  "2026-01-10",
+                                                            "notes":  "Template device do not delete",
+                                                            "tags":  "template",
+                                                            "updatedAt":  "none"
+                                                        },
+                                           "network":  {
+                                                           "dnsServers":  "none",
+                                                           "domainName":  "XNRGY",
+                                                           "hostname":  "none",
+                                                           "ipAddressLocal":  "none",
+                                                           "ipAddressPublic":  "none",
+                                                           "macAddress":  "none",
+                                                           "networkSpeed":  "none"
+                                                       },
+                                           "organization":  {
+                                                                "assetTag":  "none",
+                                                                "assignedTo":  "none",
+                                                                "department":  "engineering",
+                                                                "location":  "none",
+                                                                "purchaseDate":  "none",
+                                                                "site":  "montrealQC",
+                                                                "warrantyExpires":  "none"
+                                                            },
+                                           "registration":  {
+                                                                "approved":  true,
+                                                                "approvedAt":  "none",
+                                                                "approvedBy":  "none",
+                                                                "deviceId":  "templateDevice",
+                                                                "machineName":  "TEMPLATE-PC",
+                                                                "registeredAt":  "2026-01-10",
+                                                                "registeredBy":  "system"
+                                                            },
+                                           "security":  {
+                                                            "failedLoginAttempts":  0,
+                                                            "lastLoginAttempt":  "none",
+                                                            "requiresApproval":  false,
+                                                            "trustedDevice":  false
+                                                        },
+                                           "software":  {
+                                                            "dotnetVersion":  "none",
+                                                            "inventorVersion":  "none",
+                                                            "inventorYear":  "none",
+                                                            "officeVersion":  "none",
+                                                            "vaultServer":  "none",
+                                                            "vaultVersion":  "none",
+                                                            "xeatInstalledAt":  "none",
+                                                            "xeatLastUpdated":  "none",
+                                                            "xeatVersion":  "1.0.0"
+                                                        },
+                                           "status":  {
+                                                          "blockReason":  "none",
+                                                          "blocked":  false,
+                                                          "blockedAt":  "none",
+                                                          "blockedBy":  "none",
+                                                          "currentUser":  "none",
+                                                          "currentUserId":  "none",
+                                                          "enabled":  true,
+                                                          "lastSeen":  "none",
+                                                          "online":  false
+                                                      },
+                                           "system":  {
+                                                          "computerName":  "none",
+                                                          "domain":  "XNRGY",
+                                                          "manufacturer":  "none",
+                                                          "model":  "none",
+                                                          "osArchitecture":  "64-bit",
+                                                          "osBuild":  "22631",
+                                                          "osName":  "Windows 11 Pro",
+                                                          "osVersion":  "23H2",
+                                                          "serialNumber":  "none"
+                                                      },
+                                           "usage":  {
+                                                         "lastModuleCreated":  "none",
+                                                         "lastUpload":  "none",
+                                                         "totalModulesCreated":  0,
+                                                         "totalSessions":  0,
+                                                         "totalUploads":  0
+                                                     }
+                                       }
+                },
+    "errorReports":  {
+                         "placeholder":  {
+                                             "appVersion":  "none",
+                                             "deviceId":  "none",
+                                             "errorId":  "placeholder",
+                                             "errorType":  "none",
+                                             "message":  "none",
+                                             "stackTrace":  "none",
+                                             "timestamp":  "none",
+                                             "userId":  "none"
+                                         }
+                     },
+    "featureFlags":  {
+                         "autoUpdate":  {
+                                            "betaOnly":  false,
+                                            "enabled":  true,
+                                            "enabledForRoles":  "all",
+                                            "enabledForSites":  "all"
+                                        },
+                         "checklistHVAC":  {
+                                               "betaOnly":  false,
+                                               "enabled":  true,
+                                               "enabledForRoles":  "admin-adminDesigner-designer-user",
+                                               "enabledForSites":  "all"
+                                           },
+                         "copyDesignModule":  {
+                                                  "betaOnly":  false,
+                                                  "enabled":  true,
+                                                  "enabledForRoles":  "admin-adminDesigner-designer",
+                                                  "enabledForSites":  "all"
+                                              },
+                         "darkTheme":  {
+                                           "betaOnly":  false,
+                                           "enabled":  true,
+                                           "enabledForRoles":  "all",
+                                           "enabledForSites":  "all"
+                                       },
+                         "smartToolsModule":  {
+                                                  "betaOnly":  false,
+                                                  "enabled":  true,
+                                                  "enabledForRoles":  "admin-adminDesigner-designer",
+                                                  "enabledForSites":  "all"
+                                              },
+                         "telemetryCollection":  {
+                                                     "betaOnly":  false,
+                                                     "enabled":  true,
+                                                     "enabledForRoles":  "all",
+                                                     "enabledForSites":  "all"
+                                                 },
+                         "vaultSettingsModule":  {
+                                                     "betaOnly":  false,
+                                                     "enabled":  true,
+                                                     "enabledForRoles":  "admin-adminDesigner",
+                                                     "enabledForSites":  "all"
+                                                 },
+                         "vaultUploadModule":  {
+                                                   "betaOnly":  false,
+                                                   "enabled":  true,
+                                                   "enabledForRoles":  "admin-adminDesigner-designer-user",
+                                                   "enabledForSites":  "all"
+                                               }
+                     },
+    "forceUpdate":  {
+                        "blockAppUntilUpdated":  false,
+                        "criticalUpdate":  false,
+                        "downloadUrl":  "none",
+                        "enabled":  false,
+                        "gracePeriodHours":  24,
+                        "message":  "Mise a jour obligatoire disponible",
+                        "minimumVersion":  "1.0.0",
+                        "sha256Checksum":  "none"
+                    },
+    "integrations":  {
+                         "email":  {
+                                       "enabled":  false,
+                                       "fromAddress":  "none",
+                                       "smtpServer":  "none"
+                                   },
+                         "github":  {
+                                        "enabled":  true,
+                                        "releasesUrl":  "none",
+                                        "repoName":  "none",
+                                        "repoOwner":  "none"
+                                    },
+                         "slack":  {
+                                       "enabled":  false,
+                                       "webhookUrl":  "none"
+                                   },
+                         "vault":  {
+                                       "server":  "VAULTPOC",
+                                       "vaultName":  "PROD_XNGRY"
+                                   }
+                     },
+    "killSwitch":  {
+                       "byDepartment":  {
+                                            "engineering":  {
+                                                                "enabled":  false,
+                                                                "reason":  "none"
+                                                            },
+                                            "production":  {
+                                                               "enabled":  false,
+                                                               "reason":  "none"
+                                                           },
+                                            "quality":  {
+                                                            "enabled":  false,
+                                                            "reason":  "none"
+                                                        }
+                                        },
+                       "bySite":  {
+                                      "arizonaUS":  {
+                                                        "enabled":  false,
+                                                        "message":  "none",
+                                                        "reason":  "none"
+                                                    },
+                                      "montrealQC":  {
+                                                         "enabled":  false,
+                                                         "message":  "none",
+                                                         "reason":  "none"
+                                                     }
+                                  },
+                       "global":  {
+                                      "activatedAt":  "none",
+                                      "activatedBy":  "none",
+                                      "allowAdmins":  true,
+                                      "enabled":  false,
+                                      "message":  "Application desactivee par administrateur",
+                                      "reason":  "none"
+                                  }
+                   },
+    "maintenance":  {
+                        "allowAdmins":  true,
+                        "allowReadOnly":  false,
+                        "detailedMessage":  "none",
+                        "enabled":  false,
+                        "estimatedEndTime":  "none",
+                        "message":  "Application en maintenance",
+                        "redirectUrl":  "none",
+                        "scheduledMaintenance":  {
+                                                     "enabled":  false,
+                                                     "notifyBeforeMinutes":  30,
+                                                     "scheduledEnd":  "none",
+                                                     "scheduledStart":  "none"
+                                                 },
+                        "showCountdown":  true,
+                        "startTime":  "none"
+                    },
+    "notifications":  {
+                          "templates":  {
+                                            "accountBlocked":  {
+                                                                   "message":  "Votre compte a ete bloque",
+                                                                   "title":  "Compte bloque",
+                                                                   "type":  "error"
+                                                               },
+                                            "maintenanceScheduled":  {
+                                                                         "message":  "Une maintenance est prevue prochainement",
+                                                                         "title":  "Maintenance planifiee",
+                                                                         "type":  "warning"
+                                                                     },
+                                            "sessionExpired":  {
+                                                                   "message":  "Votre session a expire",
+                                                                   "title":  "Session expiree",
+                                                                   "type":  "warning"
+                                                               },
+                                            "updateAvailable":  {
+                                                                    "message":  "Une nouvelle version de XEAT est disponible",
+                                                                    "title":  "Mise a jour disponible",
+                                                                    "type":  "info"
+                                                                }
+                                        }
+                      },
+    "roles":  {
+                  "admin":  {
+                                "colorHex":  "E81123",
+                                "level":  100,
+                                "name":  "Administrateur",
+                                "permissions":  {
+                                                    "checklistHVAC":  true,
+                                                    "copyDesign":  true,
+                                                    "exportData":  true,
+                                                    "killSwitch":  true,
+                                                    "manageConfig":  true,
+                                                    "manageDevices":  true,
+                                                    "manageUpdates":  true,
+                                                    "manageUsers":  true,
+                                                    "sendBroadcasts":  true,
+                                                    "smartTools":  true,
+                                                    "vaultSettings":  true,
+                                                    "vaultUpload":  true,
+                                                    "viewLogs":  true,
+                                                    "viewTelemetry":  true
+                                                }
+                            },
+                  "adminDesigner":  {
+                                        "colorHex":  "FF8C00",
+                                        "level":  80,
+                                        "name":  "Admin Designer",
+                                        "permissions":  {
+                                                            "checklistHVAC":  true,
+                                                            "copyDesign":  true,
+                                                            "exportData":  true,
+                                                            "killSwitch":  false,
+                                                            "manageConfig":  false,
+                                                            "manageDevices":  true,
+                                                            "manageUpdates":  false,
+                                                            "manageUsers":  false,
+                                                            "sendBroadcasts":  false,
+                                                            "smartTools":  true,
+                                                            "vaultSettings":  true,
+                                                            "vaultUpload":  true,
+                                                            "viewLogs":  true,
+                                                            "viewTelemetry":  true
+                                                        }
+                                    },
+                  "designer":  {
+                                   "colorHex":  "0078D4",
+                                   "level":  40,
+                                   "name":  "Designer",
+                                   "permissions":  {
+                                                       "checklistHVAC":  true,
+                                                       "copyDesign":  true,
+                                                       "exportData":  false,
+                                                       "killSwitch":  false,
+                                                       "manageConfig":  false,
+                                                       "manageDevices":  false,
+                                                       "manageUpdates":  false,
+                                                       "manageUsers":  false,
+                                                       "sendBroadcasts":  false,
+                                                       "smartTools":  true,
+                                                       "vaultSettings":  false,
+                                                       "vaultUpload":  true,
+                                                       "viewLogs":  false,
+                                                       "viewTelemetry":  false
+                                                   }
+                               },
+                  "developer":  {
+                                    "colorHex":  "7C4DFF",
+                                    "level":  60,
+                                    "name":  "Developpeur",
+                                    "permissions":  {
+                                                        "checklistHVAC":  true,
+                                                        "copyDesign":  true,
+                                                        "exportData":  false,
+                                                        "killSwitch":  false,
+                                                        "manageConfig":  false,
+                                                        "manageDevices":  false,
+                                                        "manageUpdates":  false,
+                                                        "manageUsers":  false,
+                                                        "sendBroadcasts":  false,
+                                                        "smartTools":  true,
+                                                        "vaultSettings":  false,
+                                                        "vaultUpload":  true,
+                                                        "viewLogs":  true,
+                                                        "viewTelemetry":  false
+                                                    }
+                                },
+                  "user":  {
+                               "colorHex":  "00D26A",
+                               "level":  20,
+                               "name":  "Utilisateur",
+                               "permissions":  {
+                                                   "checklistHVAC":  true,
+                                                   "copyDesign":  false,
+                                                   "exportData":  false,
+                                                   "killSwitch":  false,
+                                                   "manageConfig":  false,
+                                                   "manageDevices":  false,
+                                                   "manageUpdates":  false,
+                                                   "manageUsers":  false,
+                                                   "sendBroadcasts":  false,
+                                                   "smartTools":  false,
+                                                   "vaultSettings":  false,
+                                                   "vaultUpload":  true,
+                                                   "viewLogs":  false,
+                                                   "viewTelemetry":  false
+                                               }
+                           },
+                  "viewer":  {
+                                 "colorHex":  "6B7A8F",
+                                 "level":  10,
+                                 "name":  "Lecteur",
+                                 "permissions":  {
+                                                     "checklistHVAC":  false,
+                                                     "copyDesign":  false,
+                                                     "exportData":  false,
+                                                     "killSwitch":  false,
+                                                     "manageConfig":  false,
+                                                     "manageDevices":  false,
+                                                     "manageUpdates":  false,
+                                                     "manageUsers":  false,
+                                                     "sendBroadcasts":  false,
+                                                     "smartTools":  false,
+                                                     "vaultSettings":  false,
+                                                     "vaultUpload":  false,
+                                                     "viewLogs":  false,
+                                                     "viewTelemetry":  false
+                                                 }
+                             }
+              },
+    "scheduling":  {
+                       "holidaysList":  "none",
+                       "maintenanceWindows":  {
+                                                  "weekly":  {
+                                                                 "dayOfWeek":  0,
+                                                                 "durationHours":  2,
+                                                                 "enabled":  false,
+                                                                 "message":  "Maintenance hebdomadaire",
+                                                                 "startHour":  2
+                                                             }
+                                              },
+                       "operatingHours":  {
+                                              "enabled":  false,
+                                              "friday":  {
+                                                             "end":  "2200",
+                                                             "start":  "0600"
+                                                         },
+                                              "monday":  {
+                                                             "end":  "2200",
+                                                             "start":  "0600"
+                                                         },
+                                              "saturday":  {
+                                                               "end":  "1800",
+                                                               "start":  "0800"
+                                                           },
+                                              "sunday":  {
+                                                             "end":  "0000",
+                                                             "start":  "0000"
+                                                         },
+                                              "thursday":  {
+                                                               "end":  "2200",
+                                                               "start":  "0600"
+                                                           },
+                                              "timezone":  "America-Montreal",
+                                              "tuesday":  {
+                                                              "end":  "2200",
+                                                              "start":  "0600"
+                                                          },
+                                              "wednesday":  {
+                                                                "end":  "2200",
+                                                                "start":  "0600"
+                                                            }
+                                          }
+                   },
+    "security":  {
+                     "blockedDevicesList":  "none",
+                     "blockedUsersList":  "none",
+                     "ipBlacklist":  {
+                                         "addressesList":  "none",
+                                         "enabled":  false
+                                     },
+                     "ipWhitelist":  {
+                                         "addressesList":  "none",
+                                         "enabled":  false
+                                     },
+                     "settings":  {
+                                      "allowMultipleSessions":  true,
+                                      "allowRememberMe":  true,
+                                      "enforceDeviceApproval":  false,
+                                      "lockoutDurationMinutes":  30,
+                                      "maxLoginAttempts":  5,
+                                      "maxSessionsPerUser":  3,
+                                      "passwordMinLength":  8,
+                                      "requireStrongPassword":  true,
+                                      "sessionTimeoutMinutes":  480
+                                  }
+                 },
+    "sites":  {
+                  "arizonaUS":  {
+                                    "address":  "9019 E Technology Ave, Mesa, AZ 85212, USA",
+                                    "city":  "Mesa",
+                                    "contactEmail":  "info@xnrgy.com",
+                                    "contactPhone":  "+1 480 863-0100",
+                                    "country":  "USA",
+                                    "enabled":  true,
+                                    "fullName":  "XNRGY Climate Systems Arizona",
+                                    "isPrimary":  false,
+                                    "maxDevices":  40,
+                                    "maxUsers":  30,
+                                    "name":  "Arizona US",
+                                    "region":  "Arizona",
+                                    "timezone":  "America-Phoenix"
+                                },
+                  "montrealQC":  {
+                                     "address":  "5555 Rte de l\u0027aeroport, Longueuil, QC J3Y 8Y9, CA",
+                                     "city":  "Longueuil",
+                                     "contactEmail":  "info@xnrgy.com",
+                                     "contactPhone":  "+1 514 593-0800",
+                                     "country":  "Canada",
+                                     "enabled":  true,
+                                     "fullName":  "XNRGY Climate Systems Montreal",
+                                     "isPrimary":  true,
+                                     "maxDevices":  60,
+                                     "maxUsers":  50,
+                                     "name":  "Montreal QC",
+                                     "region":  "Quebec",
+                                     "timezone":  "America-Montreal"
+                                 }
+              },
+    "statistics":  {
+                       "byModule":  {
+                                        "checklistHVAC":  {
+                                                              "lastUsed":  "none",
+                                                              "usageCount":  0
+                                                          },
+                                        "copyDesign":  {
+                                                           "lastUsed":  "none",
+                                                           "usageCount":  0
+                                                       },
+                                        "smartTools":  {
+                                                           "lastUsed":  "none",
+                                                           "usageCount":  0
+                                                       },
+                                        "vaultSettings":  {
+                                                              "lastUsed":  "none",
+                                                              "usageCount":  0
+                                                          },
+                                        "vaultUpload":  {
+                                                            "lastUsed":  "none",
+                                                            "usageCount":  0
+                                                        }
+                                    },
+                       "bySite":  {
+                                      "arizonaUS":  {
+                                                        "devices":  0,
+                                                        "onlineDevices":  0,
+                                                        "todayLogins":  0,
+                                                        "users":  0
+                                                    },
+                                      "montrealQC":  {
+                                                         "devices":  0,
+                                                         "onlineDevices":  0,
+                                                         "todayLogins":  0,
+                                                         "users":  0
+                                                     }
+                                  },
+                       "devices":  {
+                                       "totalRegistered":  6
+                                   },
+                       "global":  {
+                                      "activeUsers":  0,
+                                      "lastUpdated":  "none",
+                                      "onlineDevices":  0,
+                                      "totalDevices":  0,
+                                      "totalErrors":  0,
+                                      "totalModulesCreated":  0,
+                                      "totalSessions":  4,
+                                      "totalUploads":  0,
+                                      "totalUsers":  0
+                                  },
+                       "today":  {
+                                     "activeUsers":  0,
+                                     "date":  "none",
+                                     "errors":  0,
+                                     "logins":  0,
+                                     "modulesCreated":  0,
+                                     "peakOnlineDevices":  0,
+                                     "uploads":  0
+                                 }
+                   },
+    "systemInfo":  {
+                       "adminContact":  "mohammedamine.elgalai@xnrgy.com",
+                       "createdAt":  "2026-01-10",
+                       "databaseVersion":  "1.0.0",
+                       "lastBackup":  "none",
+                       "lastMigration":  "2026-01-10"
+                   },
+    "telemetry":  {
+                      "aggregation":  {
+                                          "averageSessionDuration":  0,
+                                          "lastUpdated":  "none",
+                                          "mostUsedModule":  "none",
+                                          "peakUsageHour":  0,
+                                          "totalErrors":  0,
+                                          "totalSessions":  0
+                                      },
+                      "collectCrashReports":  true,
+                      "collectPerformanceMetrics":  true,
+                      "collectUsageStats":  true,
+                      "enabled":  true,
+                      "retentionDays":  90
+                  },
+    "telemetryEvents":  {
+                            "placeholder":  {
+                                                "data":  "none",
+                                                "deviceId":  "none",
+                                                "eventId":  "placeholder",
+                                                "eventType":  "none",
+                                                "timestamp":  "none",
+                                                "userId":  "none"
+                                            }
+                        },
+    "updates":  {
+                    "channels":  {
+                                     "beta":  "1.0.0",
+                                     "dev":  "1.0.0",
+                                     "stable":  "1.0.0"
+                                 },
+                    "history":  {
+                                    "v1r0r0":  {
+                                                   "notes":  "Version initiale",
+                                                   "publishedAt":  "2026-01-10",
+                                                   "version":  "1.0.0"
+                                               }
+                                },
+                    "latest":  {
+                                   "changelogText":  "Version initiale",
+                                   "downloadUrl":  "none",
+                                   "downloadUrlMirror":  "none",
+                                   "fileSize":  "none",
+                                   "isCritical":  false,
+                                   "minOsVersion":  "Windows 10",
+                                   "publishedAt":  "2026-01-10",
+                                   "publishedBy":  "Mohammed Amine Elgalai",
+                                   "releaseNotes":  "Version initiale XEAT v1.0.0",
+                                   "releaseNotesUrl":  "none",
+                                   "requiredDotNet":  "4.8",
+                                   "sha256":  "none",
+                                   "version":  "1.0.0"
+                               }
+                },
+    "userActiveSessions":  {
+                               "LeIel3jEkwaj0UFwUjxPHJRS20w2":  {
+                                                                    "placeholder":  {
+                                                                                        "deviceId":  "none",
+                                                                                        "sessionId":  "none",
+                                                                                        "startedAt":  "none"
+                                                                                    }
+                                                                }
+                           },
+    "users":  {
+                  "LeIel3jEkwaj0UFwUjxPHJRS20w2":  {
+                                                       "metadata":  {
+                                                                        "createdAt":  "2026-01-10",
+                                                                        "createdBy":  "system",
+                                                                        "notes":  "Compte administrateur principal",
+                                                                        "updatedAt":  "none",
+                                                                        "updatedBy":  "none"
+                                                                    },
+                                                       "organization":  {
+                                                                            "department":  "engineering",
+                                                                            "hireDate":  "2024-01-01",
+                                                                            "manager":  "none",
+                                                                            "role":  "admin",
+                                                                            "site":  "montrealQC",
+                                                                            "team":  "none"
+                                                                        },
+                                                       "permissions":  {
+                                                                           "checklistHVAC":  true,
+                                                                           "copyDesign":  true,
+                                                                           "exportData":  true,
+                                                                           "killSwitch":  true,
+                                                                           "manageConfig":  true,
+                                                                           "manageDevices":  true,
+                                                                           "manageUpdates":  true,
+                                                                           "manageUsers":  true,
+                                                                           "sendBroadcasts":  true,
+                                                                           "smartTools":  true,
+                                                                           "vaultSettings":  true,
+                                                                           "vaultUpload":  true,
+                                                                           "viewLogs":  true,
+                                                                           "viewTelemetry":  true
+                                                                       },
+                                                       "preferences":  {
+                                                                           "autoUpdate":  true,
+                                                                           "betaChannel":  false,
+                                                                           "emailAlerts":  true,
+                                                                           "language":  "fr",
+                                                                           "notifications":  true,
+                                                                           "theme":  "dark"
+                                                                       },
+                                                       "profile":  {
+                                                                       "avatar":  "none",
+                                                                       "email":  "mohammedamine.elgalai@xnrgy.com",
+                                                                       "employeeId":  "none",
+                                                                       "fullName":  "Mohammed Amine Elgalai",
+                                                                       "phone":  "none",
+                                                                       "title":  "Engineering Automation Developer",
+                                                                       "username":  "mohammedamineElgalai"
+                                                                   },
+                                                       "quotas":  {
+                                                                      "dailyModulesCreated":  -1,
+                                                                      "dailyUploads":  -1,
+                                                                      "maxStorageMB":  -1,
+                                                                      "modulesCreatedToday":  0,
+                                                                      "storageUsedMB":  0,
+                                                                      "uploadsToday":  0
+                                                                  },
+                                                       "sessions":  {
+                                                                        "currentSessions":  0,
+                                                                        "failedLogins":  0,
+                                                                        "lastDeviceId":  "none",
+                                                                        "lastFailedLogin":  "none",
+                                                                        "lastIpAddress":  "none",
+                                                                        "lastLogin":  "none",
+                                                                        "lastLogout":  "none",
+                                                                        "maxSessions":  5,
+                                                                        "totalLogins":  0
+                                                                    },
+                                                       "status":  {
+                                                                      "blockExpiresAt":  "none",
+                                                                      "blockReason":  "none",
+                                                                      "blocked":  false,
+                                                                      "blockedAt":  "none",
+                                                                      "blockedBy":  "none",
+                                                                      "enabled":  true,
+                                                                      "lastActive":  "none",
+                                                                      "verified":  true
+                                                                  }
+                                                   }
+              },
+    "welcomeMessage":  {
+                           "enabled":  true,
+                           "message":  "Bienvenue dans XNRGY Engineering Automation Tools!\n\nCet outil vous permet de:\n- Gerer vos uploads Vault\n- Copier des designs Inventor\n- Configurer vos parametres\n\nBonne utilisation!",
+                           "title":  "Bienvenue sur XEAT!",
+                           "type":  "info",
+                           "updatedAt":  "2026-01-17T12:00:00.000Z",
+                           "updatedBy":  "System"
+                       },
+    "welcomeMessages":  {
+                            "firstInstall":  {
+                                                 "enabled":  true,
+                                                 "message":  "Bienvenue dans XNRGY Engineering Automation Tools!\n\nXEAT est votre assistant d\u0027ingenierie pour:\n\n[\u003e] VAULT UPLOAD\n    Televersez vos fichiers Inventor vers Vault avec gestion automatique des proprietes (Project, Reference, Module)\n\n[\u003e] COPY DESIGN\n    Copiez et renommez intelligemment vos assemblages Inventor avec toutes les references\n\n[\u003e] CONFIGURATION VAULT\n    Configurez facilement votre connexion Vault (serveur, utilisateur, mot de passe)\n\n---\nFONCTIONNALITES A VENIR:\n- Export DXF/PDF automatise\n- Integration SharePoint\n- Gestion des BOM\n- Notifications en temps reel\n\nBonne utilisation!",
+                                                 "showOnce":  true,
+                                                 "targetUsers":  "all",
+                                                 "title":  "Bienvenue sur XEAT!",
+                                                 "type":  "info"
+                                             },
+                            "global":  {
+                                           "enabled":  false,
+                                           "message":  "Message global pour tous les utilisateurs",
+                                           "showOnce":  false,
+                                           "targetUsers":  "all",
+                                           "title":  "Message Important",
+                                           "type":  "info"
+                                       },
+                            "newUserOnDevice":  {
+                                                    "enabled":  true,
+                                                    "message":  "Bonjour et bienvenue dans XNRGY Engineering Automation Tools!\n\nCette application est deja installee sur ce poste.\n\nVotre session sera liee a votre compte Windows.\n\nPour toute question, contactez:\nmohammedamine.elgalai@xnrgy.com",
+                                                    "showOnce":  true,
+                                                    "targetUsers":  "new",
+                                                    "title":  "Bienvenue!",
+                                                    "type":  "info"
+                                                }
+                        }
+}

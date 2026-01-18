@@ -1,270 +1,538 @@
-﻿# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools
+﻿# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools
 
 
 
-> **Suite d'outils d'automatisation engineering unifiee** pour Autodesk Vault Professional 2026 et Inventor Professional 2026.2
-
->
-
-> Developpe par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiee** pour Autodesk Vault Professional 2026 et Inventor Professional 2026.2
+> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
 
 >
 
-> **Version**: v1.0.0 | **Release**: R 2026-01-15>
+> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiee** pour Autodesk Vault Professional 2026 et Inventor Professional 2026.2
+
+>
+
+> **Version**: v1.0.0 | **Release**: R 2026-01-17>
 
 
 
----> Developpe par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
+---> Developpe par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiee** pour Autodesk Vault Professional 2026 et Inventor Professional 2026.2
 
 
 
-## Description>
+## Installation Rapide>
 
 
 
-**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisee (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering developpes pour XNRGY Climate Systems. Cette suite vise a simplifier et accelerer les workflows des equipes de design en integrant la gestion Vault, les manipulations Inventor, et les validations qualite dans une interface unifiee.> **Version**: v1.0.0 | **Release**: R 2026-01-10>>
+### Téléchargement Direct (Recommandé)> **Version**: v1.0.0 | **Release**: R 2026-01-15>
 
 
-
-### Objectif Principal
-
-
-
-Remplacer les multiples applications standalone par une **plateforme unique** avec :---> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC
-
-- Connexion centralisee a Vault et Inventor
-
-- Interface utilisateur moderne et coherente (themes sombre/clair)
-
-- Partage de services communs (logging, configuration chiffree AES-256)
-
-- Deploiement multi-sites et maintenance simplifiee## Description>
-
-- Parametres centralises via Vault (50+ utilisateurs, 3 sites)
-
-- **Controle a distance via Firebase** (kill switch, maintenance, mises a jour)
-
-
-
----**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisee (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering developpes pour XNRGY Climate Systems. Cette suite vise a simplifier et accelerer les workflows des equipes de design en integrant la gestion Vault, les manipulations Inventor, et les validations qualite dans une interface unifiee.> **Version**: v1.0.0 | **Release**: R 2026-01-10---
-
-
-
-## Modules Integres (9 Modules)
-
-
-
-| Module | Description | Statut |### Objectif Principal
-
-|--------|-------------|--------|
-
-| **Upload Module** | Upload automatise vers Vault avec proprietes (Project/Ref/Module) | [+] 100% |
-
-| **Creer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
-
-| **Place Equipment** | Placement equipements avec Copy Design automatise | [+] 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :---## Description
-
-| **Smart Tools** | 25+ outils: creation IPT/STEP, generation PDF, iLogic Forms, BOM, etc. | [+] 100% |
-
-| **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |- Connexion centralisee a Vault et Inventor
-
-| **ACP** | Assistant Conception Projet - validation points critiques | [+] 100% |
-
-| **Upload Template** | Upload templates vers Vault (reserve Admin) | [+] 100% |- Interface utilisateur moderne et coherente (themes sombre/clair)
-
-| **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% precision) | [+] 100% |
-
-| **Update Workspace** | Synchronisation librairies et outils depuis Vault | [+] 100% |- Partage de services communs (logging, configuration chiffree AES-256)
-
-
-
----- Deploiement multi-sites et maintenance simplifiee## Description**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
-
-
-
-## Fonctionnalites Cles- Parametres centralises via Vault (50+ utilisateurs, 3 sites)
-
-
-
-### Centralisation UI
-
-Toutes les metadonnees de l'application sont centralisees dans `Styles/XnrgyStyles.xaml`:
-
-```xml---
-
-<sys:String x:Key="AppVersion">v1.0.0</sys:String>
-
-<sys:String x:Key="AppReleaseDate">R 2026-01-15</sys:String>**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.### Objectif Principal
-
-<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
-
-<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>## Modules Integres (9 Modules)
 
 ```
 
+https://github.com/mohammedamineelgalai/XnrgyEngineeringAutomationTools/releases/latest/download/XNRGYEngineeringAutomationToolsSetup.exe
+
+```---> Developpe par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
 
 
-### Configuration Centralisee via Vault
 
-- Chiffrement AES-256 des fichiers de configuration| Module | Description | Statut |
+**Installateur auto-extractible** (~42 MB) - Contient tous les fichiers nécessaires. Aucun dossier externe requis.
 
-- Synchronisation automatique au demarrage
 
-- Acces administrateur verifie via Vault API|--------|-------------|--------|### Objectif PrincipalRemplacer les multiples applications standalone par une **plateforme unique** avec :
 
-- Support 50+ utilisateurs sur 3 sites
+### Installation## Description>
 
-| **Upload Module** | Upload automatise vers Vault avec proprietes (Project/Ref/Module) | 100% |
+1. Télécharger `XNRGYEngineeringAutomationToolsSetup.exe`
 
-### Firebase Remote Control (NOUVEAU - Janvier 2026)
+2. Exécuter en tant qu'administrateur
 
-Integration Firebase Realtime Database pour le controle a distance:| **Creer Module** | Copy Design natif depuis template Library ou projet existant | 100% |- Connexion centralisée à Vault & Inventor
+3. Suivre l'assistant d'installation
 
-- **Kill Switch**: Blocage instantane de l'application (global, par site, par device)
+4. L'application se lancera automatiquement**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisee (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering developpes pour XNRGY Climate Systems. Cette suite vise a simplifier et accelerer les workflows des equipes de design en integrant la gestion Vault, les manipulations Inventor, et les validations qualite dans une interface unifiee.> **Version**: v1.0.0 | **Release**: R 2026-01-10>>
 
-- **Maintenance Mode**: Desactivation temporaire avec message personnalise| **Place Equipment** | Placement equipements avec Copy Design automatise | 100% |
 
-- **Force Update**: Mise a jour obligatoire vers une version minimum
-
-- **Broadcast Messages**: Diffusion d'annonces a tous les utilisateurs| **Smart Tools** | 25+ outils: creation IPT/STEP, generation PDF, iLogic Forms, BOM, etc. | 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :- Interface utilisateur moderne et cohérente (thèmes sombre/clair)
-
-- **Device Tracking**: Suivi des postes de travail en temps reel
-
-- **Audit Logs**: Enregistrement des erreurs et sessions dans Firebase| **Checklist HVAC** | Validation modules AHU avec stockage Vault | 100% |
-
-- **Admin Console**: Interface web complete pour la gestion
-
-| **ACP** | Assistant Conception Projet - validation points critiques | 100% |- Connexion centralisée à Vault & Inventor- Partage de services communs (logging, configuration chiffrée AES-256)
 
 ---
 
-| **Upload Template** | Upload templates vers Vault (reserve Admin) | 100% |
+
+
+## Description### Objectif Principal
+
+
+
+**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+
+
+
+### Objectif PrincipalRemplacer les multiples applications standalone par une **plateforme unique** avec :---> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC
+
+
+
+Remplacer les multiples applications standalone par une **plateforme unique** avec :- Connexion centralisee a Vault et Inventor
+
+- Connexion centralisée à Vault & Inventor
+
+- Interface utilisateur moderne et cohérente (thèmes sombre/clair)- Interface utilisateur moderne et coherente (themes sombre/clair)
+
+- Partage de services communs (logging, configuration chiffrée AES-256)
+
+- Déploiement multi-sites et maintenance simplifiée- Partage de services communs (logging, configuration chiffree AES-256)
+
+- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
+
+- **Contrôle à distance via Firebase** (kill switch, maintenance, mises à jour)- Deploiement multi-sites et maintenance simplifiee## Description>
+
+
+
+---- Parametres centralises via Vault (50+ utilisateurs, 3 sites)
+
+
+
+## Modules Intégrés (9 Modules)- **Controle a distance via Firebase** (kill switch, maintenance, mises a jour)
+
+
+
+| Module | Description | Statut |
+
+|--------|-------------|--------|
+
+| **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |---**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisee (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering developpes pour XNRGY Climate Systems. Cette suite vise a simplifier et accelerer les workflows des equipes de design en integrant la gestion Vault, les manipulations Inventor, et les validations qualite dans une interface unifiee.> **Version**: v1.0.0 | **Release**: R 2026-01-10---
+
+| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
+
+| **Place Equipment** | Placement équipements avec Copy Design automatisé | [+] 100% |
+
+| **Smart Tools** | 25+ outils: création IPT/STEP, génération PDF, iLogic Forms, BOM, etc. | [+] 100% |
+
+| **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |## Modules Integres (9 Modules)
+
+| **ACP** | Assistant Conception Projet - validation points critiques | [+] 100% |
+
+| **Upload Template** | Upload templates vers Vault (réservé Admin) | [+] 100% |
+
+| **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% précision) | [+] 100% |
+
+| **Update Workspace** | Synchronisation librairies et outils depuis Vault | [+] 100% || Module | Description | Statut |### Objectif Principal
+
+
+
+---|--------|-------------|--------|
+
+
+
+## Fonctionnalités Clés| **Upload Module** | Upload automatise vers Vault avec proprietes (Project/Ref/Module) | [+] 100% |
+
+
+
+### Centralisation UI| **Creer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
+
+Toutes les métadonnées de l'application sont centralisées dans `Styles/XnrgyStyles.xaml`:
+
+```xml| **Place Equipment** | Placement equipements avec Copy Design automatise | [+] 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :---## Description
+
+<sys:String x:Key="AppVersion">v1.0.0</sys:String>
+
+<sys:String x:Key="AppReleaseDate">R 2026-01-17</sys:String>| **Smart Tools** | 25+ outils: creation IPT/STEP, generation PDF, iLogic Forms, BOM, etc. | [+] 100% |
+
+<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
+
+<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>| **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |- Connexion centralisee a Vault et Inventor
+
+```
+
+| **ACP** | Assistant Conception Projet - validation points critiques | [+] 100% |
+
+### Configuration Centralisée via Vault
+
+- Chiffrement AES-256 des fichiers de configuration| **Upload Template** | Upload templates vers Vault (reserve Admin) | [+] 100% |- Interface utilisateur moderne et coherente (themes sombre/clair)
+
+- Synchronisation automatique au démarrage
+
+- Accès administrateur vérifié via Vault API| **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% precision) | [+] 100% |
+
+- Support 50+ utilisateurs sur 3 sites
+
+| **Update Workspace** | Synchronisation librairies et outils depuis Vault | [+] 100% |- Partage de services communs (logging, configuration chiffree AES-256)
+
+### Firebase Remote Control (Janvier 2026)
+
+Intégration Firebase Realtime Database pour le contrôle à distance:
+
+- **Kill Switch**: Blocage instantané de l'application (global, par site, par device)
+
+- **Maintenance Mode**: Désactivation temporaire avec message personnalisé---- Deploiement multi-sites et maintenance simplifiee## Description**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+
+- **Force Update**: Mise à jour obligatoire vers une version minimum
+
+- **Broadcast Messages**: Diffusion d'annonces à tous les utilisateurs
+
+- **Device Tracking**: Suivi des postes de travail en temps réel
+
+- **Audit Logs**: Enregistrement des erreurs et sessions dans Firebase## Fonctionnalites Cles- Parametres centralises via Vault (50+ utilisateurs, 3 sites)
+
+- **Admin Console**: Interface web complète pour la gestion
+
+
+
+---
+
+### Centralisation UI
 
 ## Firebase Integration
 
-| **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% precision) | 100% |- Interface utilisateur moderne et cohérente (thèmes sombre/clair)- Déploiement multi-sites et maintenance simplifiée
+Toutes les metadonnees de l'application sont centralisees dans `Styles/XnrgyStyles.xaml`:
 
 ### Architecture
 
-```| **Update Workspace** | Synchronisation librairies et outils depuis Vault | 100% |
+``````xml---
 
 Firebase Realtime Database
 
-├── appConfig/           # Configuration application- Partage de services communs (logging, configuration chiffrée AES-256)- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
+├── appConfig/           # Configuration application<sys:String x:Key="AppVersion">v1.0.0</sys:String>
 
 ├── broadcasts/          # Messages de diffusion
 
-├── devices/             # Registre des postes de travail---
+├── devices/             # Registre des postes de travail<sys:String x:Key="AppReleaseDate">R 2026-01-15</sys:String>**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.### Objectif Principal
 
 ├── featureFlags/        # Feature toggles
 
-├── forceUpdate/         # Configuration mise a jour forcee- Déploiement multi-sites et maintenance simplifiée
+├── forceUpdate/         # Configuration mise à jour forcée<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
 
 ├── killSwitch/          # Configuration kill switch
 
-├── maintenance/         # Mode maintenance## Fonctionnalites Cles
+├── maintenance/         # Mode maintenance<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>## Modules Integres (9 Modules)
 
-├── security/            # Parametres securite
+├── security/            # Paramètres sécurité
 
-├── statistics/          # Statistiques d'utilisation- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)---
+├── statistics/          # Statistiques d'utilisation```
 
 ├── auditLog/            # Journal des actions et erreurs
 
-├── users/               # Gestion utilisateurs### Centralisation UI (NOUVEAU - Janvier 2026)
+├── users/               # Gestion utilisateurs
 
 └── welcomeMessages/     # Messages de bienvenue
-
-```
-
-
-
-### Console AdminToutes les metadonnees de l'application sont centralisees dans `Styles/XnrgyStyles.xaml` :
-
-Interface web complete dans `Firebase Realtime Database configuration/admin-panel/`:
-
-- **Dashboard**: Vue d'ensemble en temps reel---## Modules Intégrés
-
-- **Utilisateurs**: Gestion des utilisateurs et permissions
-
-- **Appareils**: Suivi des postes de travail```xml
-
-- **Securite**: Kill Switch, Maintenance, Mise a jour forcee
-
-- **Broadcasts**: Gestion des annonces<!-- Variables globales - MODIFIER ICI UNIQUEMENT -->
-
-- **Telemetrie**: Statistiques d'utilisation
-
-- **Audit Logs**: Historique des actions<sys:String x:Key="AppVersion">v1.0.0</sys:String>
-
-
-
-### Scripts de Deploiement<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>## Modules Intégrés (9 Modules)| Module | Description | Statut |
-
-
-
-#### build-and-run.ps1 (v2.2.0)<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
-
-Script principal de build et deploiement:
-
-```powershell<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>|--------|-------------|--------|
-
-# Build simple
-
-.\build-and-run.ps1<sys:String x:Key="AppShortName">XEAT</sys:String>
-
-
-
-# Build + Deploy Firebase<sys:String x:Key="AppFullName">XNRGY Engineering Automation Tools</sys:String>| Module | Description | Statut || **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |
-
-.\build-and-run.ps1 -Deploy
-
-```
-
-# Build + Deploy + Publish GitHub
-
-.\build-and-run.ps1 -Deploy -Publish|--------|-------------|--------|| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
-
-
-
-# Sync donnees avant deploy (preserve devices/users/auditLog)**Avantages:**
-
-.\build-and-run.ps1 -SyncFirebase -Deploy
-
-```- Mise a jour de version/date en **un seul endroit**| **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | ✅ 100% || **Réglages Admin** | Configuration centralisée et synchronisée via Vault (AES-256) | [+] 100% |
-
-
-
-#### Sync-Firebase.ps1- Tous les titres de fenetres utilisent `StaticResource`
-
-Script de synchronisation pour preserver les donnees dynamiques avant deploiement:
-
-```powershell- Toutes les barres copyright utilisent `StaticResource`| **Créer Module** | Copy Design natif depuis template Library ou projet existant | ✅ 100% || **Upload Template** | Upload templates vers Vault (réservé Admin) | [+] 100% |
-
-# Mode interactif
-
-.\Sync-Firebase.ps1- 22+ fenetres synchronisees automatiquement
-
-
-
-# Mode pre-deployment (automatique)| **Place Equipment** | Placement équipements avec Copy Design automatisé | ✅ 100% || **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |
-
-.\Sync-Firebase.ps1 -PreDeploy
 
 ```### Configuration Centralisee via Vault
 
 
 
-**Donnees preservees:**| **Smart Tools** | 25+ outils: création IPT/STEP, génération PDF, iLogic Forms, BOM, etc. | ✅ 100% || **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | [~] Planifié |
+### Console Admin- Chiffrement AES-256 des fichiers de configuration| Module | Description | Statut |
 
-- devices (postes enregistres)
+Interface web complète dans `Firebase Realtime Database configuration/admin-panel/`:
 
-- users (utilisateurs)- Chiffrement AES-256 des fichiers de configuration
+- **Dashboard**: Vue d'ensemble en temps réel- Synchronisation automatique au demarrage
 
-- userActiveSessions (sessions actives)
+- **Utilisateurs**: Gestion des utilisateurs et permissions
 
-- auditLog (journal des actions)- Synchronisation automatique au demarrage| **Checklist HVAC** | Validation modules AHU avec stockage Vault | ✅ 100% || **DXF Verifier** | Validation des fichiers DXF avant envoi | [~] Migration |
+- **Appareils**: Suivi des postes de travail- Acces administrateur verifie via Vault API|--------|-------------|--------|### Objectif PrincipalRemplacer les multiples applications standalone par une **plateforme unique** avec :
 
-- statistics (statistiques)
+- **Sécurité**: Kill Switch, Maintenance, Mise à jour forcée
+
+- **Broadcasts**: Gestion des annonces- Support 50+ utilisateurs sur 3 sites
+
+- **Télémétrie**: Statistiques d'utilisation
+
+- **Audit Logs**: Historique des actions| **Upload Module** | Upload automatise vers Vault avec proprietes (Project/Ref/Module) | 100% |
+
+
+
+**URL Admin Panel**: https://xeat-remote-control.web.app/### Firebase Remote Control (NOUVEAU - Janvier 2026)
+
+
+
+---Integration Firebase Realtime Database pour le controle a distance:| **Creer Module** | Copy Design natif depuis template Library ou projet existant | 100% |- Connexion centralisée à Vault & Inventor
+
+
+
+## Build & Deploy (Développeurs)- **Kill Switch**: Blocage instantane de l'application (global, par site, par device)
+
+
+
+### Script Principal: build-and-run.ps1 (v2.3.0)- **Maintenance Mode**: Desactivation temporaire avec message personnalise| **Place Equipment** | Placement equipements avec Copy Design automatise | 100% |
+
+
+
+```powershell- **Force Update**: Mise a jour obligatoire vers une version minimum
+
+# Build simple
+
+.\build-and-run.ps1- **Broadcast Messages**: Diffusion d'annonces a tous les utilisateurs| **Smart Tools** | 25+ outils: creation IPT/STEP, generation PDF, iLogic Forms, BOM, etc. | 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :- Interface utilisateur moderne et cohérente (thèmes sombre/clair)
+
+
+
+# Build + Installer auto-extractible- **Device Tracking**: Suivi des postes de travail en temps reel
+
+.\build-and-run.ps1 -WithInstaller
+
+- **Audit Logs**: Enregistrement des erreurs et sessions dans Firebase| **Checklist HVAC** | Validation modules AHU avec stockage Vault | 100% |
+
+# Build installer seulement
+
+.\build-and-run.ps1 -InstallerOnly- **Admin Console**: Interface web complete pour la gestion
+
+
+
+# ROBO MODE: Build + Installer + Firebase + GitHub (TOUT AUTOMATIQUE)| **ACP** | Assistant Conception Projet - validation points critiques | 100% |- Connexion centralisée à Vault & Inventor- Partage de services communs (logging, configuration chiffrée AES-256)
+
+.\build-and-run.ps1 -Auto
+
+---
+
+# Deploy Firebase seulement
+
+.\build-and-run.ps1 -Deploy -BuildOnly| **Upload Template** | Upload templates vers Vault (reserve Admin) | 100% |
+
+
+
+# Sync données Firebase avant deploy## Firebase Integration
+
+.\build-and-run.ps1 -SyncFirebase -Deploy
+
+```| **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% precision) | 100% |- Interface utilisateur moderne et cohérente (thèmes sombre/clair)- Déploiement multi-sites et maintenance simplifiée
+
+
+
+### Mode -Auto (ROBO MODE)### Architecture
+
+Une seule commande pour tout faire automatiquement:
+
+1. Arrêt des instances existantes```| **Update Workspace** | Synchronisation librairies et outils depuis Vault | 100% |
+
+2. Nettoyage du projet
+
+3. Compilation Release + signatureFirebase Realtime Database
+
+4. Création du ZIP embarqué (41 MB)
+
+5. Compilation installateur auto-extractible (42 MB)├── appConfig/           # Configuration application- Partage de services communs (logging, configuration chiffrée AES-256)- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
+
+6. Signature de l'installateur
+
+7. Synchronisation Firebase (préservation données)├── broadcasts/          # Messages de diffusion
+
+8. Déploiement Firebase Hosting (admin-panel)
+
+9. Déploiement Firebase Rules├── devices/             # Registre des postes de travail---
+
+10. Déploiement Firebase Config
+
+11. Publication GitHub Releases├── featureFlags/        # Feature toggles
+
+12. Lancement de l'application
+
+├── forceUpdate/         # Configuration mise a jour forcee- Déploiement multi-sites et maintenance simplifiée
+
+### Installateur Auto-Extractible (Janvier 2026)
+
+L'installateur est maintenant **auto-extractible** et contient tous les fichiers embarqués:├── killSwitch/          # Configuration kill switch
+
+- Taille: ~42 MB (contre 239 KB auparavant)
+
+- Aucun dossier `Files/` externe requis├── maintenance/         # Mode maintenance## Fonctionnalites Cles
+
+- Extraction automatique depuis les ressources embarquées
+
+- Fonctionne en téléchargement direct depuis GitHub├── security/            # Parametres securite
+
+
+
+### Données Firebase Préservées├── statistics/          # Statistiques d'utilisation- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)---
+
+Le script `-Auto` préserve automatiquement les données dynamiques:
+
+- `devices` (postes enregistrés)├── auditLog/            # Journal des actions et erreurs
+
+- `users` (utilisateurs)
+
+- `userActiveSessions` (sessions actives)├── users/               # Gestion utilisateurs### Centralisation UI (NOUVEAU - Janvier 2026)
+
+- `auditLog` (journal des actions)
+
+- `statistics` (statistiques)└── welcomeMessages/     # Messages de bienvenue
+
+- `telemetryEvents` (télémétrie)
+
+- `errorReports` (rapports d'erreurs)```
+
+- `broadcasts` (messages actifs)
+
+
+
+---
+
+### Console AdminToutes les metadonnees de l'application sont centralisees dans `Styles/XnrgyStyles.xaml` :
+
+## Prérequis
+
+Interface web complete dans `Firebase Realtime Database configuration/admin-panel/`:
+
+### Logiciels Requis
+
+- **Autodesk Inventor Professional 2026.2** (ou supérieur)- **Dashboard**: Vue d'ensemble en temps reel---## Modules Intégrés
+
+- **Autodesk Vault Professional 2026** (SDK v31.0.84)
+
+- **.NET Framework 4.8** (inclus dans Windows 10/11)- **Utilisateurs**: Gestion des utilisateurs et permissions
+
+- **Windows 10/11** (64-bit)
+
+- **Appareils**: Suivi des postes de travail```xml
+
+### Pour le Développement
+
+- **Visual Studio 2022** (avec MSBuild 18.0.0+)- **Securite**: Kill Switch, Maintenance, Mise a jour forcee
+
+- **Git** pour le contrôle de version
+
+- **Firebase CLI** pour le déploiement (optionnel)- **Broadcasts**: Gestion des annonces<!-- Variables globales - MODIFIER ICI UNIQUEMENT -->
+
+- **GitHub Token** (`$env:GITHUB_TOKEN`) pour la publication
+
+- **Telemetrie**: Statistiques d'utilisation
+
+---
+
+- **Audit Logs**: Historique des actions<sys:String x:Key="AppVersion">v1.0.0</sys:String>
+
+## Structure du Projet
+
+
+
+```
+
+XnrgyEngineeringAutomationTools/### Scripts de Deploiement<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>## Modules Intégrés (9 Modules)| Module | Description | Statut |
+
+├── App.xaml                    # Point d'entrée WPF
+
+├── MainWindow.xaml             # Fenêtre principale (Hub)
+
+├── build-and-run.ps1           # Script build/deploy v2.3.0
+
+├── Sync-Firebase.ps1           # Synchronisation Firebase#### build-and-run.ps1 (v2.2.0)<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
+
+├── Services/
+
+│   ├── VaultSDKService.cs      # Connexion Vault SDKScript principal de build et deploiement:
+
+│   ├── InventorCopyDesignService.cs  # Copy Design natif
+
+│   ├── VaultSettingsService.cs # Configuration centralisée```powershell<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>|--------|-------------|--------|
+
+│   ├── FirebaseService.cs      # Intégration Firebase
+
+│   └── FirebaseAuditService.cs # Audit automatique# Build simple
+
+├── ViewModels/                 # MVVM ViewModels
+
+├── Views/                      # Fenêtres XAML.\build-and-run.ps1<sys:String x:Key="AppShortName">XEAT</sys:String>
+
+├── Styles/
+
+│   └── XnrgyStyles.xaml        # Styles + Variables globales
+
+├── Installer/
+
+│   ├── XnrgyInstaller.csproj   # Projet installateur# Build + Deploy Firebase<sys:String x:Key="AppFullName">XNRGY Engineering Automation Tools</sys:String>| Module | Description | Statut || **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |
+
+│   ├── InstallationService.cs  # Service d'installation
+
+│   └── Resources/.\build-and-run.ps1 -Deploy
+
+│       └── AppFiles.zip        # Fichiers embarqués (auto-généré)
+
+└── Firebase Realtime Database configuration/```
+
+    ├── admin-panel/            # Console admin web
+
+    ├── firebase-template.json  # Template de configuration# Build + Deploy + Publish GitHub
+
+    ├── firebase-init.json      # Config fusionnée (auto-généré)
+
+    ├── firebase-live.json      # Données live (auto-téléchargé).\build-and-run.ps1 -Deploy -Publish|--------|-------------|--------|| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
+
+    └── firebase-rules.json     # Règles de sécurité
+
+```
+
+
+
+---# Sync donnees avant deploy (preserve devices/users/auditLog)**Avantages:**
+
+
+
+## Changelog.\build-and-run.ps1 -SyncFirebase -Deploy
+
+
+
+### v1.0.0 (2026-01-17)```- Mise a jour de version/date en **un seul endroit**| **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | ✅ 100% || **Réglages Admin** | Configuration centralisée et synchronisée via Vault (AES-256) | [+] 100% |
+
+- **[NEW]** Installateur auto-extractible (~42 MB)
+
+  - ZIP embarqué dans les ressources
+
+  - Aucun dossier externe requis
+
+  - Téléchargement direct depuis GitHub#### Sync-Firebase.ps1- Tous les titres de fenetres utilisent `StaticResource`
+
+- **[NEW]** Mode -Auto (ROBO MODE) complet
+
+  - Build + Installer + Firebase + GitHub en une commandeScript de synchronisation pour preserver les donnees dynamiques avant deploiement:
+
+  - Préservation automatique des données Firebase
+
+  - Fermeture automatique du terminal Firebase CLI```powershell- Toutes les barres copyright utilisent `StaticResource`| **Créer Module** | Copy Design natif depuis template Library ou projet existant | ✅ 100% || **Upload Template** | Upload templates vers Vault (réservé Admin) | [+] 100% |
+
+- **[FIX]** Firebase CLI deployment
+
+  - Correction `database:update` → `database:set`# Mode interactif
+
+  - Gestion automatique de la confirmation `y`
+
+  - Nettoyage JSON (espaces PowerShell).\Sync-Firebase.ps1- 22+ fenetres synchronisees automatiquement
+
+  - Encodage UTF-8 sans BOM
+
+- **[NEW]** Firebase Integration complète
+
+  - Kill Switch, Maintenance Mode, Force Update
+
+  - Device Tracking, Audit Logs# Mode pre-deployment (automatique)| **Place Equipment** | Placement équipements avec Copy Design automatisé | ✅ 100% || **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |
+
+  - Admin Console web (https://xeat-remote-control.web.app/)
+
+- **[NEW]** 9 modules intégrés fonctionnels.\Sync-Firebase.ps1 -PreDeploy
+
+- **[NEW]** Configuration centralisée via Vault (AES-256)
+
+- **[NEW]** Thèmes sombre/clair```### Configuration Centralisee via Vault
+
+
+
+---
+
+
+
+## Auteur**Donnees preservees:**| **Smart Tools** | 25+ outils: création IPT/STEP, génération PDF, iLogic Forms, BOM, etc. | ✅ 100% || **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | [~] Planifié |
+
+
+
+**Mohammed Amine Elgalai**  - devices (postes enregistres)
+
+Software Developer - Engineering Automation  
+
+XNRGY Climate Systems ULC- users (utilisateurs)- Chiffrement AES-256 des fichiers de configuration
+
+
+
+---- userActiveSessions (sessions actives)
+
+
+
+## Licence- auditLog (journal des actions)- Synchronisation automatique au demarrage| **Checklist HVAC** | Validation modules AHU avec stockage Vault | ✅ 100% || **DXF Verifier** | Validation des fichiers DXF avant envoi | [~] Migration |
+
+
+
+Copyright (c) 2026 XNRGY Climate Systems ULC. Tous droits réservés.- statistics (statistiques)
+
+Usage interne uniquement.
 
 - telemetryEvents (telemetrie)- Acces administrateur verifie via Vault API
 

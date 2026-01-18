@@ -93,6 +93,10 @@
     <Resource Include="Resources\XnrgyEngineeringAutomationTools.ico" />
   </ItemGroup>
   <ItemGroup>
+    <!-- ZIP embarque contenant tous les fichiers de l'application (auto-extractible) -->
+    <EmbeddedResource Include="Resources\AppFiles.zip" Condition="Exists('Resources\AppFiles.zip')" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="App.config" />
     <None Include="app.manifest" />
   </ItemGroup>

@@ -1,6 +1,8 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -192,17 +194,136 @@ namespace XnrgyInstaller
 
         private async Task CopyApplicationFilesAsync(string destPath, IProgress<InstallationProgress> progress)
         {
-            // Obtenir le dossier source (ou l'installateur contient les fichiers)
+            // PRIORITE 1: Extraire depuis le ZIP embarque (installateur auto-extractible)
+            if (await ExtractEmbeddedZipAsync(destPath, progress))
+            {
+                return; // Succes - fichiers extraits du ZIP embarque
+            }
+
+            // PRIORITE 2: Dossier "Files" a cote de l'installateur (fallback)
             string sourcePath = GetSourcePath();
             
-            if (string.IsNullOrEmpty(sourcePath) || !Directory.Exists(sourcePath))
+            if (!string.IsNullOrEmpty(sourcePath) && Directory.Exists(sourcePath))
             {
-                // Mode demo: simuler la copie
-                await SimulateCopyFilesAsync(destPath, progress);
+                await CopyFromFolderAsync(sourcePath, destPath, progress);
                 return;
             }
 
-            // Copier tous les fichiers
+            // PRIORITE 3: Mode demo/simulation (aucune source trouvee)
+            await SimulateCopyFilesAsync(destPath, progress);
+        }
+
+        /// <summary>
+        /// Extrait les fichiers depuis le ZIP embarque dans les ressources de l'installateur
+        /// </summary>
+        private async Task<bool> ExtractEmbeddedZipAsync(string destPath, IProgress<InstallationProgress> progress)
+        {
+            try
+            {
+                // Chercher la ressource embarquee "AppFiles.zip"
+                var assembly = Assembly.GetExecutingAssembly();
+                string resourceName = null;
+                
+                foreach (string name in assembly.GetManifestResourceNames())
+                {
+                    if (name.EndsWith("AppFiles.zip", StringComparison.OrdinalIgnoreCase))
+                    {
+                        resourceName = name;
+                        break;
+                    }
+                }
+
+                if (string.IsNullOrEmpty(resourceName))
+                {
+                    LogError("[!] ZIP embarque non trouve dans les ressources");
+                    return false;
+                }
+
+                LogInfo($"[+] Extraction depuis ressource embarquee: {resourceName}");
+
+                using (Stream zipStream = assembly.GetManifestResourceStream(resourceName))
+                {
+                    if (zipStream == null)
+                    {
+                        LogError("[-] Impossible de lire le flux ZIP embarque");
+                        return false;
+                    }
+
+                    // Extraire vers un fichier temporaire pour utiliser ZipFile
+                    string tempZipPath = Path.Combine(Path.GetTempPath(), "XnrgyAppFiles_" + Guid.NewGuid().ToString("N") + ".zip");
+                    
+                    try
+                    {
+                        // Copier le stream vers fichier temp
+                        using (FileStream tempFile = new FileStream(tempZipPath, FileMode.Create, FileAccess.Write))
+                        {
+                            await zipStream.CopyToAsync(tempFile);
+                        }
+
+                        // Compter les entrees pour la progression
+                        int totalEntries = 0;
+                        using (ZipArchive countArchive = ZipFile.OpenRead(tempZipPath))
+                        {
+                            totalEntries = countArchive.Entries.Count;
+                        }
+
+                        // Extraire avec progression
+                        int currentEntry = 0;
+                        using (ZipArchive archive = ZipFile.OpenRead(tempZipPath))
+                        {
+                            foreach (ZipArchiveEntry entry in archive.Entries)
+                            {
+                                currentEntry++;
+                                
+                                // Ignorer les dossiers vides
+                                if (string.IsNullOrEmpty(entry.Name))
+                                    continue;
+
+                                string destFile = Path.Combine(destPath, entry.FullName);
+                                string destDir = Path.GetDirectoryName(destFile);
+
+                                if (!Directory.Exists(destDir))
+                                    Directory.CreateDirectory(destDir);
+
+                                entry.ExtractToFile(destFile, true);
+
+                                // Progression (10-70%)
+                                int percentage = 10 + (int)((currentEntry / (double)totalEntries) * 60);
+                                progress.Report(new InstallationProgress
+                                {
+                                    Percentage = percentage,
+                                    CurrentAction = $"Extraction: {entry.Name} ({currentEntry}/{totalEntries})"
+                                });
+
+                                await Task.Delay(5); // Petit delai pour fluidite UI
+                            }
+                        }
+
+                        LogInfo($"[+] {currentEntry} fichiers extraits avec succes");
+                        return true;
+                    }
+                    finally
+                    {
+                        // Nettoyer le fichier temp
+                        if (System.IO.File.Exists(tempZipPath))
+                        {
+                            try { System.IO.File.Delete(tempZipPath); } catch { }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError($"[-] Erreur extraction ZIP embarque: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Copie les fichiers depuis un dossier externe (fallback)
+        /// </summary>
+        private async Task CopyFromFolderAsync(string sourcePath, string destPath, IProgress<InstallationProgress> progress)
+        {
             string[] files = Directory.GetFiles(sourcePath, "*.*", SearchOption.AllDirectories);
             int totalFiles = files.Length;
             int currentFile = 0;
@@ -633,7 +754,26 @@ pause
                     Directory.CreateDirectory(logDir);
 
                 string logFile = Path.Combine(logDir, $"Install_{DateTime.Now:yyyyMMdd}.log");
-                System.IO.File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] {message}\n");
+                System.IO.File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] ERROR {message}\n");
+            }
+            catch { }
+        }
+
+        private void LogInfo(string message)
+        {
+            try
+            {
+                string logDir = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                    PUBLISHER,
+                    "InstallerLogs"
+                );
+                
+                if (!Directory.Exists(logDir))
+                    Directory.CreateDirectory(logDir);
+
+                string logFile = Path.Combine(logDir, $"Install_{DateTime.Now:yyyyMMdd}.log");
+                System.IO.File.AppendAllText(logFile, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] INFO {message}\n");
             }
             catch { }
         }
