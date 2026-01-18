@@ -63,6 +63,269 @@
                                                "userId":  "mohammedamine.elgala",
                                                "userName":  "mohammedamine.elgala"
                                            },
+                     "log_1768708939287":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768708939287",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:02:18.9628615Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768709991656":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768709991656",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:19:51.3366863Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768710358752":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768710358752",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:25:58.4151541Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768710938063":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768710938063",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:35:37.7177115Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768711330916":  {
+                                               "action":  "app_installed",
+                                               "category":  "installation",
+                                               "details":  "XEAT v1.0.0 installed on LAPTOP-MOHAMMED",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768711330916",
+                                               "ipAddress":  "local",
+                                               "newValue":  "1.0.0",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:42:10.4456598Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768711340611":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768711340611",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:42:20.2986116Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768711344796":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768711344796",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:42:24.4703491Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768712225968":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768712225968",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:57:05.6700264Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768712359870":  {
+                                               "action":  "app_installed",
+                                               "category":  "installation",
+                                               "details":  "XEAT v1.0.0 installed on LAPTOP-MOHAMMED",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768712359870",
+                                               "ipAddress":  "local",
+                                               "newValue":  "1.0.0",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:59:19.1812537Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768712376995":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768712376995",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T04:59:36.6701531Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768713288346":  {
+                                               "action":  "welcome_message_updated",
+                                               "details":  "enabled",
+                                               "id":  "log_1768713288346",
+                                               "timestamp":  "2026-01-18T05:14:48.346Z",
+                                               "userId":  "admin",
+                                               "userName":  "Admin Panel"
+                                           },
+                     "log_1768717855600":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768717855600",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T06:30:55.2770863Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768717977687":  {
+                                               "action":  "app_installed",
+                                               "category":  "installation",
+                                               "details":  "XEAT v1.0.0 installed on LAPTOP-MOHAMMED",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768717977687",
+                                               "ipAddress":  "local",
+                                               "newValue":  "1.0.0",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T06:32:57.0319310Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768717988573":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768717988573",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T06:33:08.2542325Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768718736230":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768718736230",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T06:45:35.9252017Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768718737985":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768718737985",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T06:45:37.6659820Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768718752257":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768718752257",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T06:45:51.9337448Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
+                     "log_1768719060898":  {
+                                               "action":  "session_start",
+                                               "category":  "session",
+                                               "details":  "XEAT v1.0.0 started",
+                                               "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
+                                               "errorMessage":  "none",
+                                               "id":  "log_1768719060898",
+                                               "ipAddress":  "local",
+                                               "newValue":  "none",
+                                               "oldValue":  "none",
+                                               "success":  true,
+                                               "timestamp":  "2026-01-18T06:51:00.5841808Z",
+                                               "userId":  "mohammedamine.elgala",
+                                               "userName":  "mohammedamine.elgala"
+                                           },
                      "placeholder":  {
                                          "action":  "system_init",
                                          "category":  "system",
@@ -174,7 +437,7 @@
     "devices":  {
                     "LAPTOP-MOHAMMED_mohammedamine_elgala":  {
                                                                  "hardware":  {
-                                                                                  "diskFreeGB":  325.9,
+                                                                                  "diskFreeGB":  321.4,
                                                                                   "diskTotalGB":  951.6,
                                                                                   "diskType":  "Unknown",
                                                                                   "gpuMemoryGB":  4,
@@ -182,23 +445,23 @@
                                                                                   "processor":  "Intel(R) Core(TM) Ultra 9 185H",
                                                                                   "processorCores":  22,
                                                                                   "processorSpeed":  "2.30 GHz",
-                                                                                  "ramAvailableGB":  34,
+                                                                                  "ramAvailableGB":  37.3,
                                                                                   "ramTotalGB":  63.4
                                                                               },
                                                                  "heartbeat":  {
-                                                                                   "cpuUsage":  10,
-                                                                                   "diskUsage":  65,
+                                                                                   "cpuUsage":  27,
+                                                                                   "diskUsage":  66,
                                                                                    "intervalMs":  30000,
-                                                                                   "lastHeartbeat":  "2026-01-18T03:48:04Z",
+                                                                                   "lastHeartbeat":  "2026-01-18T06:52:37Z",
                                                                                    "missedHeartbeats":  0,
-                                                                                   "ramUsage":  46,
-                                                                                   "status":  "online"
+                                                                                   "ramUsage":  45,
+                                                                                   "status":  "offline"
                                                                                },
                                                                  "metadata":  {
-                                                                                  "createdAt":  "2026-01-18T03:39:30Z",
+                                                                                  "createdAt":  "2026-01-18T06:50:55Z",
                                                                                   "notes":  "Auto-registered by XEAT",
                                                                                   "tags":  "auto,saintHubertQC",
-                                                                                  "updatedAt":  "2026-01-18T03:39:30Z"
+                                                                                  "updatedAt":  "2026-01-18T06:50:55Z"
                                                                               },
                                                                  "network":  {
                                                                                  "dnsServers":  "none",
@@ -220,16 +483,16 @@
                                                                                   },
                                                                  "registration":  {
                                                                                       "approved":  true,
-                                                                                      "approvedAt":  "2026-01-18T03:39:30Z",
+                                                                                      "approvedAt":  "2026-01-18T06:50:55Z",
                                                                                       "approvedBy":  "auto",
                                                                                       "deviceId":  "LAPTOP-MOHAMMED_mohammedamine_elgala",
                                                                                       "machineName":  "LAPTOP-MOHAMMED",
-                                                                                      "registeredAt":  "2026-01-18T03:39:30Z",
+                                                                                      "registeredAt":  "2026-01-18T06:50:55Z",
                                                                                       "registeredBy":  "mohammedamine.elgala"
                                                                                   },
                                                                  "security":  {
                                                                                   "failedLoginAttempts":  0,
-                                                                                  "lastLoginAttempt":  "2026-01-18T03:39:30Z",
+                                                                                  "lastLoginAttempt":  "2026-01-18T06:50:55Z",
                                                                                   "requiresApproval":  false,
                                                                                   "trustedDevice":  true
                                                                               },
@@ -240,8 +503,8 @@
                                                                                   "officeVersion":  "16.0.19530.20144",
                                                                                   "vaultServer":  "XNRGY-SRV",
                                                                                   "vaultVersion":  "31.2.115.0",
-                                                                                  "xeatInstalledAt":  "2026-01-18T03:39:30Z",
-                                                                                  "xeatLastUpdated":  "2026-01-18T03:39:34.6831724Z",
+                                                                                  "xeatInstalledAt":  "2026-01-18T06:50:55Z",
+                                                                                  "xeatLastUpdated":  "2026-01-18T06:51:00.5841808Z",
                                                                                   "xeatVersion":  "1.0.0"
                                                                               },
                                                                  "status":  {
@@ -252,8 +515,8 @@
                                                                                 "currentUser":  "mohammedamine.elgala",
                                                                                 "currentUserId":  "XNRGY_mohammedamine_elgala",
                                                                                 "enabled":  true,
-                                                                                "lastSeen":  "2026-01-18T03:48:04Z",
-                                                                                "online":  true
+                                                                                "lastSeen":  "2026-01-18T06:52:37Z",
+                                                                                "online":  false
                                                                             },
                                                                  "system":  {
                                                                                 "computerName":  "LAPTOP-MOHAMMED",
@@ -392,52 +655,108 @@
     "featureFlags":  {
                          "autoUpdate":  {
                                             "betaOnly":  false,
+                                            "description":  "Mises a jour automatiques de l\u0027application",
                                             "enabled":  true,
                                             "enabledForRoles":  "all",
-                                            "enabledForSites":  "all"
+                                            "enabledForSites":  "all",
+                                            "icon":  "Ã°Å¸â€â€ž"
                                         },
+                         "broadcastMessages":  {
+                                                   "betaOnly":  false,
+                                                   "description":  "Reception des messages broadcast",
+                                                   "enabled":  true,
+                                                   "enabledForRoles":  "all",
+                                                   "enabledForSites":  "all",
+                                                   "icon":  "Ã°Å¸â€œÂ¢"
+                                               },
                          "checklistHVAC":  {
                                                "betaOnly":  false,
+                                               "description":  "Module Checklist HVAC pour la validation",
                                                "enabled":  true,
                                                "enabledForRoles":  "admin-adminDesigner-designer-user",
-                                               "enabledForSites":  "all"
+                                               "enabledForSites":  "all",
+                                               "icon":  "Ã°Å¸â€œâ€¹"
                                            },
                          "copyDesignModule":  {
                                                   "betaOnly":  false,
+                                                  "description":  "Copie intelligente des designs Inventor",
                                                   "enabled":  true,
                                                   "enabledForRoles":  "admin-adminDesigner-designer",
-                                                  "enabledForSites":  "all"
+                                                  "enabledForSites":  "all",
+                                                  "icon":  "Ã°Å¸â€œâ€¹"
                                               },
                          "darkTheme":  {
                                            "betaOnly":  false,
+                                           "description":  "Theme sombre de l\u0027interface",
                                            "enabled":  true,
                                            "enabledForRoles":  "all",
-                                           "enabledForSites":  "all"
+                                           "enabledForSites":  "all",
+                                           "icon":  "Ã°Å¸Å’â„¢"
                                        },
+                         "exportDxfPdf":  {
+                                              "betaOnly":  true,
+                                              "description":  "Export automatique DXF et PDF",
+                                              "enabled":  false,
+                                              "enabledForRoles":  "admin-adminDesigner",
+                                              "enabledForSites":  "montrealQC",
+                                              "icon":  "Ã°Å¸â€œÂ"
+                                          },
+                         "maintenanceAlerts":  {
+                                                   "betaOnly":  false,
+                                                   "description":  "Alertes de maintenance planifiee",
+                                                   "enabled":  true,
+                                                   "enabledForRoles":  "all",
+                                                   "enabledForSites":  "all",
+                                                   "icon":  "Ã°Å¸â€Â§"
+                                               },
+                         "sharepointIntegration":  {
+                                                       "betaOnly":  true,
+                                                       "description":  "Integration avec SharePoint",
+                                                       "enabled":  false,
+                                                       "enabledForRoles":  "admin",
+                                                       "enabledForSites":  "all",
+                                                       "icon":  "Ã¢ËœÂÃ¯Â¸Â"
+                                                   },
                          "smartToolsModule":  {
                                                   "betaOnly":  false,
+                                                  "description":  "Outils intelligents pour Inventor",
                                                   "enabled":  true,
                                                   "enabledForRoles":  "admin-adminDesigner-designer",
-                                                  "enabledForSites":  "all"
+                                                  "enabledForSites":  "all",
+                                                  "icon":  "Ã°Å¸â€ºÂ Ã¯Â¸Â"
                                               },
                          "telemetryCollection":  {
                                                      "betaOnly":  false,
+                                                     "description":  "Collecte des donnees de telemetrie",
                                                      "enabled":  true,
                                                      "enabledForRoles":  "all",
-                                                     "enabledForSites":  "all"
+                                                     "enabledForSites":  "all",
+                                                     "icon":  "Ã°Å¸â€œÅ "
                                                  },
                          "vaultSettingsModule":  {
                                                      "betaOnly":  false,
+                                                     "description":  "Configuration des parametres Vault",
                                                      "enabled":  true,
                                                      "enabledForRoles":  "admin-adminDesigner",
-                                                     "enabledForSites":  "all"
+                                                     "enabledForSites":  "all",
+                                                     "icon":  "Ã¢Å¡â„¢Ã¯Â¸Â"
                                                  },
                          "vaultUploadModule":  {
                                                    "betaOnly":  false,
+                                                   "description":  "Televersement de fichiers vers Vault",
                                                    "enabled":  true,
                                                    "enabledForRoles":  "admin-adminDesigner-designer-user",
-                                                   "enabledForSites":  "all"
-                                               }
+                                                   "enabledForSites":  "all",
+                                                   "icon":  "Ã°Å¸â€œÂ¤"
+                                               },
+                         "welcomeMessages":  {
+                                                 "betaOnly":  false,
+                                                 "description":  "Affichage des messages de bienvenue",
+                                                 "enabled":  true,
+                                                 "enabledForRoles":  "all",
+                                                 "enabledForSites":  "all",
+                                                 "icon":  "Ã°Å¸â€˜â€¹"
+                                             }
                      },
     "forceUpdate":  {
                         "blockAppUntilUpdated":  false,
@@ -507,44 +826,94 @@
                                   }
                    },
     "maintenance":  {
-                        "allowAdmins":  true,
                         "allowReadOnly":  false,
-                        "detailedMessage":  "none",
                         "enabled":  false,
-                        "estimatedEndTime":  "none",
-                        "message":  "Application en maintenance",
-                        "redirectUrl":  "none",
+                        "estimatedEndTime":  "",
+                        "message":  "Bonjour {userName},\n\nUne maintenance est en cours sur l\u0027application.\n\n===================================\nINFORMATIONS\n===================================\n\nHeure de fin estimee:{estimatedEndTime}\n\nVeuillez sauvegarder votre travail.\nMerci de votre patience.\n\n===================================\nEquipe IT XNRGY",
                         "scheduledMaintenance":  {
                                                      "enabled":  false,
-                                                     "notifyBeforeMinutes":  30,
-                                                     "scheduledEnd":  "none",
-                                                     "scheduledStart":  "none"
+                                                     "endTime":  "",
+                                                     "message":  "Bonjour {userName},\n\nUne maintenance est planifiee.\n\n===================================\nPLANIFICATION\n===================================\n\nDebut:{scheduledTime}\nDuree estimee:{estimatedDuration}\n\nVeuillez sauvegarder votre travail avant le debut de la maintenance.\n\n===================================\nEquipe IT XNRGY",
+                                                     "notifyMinutesBefore":  30,
+                                                     "startTime":  ""
                                                  },
                         "showCountdown":  true,
-                        "startTime":  "none"
+                        "startTime":  "",
+                        "templates":  {
+                                          "completed":  {
+                                                            "message":  "Bonjour {userName}!\n\nLa maintenance est terminee avec succes!\n\n===================================\nTERMINE\n===================================\n\nL\u0027application est de nouveau disponible.\n\nMerci de votre patience.\nBon travail!\n\n===================================\nEquipe IT XNRGY",
+                                                            "title":  "Maintenance Terminee",
+                                                            "type":  "success"
+                                                        },
+                                          "emergency":  {
+                                                            "message":  "Bonjour {userName},\n\nUne intervention d\u0027urgence est en cours.\n\n===================================\nATTENTION\n===================================\n\nUne maintenance non planifiee est necessaire pour resoudre un probleme critique.\n\nNous travaillons activement a retablir le service.\nMerci de votre comprehension.\n\n===================================\nEquipe IT XNRGY",
+                                                            "title":  "Maintenance d\u0027Urgence",
+                                                            "type":  "error"
+                                                        },
+                                          "inProgress":  {
+                                                             "message":  "Bonjour {userName},\n\nUne maintenance est actuellement en cours.\n\n===================================\nEN COURS\n===================================\n\nHeure de fin estimee:{endTime}\n\nL\u0027application n\u0027est temporairement pas disponible.\n\nNous vous remercions de votre patience.\n\n===================================\nEquipe IT XNRGY",
+                                                             "title":  "Maintenance en Cours",
+                                                             "type":  "warning"
+                                                         },
+                                          "planned":  {
+                                                          "message":  "Bonjour {userName},\n\nUne maintenance est planifiee.\n\n===================================\nPLANIFICATION\n===================================\n\nHeure de fin estimee:{endTime}\n\nVeuillez sauvegarder votre travail avant.\n\nMerci de votre comprehension.\n\n===================================\nEquipe IT XNRGY",
+                                                          "title":  "Maintenance Planifiee",
+                                                          "type":  "warning"
+                                                      }
+                                      }
                     },
     "notifications":  {
                           "templates":  {
                                             "accountBlocked":  {
-                                                                   "message":  "Votre compte a ete bloque",
+                                                                   "message":  "Bonjour {userName},\n\nVotre compte a ete bloque.\n\n===================================\nQUE FAIRE?\n===================================\n\nContactez votre superviseur ou:\nmohammedamine.elgalai@xnrgy.com",
                                                                    "title":  "Compte bloque",
                                                                    "type":  "error"
                                                                },
+                                            "accountUnblocked":  {
+                                                                     "message":  "Bonjour {userName}!\n\nVotre compte a ete reactive!\n\nVous pouvez maintenant utiliser l\u0027application normalement.",
+                                                                     "title":  "Compte reactive",
+                                                                     "type":  "success"
+                                                                 },
+                                            "deviceSuspended":  {
+                                                                    "message":  "Bonjour {userName},\n\nLe poste \u0027{machineName}\u0027 a ete suspendu.\n\nContactez l\u0027administrateur pour plus d\u0027informations.",
+                                                                    "title":  "Poste suspendu",
+                                                                    "type":  "warning"
+                                                                },
+                                            "maintenanceCompleted":  {
+                                                                         "message":  "Bonjour {userName}!\n\nLa maintenance est terminee!\n\nMerci de votre patience.",
+                                                                         "title":  "Maintenance terminee",
+                                                                         "type":  "success"
+                                                                     },
                                             "maintenanceScheduled":  {
-                                                                         "message":  "Une maintenance est prevue prochainement",
+                                                                         "message":  "Bonjour {userName},\n\nUne maintenance est prevue:\n\n===================================\nPLANIFICATION\n===================================\n\nDate:{scheduledTime}\nDuree:{estimatedDuration}\n\nSauvegardez votre travail avant.",
                                                                          "title":  "Maintenance planifiee",
                                                                          "type":  "warning"
                                                                      },
+                                            "maintenanceStarting":  {
+                                                                        "message":  "Bonjour {userName},\n\nLa maintenance commence dans 5 minutes!\n\nSauvegardez votre travail maintenant.",
+                                                                        "title":  "Maintenance imminente",
+                                                                        "type":  "warning"
+                                                                    },
                                             "sessionExpired":  {
-                                                                   "message":  "Votre session a expire",
+                                                                   "message":  "Bonjour {userName},\n\nVotre session a expire.\n\nVeuillez relancer l\u0027application pour continuer.",
                                                                    "title":  "Session expiree",
                                                                    "type":  "warning"
                                                                },
                                             "updateAvailable":  {
-                                                                    "message":  "Une nouvelle version de XEAT est disponible",
+                                                                    "message":  "Bonjour {userName}!\n\nUne nouvelle version de XEAT est disponible!\n\n===================================\nNOUVELLE VERSION\n===================================\n\nVersion:{newVersion}\n\nTelecharger maintenant?",
                                                                     "title":  "Mise a jour disponible",
                                                                     "type":  "info"
-                                                                }
+                                                                },
+                                            "updateRequired":  {
+                                                                   "message":  "Bonjour {userName},\n\nUne mise a jour obligatoire est requise.\n\n===================================\nMISE A JOUR OBLIGATOIRE\n===================================\n\nVersion requise:{newVersion}\nCorrectifs de securite inclus",
+                                                                   "title":  "Mise a jour requise",
+                                                                   "type":  "error"
+                                                               },
+                                            "welcomeBack":  {
+                                                                "message":  "Bonjour {userName}!\n\nRavi de vous revoir sur XEAT!\n\nBonne utilisation!",
+                                                                "title":  "Content de vous revoir!",
+                                                                "type":  "success"
+                                                            }
                                         }
                       },
     "roles":  {
@@ -744,7 +1113,7 @@
                  },
     "sites":  {
                   "arizonaUS":  {
-                                    "address":  "9019 E Technology Ave, Mesa, AZ 85212, USA",
+                                    "address":  "9019 E Technology Ave,Mesa,AZ 85212,USA",
                                     "city":  "Mesa",
                                     "contactEmail":  "info@xnrgy.com",
                                     "contactPhone":  "+1 480 863-0100",
@@ -759,7 +1128,7 @@
                                     "timezone":  "America-Phoenix"
                                 },
                   "montrealQC":  {
-                                     "address":  "5555 Rte de l\u0027aeroport, Longueuil, QC J3Y 8Y9, CA",
+                                     "address":  "5555 Rte de l\u0027aeroport,Longueuil,QC J3Y 8Y9,CA",
                                      "city":  "Longueuil",
                                      "contactEmail":  "info@xnrgy.com",
                                      "contactPhone":  "+1 514 593-0800",
@@ -805,14 +1174,14 @@
                                                         "users":  0
                                                     },
                                       "montrealQC":  {
-                                                         "devices":  0,
+                                                         "devices":  3,
                                                          "onlineDevices":  0,
                                                          "todayLogins":  0,
                                                          "users":  0
                                                      }
                                   },
                        "devices":  {
-                                       "totalRegistered":  3
+                                       "totalRegistered":  22
                                    },
                        "global":  {
                                       "activeUsers":  0,
@@ -821,7 +1190,7 @@
                                       "totalDevices":  0,
                                       "totalErrors":  0,
                                       "totalModulesCreated":  0,
-                                      "totalSessions":  2,
+                                      "totalSessions":  16,
                                       "totalUploads":  0,
                                       "totalUsers":  0
                                   },
@@ -851,13 +1220,108 @@
                                           "totalErrors":  0,
                                           "totalSessions":  0
                                       },
+                      "anonymization":  {
+                                            "enabled":  false,
+                                            "hashMachineNames":  false,
+                                            "hashUsernames":  false,
+                                            "note":  "Donnees utilisees uniquement en interne XNRGY"
+                                        },
+                      "categories":  {
+                                         "action":  {
+                                                        "description":  "Actions utilisateur",
+                                                        "enabled":  true,
+                                                        "icon":  "Ã¢Å¡Â¡"
+                                                    },
+                                         "auth":  {
+                                                      "description":  "Authentification et sessions",
+                                                      "enabled":  true,
+                                                      "icon":  "Ã°Å¸â€Â"
+                                                  },
+                                         "error":  {
+                                                       "description":  "Erreurs et exceptions",
+                                                       "enabled":  true,
+                                                       "icon":  "Ã¢ÂÅ’"
+                                                   },
+                                         "lifecycle":  {
+                                                           "description":  "Evenements cycle de vie application",
+                                                           "enabled":  true,
+                                                           "icon":  "Ã°Å¸â€â€ž"
+                                                       },
+                                         "navigation":  {
+                                                            "description":  "Navigation entre modules",
+                                                            "enabled":  true,
+                                                            "icon":  "Ã°Å¸Â§Â­"
+                                                        },
+                                         "performance":  {
+                                                             "description":  "Metriques de performance",
+                                                             "enabled":  true,
+                                                             "icon":  "Ã°Å¸â€œÅ "
+                                                         }
+                                     },
                       "collectCrashReports":  true,
                       "collectPerformanceMetrics":  true,
                       "collectUsageStats":  true,
+                      "dashboardRefreshRate":  60,
                       "enabled":  true,
+                      "exportFormats":  [
+                                            "json",
+                                            "csv"
+                                        ],
                       "retentionDays":  90
                   },
     "telemetryEvents":  {
+                            "eventTypes":  {
+                                               "appClose":  {
+                                                                "category":  "lifecycle",
+                                                                "description":  "Application fermee",
+                                                                "icon":  "🔚"
+                                                            },
+                                               "appStart":  {
+                                                                "category":  "lifecycle",
+                                                                "description":  "Application lancee",
+                                                                "icon":  "🚀"
+                                                            },
+                                               "checklistComplete":  {
+                                                                         "category":  "action",
+                                                                         "description":  "Checklist HVAC completee",
+                                                                         "icon":  "✅"
+                                                                     },
+                                               "copyDesign":  {
+                                                                  "category":  "action",
+                                                                  "description":  "Design copie via Inventor",
+                                                                  "icon":  "📋"
+                                                              },
+                                               "error":  {
+                                                             "category":  "error",
+                                                             "description":  "Erreur rencontree",
+                                                             "icon":  "❌"
+                                                         },
+                                               "login":  {
+                                                             "category":  "auth",
+                                                             "description":  "Connexion utilisateur",
+                                                             "icon":  "🔐"
+                                                         },
+                                               "logout":  {
+                                                              "category":  "auth",
+                                                              "description":  "Deconnexion utilisateur",
+                                                              "icon":  "🚪"
+                                                          },
+                                               "moduleClose":  {
+                                                                   "category":  "navigation",
+                                                                   "description":  "Module ferme",
+                                                                   "icon":  "📁"
+                                                               },
+                                               "moduleOpen":  {
+                                                                  "category":  "navigation",
+                                                                  "description":  "Module ouvert",
+                                                                  "icon":  "📂"
+                                                              },
+                                               "vaultUpload":  {
+                                                                   "category":  "action",
+                                                                   "description":  "Fichier televerse vers Vault",
+                                                                   "icon":  "📤"
+                                                               }
+                                           },
                             "placeholder":  {
                                                 "data":  "none",
                                                 "deviceId":  "none",
@@ -988,24 +1452,22 @@
               },
     "welcomeMessage":  {
                            "enabled":  true,
-                           "message":  "Bienvenue dans XNRGY Engineering Automation Tools!\n\nCet outil vous permet de:\n- Gerer vos uploads Vault\n- Copier des designs Inventor\n- Configurer vos parametres\n\nBonne utilisation!",
-                           "title":  "Bienvenue sur XEAT!",
-                           "type":  "info",
-                           "updatedAt":  "2026-01-17T12:00:00.000Z",
-                           "updatedBy":  "System"
+                           "message":  "Bonjour {userName}!\n\nBienvenue dans XNRGY Engineering Automation Tools!\n\n===================================\nFONCTIONNALITES PRINCIPALES\n===================================\n\n[Vault Upload] - Televersez vos fichiers\n[Copy Design] - Copiez vos assemblages\n[Configuration] - Parametrez votre Vault\n[Checklist HVAC] - Validez vos configurations\n\nBonne utilisation!",
+                           "showOnce":  false,
+                           "title":  "Bienvenue {userName}!"
                        },
     "welcomeMessages":  {
                             "firstInstall":  {
                                                  "enabled":  true,
-                                                 "message":  "Bienvenue dans XNRGY Engineering Automation Tools!\n\nXEAT est votre assistant d\u0027ingenierie pour:\n\n[\u003e] VAULT UPLOAD\n    Televersez vos fichiers Inventor vers Vault avec gestion automatique des proprietes (Project, Reference, Module)\n\n[\u003e] COPY DESIGN\n    Copiez et renommez intelligemment vos assemblages Inventor avec toutes les references\n\n[\u003e] CONFIGURATION VAULT\n    Configurez facilement votre connexion Vault (serveur, utilisateur, mot de passe)\n\n---\nFONCTIONNALITES A VENIR:\n- Export DXF/PDF automatise\n- Integration SharePoint\n- Gestion des BOM\n- Notifications en temps reel\n\nBonne utilisation!",
+                                                 "message":  "Bonjour {userName}!\n\nBienvenue dans XNRGY Engineering Automation Tools (XEAT).\n\n===================================\nFONCTIONNALITES DISPONIBLES\n===================================\n\n[VAULT UPLOAD]\nTeleversez vos fichiers Inventor vers Vault\navec gestion automatique des proprietes\n(Project,Reference,Module)\n\n[COPY DESIGN]\nCopiez et renommez intelligemment vos\nassemblages Inventor avec toutes les references\n\n[CONFIGURATION VAULT]\nConfigurez facilement votre connexion Vault\n(serveur,utilisateur,mot de passe)\n\n[CHECKLIST HVAC]\nValidez vos configurations HVAC\navec des checklists interactives\n\n===================================\nBIENTOT DISPONIBLE\n===================================\n\n- Export DXF/PDF automatise\n- Integration SharePoint\n- Gestion des BOM\n- Notifications en temps reel\n\n===================================\nSupport:mohammedamine.elgalai@xnrgy.com\n===================================",
                                                  "showOnce":  true,
                                                  "targetUsers":  "all",
-                                                 "title":  "Bienvenue sur XEAT!",
+                                                 "title":  "Bienvenue {userName}!",
                                                  "type":  "info"
                                              },
                             "global":  {
                                            "enabled":  false,
-                                           "message":  "Message global pour tous les utilisateurs",
+                                           "message":  "Bonjour {userName}!\n\nMessage global pour tous les utilisateurs.",
                                            "showOnce":  false,
                                            "targetUsers":  "all",
                                            "title":  "Message Important",
@@ -1013,11 +1475,20 @@
                                        },
                             "newUserOnDevice":  {
                                                     "enabled":  true,
-                                                    "message":  "Bonjour et bienvenue dans XNRGY Engineering Automation Tools!\n\nCette application est deja installee sur ce poste.\n\nVotre session sera liee a votre compte Windows.\n\nPour toute question, contactez:\nmohammedamine.elgalai@xnrgy.com",
+                                                    "message":  "Bonjour {userName}!\n\nBienvenue dans XNRGY Engineering Automation Tools!\n\n===================================\nINFORMATIONS\n===================================\n\nPoste:{machineName}\nUtilisateur:{userName}\n\nCette application est deja installee sur ce poste.\nVotre session sera liee a votre compte Windows.\n\n===================================\n\nPour toute question,contactez:\nmohammedamine.elgalai@xnrgy.com",
                                                     "showOnce":  true,
                                                     "targetUsers":  "new",
-                                                    "title":  "Bienvenue!",
+                                                    "title":  "Bienvenue {userName}!",
                                                     "type":  "info"
-                                                }
+                                                },
+                            "returningUser":  {
+                                                  "enabled":  false,
+                                                  "message":  "Bonjour {userName}!\n\nRavi de vous revoir sur XEAT!\n\n===================================\nQUOI DE NEUF?\n===================================\n\n- Nouvelles fonctionnalites disponibles\n- Bugs corriges\n- Performance amelioree\n\nBonne utilisation!",
+                                                  "showAfterDays":  7,
+                                                  "showOnce":  false,
+                                                  "targetUsers":  "returning",
+                                                  "title":  "Content de vous revoir {userName}!",
+                                                  "type":  "success"
+                                              }
                         }
 }

@@ -74,16 +74,18 @@ namespace XnrgyEngineeringAutomationTools
             }
         }
 
-        protected override async void OnExit(ExitEventArgs e)
+        protected override void OnExit(ExitEventArgs e)
         {
-            // Enregistrer la fin de session Firebase
+            // Enregistrer la fin de session Firebase - SYNCHRONE pour garantir l'execution
             try
             {
-                await FirebaseAuditService.Instance.RegisterSessionEndAsync();
+                // Utiliser Wait() avec timeout pour garantir que la requete part avant fermeture
+                var task = FirebaseAuditService.Instance.RegisterSessionEndAsync();
+                task.Wait(TimeSpan.FromSeconds(5));
             }
             catch
             {
-                // Silencieux
+                // Silencieux - ne pas bloquer la fermeture
             }
 
             // Arreter les services

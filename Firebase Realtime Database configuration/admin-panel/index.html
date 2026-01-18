@@ -533,6 +533,7 @@
         .status-online { color: var(--xnrgy-green); }
         .status-offline { color: var(--xnrgy-text-muted); }
         .status-blocked { color: var(--xnrgy-red); }
+        .status-uninstalled { color: #6c757d; font-style: italic; }
         .status-warning { color: var(--xnrgy-orange); }
 
         /* Alert Boxes */
@@ -574,17 +575,6 @@
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 15px;
-        }
-
-        @media (max-width: 1200px) {
-            .grid-3 { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 768px) {
-            .grid-2, .grid-3 { grid-template-columns: 1fr; }
-            .sidebar { width: 60px; }
-            .sidebar .nav-section-title, .sidebar .nav-item span { display: none; }
-            .main { margin-left: 60px; }
         }
 
         /* User/Device Cards */
@@ -842,6 +832,440 @@
             font-size: 0.7rem;
             color: var(--xnrgy-text-muted);
         }
+
+        /* =====================================================
+           RESPONSIVE MOBILE & TABLET STYLES
+           ===================================================== */
+        
+        /* Tablette (768px - 1024px) */
+        @media (max-width: 1024px) {
+            .grid-3 { grid-template-columns: repeat(2, 1fr); }
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar .nav-section-title,
+            .sidebar .nav-item span,
+            .sidebar .logo-text {
+                display: none;
+            }
+            
+            .sidebar .nav-item {
+                justify-content: center;
+                padding: 12px;
+            }
+            
+            .sidebar .nav-item svg {
+                margin-right: 0;
+            }
+            
+            .main {
+                margin-left: 70px;
+            }
+            
+            .header {
+                left: 70px;
+            }
+        }
+        
+        /* Mobile (max 768px) */
+        @media (max-width: 768px) {
+            /* Layout principal */
+            .sidebar {
+                position: fixed;
+                left: -250px;
+                width: 250px;
+                z-index: 1001;
+                transition: left 0.3s ease;
+                height: 100vh;
+                top: 0;
+            }
+            
+            .sidebar.mobile-open {
+                left: 0;
+            }
+            
+            .sidebar .nav-section-title,
+            .sidebar .nav-item span,
+            .sidebar .logo-text {
+                display: block;
+            }
+            
+            .sidebar .nav-item {
+                justify-content: flex-start;
+                padding: 12px 16px;
+            }
+            
+            .sidebar .nav-item svg {
+                margin-right: 12px;
+            }
+            
+            .main {
+                margin-left: 0;
+                padding: 70px 10px 10px 10px;
+            }
+            
+            .header {
+                left: 0;
+                padding: 0 10px;
+            }
+            
+            .header-left .logo-text {
+                display: none;
+            }
+            
+            /* Menu burger */
+            .mobile-menu-btn {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                width: 40px;
+                height: 40px;
+                background: var(--xnrgy-bg-panel);
+                border: 1px solid var(--xnrgy-border-light);
+                border-radius: 8px;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+            
+            .mobile-menu-btn svg {
+                width: 24px;
+                height: 24px;
+                stroke: var(--xnrgy-cyan);
+            }
+            
+            /* Overlay mobile */
+            .mobile-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 1000;
+            }
+            
+            .mobile-overlay.active {
+                display: block;
+            }
+            
+            /* Grids */
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+            
+            /* Cards */
+            .card {
+                padding: 12px;
+            }
+            
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .card-header h3 {
+                font-size: 1rem;
+            }
+            
+            /* Tables - scroll horizontal */
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            table {
+                min-width: 600px;
+            }
+            
+            table th, table td {
+                padding: 8px 10px;
+                font-size: 0.8rem;
+            }
+            
+            /* Page header */
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+            
+            .page-title {
+                font-size: 1.3rem;
+            }
+            
+            .page-subtitle {
+                font-size: 0.8rem;
+            }
+            
+            /* Buttons */
+            .btn {
+                padding: 8px 12px;
+                font-size: 0.8rem;
+            }
+            
+            .btn-sm {
+                padding: 5px 8px;
+                font-size: 0.7rem;
+            }
+            
+            /* Stats */
+            .stat-card {
+                padding: 12px;
+            }
+            
+            .stat-card .value {
+                font-size: 1.5rem;
+            }
+            
+            /* Search */
+            .search-box {
+                margin-bottom: 12px;
+            }
+            
+            .search-box input {
+                font-size: 0.9rem;
+            }
+            
+            /* Filters */
+            .filters {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .filter-chip {
+                font-size: 0.75rem;
+                padding: 5px 10px;
+            }
+            
+            /* Forms */
+            .form-control {
+                font-size: 0.9rem;
+                padding: 10px;
+            }
+            
+            .form-group label {
+                font-size: 0.8rem;
+            }
+            
+            /* Modal */
+            .modal-content {
+                width: 95%;
+                max-width: none;
+                margin: 10px;
+                max-height: 90vh;
+            }
+            
+            .modal-header h3 {
+                font-size: 1.1rem;
+            }
+            
+            .modal-body {
+                padding: 15px;
+            }
+            
+            /* Toast */
+            .toast-container {
+                right: 10px;
+                left: 10px;
+                top: 70px;
+            }
+            
+            .toast {
+                font-size: 0.85rem;
+            }
+            
+            /* Device details panel - mobile */
+            .device-details-panel > div > div {
+                grid-template-columns: 1fr !important;
+            }
+            
+            /* Header buttons */
+            .header-right {
+                gap: 5px;
+            }
+            
+            .header-right .btn {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+            
+            .header-right .btn span {
+                display: none;
+            }
+            
+            /* Header responsive mobile */
+            .header {
+                height: 55px;
+                padding: 0 8px;
+            }
+            
+            .header .logo img {
+                width: 32px;
+                height: 32px;
+            }
+            
+            .header .logo-text h1 {
+                font-size: 0.85rem;
+            }
+            
+            .header .logo-text span {
+                font-size: 0.55rem;
+            }
+            
+            .status-badge {
+                padding: 4px 8px;
+                font-size: 0.7rem;
+            }
+            
+            .status-badge span {
+                display: none;
+            }
+            
+            .github-releases-btn {
+                padding: 5px 8px !important;
+            }
+            
+            .github-releases-btn span {
+                display: none !important;
+            }
+        }
+        
+        /* Mobile petit écran (max 480px) */
+        @media (max-width: 480px) {
+            .main {
+                padding: 55px 8px 8px 8px;
+            }
+            
+            .header {
+                height: 50px;
+                padding: 0 5px;
+            }
+            
+            .header .logo {
+                gap: 6px;
+            }
+            
+            .header .logo img {
+                width: 28px;
+                height: 28px;
+            }
+            
+            .header .logo-text h1 {
+                font-size: 0.75rem;
+            }
+            
+            .header .logo-text span {
+                display: none;
+            }
+            
+            .header-right {
+                gap: 4px;
+            }
+            
+            .header-right .btn {
+                padding: 5px 6px;
+                font-size: 0.7rem;
+            }
+            
+            .mobile-menu-btn {
+                width: 34px;
+                height: 34px;
+                margin-right: 5px;
+            }
+            
+            .mobile-menu-btn svg {
+                width: 20px;
+                height: 20px;
+            }
+            
+            .status-badge {
+                padding: 3px 6px;
+                font-size: 0.65rem;
+            }
+            
+            .status-badge .status-dot {
+                width: 6px;
+                height: 6px;
+            }
+            
+            .github-releases-btn {
+                padding: 4px 6px !important;
+            }
+            
+            .github-releases-btn svg {
+                width: 14px;
+                height: 14px;
+            }
+
+            .stat-card {
+                padding: 10px;
+            }
+            
+            .stat-card .value {
+                font-size: 1.3rem;
+            }
+            
+            .stat-card .label {
+                font-size: 0.7rem;
+            }
+            
+            .card-header h3 {
+                font-size: 0.9rem;
+            }
+            
+            .page-title {
+                font-size: 1.1rem;
+            }
+            
+            /* Hide less important columns on very small screens */
+            table .hide-mobile {
+                display: none;
+            }
+            
+            /* Quick actions - vertical stack */
+            .item-actions {
+                flex-direction: column;
+                gap: 4px;
+            }
+            
+            .item-actions .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        /* Desktop - cacher le bouton menu */
+        @media (min-width: 769px) {
+            .mobile-menu-btn {
+                display: none !important;
+            }
+            
+            .mobile-overlay {
+                display: none !important;
+            }
+        }
+        
+        /* Print styles */
+        @media print {
+            .sidebar, .header, .mobile-menu-btn, .btn {
+                display: none !important;
+            }
+            
+            .main {
+                margin: 0;
+                padding: 0;
+            }
+            
+            .card {
+                break-inside: avoid;
+                border: 1px solid #ccc;
+            }
+        }
     </style>
 </head>
 <body>
@@ -853,8 +1277,19 @@
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+
     <!-- Header -->
     <header class="header">
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="6" x2="21" y2="6"/>
+                <line x1="3" y1="12" x2="21" y2="12"/>
+                <line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
+        </button>
         <div class="logo">
             <img src="logo.png" alt="XEAT">
             <div class="logo-text">
@@ -1240,6 +1675,48 @@
                         </label>
                     </div>
                     <button class="btn btn-warning" onclick="applyMaintenance()">Activer Maintenance</button>
+                </div>
+            </div>
+
+            <!-- Message Templates Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📝 Templates de Messages</h3>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--xnrgy-text-secondary); margin-bottom: 15px;">
+                        Cliquez sur un template pour l'utiliser comme message de maintenance
+                    </p>
+                    <div class="template-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">
+                        <div class="template-btn" onclick="useMaintenanceTemplate('planned')" style="cursor: pointer; padding: 15px; border-radius: 8px; background: rgba(0, 212, 255, 0.1); border: 1px solid rgba(0, 212, 255, 0.3); transition: all 0.3s;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="font-size: 1.5rem;">📅</span>
+                                <span style="font-weight: 600; color: var(--xnrgy-cyan);">Maintenance planifiee</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--xnrgy-text-secondary); margin: 0;">Maintenance reguliere avec previs</p>
+                        </div>
+                        <div class="template-btn" onclick="useMaintenanceTemplate('inProgress')" style="cursor: pointer; padding: 15px; border-radius: 8px; background: rgba(255, 140, 0, 0.1); border: 1px solid rgba(255, 140, 0, 0.3); transition: all 0.3s;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="font-size: 1.5rem;">🔧</span>
+                                <span style="font-weight: 600; color: var(--xnrgy-orange);">En cours</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--xnrgy-text-secondary); margin: 0;">Maintenance actuellement en cours</p>
+                        </div>
+                        <div class="template-btn" onclick="useMaintenanceTemplate('completed')" style="cursor: pointer; padding: 15px; border-radius: 8px; background: rgba(0, 210, 106, 0.1); border: 1px solid rgba(0, 210, 106, 0.3); transition: all 0.3s;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="font-size: 1.5rem;">✅</span>
+                                <span style="font-weight: 600; color: var(--xnrgy-green);">Terminee</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--xnrgy-text-secondary); margin: 0;">Notification de fin de maintenance</p>
+                        </div>
+                        <div class="template-btn" onclick="useMaintenanceTemplate('emergency')" style="cursor: pointer; padding: 15px; border-radius: 8px; background: rgba(232, 17, 35, 0.1); border: 1px solid rgba(232, 17, 35, 0.3); transition: all 0.3s;">
+                            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+                                <span style="font-size: 1.5rem;">🚨</span>
+                                <span style="font-weight: 600; color: var(--xnrgy-red);">Urgente</span>
+                            </div>
+                            <p style="font-size: 0.85rem; color: var(--xnrgy-text-secondary); margin: 0;">Intervention d'urgence non planifiee</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -2235,6 +2712,48 @@
             showToast('Deconnexion reussie', 'info');
         }
 
+        // ==================== MOBILE MENU ====================
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.getElementById('mobileOverlay');
+            const menuBtn = document.getElementById('mobileMenuBtn');
+            
+            if (sidebar.classList.contains('mobile-open')) {
+                // Fermer le menu
+                sidebar.classList.remove('mobile-open');
+                overlay.classList.remove('active');
+                menuBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"/>
+                        <line x1="3" y1="12" x2="21" y2="12"/>
+                        <line x1="3" y1="18" x2="21" y2="18"/>
+                    </svg>
+                `;
+            } else {
+                // Ouvrir le menu
+                sidebar.classList.add('mobile-open');
+                overlay.classList.add('active');
+                menuBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                `;
+            }
+        }
+        
+        // Fermer le menu mobile lors du clic sur un item de navigation
+        document.addEventListener('DOMContentLoaded', () => {
+            const navItems = document.querySelectorAll('.sidebar .nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    if (window.innerWidth <= 768) {
+                        toggleMobileMenu();
+                    }
+                });
+            });
+        });
+
         // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', () => {
             // Observer l'etat d'authentification Firebase
@@ -2367,12 +2886,13 @@
 
         // ==================== ONLINE STATUS DETECTION ====================
         // Timeout en millisecondes pour considerer un device hors ligne (3 minutes = 3x heartbeat interval)
-        const HEARTBEAT_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
+        const HEARTBEAT_TIMEOUT_MS = 1 * 60 * 1000; // 1 minute - plus reactif
 
         /**
          * Determine si un device est reellement en ligne en verifiant le timestamp du heartbeat
          * Un device est considere hors ligne si:
          * - status.online est false, OU
+         * - heartbeat.status est "offline", OU
          * - le dernier heartbeat date de plus de HEARTBEAT_TIMEOUT_MS
          */
         function isDeviceOnline(device) {
@@ -2381,9 +2901,12 @@
             // Si status.online est explicitement false, le device est offline
             if (device.status?.online === false) return false;
             
+            // Si heartbeat.status est "offline", le device est offline
+            if (device.heartbeat?.status === 'offline') return false;
+            
             // Verifier le timestamp du dernier heartbeat
             const lastHeartbeat = device.heartbeat?.lastHeartbeat || device.status?.lastSeen;
-            if (!lastHeartbeat) return false;
+            if (!lastHeartbeat || lastHeartbeat === 'none') return false;
             
             try {
                 const lastHeartbeatTime = new Date(lastHeartbeat).getTime();
@@ -2431,16 +2954,27 @@
             const stats = appData.statistics?.global || {};
 
             const userCount = Object.keys(users).filter(k => k !== 'placeholder').length;
-            const deviceCount = Object.keys(devices).filter(k => k !== 'templateDevice').length;
+            
+            // Compter les postes ACTIFS (app installée, pas désinstallée)
+            const activeDevices = Object.entries(devices).filter(([k, d]) => {
+                if (k === 'templateDevice') return false;
+                const xeatVersion = d?.software?.xeatVersion || '';
+                const isEnabled = d?.status?.enabled !== false;
+                const isInstalled = xeatVersion && xeatVersion !== 'uninstalled' && xeatVersion !== 'none' && xeatVersion !== '';
+                return isInstalled && isEnabled;
+            });
+            const deviceCount = activeDevices.length;
+            
             // Utiliser isDeviceOnline() pour verifier le heartbeat timeout
-            const onlineDevices = Object.entries(devices).filter(([k, d]) => k !== 'templateDevice' && isDeviceOnline(d));
+            const onlineDevices = activeDevices.filter(([k, d]) => isDeviceOnline(d));
             const onlineCount = onlineDevices.length;
 
             document.getElementById('statTotalUsers').textContent = userCount;
             document.getElementById('statActiveUsers').textContent = Object.values(users).filter(u => u?.status?.enabled !== false).length;
             document.getElementById('statTotalDevices').textContent = deviceCount;
             document.getElementById('statOnlineDevices').textContent = onlineCount;
-            document.getElementById('statActiveSessions').textContent = stats.totalSessions || 0;
+            // Sessions actives = nombre de postes actuellement en ligne (pas le total historique)
+            document.getElementById('statActiveSessions').textContent = onlineCount;
             document.getElementById('statCurrentVersion').textContent = appData.appConfig?.currentVersion || '1.0.0';
 
             // Badges
@@ -2622,29 +3156,53 @@
                 const software = device.software || device;
                 const heartbeat = device.heartbeat || {};
                 
+                // Verifier si l'app est installee (pas desinstallee)
+                const xeatVersion = software.xeatVersion || device.appVersion || '';
+                const isUninstalled = xeatVersion === 'uninstalled' || xeatVersion === 'none' || xeatVersion === '';
+                
                 // Utiliser isDeviceOnline() pour verifier le heartbeat timeout
                 const isOnline = isDeviceOnline(device);
                 const isBlocked = status.blocked === true;
-                const statusClass = isBlocked ? 'status-blocked' : (isOnline ? 'status-online' : 'status-offline');
-                const statusText = isBlocked ? '🚫 Bloqué' : (isOnline ? '🟢 En ligne' : '⚫ Hors ligne');
-                const lastSeenInfo = !isOnline ? ` (${getTimeSinceLastHeartbeat(device)})` : '';
+                
+                // Statut: Desinstalle > Bloque > En ligne/Hors ligne
+                let statusClass, statusText, lastSeenInfo = '';
+                if (isUninstalled) {
+                    statusClass = 'status-uninstalled';
+                    statusText = '❌ Désinstallé';
+                } else if (isBlocked) {
+                    statusClass = 'status-blocked';
+                    statusText = '🚫 Bloqué';
+                } else if (isOnline) {
+                    statusClass = 'status-online';
+                    statusText = '🟢 En ligne';
+                } else {
+                    statusClass = 'status-offline';
+                    statusText = '⚫ Hors ligne';
+                    lastSeenInfo = ` (${getTimeSinceLastHeartbeat(device)})`;
+                }
+                
+                // Style grise pour les postes desinstalles
+                const rowStyle = isUninstalled ? 'opacity: 0.5;' : '';
+                const versionDisplay = isUninstalled ? '<span style="color: #dc3545; font-style: italic;">Désinstallé</span>' : (xeatVersion || '-');
                 
                 html += `
-                    <tr id="device-row-${id}">
+                    <tr id="device-row-${id}" style="${rowStyle}">
                         <td>
                             <div style="font-weight: 500;">💻 ${reg.machineName || id}</div>
                             <div style="font-size: 0.75rem; color: var(--xnrgy-text-muted);">${device.organization?.assetTag ? '🏷️ ' + device.organization.assetTag : ''}</div>
                         </td>
                         <td>📍 ${device.organization?.site || status.site || '-'}</td>
                         <td>👤 ${status.currentUser || '-'}</td>
-                        <td>📦 ${software.xeatVersion || device.appVersion || '-'}</td>
+                        <td>📦 ${versionDisplay}</td>
                         <td><span class="${statusClass}">${statusText}${lastSeenInfo}</span></td>
                         <td>🕐 ${formatDate(heartbeat.lastHeartbeat || status.lastSeen)}</td>
                         <td>
                             <div class="btn-group">
-                                ${isBlocked 
-                                    ? `<button class="btn btn-success btn-sm" onclick="unblockDevice('${id}')">✅ Débloquer</button>`
-                                    : `<button class="btn btn-warning btn-sm" onclick="blockDevice('${id}')">🚫 Bloquer</button>`
+                                ${isUninstalled 
+                                    ? `<button class="btn btn-secondary btn-sm" disabled>Non disponible</button>`
+                                    : isBlocked 
+                                        ? `<button class="btn btn-success btn-sm" onclick="unblockDevice('${id}')">✅ Débloquer</button>`
+                                        : `<button class="btn btn-warning btn-sm" onclick="blockDevice('${id}')">🚫 Bloquer</button>`
                                 }
                                 <button class="btn btn-secondary btn-sm" id="btn-details-${id}" onclick="toggleDeviceDetails('${id}')">📋 Details</button>
                             </div>
@@ -2679,11 +3237,43 @@
         // ==================== SITES ====================
         function updateSitesGrid() {
             const sites = appData.sites || {};
+            const devices = appData.devices || {};
+            const users = appData.users || {};
             const container = document.getElementById('sitesGrid');
+            
+            // Calculer les stats en temps réel par site (postes ACTIFS uniquement)
+            const siteStats = {};
+            Object.keys(sites).forEach(siteId => {
+                siteStats[siteId] = { devices: 0, activeDevices: 0, users: 0 };
+            });
+            
+            // Compter les postes par site - UNIQUEMENT ceux avec l'app installée (pas "uninstalled")
+            Object.values(devices).forEach(device => {
+                const siteId = device.organization?.site || 'unknown';
+                const xeatVersion = device.software?.xeatVersion || '';
+                const isEnabled = device.status?.enabled !== false;
+                const isInstalled = xeatVersion && xeatVersion !== 'uninstalled' && xeatVersion !== 'none' && xeatVersion !== '';
+                
+                if (siteStats[siteId]) {
+                    // Compter uniquement si l'app est installée (pas désinstallée)
+                    if (isInstalled && isEnabled) {
+                        siteStats[siteId].activeDevices++;
+                    }
+                    siteStats[siteId].devices++; // Total historique
+                }
+            });
+            
+            // Compter les utilisateurs par site
+            Object.values(users).forEach(user => {
+                const siteId = user.profile?.site || user.organization?.site || 'unknown';
+                if (siteStats[siteId]) {
+                    siteStats[siteId].users++;
+                }
+            });
             
             let html = '';
             Object.entries(sites).forEach(([id, site]) => {
-                const stats = appData.statistics?.bySite?.[id] || {};
+                const stats = siteStats[id] || { devices: 0, activeDevices: 0, users: 0 };
                 html += `
                     <div class="card">
                         <div class="card-header">
@@ -2698,11 +3288,11 @@
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                 <div class="stat-card" style="padding: 10px;">
                                     <div class="label">Utilisateurs</div>
-                                    <div class="value" style="font-size: 1.2rem;">${stats.users || 0}</div>
+                                    <div class="value" style="font-size: 1.2rem;">${stats.users}</div>
                                 </div>
                                 <div class="stat-card" style="padding: 10px;">
-                                    <div class="label">Postes</div>
-                                    <div class="value" style="font-size: 1.2rem;">${stats.devices || 0}</div>
+                                    <div class="label">Postes Actifs</div>
+                                    <div class="value" style="font-size: 1.2rem; color: var(--xnrgy-green);">${stats.activeDevices}</div>
                                 </div>
                             </div>
                             <div style="margin-top: 15px; font-size: 0.85rem; line-height: 1.6;">
@@ -2933,6 +3523,39 @@
                 showToast('Configuration maintenance appliquee', 'success');
                 logAudit('maintenance_toggle', enabled ? 'activated' : 'deactivated');
             });
+        }
+
+        // Maintenance Templates
+        const maintenanceTemplates = {
+            planned: {
+                title: "📅 Maintenance Planifiée",
+                message: "Bonjour,\n\n📅 Une maintenance est planifiée.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n📆 Heure estimée de fin: {endTime}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n💾 Veuillez sauvegarder votre travail avant le début de la maintenance.\n\nMerci de votre compréhension.\n\n— Équipe IT XNRGY"
+            },
+            inProgress: {
+                title: "🔧 Maintenance en Cours",
+                message: "Bonjour,\n\n🔧 Une maintenance est actuellement en cours.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⏰ Heure de fin estimée: {endTime}\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n⚠️ L'application n'est temporairement pas disponible.\n\nNous vous remercions de votre patience.\n\n— Équipe IT XNRGY"
+            },
+            completed: {
+                title: "✅ Maintenance Terminée",
+                message: "Bonjour! 👋\n\n✅ La maintenance est terminée avec succès!\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n🚀 L'application est de nouveau disponible\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nMerci de votre patience.\nBon travail!\n\n— Équipe IT XNRGY"
+            },
+            emergency: {
+                title: "🚨 Maintenance d'Urgence",
+                message: "Bonjour,\n\n🚨 Une intervention d'urgence est en cours.\n\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n⚠️ ATTENTION\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\nUne maintenance non planifiée est nécessaire pour résoudre un problème critique.\n\nNous travaillons activement à rétablir le service.\nMerci de votre compréhension.\n\n— Équipe IT XNRGY"
+            }
+        };
+
+        function useMaintenanceTemplate(templateName) {
+            const template = maintenanceTemplates[templateName];
+            if (!template) return;
+            
+            const endTimeEl = document.getElementById('maintenanceEndTime');
+            let endTimeStr = endTimeEl.value ? new Date(endTimeEl.value).toLocaleString('fr-FR') : '[Non définie]';
+            
+            const message = template.message.replace('{endTime}', endTimeStr);
+            document.getElementById('maintenanceMessage').value = message;
+            
+            showToast(`Template "${template.title}" appliqué`, 'info');
         }
 
         // ==================== GITHUB INTEGRATION ====================
@@ -4030,6 +4653,16 @@ Publier maintenant?
                         <p><strong>ID Machine:</strong> <code style="font-size:0.65rem;">${id}</code></p>
                     </div>
                 </div>
+                
+                <!-- NOUVELLE SECTION: Historique d'Installation -->
+                <div style="margin-top:15px;">
+                    <div style="background:var(--xnrgy-bg-dark); padding:15px; border-radius:8px; border:1px solid rgba(0,212,255,0.3);">
+                        <h4 style="color:var(--xnrgy-cyan); margin:0 0 15px 0;">📥 Historique d'Installation / Désinstallation</h4>
+                        <div id="installation-history-${id}" style="max-height:200px; overflow-y:auto;">
+                            ${generateInstallationHistoryHTML(device.installationHistory, sw)}
+                        </div>
+                    </div>
+                </div>
             `;
             
             const container = document.getElementById(`device-details-content-${id}`);
@@ -4040,6 +4673,76 @@ Publier maintenant?
             } else {
                 console.error('[-] Container non trouvé: device-details-content-' + id);
             }
+        }
+        
+        // Génère le HTML pour l'historique d'installation
+        function generateInstallationHistoryHTML(history, software) {
+            if (!history || Object.keys(history).length === 0) {
+                // Si pas d'historique, afficher les infos de base depuis software
+                const installedAt = software?.xeatInstalledAt || 'N/A';
+                const version = software?.xeatVersion || 'N/A';
+                return `
+                    <div style="display:flex; align-items:center; gap:10px; padding:10px; background:rgba(63,185,80,0.1); border-radius:6px; border-left:3px solid var(--xnrgy-green);">
+                        <span style="font-size:1.2rem;">📥</span>
+                        <div style="flex:1;">
+                            <strong style="color:var(--xnrgy-green);">Installation initiale</strong>
+                            <p style="margin:5px 0 0 0; font-size:0.85rem; color:var(--xnrgy-text-muted);">
+                                Version: <span style="color:var(--xnrgy-cyan);">${version}</span> | 
+                                Date: <span style="color:var(--xnrgy-text-primary);">${formatDate(installedAt)}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <p style="text-align:center; color:var(--xnrgy-text-muted); margin-top:10px; font-size:0.8rem;">
+                        <em>L'historique détaillé sera disponible après la prochaine installation/mise à jour.</em>
+                    </p>
+                `;
+            }
+            
+            // Trier par timestamp (plus récent en premier)
+            const entries = Object.entries(history).sort((a, b) => {
+                const tsA = a[1].timestamp || '';
+                const tsB = b[1].timestamp || '';
+                return tsB.localeCompare(tsA);
+            });
+            
+            let html = '<div style="display:flex; flex-direction:column; gap:8px;">';
+            
+            for (const [key, entry] of entries) {
+                const isInstall = entry.action === 'install';
+                const isUninstall = entry.action === 'uninstall';
+                const isUpdate = entry.action === 'update';
+                
+                const color = isUninstall ? 'var(--xnrgy-red)' : (isUpdate ? 'var(--xnrgy-orange)' : 'var(--xnrgy-green)');
+                const bgColor = isUninstall ? 'rgba(248,81,73,0.1)' : (isUpdate ? 'rgba(240,136,62,0.1)' : 'rgba(63,185,80,0.1)');
+                const icon = isUninstall ? '🗑️' : (isUpdate ? '🔄' : '📥');
+                const label = isUninstall ? 'Désinstallation' : (isUpdate ? 'Mise à jour' : 'Installation');
+                
+                html += `
+                    <div style="display:flex; align-items:flex-start; gap:10px; padding:10px; background:${bgColor}; border-radius:6px; border-left:3px solid ${color};">
+                        <span style="font-size:1.2rem;">${icon}</span>
+                        <div style="flex:1;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <strong style="color:${color};">${label}</strong>
+                                <span style="font-size:0.75rem; color:var(--xnrgy-text-muted);">${formatDate(entry.timestamp)}</span>
+                            </div>
+                            <div style="margin-top:5px; font-size:0.85rem;">
+                                <p style="margin:2px 0; color:var(--xnrgy-text-secondary);">
+                                    <strong>Version:</strong> <span style="color:var(--xnrgy-cyan);">${entry.version || 'N/A'}</span>
+                                </p>
+                                <p style="margin:2px 0; color:var(--xnrgy-text-secondary);">
+                                    <strong>Par:</strong> ${entry.installedBy || entry.uninstalledBy || entry.updatedBy || 'N/A'}
+                                </p>
+                                ${entry.installPath ? `<p style="margin:2px 0; color:var(--xnrgy-text-muted); font-size:0.75rem;"><strong>Chemin:</strong> ${entry.installPath}</p>` : ''}
+                                ${entry.notes ? `<p style="margin:2px 0; color:var(--xnrgy-text-muted); font-style:italic; font-size:0.8rem;">${entry.notes}</p>` : ''}
+                                ${entry.success === false ? `<p style="margin:2px 0; color:var(--xnrgy-red);"><strong>⚠️ Échec</strong></p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            return html;
         }
         
         function viewDevice(id) {

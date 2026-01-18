@@ -602,10 +602,8 @@ if ($SyncFirebase -or $Deploy) {
 if ($Deploy) {
     $baseStep = if ($CreatePackage) { 7 } elseif ($WithInstaller -or $InstallerOnly) { 6 } else { 4 }
     
-    # Verifier que les fichiers existent
-    if (-not (Test-Path $FirebaseCLI)) {
-        Write-Host "        [-] Firebase CLI introuvable: $FirebaseCLI" -ForegroundColor Red
-    } elseif (-not (Test-Path $AdminPanelDir)) {
+    # Verifier que le dossier admin-panel existe
+    if (-not (Test-Path $AdminPanelDir)) {
         Write-Host "        [-] Dossier admin-panel introuvable: $AdminPanelDir" -ForegroundColor Red
     } else {
         Write-Host ""
@@ -614,114 +612,213 @@ if ($Deploy) {
         Write-Host "        Projet: xeat-remote-control" -ForegroundColor Gray
         Write-Host "  ════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
         
-        # Lancer le terminal Firebase UNE SEULE FOIS pour toutes les commandes
-        Write-Host ""
-        Write-Host "  [$($baseStep + 1)/$TotalSteps] Ouverture terminal Firebase..." -ForegroundColor Yellow
-        
-        $proc = Start-Process -FilePath $FirebaseCLI -WorkingDirectory $FirebaseDir -PassThru
-        
-        Write-Host "        [~] Attente initialisation Firebase CLI (~6 sec)..." -ForegroundColor DarkGray
-        Start-Sleep -Seconds 6
-        
-        # Configurer SendKeys
-        Add-Type -AssemblyName System.Windows.Forms
-        $wshell = New-Object -ComObject WScript.Shell
-        $wshell.AppActivate($proc.Id) | Out-Null
-        Start-Sleep -Milliseconds 500
-        
         # ─────────────────────────────────────────────────────────────────────
-        # ETAPE A: Deployer Hosting (admin-panel HTML)
+        # DETECTER Firebase CLI (Global npm > Local exe > SendKeys fallback)
         # ─────────────────────────────────────────────────────────────────────
-        Write-Host ""
-        Write-Host "  [$($baseStep + 1)/$TotalSteps] Deploiement HOSTING (admin-panel)..." -ForegroundColor Yellow
-        Write-Host "        [>] URL: https://xeat-remote-control.web.app/" -ForegroundColor Cyan
+        $useDirectCLI = $false
+        $firebaseCmd = $null
+        $nodePath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Microsoft\VisualStudio\NodeJs"
         
-        [System.Windows.Forms.SendKeys]::SendWait("firebase deploy --only hosting")
-        [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+        # Option 1: Firebase CLI installe globalement via npm (PRIORITAIRE)
+        if (Test-Path "$nodePath\npm.cmd") {
+            $env:Path = "$nodePath;$env:Path"
+            try {
+                $firebaseVersion = & firebase --version 2>$null
+                if ($LASTEXITCODE -eq 0 -and $firebaseVersion) {
+                    $useDirectCLI = $true
+                    $firebaseCmd = "firebase"
+                    Write-Host "        [+] Firebase CLI detecte (npm global): v$firebaseVersion" -ForegroundColor Green
+                }
+            } catch { }
+        }
         
-        Write-Host "        [+] Commande hosting envoyee!" -ForegroundColor Green
-        Write-Host "        [~] Attente deploiement hosting (~15 sec)..." -ForegroundColor DarkGray
-        Start-Sleep -Seconds 15
-        
-        # Reactiver la fenetre
-        $wshell.AppActivate($proc.Id) | Out-Null
-        Start-Sleep -Milliseconds 300
-        
-        # ─────────────────────────────────────────────────────────────────────
-        # ETAPE B: Deployer Rules (firebase deploy --only database)
-        # ─────────────────────────────────────────────────────────────────────
-        Write-Host ""
-        Write-Host "  [$($baseStep + 2)/$TotalSteps] Deploiement RULES (database.rules.json)..." -ForegroundColor Yellow
-        
-        if (Test-Path $FirebaseRulesFile) {
-            Write-Host "        [>] Fichier: $FirebaseRulesFile" -ForegroundColor Gray
-            Write-Host "        [>] Commande: firebase deploy --only database" -ForegroundColor Gray
-            
-            # La bonne commande est firebase deploy --only database
-            # qui utilise le fichier database.rules.json configure dans firebase.json
-            [System.Windows.Forms.SendKeys]::SendWait("firebase deploy --only database")
-            [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-            
-            Write-Host "        [+] Commande rules envoyee!" -ForegroundColor Green
-            Write-Host "        [~] Attente deploiement rules (~8 sec)..." -ForegroundColor DarkGray
-            Start-Sleep -Seconds 8
-            
-            # Reactiver la fenetre
-            $wshell.AppActivate($proc.Id) | Out-Null
-            Start-Sleep -Milliseconds 300
-        } else {
-            Write-Host "        [!] Fichier firebase-rules.json introuvable - IGNORE" -ForegroundColor Yellow
+        # Option 2: Firebase CLI local (firebase-tools-instant-win.exe) - FALLBACK vers SendKeys
+        if (-not $useDirectCLI -and (Test-Path $FirebaseCLI)) {
+            Write-Host "        [!] Firebase CLI npm non trouve - Mode SendKeys (fallback)" -ForegroundColor Yellow
+            Write-Host "        [i] Installer firebase-tools globalement pour un deploiement plus rapide:" -ForegroundColor Gray
+            Write-Host "        [i]   npm install -g firebase-tools" -ForegroundColor Gray
         }
         
         # ─────────────────────────────────────────────────────────────────────
-        # ETAPE C: Deployer Config initiale (firebase-init.json) via CLI
-        # NOTE: Cette etape est OPTIONNELLE car Sync-Firebase preserve les donnees
+        # MODE DIRECT (Firebase CLI npm) - RAPIDE ET FIABLE
         # ─────────────────────────────────────────────────────────────────────
-        Write-Host ""
-        Write-Host "  [$($baseStep + 3)/$TotalSteps] Deploiement CONFIG (firebase-init.json)..." -ForegroundColor Yellow
-        
-        if (Test-Path $FirebaseInitFile) {
-            Write-Host "        [>] Fichier: $FirebaseInitFile" -ForegroundColor Gray
-            Write-Host "        [>] Database: $FirebaseDatabaseURL" -ForegroundColor Gray
+        if ($useDirectCLI) {
+            Write-Host ""
+            Write-Host "  [$($baseStep + 1)/$TotalSteps] Deploiement HOSTING (admin-panel)..." -ForegroundColor Yellow
+            Write-Host "        [>] URL: https://xeat-remote-control.web.app/" -ForegroundColor Cyan
             
-            # Convertir en JSON standard (sans les doubles espaces de PowerShell)
-            $tempJsonFile = "$FirebaseDir\config-deploy.json"
-            $jsonObject = Get-Content $FirebaseInitFile -Raw -Encoding UTF8 | ConvertFrom-Json
+            Push-Location $FirebaseDir
+            try {
+                $hostingOutput = & $firebaseCmd deploy --only hosting 2>&1
+                if ($LASTEXITCODE -eq 0) {
+                    Write-Host "        [+] Hosting deploye avec succes!" -ForegroundColor Green
+                } else {
+                    Write-Host "        [-] Erreur hosting: $hostingOutput" -ForegroundColor Red
+                }
+            } catch {
+                Write-Host "        [-] Erreur: $($_.Exception.Message)" -ForegroundColor Red
+            }
             
-            # Utiliser Newtonsoft.Json si disponible, sinon compacter avec regex
-            $jsonCompact = $jsonObject | ConvertTo-Json -Depth 100 -Compress
-            # Nettoyer les artefacts PowerShell (doubles espaces apres :)
-            $jsonCompact = $jsonCompact -replace ':\s+', ':'
-            $jsonCompact = $jsonCompact -replace ',\s+', ','
+            # Deployer Rules
+            Write-Host ""
+            Write-Host "  [$($baseStep + 2)/$TotalSteps] Deploiement RULES (database.rules.json)..." -ForegroundColor Yellow
             
-            # Ecrire en UTF-8 sans BOM
-            $utf8NoBom = New-Object System.Text.UTF8Encoding $false
-            [System.IO.File]::WriteAllText($tempJsonFile, $jsonCompact, $utf8NoBom)
+            if (Test-Path $FirebaseRulesFile) {
+                try {
+                    $rulesOutput = & $firebaseCmd deploy --only database 2>&1
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Host "        [+] Rules deployees avec succes!" -ForegroundColor Green
+                    } else {
+                        Write-Host "        [-] Erreur rules: $rulesOutput" -ForegroundColor Red
+                    }
+                } catch {
+                    Write-Host "        [-] Erreur: $($_.Exception.Message)" -ForegroundColor Red
+                }
+            } else {
+                Write-Host "        [!] Fichier firebase-rules.json introuvable - IGNORE" -ForegroundColor Yellow
+            }
             
-            $jsonSize = [math]::Round((Get-Item $tempJsonFile).Length / 1KB, 2)
-            Write-Host "        [i] JSON nettoye: $jsonSize KB (UTF-8 sans BOM)" -ForegroundColor DarkGray
+            # Deployer Config (OPTIONNEL - Sync-Firebase preserve les donnees)
+            Write-Host ""
+            Write-Host "  [$($baseStep + 3)/$TotalSteps] Deploiement CONFIG (firebase-init.json)..." -ForegroundColor Yellow
             
-            # Utiliser database:set avec le fichier
-            [System.Windows.Forms.SendKeys]::SendWait("firebase database:set / config-deploy.json")
+            if (Test-Path $FirebaseInitFile) {
+                Write-Host "        [>] Database: $FirebaseDatabaseURL" -ForegroundColor Gray
+                
+                # Preparer le fichier JSON
+                $tempJsonFile = "$FirebaseDir\config-deploy.json"
+                $jsonObject = Get-Content $FirebaseInitFile -Raw -Encoding UTF8 | ConvertFrom-Json
+                $jsonCompact = $jsonObject | ConvertTo-Json -Depth 100 -Compress
+                $jsonCompact = $jsonCompact -replace ':\s+', ':'
+                $jsonCompact = $jsonCompact -replace ',\s+', ','
+                $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+                [System.IO.File]::WriteAllText($tempJsonFile, $jsonCompact, $utf8NoBom)
+                
+                $jsonSize = [math]::Round((Get-Item $tempJsonFile).Length / 1KB, 2)
+                Write-Host "        [i] JSON nettoye: $jsonSize KB" -ForegroundColor DarkGray
+                
+                try {
+                    # Utiliser --force pour eviter la confirmation interactive
+                    $configOutput = & $firebaseCmd database:set / config-deploy.json --force 2>&1
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Host "        [+] Config deployee avec succes!" -ForegroundColor Green
+                    } else {
+                        Write-Host "        [-] Erreur config: $configOutput" -ForegroundColor Red
+                    }
+                } catch {
+                    Write-Host "        [-] Erreur: $($_.Exception.Message)" -ForegroundColor Red
+                }
+                
+                Remove-Item $tempJsonFile -Force -ErrorAction SilentlyContinue
+            } else {
+                Write-Host "        [!] Fichier firebase-init.json introuvable - IGNORE" -ForegroundColor Yellow
+            }
+            
+            Pop-Location
+            
+        # ─────────────────────────────────────────────────────────────────────
+        # MODE SENDKEYS (Fallback avec firebase-tools-instant-win.exe)
+        # ─────────────────────────────────────────────────────────────────────
+        } elseif (Test-Path $FirebaseCLI) {
+            Write-Host ""
+            Write-Host "  [$($baseStep + 1)/$TotalSteps] Ouverture terminal Firebase (SendKeys)..." -ForegroundColor Yellow
+            
+            $proc = Start-Process -FilePath $FirebaseCLI -WorkingDirectory $FirebaseDir -PassThru
+            
+            Write-Host "        [~] Attente initialisation Firebase CLI (~6 sec)..." -ForegroundColor DarkGray
+            Start-Sleep -Seconds 6
+            
+            # Configurer SendKeys
+            Add-Type -AssemblyName System.Windows.Forms
+            $wshell = New-Object -ComObject WScript.Shell
+            $wshell.AppActivate($proc.Id) | Out-Null
+            Start-Sleep -Milliseconds 500
+            
+            # ETAPE A: Deployer Hosting
+            Write-Host ""
+            Write-Host "  [$($baseStep + 1)/$TotalSteps] Deploiement HOSTING (admin-panel)..." -ForegroundColor Yellow
+            Write-Host "        [>] URL: https://xeat-remote-control.web.app/" -ForegroundColor Cyan
+            
+            [System.Windows.Forms.SendKeys]::SendWait("firebase deploy --only hosting")
             [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
             
-            # Attendre que la question de confirmation apparaisse
-            Start-Sleep -Seconds 3
+            Write-Host "        [+] Commande hosting envoyee!" -ForegroundColor Green
+            Write-Host "        [~] Attente deploiement hosting (~15 sec)..." -ForegroundColor DarkGray
+            Start-Sleep -Seconds 15
             
-            # Repondre "y" a la confirmation "You are about to overwrite all data..."
             $wshell.AppActivate($proc.Id) | Out-Null
             Start-Sleep -Milliseconds 300
-            [System.Windows.Forms.SendKeys]::SendWait("y")
-            [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
             
-            Write-Host "        [+] Commande config envoyee + confirmation 'y'!" -ForegroundColor Green
-            Write-Host "        [~] Attente deploiement config (~20 sec pour gros fichier)..." -ForegroundColor DarkGray
-            Start-Sleep -Seconds 20
+            # ETAPE B: Deployer Rules
+            Write-Host ""
+            Write-Host "  [$($baseStep + 2)/$TotalSteps] Deploiement RULES (database.rules.json)..." -ForegroundColor Yellow
             
-            # Nettoyer le fichier temporaire
-            Remove-Item $tempJsonFile -Force -ErrorAction SilentlyContinue
+            if (Test-Path $FirebaseRulesFile) {
+                [System.Windows.Forms.SendKeys]::SendWait("firebase deploy --only database")
+                [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+                
+                Write-Host "        [+] Commande rules envoyee!" -ForegroundColor Green
+                Write-Host "        [~] Attente deploiement rules (~8 sec)..." -ForegroundColor DarkGray
+                Start-Sleep -Seconds 8
+                
+                $wshell.AppActivate($proc.Id) | Out-Null
+                Start-Sleep -Milliseconds 300
+            } else {
+                Write-Host "        [!] Fichier firebase-rules.json introuvable - IGNORE" -ForegroundColor Yellow
+            }
+            
+            # ETAPE C: Deployer Config
+            Write-Host ""
+            Write-Host "  [$($baseStep + 3)/$TotalSteps] Deploiement CONFIG (firebase-init.json)..." -ForegroundColor Yellow
+            
+            if (Test-Path $FirebaseInitFile) {
+                $tempJsonFile = "$FirebaseDir\config-deploy.json"
+                $jsonObject = Get-Content $FirebaseInitFile -Raw -Encoding UTF8 | ConvertFrom-Json
+                $jsonCompact = $jsonObject | ConvertTo-Json -Depth 100 -Compress
+                $jsonCompact = $jsonCompact -replace ':\s+', ':'
+                $jsonCompact = $jsonCompact -replace ',\s+', ','
+                $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+                [System.IO.File]::WriteAllText($tempJsonFile, $jsonCompact, $utf8NoBom)
+                
+                [System.Windows.Forms.SendKeys]::SendWait("firebase database:set / config-deploy.json")
+                [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+                
+                Start-Sleep -Seconds 3
+                
+                $wshell.AppActivate($proc.Id) | Out-Null
+                Start-Sleep -Milliseconds 300
+                [System.Windows.Forms.SendKeys]::SendWait("y")
+                [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+                
+                Write-Host "        [+] Commande config envoyee + confirmation 'y'!" -ForegroundColor Green
+                Write-Host "        [~] Attente deploiement config (~20 sec)..." -ForegroundColor DarkGray
+                Start-Sleep -Seconds 20
+                
+                Remove-Item $tempJsonFile -Force -ErrorAction SilentlyContinue
+            } else {
+                Write-Host "        [!] Fichier firebase-init.json introuvable - IGNORE" -ForegroundColor Yellow
+            }
+            
+            # Fermer le terminal Firebase CLI
+            Write-Host "        [>] Fermeture du terminal Firebase CLI..." -ForegroundColor Gray
+            try {
+                if ($proc -and -not $proc.HasExited) {
+                    $wshell.AppActivate($proc.Id) | Out-Null
+                    Start-Sleep -Milliseconds 300
+                    [System.Windows.Forms.SendKeys]::SendWait("exit")
+                    [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+                    Start-Sleep -Seconds 2
+                    
+                    if (-not $proc.HasExited) { $proc.Kill() }
+                    Write-Host "        [+] Terminal Firebase CLI ferme" -ForegroundColor Green
+                }
+            } catch {
+                Write-Host "        [!] Impossible de fermer le terminal: $($_.Exception.Message)" -ForegroundColor Yellow
+            }
+            
         } else {
-            Write-Host "        [!] Fichier firebase-init.json introuvable - IGNORE" -ForegroundColor Yellow
+            Write-Host "        [-] Aucun Firebase CLI disponible!" -ForegroundColor Red
+            Write-Host "        [i] Installez firebase-tools: npm install -g firebase-tools" -ForegroundColor Yellow
         }
         
         Write-Host ""
@@ -732,27 +829,6 @@ if ($Deploy) {
         Write-Host "        [i] Admin Panel: https://xeat-remote-control.web.app/" -ForegroundColor Cyan
         Write-Host "        [i] Database:    $FirebaseDatabaseURL" -ForegroundColor Cyan
         Write-Host ""
-        
-        # Fermer automatiquement le terminal Firebase CLI
-        Write-Host "        [>] Fermeture du terminal Firebase CLI..." -ForegroundColor Gray
-        try {
-            if ($proc -and -not $proc.HasExited) {
-                # Envoyer "exit" pour fermer proprement
-                $wshell.AppActivate($proc.Id) | Out-Null
-                Start-Sleep -Milliseconds 300
-                [System.Windows.Forms.SendKeys]::SendWait("exit")
-                [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
-                Start-Sleep -Seconds 2
-                
-                # Si toujours actif, forcer la fermeture
-                if (-not $proc.HasExited) {
-                    $proc.Kill()
-                }
-                Write-Host "        [+] Terminal Firebase CLI ferme" -ForegroundColor Green
-            }
-        } catch {
-            Write-Host "        [!] Impossible de fermer le terminal Firebase: $($_.Exception.Message)" -ForegroundColor Yellow
-        }
     }
 }
 

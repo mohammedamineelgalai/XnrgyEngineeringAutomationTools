@@ -135,6 +135,22 @@ namespace XnrgyInstaller
                         ["updatedAt"] = timestamp,
                         ["notes"] = "Installed via XEAT Setup",
                         ["tags"] = "auto"
+                    },
+                    // NOUVEAU: Historique d'installation pour affichage dans Postes
+                    ["installationHistory"] = new Dictionary<string, object>
+                    {
+                        [$"install_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}"] = new Dictionary<string, object>
+                        {
+                            ["action"] = "install",
+                            ["version"] = APP_VERSION,
+                            ["timestamp"] = timestamp,
+                            ["installedBy"] = _userName,
+                            ["machineName"] = _machineName,
+                            ["installPath"] = GetInstallPath(),
+                            ["osVersion"] = Environment.OSVersion.ToString(),
+                            ["success"] = true,
+                            ["notes"] = "Initial installation"
+                        }
                     }
                 };
 
@@ -195,6 +211,19 @@ namespace XnrgyInstaller
                 };
 
                 await PatchFirebaseAsync($"devices/{_deviceId}", statusUpdate);
+
+                // 1b. Ajouter l'evenement dans installationHistory
+                var uninstallHistoryEntry = new Dictionary<string, object>
+                {
+                    ["action"] = "uninstall",
+                    ["version"] = APP_VERSION,
+                    ["timestamp"] = timestamp,
+                    ["uninstalledBy"] = _userName,
+                    ["machineName"] = _machineName,
+                    ["success"] = true,
+                    ["notes"] = "User initiated uninstall"
+                };
+                await PutFirebaseAsync($"devices/{_deviceId}/installationHistory/uninstall_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}", uninstallHistoryEntry);
 
                 // 2. Enregistrer l'evenement de desinstallation
                 var logId = $"log_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}";
@@ -455,6 +484,19 @@ namespace XnrgyInstaller
             }
             catch { }
             return "Unknown";
+        }
+
+        private string GetInstallPath()
+        {
+            try
+            {
+                string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                return System.IO.Path.Combine(programFiles, "XNRGY Climate Systems ULC", "XNRGY Engineering Automation Tools");
+            }
+            catch
+            {
+                return "C:\\Program Files\\XNRGY Climate Systems ULC\\XNRGY Engineering Automation Tools";
+            }
         }
 
         #endregion
