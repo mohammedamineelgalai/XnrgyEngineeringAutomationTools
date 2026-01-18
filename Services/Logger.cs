@@ -110,6 +110,16 @@ public static class Logger
 				Log("      " + text.Trim(), level);
 			}
 		}
+
+		// Envoyer l'erreur a Firebase (async, non-bloquant)
+		try
+		{
+			FirebaseAuditService.Instance.LogException(ex, context);
+		}
+		catch
+		{
+			// Silencieux - ne pas bloquer l'app si Firebase echoue
+		}
 	}
 
 	public static void Close()
@@ -142,11 +152,31 @@ public static class Logger
 	public static void Error(string message)
 	{
 		Log(message, LogLevel.ERROR);
+
+		// Envoyer l'erreur a Firebase (async, non-bloquant)
+		try
+		{
+			FirebaseAuditService.Instance.LogError("Error", message, null, null);
+		}
+		catch
+		{
+			// Silencieux - ne pas bloquer l'app si Firebase echoue
+		}
 	}
 
 	public static void Fatal(string message)
 	{
 		Log(message, LogLevel.FATAL);
+
+		// Envoyer l'erreur fatale a Firebase (async, non-bloquant)
+		try
+		{
+			FirebaseAuditService.Instance.LogError("Fatal", message, null, null);
+		}
+		catch
+		{
+			// Silencieux - ne pas bloquer l'app si Firebase echoue
+		}
 	}
 }
 

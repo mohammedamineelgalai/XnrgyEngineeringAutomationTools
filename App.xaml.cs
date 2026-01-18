@@ -37,6 +37,9 @@ namespace XnrgyEngineeringAutomationTools
             _deviceTracker = new DeviceTrackingService();
             await _deviceTracker.RegisterDeviceAsync();
 
+            // Initialiser le service Firebase Audit (session + heartbeat)
+            await FirebaseAuditService.Instance.InitializeAsync();
+
             // Demarrer le service de mise a jour automatique
             _autoUpdateService = new AutoUpdateService();
             _autoUpdateService.UpdateAvailable += OnUpdateAvailable;
@@ -71,8 +74,18 @@ namespace XnrgyEngineeringAutomationTools
             }
         }
 
-        protected override void OnExit(ExitEventArgs e)
+        protected override async void OnExit(ExitEventArgs e)
         {
+            // Enregistrer la fin de session Firebase
+            try
+            {
+                await FirebaseAuditService.Instance.RegisterSessionEndAsync();
+            }
+            catch
+            {
+                // Silencieux
+            }
+
             // Arreter les services
             _autoUpdateService?.Stop();
             _autoUpdateService?.Dispose();
@@ -162,6 +175,16 @@ namespace XnrgyEngineeringAutomationTools
                         result.BroadcastType);
                     
                     if (shouldBlock) return false;
+                }
+
+                // 7. Message de bienvenue - Afficher au demarrage (informatif seulement)
+                if (result.HasWelcomeMessage)
+                {
+                    FirebaseAlertWindow.ShowWelcomeMessage(
+                        result.WelcomeTitle,
+                        result.WelcomeMessage,
+                        result.WelcomeType);
+                    // Ne bloque jamais - continue toujours
                 }
 
                 return true;

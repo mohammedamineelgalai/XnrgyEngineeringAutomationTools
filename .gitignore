@@ -33,3 +33,18 @@ OLD/
 
 # Node modules
 node_modules/
+
+# ═══════════════════════════════════════════════════════════════════
+# SECRETS & CREDENTIALS - NE JAMAIS COMMIT!
+# ═══════════════════════════════════════════════════════════════════
+serviceAccountKey.json
+**/serviceAccountKey.json
+*.pfx
+.github-token
+*.p12
+*.pem
+*credentials*.json
+*secret*.json
+
+# Firebase temp files
+config-deploy.json

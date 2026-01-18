@@ -863,6 +863,12 @@
             </div>
         </div>
         <div class="header-right">
+            <a href="https://github.com/mohammedamineelgalai/XnrgyEngineeringAutomationTools/releases/latest" target="_blank" class="btn btn-sm github-releases-btn" style="background: linear-gradient(135deg, #238636 0%, #2ea043 100%); border: 1px solid #3fb950; display: flex; align-items: center; gap: 6px; text-decoration: none; color: #ffffff; font-weight: 600; box-shadow: 0 0 10px rgba(35, 134, 54, 0.3);">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                </svg>
+                <span>Releases</span>
+            </a>
             <div class="status-badge online" id="connectionStatus">
                 <div class="status-dot"></div>
                 <span id="connectionText">Connecte</span>
@@ -1277,48 +1283,109 @@
             </div>
         </div>
 
-        <!-- Updates Page -->
+        <!-- Updates Page - Redesigned with GitHub Integration -->
         <div class="page" id="page-updates">
             <div class="page-header">
                 <div>
                     <h2 class="page-title">📦 Mises a Jour</h2>
-                    <p class="page-subtitle">Gerer les versions et forcer les mises a jour</p>
+                    <p class="page-subtitle">Gestion des versions et integration GitHub Releases</p>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <!-- GitHub Connection Status -->
+                    <div id="githubStatus" class="status-badge" style="background: rgba(36, 41, 46, 0.8); border: 1px solid #30363d;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        <span id="githubStatusText">Verification...</span>
+                    </div>
+                    <button class="btn btn-sm" onclick="fetchGitHubReleases()" style="background: #238636; border-color: #238636;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
+                        </svg>
+                        Sync GitHub
+                    </button>
                 </div>
             </div>
 
+            <!-- Stats Cards - Enhanced Colors -->
             <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="label">Version Deployee</div>
-                    <div class="value" id="deployedVersion">1.0.0</div>
+                <div class="stat-card" style="border-left: 4px solid #00d4ff;">
+                    <div class="label" style="color: #00d4ff;">VERSION DEPLOYEE</div>
+                    <div class="value" id="deployedVersion" style="color: #00d4ff; font-size: 2.2rem;">1.0.0</div>
+                    <div class="change up" id="deployedVersionDate" style="font-size: 0.7rem; color: #8b949e;">-</div>
                 </div>
-                <div class="stat-card">
-                    <div class="label">Version Minimum</div>
-                    <div class="value" id="minimumVersion">1.0.0</div>
+                <div class="stat-card" style="border-left: 4px solid #f0883e;">
+                    <div class="label" style="color: #f0883e;">VERSION MINIMUM</div>
+                    <div class="value" id="minimumVersion" style="color: #f0883e; font-size: 2.2rem;">1.0.0</div>
+                    <div class="change" style="font-size: 0.7rem; color: #8b949e;">Requise pour utiliser l'app</div>
                 </div>
-                <div class="stat-card">
-                    <div class="label">Utilisateurs a jour</div>
-                    <div class="value" id="upToDateUsers">0%</div>
+                <div class="stat-card" style="border-left: 4px solid #3fb950;">
+                    <div class="label" style="color: #3fb950;">UTILISATEURS A JOUR</div>
+                    <div class="value" id="upToDateUsers" style="color: #3fb950; font-size: 2.2rem;">0%</div>
+                    <div class="change up" id="upToDateCount" style="font-size: 0.7rem; color: #8b949e;">0 / 0 utilisateurs</div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h3>🚀 Publier une Mise a Jour</h3>
+            <!-- GitHub Releases Card - NEW -->
+            <div class="card" style="border: 1px solid #30363d;">
+                <div class="card-header" style="background: linear-gradient(135deg, #161b22 0%, #0d1117 100%); border-bottom: 1px solid #30363d;">
+                    <h3 style="color: #f0f6fc; display: flex; align-items: center; gap: 10px;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="#f0f6fc">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                        </svg>
+                        GitHub Releases
+                    </h3>
+                    <a href="https://github.com/mohammedamineelgalai/XnrgyEngineeringAutomationTools/releases" target="_blank" 
+                       class="btn btn-sm" style="background: #238636; border-color: #238636; text-decoration: none; color: white;">
+                        Voir sur GitHub
+                    </a>
+                </div>
+                <div class="card-body" style="background: #0d1117; padding: 0;">
+                    <div id="githubReleasesList" style="max-height: 300px; overflow-y: auto;">
+                        <!-- GitHub releases will be loaded here -->
+                        <div style="padding: 40px; text-align: center; color: #8b949e;">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 15px; opacity: 0.5;">
+                                <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+                            </svg>
+                            <p>Cliquez sur "Sync GitHub" pour charger les releases</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Publish Update Card - Enhanced -->
+            <div class="card" style="border: 1px solid rgba(0, 212, 255, 0.3);">
+                <div class="card-header" style="background: linear-gradient(135deg, #1a3a5c 0%, #0d2137 100%);">
+                    <h3 style="color: #00d4ff;">🚀 Publier une Mise a Jour</h3>
+                    <span style="font-size: 0.7rem; color: #8b949e; background: rgba(0,0,0,0.3); padding: 4px 10px; border-radius: 12px;">
+                        Synchronise avec Firebase
+                    </span>
                 </div>
                 <div class="card-body">
                     <div class="grid-2">
                         <div class="form-group">
-                            <label>Numero de version</label>
-                            <input type="text" class="form-control" id="newVersion" placeholder="1.1.0">
+                            <label style="color: #00d4ff; font-weight: 600;">Numero de version</label>
+                            <input type="text" class="form-control" id="newVersion" placeholder="1.1.0" 
+                                   style="border: 1px solid rgba(0, 212, 255, 0.3); font-size: 1.1rem;">
                         </div>
                         <div class="form-group">
-                            <label>URL de telechargement (GitHub)</label>
-                            <input type="text" class="form-control" id="downloadUrl" placeholder="https://github.com/.../releases/download/...">
+                            <label style="color: #00d4ff; font-weight: 600;">URL de telechargement</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="text" class="form-control" id="downloadUrl" placeholder="https://github.com/.../releases/download/..." style="flex: 1;">
+                                <button class="btn btn-sm" onclick="autoFillGitHubUrl()" style="background: #238636; white-space: nowrap;" title="Auto-remplir depuis GitHub">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                                        <path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+                                        <path d="M16 21h5v-5"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Notes de version</label>
-                        <textarea class="form-control" id="releaseNotes" placeholder="- Correction de bugs&#10;- Nouvelles fonctionnalites"></textarea>
+                        <label style="color: #00d4ff; font-weight: 600;">Notes de version</label>
+                        <textarea class="form-control" id="releaseNotes" rows="4" placeholder="- Correction de bugs&#10;- Nouvelles fonctionnalites&#10;- Ameliorations performances"></textarea>
                     </div>
                     <div class="grid-2">
                         <div class="form-group">
@@ -1330,50 +1397,87 @@
                             <input type="text" class="form-control" id="fileSize" placeholder="45 MB">
                         </div>
                     </div>
-                    <div class="toggle-container">
+                    <div class="toggle-container" style="background: rgba(232, 17, 35, 0.1); border: 1px solid rgba(232, 17, 35, 0.3); border-radius: 8px; padding: 12px;">
                         <div class="toggle-label">
-                            <span class="title">Mise a jour critique</span>
-                            <span class="desc">Marquer comme mise a jour de securite</span>
+                            <span class="title" style="color: #ff6b6b;">⚠️ Mise a jour critique</span>
+                            <span class="desc">Marquer comme mise a jour de securite obligatoire</span>
                         </div>
                         <label class="toggle danger">
                             <input type="checkbox" id="isCritical">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
-                    <button class="btn btn-success" onclick="publishUpdate()">Publier la Mise a Jour</button>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button class="btn btn-success" onclick="publishUpdate()" style="flex: 1; padding: 12px; font-size: 1rem;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                                <path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>
+                            </svg>
+                            Publier la Mise a Jour
+                        </button>
+                        <button class="btn" onclick="previewUpdate()" style="background: #30363d; border-color: #30363d;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <h3>⚠️ Forcer la Mise a Jour</h3>
+            <!-- Force Update Card - Enhanced -->
+            <div class="card" style="border: 1px solid rgba(240, 136, 62, 0.3);">
+                <div class="card-header" style="background: linear-gradient(135deg, #5c3a1a 0%, #372110 100%);">
+                    <h3 style="color: #f0883e;">⚠️ Forcer la Mise a Jour</h3>
+                    <div id="forceUpdateStatus" style="font-size: 0.75rem; padding: 4px 12px; border-radius: 12px; background: rgba(0,0,0,0.3); color: #8b949e;">
+                        Desactive
+                    </div>
                 </div>
                 <div class="card-body">
-                    <div class="toggle-container">
+                    <div class="toggle-container" style="background: rgba(240, 136, 62, 0.1); border: 1px solid rgba(240, 136, 62, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 15px;">
                         <div class="toggle-label">
-                            <span class="title">Activer Force Update</span>
-                            <span class="desc">Oblige les utilisateurs a mettre a jour</span>
+                            <span class="title" style="color: #f0883e; font-size: 1rem;">🔒 Activer Force Update</span>
+                            <span class="desc">Oblige TOUS les utilisateurs a mettre a jour</span>
                         </div>
                         <label class="toggle warning">
-                            <input type="checkbox" id="forceUpdateToggle">
+                            <input type="checkbox" id="forceUpdateToggle" onchange="updateForceUpdatePreview()">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
                     <div class="form-group">
-                        <label>Version minimum requise</label>
-                        <input type="text" class="form-control" id="forceMinVersion" placeholder="1.0.0">
+                        <label style="color: #f0883e; font-weight: 600;">Version minimum requise</label>
+                        <input type="text" class="form-control" id="forceMinVersion" placeholder="1.0.0" 
+                               style="border: 1px solid rgba(240, 136, 62, 0.3); font-size: 1.1rem;">
                     </div>
-                    <div class="toggle-container">
+                    <div class="toggle-container" style="background: rgba(232, 17, 35, 0.1); border: 1px solid rgba(232, 17, 35, 0.3); border-radius: 8px; padding: 12px;">
                         <div class="toggle-label">
-                            <span class="title">Bloquer l'application</span>
-                            <span class="desc">Empeche l'utilisation tant que non mis a jour</span>
+                            <span class="title" style="color: #ff6b6b;">🚫 Bloquer l'application</span>
+                            <span class="desc">Empeche TOTALEMENT l'utilisation tant que non mis a jour</span>
                         </div>
                         <label class="toggle danger">
                             <input type="checkbox" id="blockUntilUpdated">
                             <span class="toggle-slider"></span>
                         </label>
                     </div>
-                    <button class="btn btn-warning" onclick="applyForceUpdate()">Appliquer</button>
+                    <button class="btn btn-warning" onclick="applyForceUpdate()" style="width: 100%; margin-top: 15px; padding: 12px; font-size: 1rem;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        </svg>
+                        Appliquer Force Update
+                    </button>
+                </div>
+            </div>
+
+            <!-- Update History Card - NEW -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📜 Historique des Publications</h3>
+                    <span style="font-size: 0.7rem; color: var(--xnrgy-text-muted);">Depuis Firebase</span>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                    <div id="updateHistoryList" style="max-height: 250px; overflow-y: auto;">
+                        <div style="padding: 30px; text-align: center; color: var(--xnrgy-text-muted);">
+                            <p>Aucune publication enregistree</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1511,16 +1615,208 @@
         <div class="page" id="page-broadcasts">
             <div class="page-header">
                 <div>
-                    <h2 class="page-title">📢 Broadcasts</h2>
+                    <h2 class="page-title">Broadcasts</h2>
                     <p class="page-subtitle">Envoyer des messages aux utilisateurs</p>
                 </div>
             </div>
 
+            <!-- Messages de Bienvenue - Nouveau systeme multi-messages -->
+            <div class="card" style="border: 1px solid rgba(0, 212, 255, 0.3);">
+                <div class="card-header" style="background: linear-gradient(135deg, #1a3a5c 0%, #0d2137 100%);">
+                    <h3 style="color: #00d4ff;">Messages de Bienvenue</h3>
+                    <span class="badge" id="welcomeStatus" style="background: var(--xnrgy-green);">3 types configures</span>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--xnrgy-text-secondary); margin-bottom: 20px;">
+                        Configurez les messages de bienvenue pour differents scenarios. Chaque message peut etre affiche une seule fois par utilisateur.
+                    </p>
+                    
+                    <!-- Type 1: Premier lancement apres installation -->
+                    <div style="background: var(--xnrgy-bg-dark); border: 1px solid rgba(63, 185, 80, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 1.5rem;">&#127881;</span>
+                                <div>
+                                    <span style="font-weight: 600; color: #3fb950;">Premier Lancement (Installation)</span>
+                                    <p style="font-size: 0.75rem; color: var(--xnrgy-text-muted); margin: 0;">Affiche une seule fois apres l'installation pour chaque utilisateur</p>
+                                </div>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="welcomeFirstInstallEnabled" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="grid-2" style="gap: 10px;">
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="font-size: 0.8rem;">Titre</label>
+                                <input type="text" class="form-control" id="welcomeFirstInstallTitle" value="Bienvenue sur XEAT!">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="font-size: 0.8rem;">Type</label>
+                                <select class="form-control" id="welcomeFirstInstallType">
+                                    <option value="info" selected>Info (Cyan)</option>
+                                    <option value="success">Succes (Vert)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.8rem;">Message (utiliser \n pour les retours a la ligne)</label>
+                            <textarea class="form-control" id="welcomeFirstInstallMessage" rows="4" style="font-size: 0.85rem;">Bienvenue dans XNRGY Engineering Automation Tools!\n\nXEAT est votre assistant d'ingenierie pour:\n\n[>] VAULT UPLOAD\n    Televersez vos fichiers Inventor vers Vault\n\n[>] COPY DESIGN\n    Copiez et renommez intelligemment vos assemblages\n\n[>] CONFIGURATION VAULT\n    Configurez facilement votre connexion Vault\n\nBonne utilisation!</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Type 2: Nouvel utilisateur sur poste existant -->
+                    <div style="background: var(--xnrgy-bg-dark); border: 1px solid rgba(240, 136, 62, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 1.5rem;">&#128100;</span>
+                                <div>
+                                    <span style="font-weight: 600; color: #f0883e;">Nouvel Utilisateur Windows</span>
+                                    <p style="font-size: 0.75rem; color: var(--xnrgy-text-muted); margin: 0;">Affiche quand un autre utilisateur demarre l'app sur un poste deja installe</p>
+                                </div>
+                            </div>
+                            <label class="toggle warning">
+                                <input type="checkbox" id="welcomeNewUserEnabled" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="grid-2" style="gap: 10px;">
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="font-size: 0.8rem;">Titre</label>
+                                <input type="text" class="form-control" id="welcomeNewUserTitle" value="Bienvenue!">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="font-size: 0.8rem;">Type</label>
+                                <select class="form-control" id="welcomeNewUserType">
+                                    <option value="info" selected>Info (Cyan)</option>
+                                    <option value="success">Succes (Vert)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.8rem;">Message</label>
+                            <textarea class="form-control" id="welcomeNewUserMessage" rows="3" style="font-size: 0.85rem;">Bonjour et bienvenue dans XNRGY Engineering Automation Tools!\n\nCette application est deja installee sur ce poste.\n\nVotre session sera liee a votre compte Windows.\n\nPour toute question, contactez:\nmohammedamine.elgalai@xnrgy.com</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Type 3: Message Global (custom drop) -->
+                    <div style="background: var(--xnrgy-bg-dark); border: 1px solid rgba(124, 77, 255, 0.3); border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <span style="font-size: 1.5rem;">&#128227;</span>
+                                <div>
+                                    <span style="font-weight: 600; color: #7c4dff;">Message Global (Drop Custom)</span>
+                                    <p style="font-size: 0.75rem; color: var(--xnrgy-text-muted); margin: 0;">Message personnalise pour tous les utilisateurs (vous pouvez l'activer a tout moment)</p>
+                                </div>
+                            </div>
+                            <label class="toggle">
+                                <input type="checkbox" id="welcomeGlobalEnabled">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="grid-2" style="gap: 10px;">
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="font-size: 0.8rem;">Titre</label>
+                                <input type="text" class="form-control" id="welcomeGlobalTitle" placeholder="Message Important">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 10px;">
+                                <label style="font-size: 0.8rem;">Afficher une seule fois</label>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                                    <label class="toggle">
+                                        <input type="checkbox" id="welcomeGlobalShowOnce" checked>
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                    <span style="font-size: 0.75rem; color: var(--xnrgy-text-muted);">Si desactive, s'affiche a chaque demarrage</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label style="font-size: 0.8rem;">Message</label>
+                            <textarea class="form-control" id="welcomeGlobalMessage" rows="3" style="font-size: 0.85rem;" placeholder="Votre message personnalise pour tous les utilisateurs..."></textarea>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="saveWelcomeMessages()" style="flex: 1;">
+                            Sauvegarder les Messages de Bienvenue
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadWelcomeMessages()">
+                            Recharger
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legacy: Ancien Message de Bienvenue (pour compatibilite) -->
+            <div class="card" style="opacity: 0.7;">
+                <div class="card-header">
+                    <h3>Message de Bienvenue (Legacy)</h3>
+                    <span class="badge" style="background: var(--xnrgy-text-muted);">Ancien systeme</span>
+                </div>
+                <div class="card-body">
+                    <p style="color: var(--xnrgy-text-muted); margin-bottom: 15px; font-size: 0.85rem;">
+                        Ancien systeme de message unique. Utilisez le nouveau systeme ci-dessus pour plus de controle.
+                    </p>
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label>Titre du message</label>
+                            <input type="text" class="form-control" id="welcomeTitle" placeholder="Bienvenue sur XEAT!">
+                        </div>
+                        <div class="form-group">
+                            <label>Activer</label>
+                            <div class="toggle-container" style="margin-top: 8px;">
+                                <label class="toggle">
+                                    <input type="checkbox" id="welcomeEnabled">
+                                    <span class="toggle-slider"></span>
+                                </label>
+                                <span style="margin-left: 10px;">Afficher au demarrage</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea class="form-control" id="welcomeMessage" rows="3" placeholder="Bienvenue dans XNRGY Engineering Automation Tools!"></textarea>
+                    </div>
+                    <button class="btn btn-secondary" onclick="saveWelcomeMessage()">Sauvegarder (Legacy)</button>
+                </div>
+            </div>
+
+            <!-- Nouveau Broadcast avec Templates -->
             <div class="card">
                 <div class="card-header">
                     <h3>Nouveau Message</h3>
                 </div>
                 <div class="card-body">
+                    <!-- Templates pre-definis -->
+                    <div class="form-group">
+                        <label>📋 Template rapide</label>
+                        <select class="form-control" id="broadcastTemplate" onchange="applyTemplate()">
+                            <option value="">-- Selectionner un template --</option>
+                            <optgroup label="🔧 Maintenance">
+                                <option value="maint_planned">Maintenance planifiee</option>
+                                <option value="maint_urgent">Maintenance urgente</option>
+                                <option value="maint_complete">Maintenance terminee</option>
+                            </optgroup>
+                            <optgroup label="🔄 Mises a jour">
+                                <option value="update_available">Nouvelle version disponible</option>
+                                <option value="update_required">Mise a jour requise</option>
+                                <option value="update_complete">Mise a jour terminee</option>
+                            </optgroup>
+                            <optgroup label="📢 Annonces">
+                                <option value="announce_meeting">Reunion d'equipe</option>
+                                <option value="announce_info">Information generale</option>
+                                <option value="announce_reminder">Rappel important</option>
+                            </optgroup>
+                            <optgroup label="⚠️ Alertes">
+                                <option value="alert_vault">Probleme Vault</option>
+                                <option value="alert_network">Probleme reseau</option>
+                                <option value="alert_urgent">Alerte urgente</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    
+                    <hr style="border-color: var(--xnrgy-border-light); margin: 20px 0;">
+                    
                     <div class="grid-2">
                         <div class="form-group">
                             <label>Type de message</label>
@@ -1547,7 +1843,7 @@
                     </div>
                     <div class="form-group">
                         <label>Message</label>
-                        <textarea class="form-control" id="broadcastMessage" placeholder="Contenu du message..."></textarea>
+                        <textarea class="form-control" id="broadcastMessage" placeholder="Contenu du message..." rows="4"></textarea>
                     </div>
                     <div class="form-group">
                         <label>Cible</label>
@@ -1562,7 +1858,7 @@
                         <div class="toggle-container">
                             <span>Afficher comme popup</span>
                             <label class="toggle">
-                                <input type="checkbox" id="broadcastPopup">
+                                <input type="checkbox" id="broadcastPopup" checked>
                                 <span class="toggle-slider"></span>
                             </label>
                         </div>
@@ -1574,13 +1870,14 @@
                             </label>
                         </div>
                     </div>
-                    <button class="btn btn-primary" onclick="sendBroadcast()">Envoyer</button>
+                    <button class="btn btn-primary" onclick="sendBroadcast()">📤 Envoyer le Broadcast</button>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-header">
                     <h3>Messages Actifs</h3>
+                    <button class="btn btn-secondary" onclick="refreshBroadcasts()" style="padding: 5px 10px; font-size: 0.8rem;">🔄 Rafraichir</button>
                 </div>
                 <div class="card-body" id="activeBroadcasts">
                     <p style="color: var(--xnrgy-text-muted);">Aucun message actif</p>
@@ -2041,6 +2338,16 @@
         function setupFirebaseListeners() {
             console.log('[>] Configuration des listeners Firebase...');
             
+            // Charger le message de bienvenue (legacy + nouveau systeme)
+            loadWelcomeMessage();
+            loadWelcomeMessages();
+            
+            // Charger les releases GitHub automatiquement
+            fetchGitHubReleases();
+            
+            // Charger l'historique des mises a jour
+            loadUpdateHistory();
+            
             // Real-time listener using Firebase SDK
             database.ref('/').on('value', (snapshot) => {
                 console.log('[+] Donnees Firebase recues');
@@ -2058,6 +2365,64 @@
             });
         }
 
+        // ==================== ONLINE STATUS DETECTION ====================
+        // Timeout en millisecondes pour considerer un device hors ligne (3 minutes = 3x heartbeat interval)
+        const HEARTBEAT_TIMEOUT_MS = 3 * 60 * 1000; // 3 minutes
+
+        /**
+         * Determine si un device est reellement en ligne en verifiant le timestamp du heartbeat
+         * Un device est considere hors ligne si:
+         * - status.online est false, OU
+         * - le dernier heartbeat date de plus de HEARTBEAT_TIMEOUT_MS
+         */
+        function isDeviceOnline(device) {
+            if (!device) return false;
+            
+            // Si status.online est explicitement false, le device est offline
+            if (device.status?.online === false) return false;
+            
+            // Verifier le timestamp du dernier heartbeat
+            const lastHeartbeat = device.heartbeat?.lastHeartbeat || device.status?.lastSeen;
+            if (!lastHeartbeat) return false;
+            
+            try {
+                const lastHeartbeatTime = new Date(lastHeartbeat).getTime();
+                const now = Date.now();
+                const timeSinceLastHeartbeat = now - lastHeartbeatTime;
+                
+                // Si le dernier heartbeat est trop ancien, considerer hors ligne
+                if (timeSinceLastHeartbeat > HEARTBEAT_TIMEOUT_MS) {
+                    return false;
+                }
+                
+                return true;
+            } catch (error) {
+                console.warn('[!] Erreur parsing heartbeat timestamp:', lastHeartbeat, error);
+                return false;
+            }
+        }
+
+        /**
+         * Obtient le temps depuis le dernier heartbeat en format lisible
+         */
+        function getTimeSinceLastHeartbeat(device) {
+            const lastHeartbeat = device?.heartbeat?.lastHeartbeat || device?.status?.lastSeen;
+            if (!lastHeartbeat) return 'Jamais';
+            
+            try {
+                const lastTime = new Date(lastHeartbeat).getTime();
+                const now = Date.now();
+                const diffMs = now - lastTime;
+                
+                if (diffMs < 60000) return 'Il y a moins d\'1 min';
+                if (diffMs < 3600000) return `Il y a ${Math.floor(diffMs / 60000)} min`;
+                if (diffMs < 86400000) return `Il y a ${Math.floor(diffMs / 3600000)} h`;
+                return `Il y a ${Math.floor(diffMs / 86400000)} jour(s)`;
+            } catch {
+                return lastHeartbeat;
+            }
+        }
+
         // ==================== DASHBOARD ====================
         function updateDashboard() {
             // Stats
@@ -2067,7 +2432,8 @@
 
             const userCount = Object.keys(users).filter(k => k !== 'placeholder').length;
             const deviceCount = Object.keys(devices).filter(k => k !== 'templateDevice').length;
-            const onlineDevices = Object.entries(devices).filter(([k, d]) => k !== 'templateDevice' && d?.status?.online === true);
+            // Utiliser isDeviceOnline() pour verifier le heartbeat timeout
+            const onlineDevices = Object.entries(devices).filter(([k, d]) => k !== 'templateDevice' && isDeviceOnline(d));
             const onlineCount = onlineDevices.length;
 
             document.getElementById('statTotalUsers').textContent = userCount;
@@ -2092,6 +2458,7 @@
             updateDevicesTable();
             updateSitesGrid();
             updateFeatureFlags();
+            updateBroadcastsList();
         }
         
         function updateOnlineDevicesList(onlineDevices) {
@@ -2255,10 +2622,12 @@
                 const software = device.software || device;
                 const heartbeat = device.heartbeat || {};
                 
-                const isOnline = status.online === true || heartbeat.status === 'online';
+                // Utiliser isDeviceOnline() pour verifier le heartbeat timeout
+                const isOnline = isDeviceOnline(device);
                 const isBlocked = status.blocked === true;
                 const statusClass = isBlocked ? 'status-blocked' : (isOnline ? 'status-online' : 'status-offline');
                 const statusText = isBlocked ? '🚫 Bloqué' : (isOnline ? '🟢 En ligne' : '⚫ Hors ligne');
+                const lastSeenInfo = !isOnline ? ` (${getTimeSinceLastHeartbeat(device)})` : '';
                 
                 html += `
                     <tr id="device-row-${id}">
@@ -2269,7 +2638,7 @@
                         <td>📍 ${device.organization?.site || status.site || '-'}</td>
                         <td>👤 ${status.currentUser || '-'}</td>
                         <td>📦 ${software.xeatVersion || device.appVersion || '-'}</td>
-                        <td><span class="${statusClass}">${statusText}</span></td>
+                        <td><span class="${statusClass}">${statusText}${lastSeenInfo}</span></td>
                         <td>🕐 ${formatDate(heartbeat.lastHeartbeat || status.lastSeen)}</td>
                         <td>
                             <div class="btn-group">
@@ -2336,10 +2705,13 @@
                                     <div class="value" style="font-size: 1.2rem;">${stats.devices || 0}</div>
                                 </div>
                             </div>
-                            <p style="margin-top: 10px; font-size: 0.8rem;">
-                                <strong>Pays:</strong> ${site.country}<br>
-                                <strong>Timezone:</strong> ${site.timezone?.replace('-', '/')}
-                            </p>
+                            <div style="margin-top: 15px; font-size: 0.85rem; line-height: 1.6;">
+                                ${site.address && site.address !== 'none' ? `<p style="margin: 5px 0;">📍 <strong>Adresse:</strong> ${site.address}</p>` : ''}
+                                ${site.contactPhone && site.contactPhone !== 'none' ? `<p style="margin: 5px 0;">📞 <strong>Tel:</strong> <a href="tel:${site.contactPhone}" style="color: var(--xnrgy-green);">${site.contactPhone}</a></p>` : ''}
+                                ${site.contactEmail && site.contactEmail !== 'none' ? `<p style="margin: 5px 0;">📧 <strong>Email:</strong> <a href="mailto:${site.contactEmail}" style="color: var(--xnrgy-green);">${site.contactEmail}</a></p>` : ''}
+                                <p style="margin: 5px 0;"><strong>Pays:</strong> ${site.country} | <strong>Ville:</strong> ${site.city}</p>
+                                <p style="margin: 5px 0;"><strong>Timezone:</strong> ${site.timezone?.replace('-', '/')}</p>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -2386,6 +2758,116 @@
             });
             
             container.innerHTML = html || '<p style="color: var(--xnrgy-text-muted);">Aucun feature flag configure</p>';
+        }
+
+        // ==================== BROADCASTS LIST ====================
+        function updateBroadcastsList() {
+            const broadcasts = appData.broadcasts || {};
+            const container = document.getElementById('activeBroadcasts');
+            if (!container) return;
+            
+            // Filtrer les broadcasts actifs (exclure placeholder)
+            const activeBroadcasts = Object.entries(broadcasts)
+                .filter(([id, b]) => id !== 'placeholder' && b?.status?.active === true)
+                .sort((a, b) => {
+                    // Trier par date (plus recent en premier)
+                    const dateA = a[1]?.status?.sentAt || '';
+                    const dateB = b[1]?.status?.sentAt || '';
+                    return dateB.localeCompare(dateA);
+                });
+            
+            if (activeBroadcasts.length === 0) {
+                container.innerHTML = '<p style="color: var(--xnrgy-text-muted);">Aucun message actif</p>';
+                return;
+            }
+            
+            const typeIcons = {
+                info: 'ℹ️',
+                warning: '⚠️',
+                success: '✅',
+                error: '❌'
+            };
+            
+            const typeColors = {
+                info: 'var(--xnrgy-blue)',
+                warning: 'var(--xnrgy-orange)',
+                success: 'var(--xnrgy-green)',
+                error: 'var(--xnrgy-red)'
+            };
+            
+            let html = '<div style="display:flex; flex-direction:column; gap:12px;">';
+            
+            activeBroadcasts.forEach(([id, broadcast]) => {
+                const type = broadcast.type || 'info';
+                const icon = typeIcons[type] || 'ℹ️';
+                const color = typeColors[type] || 'var(--xnrgy-blue)';
+                const sentAt = broadcast.status?.sentAt ? formatDate(broadcast.status.sentAt) : 'Date inconnue';
+                const viewCount = broadcast.status?.viewCount || 0;
+                const showPopup = broadcast.display?.showAsPopup ? '🔔' : '';
+                const showBanner = broadcast.display?.showAsBanner ? '📢' : '';
+                
+                html += `
+                    <div style="background:var(--xnrgy-bg-panel); border-radius:8px; padding:15px; border-left:4px solid ${color};">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+                            <div>
+                                <span style="font-size:1.1rem; font-weight:600;">${icon} ${broadcast.title || 'Sans titre'}</span>
+                                <span style="margin-left:10px; color:var(--xnrgy-text-muted); font-size:0.8rem;">${showPopup} ${showBanner}</span>
+                            </div>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn btn-sm btn-secondary" onclick="deactivateBroadcast('${id}')" title="Desactiver">
+                                    ⏸️ Desactiver
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteBroadcast('${id}')" title="Supprimer">
+                                    🗑️ Supprimer
+                                </button>
+                            </div>
+                        </div>
+                        <p style="color:var(--xnrgy-text-secondary); margin-bottom:8px;">${broadcast.message || ''}</p>
+                        <div style="display:flex; gap:20px; font-size:0.8rem; color:var(--xnrgy-text-muted);">
+                            <span>📅 ${sentAt}</span>
+                            <span>👁️ ${viewCount} vues</span>
+                            <span>🎯 ${broadcast.target?.type || 'all'}</span>
+                            <span>📊 Priorite: ${broadcast.priority || 'normal'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+        
+        function deactivateBroadcast(id) {
+            if (!confirm('Desactiver ce message?')) return;
+            
+            database.ref(`broadcasts/${id}/status/active`).set(false)
+                .then(() => {
+                    // Mettre a jour la copie locale
+                    if (appData.broadcasts && appData.broadcasts[id]) {
+                        appData.broadcasts[id].status = appData.broadcasts[id].status || {};
+                        appData.broadcasts[id].status.active = false;
+                    }
+                    updateBroadcastsList();
+                    showToast('Message desactive', 'success');
+                    logAudit('broadcast_deactivated', id);
+                })
+                .catch(err => showToast('Erreur: ' + err.message, 'error'));
+        }
+        
+        function deleteBroadcast(id) {
+            if (!confirm('[!] Supprimer definitivement ce message?\n\nCette action est irreversible.')) return;
+            
+            database.ref(`broadcasts/${id}`).remove()
+                .then(() => {
+                    // Supprimer aussi de la copie locale
+                    if (appData.broadcasts && appData.broadcasts[id]) {
+                        delete appData.broadcasts[id];
+                    }
+                    updateBroadcastsList();
+                    showToast('Message supprime', 'success');
+                    logAudit('broadcast_deleted', id);
+                })
+                .catch(err => showToast('Erreur: ' + err.message, 'error'));
         }
 
         // ==================== ACTIONS ====================
@@ -2453,6 +2935,251 @@
             });
         }
 
+        // ==================== GITHUB INTEGRATION ====================
+        const GITHUB_OWNER = 'mohammedamineelgalai';
+        const GITHUB_REPO = 'XnrgyEngineeringAutomationTools';
+        const GITHUB_API_BASE = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}`;
+        
+        let githubReleases = [];
+        let latestGitHubRelease = null;
+        
+        // Fetch releases from GitHub API (public, no auth needed)
+        async function fetchGitHubReleases() {
+            const statusEl = document.getElementById('githubStatus');
+            const statusTextEl = document.getElementById('githubStatusText');
+            const listEl = document.getElementById('githubReleasesList');
+            
+            // Show loading state
+            statusEl.style.borderColor = '#f0883e';
+            statusTextEl.textContent = 'Chargement...';
+            statusTextEl.style.color = '#f0883e';
+            
+            listEl.innerHTML = `
+                <div style="padding: 40px; text-align: center; color: #8b949e;">
+                    <div class="spinner" style="margin: 0 auto 15px;"></div>
+                    <p>Connexion a GitHub...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(`${GITHUB_API_BASE}/releases?per_page=10`, {
+                    headers: {
+                        'Accept': 'application/vnd.github+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                githubReleases = await response.json();
+                latestGitHubRelease = githubReleases.length > 0 ? githubReleases[0] : null;
+                
+                // Update status - Connected
+                statusEl.style.borderColor = '#3fb950';
+                statusEl.style.background = 'rgba(63, 185, 80, 0.15)';
+                statusTextEl.textContent = 'Connecte';
+                statusTextEl.style.color = '#3fb950';
+                
+                // Render releases
+                renderGitHubReleases();
+                
+                // Update deployed version if we have a latest release
+                if (latestGitHubRelease) {
+                    document.getElementById('deployedVersion').textContent = latestGitHubRelease.tag_name.replace('v', '');
+                    const date = new Date(latestGitHubRelease.published_at);
+                    document.getElementById('deployedVersionDate').textContent = `Publie le ${date.toLocaleDateString('fr-FR')}`;
+                }
+                
+                showToast(`${githubReleases.length} releases chargees depuis GitHub`, 'success');
+                
+            } catch (error) {
+                console.error('GitHub API Error:', error);
+                
+                // Update status - Error
+                statusEl.style.borderColor = '#f85149';
+                statusEl.style.background = 'rgba(248, 81, 73, 0.15)';
+                statusTextEl.textContent = 'Erreur';
+                statusTextEl.style.color = '#f85149';
+                
+                listEl.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #f85149;">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 15px;">
+                            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+                        </svg>
+                        <p style="font-weight: 600;">Erreur de connexion GitHub</p>
+                        <p style="font-size: 0.8rem; color: #8b949e; margin-top: 8px;">${error.message}</p>
+                        <button class="btn btn-sm" onclick="fetchGitHubReleases()" style="margin-top: 15px; background: #238636;">
+                            Reessayer
+                        </button>
+                    </div>
+                `;
+                
+                showToast('Erreur connexion GitHub: ' + error.message, 'error');
+            }
+        }
+        
+        function renderGitHubReleases() {
+            const listEl = document.getElementById('githubReleasesList');
+            
+            if (githubReleases.length === 0) {
+                listEl.innerHTML = `
+                    <div style="padding: 40px; text-align: center; color: #8b949e;">
+                        <p>Aucune release trouvee sur GitHub</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            
+            githubReleases.forEach((release, index) => {
+                const date = new Date(release.published_at);
+                const dateStr = date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+                const isLatest = index === 0;
+                const isPrerelease = release.prerelease;
+                const isDraft = release.draft;
+                
+                // Get download count
+                let totalDownloads = 0;
+                let assetInfo = null;
+                if (release.assets && release.assets.length > 0) {
+                    release.assets.forEach(asset => {
+                        totalDownloads += asset.download_count || 0;
+                        if (asset.name.endsWith('.exe')) {
+                            assetInfo = asset;
+                        }
+                    });
+                }
+                
+                const tagColor = isLatest ? '#3fb950' : (isPrerelease ? '#f0883e' : '#8b949e');
+                const tagLabel = isLatest ? 'Latest' : (isPrerelease ? 'Pre-release' : (isDraft ? 'Draft' : ''));
+                
+                html += `
+                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #21262d; transition: background 0.2s;" 
+                         onmouseover="this.style.background='#161b22'" onmouseout="this.style.background='transparent'">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 40px; height: 40px; border-radius: 8px; background: ${isLatest ? 'linear-gradient(135deg, #238636, #2ea043)' : '#21262d'}; 
+                                        display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: 0.9rem;">
+                                ${release.tag_name.replace('v', '')}
+                            </div>
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-weight: 600; color: #f0f6fc;">${release.name || release.tag_name}</span>
+                                    ${tagLabel ? `<span style="font-size: 0.65rem; padding: 2px 8px; border-radius: 10px; background: ${tagColor}20; color: ${tagColor}; border: 1px solid ${tagColor}40;">${tagLabel}</span>` : ''}
+                                </div>
+                                <div style="font-size: 0.75rem; color: #8b949e; margin-top: 2px;">
+                                    📅 ${dateStr} &nbsp;•&nbsp; 📥 ${totalDownloads} telechargements
+                                    ${assetInfo ? ` &nbsp;•&nbsp; 📦 ${(assetInfo.size / 1024 / 1024).toFixed(1)} MB` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn btn-sm" onclick="selectGitHubRelease('${release.tag_name}')" 
+                                    style="background: #238636; border-color: #238636; font-size: 0.75rem; padding: 4px 10px;"
+                                    title="Utiliser cette version">
+                                Utiliser
+                            </button>
+                            <a href="${release.html_url}" target="_blank" class="btn btn-sm" 
+                               style="background: #21262d; border-color: #30363d; font-size: 0.75rem; padding: 4px 10px; text-decoration: none; color: #f0f6fc;">
+                                Voir
+                            </a>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            listEl.innerHTML = html;
+        }
+        
+        // Select a GitHub release to use
+        function selectGitHubRelease(tagName) {
+            const release = githubReleases.find(r => r.tag_name === tagName);
+            if (!release) return;
+            
+            // Fill the form
+            document.getElementById('newVersion').value = release.tag_name.replace('v', '');
+            
+            // Find the .exe asset
+            const exeAsset = release.assets?.find(a => a.name.endsWith('.exe'));
+            if (exeAsset) {
+                document.getElementById('downloadUrl').value = exeAsset.browser_download_url;
+                document.getElementById('fileSize').value = `${(exeAsset.size / 1024 / 1024).toFixed(1)} MB`;
+            } else {
+                document.getElementById('downloadUrl').value = release.html_url;
+            }
+            
+            // Fill release notes
+            document.getElementById('releaseNotes').value = release.body || '';
+            
+            showToast(`Release ${tagName} selectionnee`, 'info');
+            
+            // Scroll to form
+            document.querySelector('#page-updates .card:nth-child(3)').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Auto-fill GitHub URL from latest release
+        function autoFillGitHubUrl() {
+            if (!latestGitHubRelease) {
+                showToast('Synchronisez d\'abord avec GitHub', 'warning');
+                fetchGitHubReleases();
+                return;
+            }
+            
+            const exeAsset = latestGitHubRelease.assets?.find(a => a.name.endsWith('.exe'));
+            if (exeAsset) {
+                document.getElementById('downloadUrl').value = exeAsset.browser_download_url;
+                document.getElementById('fileSize').value = `${(exeAsset.size / 1024 / 1024).toFixed(1)} MB`;
+                showToast('URL GitHub auto-remplie', 'success');
+            } else {
+                document.getElementById('downloadUrl').value = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}/releases/latest`;
+                showToast('Aucun fichier .exe trouve, URL generique utilisee', 'warning');
+            }
+        }
+        
+        // Preview update before publishing
+        function previewUpdate() {
+            const version = document.getElementById('newVersion').value.trim() || '?.?.?';
+            const url = document.getElementById('downloadUrl').value.trim() || 'Non defini';
+            const notes = document.getElementById('releaseNotes').value.trim() || 'Aucune note';
+            const isCritical = document.getElementById('isCritical').checked;
+            
+            const preview = `
+📦 APERCU DE LA MISE A JOUR
+
+Version: ${version}
+Type: ${isCritical ? '⚠️ CRITIQUE' : 'Standard'}
+
+URL: ${url}
+
+Notes:
+${notes}
+
+─────────────────────
+Publier maintenant?
+            `;
+            
+            if (confirm(preview)) {
+                publishUpdate();
+            }
+        }
+        
+        // Update Force Update status preview
+        function updateForceUpdatePreview() {
+            const enabled = document.getElementById('forceUpdateToggle').checked;
+            const statusEl = document.getElementById('forceUpdateStatus');
+            
+            if (enabled) {
+                statusEl.textContent = 'ACTIVE';
+                statusEl.style.background = 'rgba(240, 136, 62, 0.3)';
+                statusEl.style.color = '#f0883e';
+            } else {
+                statusEl.textContent = 'Desactive';
+                statusEl.style.background = 'rgba(0,0,0,0.3)';
+                statusEl.style.color = '#8b949e';
+            }
+        }
+
         function publishUpdate() {
             const version = document.getElementById('newVersion').value.trim();
             const url = document.getElementById('downloadUrl').value.trim();
@@ -2466,7 +3193,18 @@
                 return;
             }
             
-            database.ref('updates/latest').update({
+            if (!url) {
+                showToast('URL de telechargement requise', 'warning');
+                return;
+            }
+            
+            // Show confirmation for critical updates
+            if (isCritical && !confirm('⚠️ ATTENTION: Cette mise a jour sera marquee comme CRITIQUE.\n\nTous les utilisateurs seront fortement incites a mettre a jour.\n\nContinuer?')) {
+                return;
+            }
+            
+            // Save to Firebase
+            const updateData = {
                 version: version,
                 downloadUrl: url,
                 releaseNotes: notes,
@@ -2474,16 +3212,35 @@
                 fileSize: fileSize,
                 isCritical: isCritical,
                 publishedAt: new Date().toISOString(),
-                publishedBy: 'Admin Panel'
-            }).then(() => {
+                publishedBy: 'Admin Panel',
+                source: url.includes('github.com') ? 'GitHub Releases' : 'Manual'
+            };
+            
+            database.ref('updates/latest').update(updateData).then(() => {
+                // Also save to history
+                database.ref('updates/history').push({
+                    ...updateData,
+                    id: `v${version}_${Date.now()}`
+                });
+                
+                // Update current version
                 database.ref('appConfig/currentVersion').set(version);
-                showToast(`Version ${version} publiee!`, 'success');
-                logAudit('update_published', `Version ${version}`);
+                
+                showToast(`Version ${version} publiee avec succes!`, 'success');
+                logAudit('update_published', `Version ${version} - ${isCritical ? 'CRITICAL' : 'Standard'}`);
                 
                 // Clear form
                 document.getElementById('newVersion').value = '';
                 document.getElementById('downloadUrl').value = '';
                 document.getElementById('releaseNotes').value = '';
+                document.getElementById('sha256').value = '';
+                document.getElementById('fileSize').value = '';
+                document.getElementById('isCritical').checked = false;
+                
+                // Refresh update history
+                loadUpdateHistory();
+            }).catch(err => {
+                showToast('Erreur publication: ' + err.message, 'error');
             });
         }
 
@@ -2492,12 +3249,75 @@
             const minVersion = document.getElementById('forceMinVersion').value.trim();
             const blockApp = document.getElementById('blockUntilUpdated').checked;
             
+            if (enabled && !minVersion) {
+                showToast('Version minimum requise', 'warning');
+                return;
+            }
+            
+            // Confirmation for enabling
+            if (enabled && !confirm(`⚠️ ATTENTION: Force Update va obliger TOUS les utilisateurs a mettre a jour vers la version ${minVersion} minimum.\n\n${blockApp ? '🚫 L\'application sera BLOQUEE pour les versions anterieures!' : ''}\n\nContinuer?`)) {
+                document.getElementById('forceUpdateToggle').checked = false;
+                updateForceUpdatePreview();
+                return;
+            }
+            
             database.ref('forceUpdate').update({
                 enabled: enabled,
                 minimumVersion: minVersion,
-                blockAppUntilUpdated: blockApp
+                blockAppUntilUpdated: blockApp,
+                updatedAt: new Date().toISOString(),
+                updatedBy: 'Admin Panel'
             }).then(() => {
-                showToast('Force Update configure', 'success');
+                showToast(enabled ? `Force Update ACTIVE - Version min: ${minVersion}` : 'Force Update desactive', enabled ? 'warning' : 'success');
+                logAudit('force_update_config', enabled ? `Enabled - Min: ${minVersion}` : 'Disabled');
+                updateForceUpdatePreview();
+            }).catch(err => {
+                showToast('Erreur: ' + err.message, 'error');
+            });
+        }
+        
+        // Load update history from Firebase
+        function loadUpdateHistory() {
+            const listEl = document.getElementById('updateHistoryList');
+            
+            database.ref('updates/history').orderByChild('publishedAt').limitToLast(10).once('value', snapshot => {
+                const history = [];
+                snapshot.forEach(child => {
+                    history.unshift({ id: child.key, ...child.val() });
+                });
+                
+                if (history.length === 0) {
+                    listEl.innerHTML = `
+                        <div style="padding: 30px; text-align: center; color: var(--xnrgy-text-muted);">
+                            <p>Aucune publication enregistree</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '';
+                history.forEach(item => {
+                    const date = new Date(item.publishedAt);
+                    const dateStr = date.toLocaleString('fr-FR');
+                    
+                    html += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--xnrgy-border-light);">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 36px; height: 36px; border-radius: 6px; background: ${item.isCritical ? 'var(--xnrgy-red)' : 'var(--xnrgy-green)'}; 
+                                            display: flex; align-items: center; justify-content: center; font-weight: 600; color: white; font-size: 0.75rem;">
+                                    ${item.version}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 500;">${item.version} ${item.isCritical ? '<span style="color: var(--xnrgy-red);">⚠️ Critique</span>' : ''}</div>
+                                    <div style="font-size: 0.75rem; color: var(--xnrgy-text-muted);">${dateStr} • ${item.source || 'Manual'}</div>
+                                </div>
+                            </div>
+                            <span style="font-size: 0.7rem; color: var(--xnrgy-text-muted);">${item.publishedBy || 'Admin'}</span>
+                        </div>
+                    `;
+                });
+                
+                listEl.innerHTML = html;
             });
         }
 
@@ -2603,8 +3423,244 @@
                 showToast('Broadcast envoye!', 'success');
                 document.getElementById('broadcastTitle').value = '';
                 document.getElementById('broadcastMessage').value = '';
+                document.getElementById('broadcastTemplate').value = '';
                 logAudit('broadcast_sent', title);
+                refreshBroadcasts();
             });
+        }
+
+        // ==================== TEMPLATES DE MESSAGES ====================
+        const messageTemplates = {
+            // Maintenance
+            maint_planned: {
+                type: 'warning',
+                priority: 'normal',
+                title: 'Maintenance planifiee',
+                message: 'Une maintenance est prevue le [DATE] de [HEURE_DEBUT] a [HEURE_FIN].\n\nVeuillez sauvegarder vos travaux avant cette periode.\n\nMerci de votre comprehension.'
+            },
+            maint_urgent: {
+                type: 'error',
+                priority: 'critical',
+                title: 'Maintenance urgente en cours',
+                message: 'Une maintenance urgente est en cours.\n\nLes services seront temporairement indisponibles.\n\nNous vous informerons des que les services seront retablis.'
+            },
+            maint_complete: {
+                type: 'success',
+                priority: 'normal',
+                title: 'Maintenance terminee',
+                message: 'La maintenance est terminee avec succes.\n\nTous les services sont maintenant disponibles.\n\nMerci de votre patience!'
+            },
+            // Mises a jour
+            update_available: {
+                type: 'info',
+                priority: 'normal',
+                title: 'Nouvelle version disponible',
+                message: 'Une nouvelle version de XEAT est disponible (v[VERSION]).\n\nNouveautes:\n- [FEATURE_1]\n- [FEATURE_2]\n\nVeuillez mettre a jour des que possible.'
+            },
+            update_required: {
+                type: 'warning',
+                priority: 'high',
+                title: 'Mise a jour requise',
+                message: 'Une mise a jour importante est requise pour continuer a utiliser XEAT.\n\nVeuillez fermer l\'application et la relancer pour appliquer la mise a jour.'
+            },
+            update_complete: {
+                type: 'success',
+                priority: 'normal',
+                title: 'Mise a jour installee',
+                message: 'La mise a jour a ete installee avec succes!\n\nVersion actuelle: v[VERSION]\n\nBonne utilisation!'
+            },
+            // Annonces
+            announce_meeting: {
+                type: 'info',
+                priority: 'normal',
+                title: 'Reunion d\'equipe',
+                message: 'Rappel: Reunion d\'equipe le [DATE] a [HEURE].\n\nLieu: [LIEU]\nOrdre du jour: [SUJET]\n\nMerci de confirmer votre presence.'
+            },
+            announce_info: {
+                type: 'info',
+                priority: 'low',
+                title: 'Information',
+                message: '[Votre message ici]'
+            },
+            announce_reminder: {
+                type: 'warning',
+                priority: 'normal',
+                title: 'Rappel important',
+                message: 'Rappel: [SUJET]\n\nDate limite: [DATE]\n\nMerci de prendre les actions necessaires.'
+            },
+            // Alertes
+            alert_vault: {
+                type: 'error',
+                priority: 'high',
+                title: 'Probleme Vault detecte',
+                message: 'Un probleme avec Autodesk Vault a ete detecte.\n\nAction recommandee:\n1. Sauvegardez vos travaux localement\n2. Ne faites pas de Check-In pour le moment\n3. Attendez la resolution du probleme\n\nNous travaillons a resoudre ce probleme.'
+            },
+            alert_network: {
+                type: 'error',
+                priority: 'high',
+                title: 'Probleme reseau',
+                message: 'Des problemes de connectivite reseau ont ete detectes.\n\nCertaines fonctionnalites peuvent etre affectees.\n\nL\'equipe IT travaille sur la resolution.'
+            },
+            alert_urgent: {
+                type: 'error',
+                priority: 'critical',
+                title: 'ALERTE URGENTE',
+                message: '[DESCRIPTION DE L\'URGENCE]\n\nAction requise immediatement:\n- [ACTION_1]\n- [ACTION_2]'
+            }
+        };
+
+        function applyTemplate() {
+            const templateId = document.getElementById('broadcastTemplate').value;
+            if (!templateId || !messageTemplates[templateId]) return;
+            
+            const template = messageTemplates[templateId];
+            document.getElementById('broadcastType').value = template.type;
+            document.getElementById('broadcastPriority').value = template.priority;
+            document.getElementById('broadcastTitle').value = template.title;
+            document.getElementById('broadcastMessage').value = template.message;
+            
+            showToast('Template applique - Modifiez les [CHAMPS] selon vos besoins', 'info');
+        }
+
+        // ==================== MESSAGE DE BIENVENUE ====================
+        function loadWelcomeMessage() {
+            database.ref('welcomeMessage').once('value', snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    document.getElementById('welcomeEnabled').checked = data.enabled || false;
+                    document.getElementById('welcomeTitle').value = data.title || '';
+                    document.getElementById('welcomeMessage').value = data.message || '';
+                    updateWelcomeStatus(data.enabled);
+                }
+            });
+        }
+
+        function saveWelcomeMessage() {
+            const enabled = document.getElementById('welcomeEnabled').checked;
+            const titleInput = document.getElementById('welcomeTitle');
+            const messageInput = document.getElementById('welcomeMessage');
+            
+            // Utiliser la valeur ou le placeholder si vide
+            const title = titleInput.value.trim() || titleInput.placeholder;
+            const message = messageInput.value.trim() || messageInput.placeholder;
+            
+            database.ref('welcomeMessage').set({
+                enabled: enabled,
+                title: title,
+                message: message,
+                type: 'info',
+                updatedAt: new Date().toISOString(),
+                updatedBy: 'Admin Panel'
+            }).then(() => {
+                // Mettre les valeurs dans les champs pour montrer ce qui a ete sauvegarde
+                titleInput.value = title;
+                messageInput.value = message;
+                
+                showToast(enabled ? 'Message de bienvenue active!' : 'Message de bienvenue desactive', 'success');
+                updateWelcomeStatus(enabled);
+                logAudit('welcome_message_updated', enabled ? 'enabled' : 'disabled');
+            }).catch(err => {
+                showToast('Erreur: ' + err.message, 'error');
+            });
+        }
+
+        function updateWelcomeStatus(enabled) {
+            const badge = document.getElementById('welcomeStatus');
+            badge.textContent = enabled ? 'Actif' : 'Inactif';
+            badge.style.background = enabled ? 'var(--xnrgy-green)' : 'var(--xnrgy-text-muted)';
+            badge.style.color = 'white';
+            badge.style.padding = '4px 10px';
+            badge.style.borderRadius = '12px';
+            badge.style.fontSize = '0.75rem';
+        }
+
+        // ==================== NOUVEAU SYSTEME DE MESSAGES DE BIENVENUE ====================
+        function loadWelcomeMessages() {
+            database.ref('welcomeMessages').once('value', snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    // Premier lancement (installation)
+                    if (data.firstInstall) {
+                        document.getElementById('welcomeFirstInstallEnabled').checked = data.firstInstall.enabled !== false;
+                        document.getElementById('welcomeFirstInstallTitle').value = data.firstInstall.title || 'Bienvenue sur XEAT!';
+                        document.getElementById('welcomeFirstInstallMessage').value = data.firstInstall.message || '';
+                        document.getElementById('welcomeFirstInstallType').value = data.firstInstall.type || 'info';
+                    }
+                    
+                    // Nouvel utilisateur Windows
+                    if (data.newUserOnDevice) {
+                        document.getElementById('welcomeNewUserEnabled').checked = data.newUserOnDevice.enabled !== false;
+                        document.getElementById('welcomeNewUserTitle').value = data.newUserOnDevice.title || 'Bienvenue!';
+                        document.getElementById('welcomeNewUserMessage').value = data.newUserOnDevice.message || '';
+                        document.getElementById('welcomeNewUserType').value = data.newUserOnDevice.type || 'info';
+                    }
+                    
+                    // Message global (drop custom)
+                    if (data.global) {
+                        document.getElementById('welcomeGlobalEnabled').checked = data.global.enabled || false;
+                        document.getElementById('welcomeGlobalTitle').value = data.global.title || '';
+                        document.getElementById('welcomeGlobalMessage').value = data.global.message || '';
+                        document.getElementById('welcomeGlobalShowOnce').checked = data.global.showOnce !== false;
+                    }
+                    
+                    showToast('Messages de bienvenue charges', 'info');
+                }
+            }).catch(err => {
+                showToast('Erreur chargement: ' + err.message, 'error');
+            });
+        }
+
+        function saveWelcomeMessages() {
+            const welcomeMessages = {
+                firstInstall: {
+                    enabled: document.getElementById('welcomeFirstInstallEnabled').checked,
+                    title: document.getElementById('welcomeFirstInstallTitle').value.trim() || 'Bienvenue sur XEAT!',
+                    message: document.getElementById('welcomeFirstInstallMessage').value.trim(),
+                    type: document.getElementById('welcomeFirstInstallType').value,
+                    showOnce: true,
+                    targetUsers: 'all'
+                },
+                newUserOnDevice: {
+                    enabled: document.getElementById('welcomeNewUserEnabled').checked,
+                    title: document.getElementById('welcomeNewUserTitle').value.trim() || 'Bienvenue!',
+                    message: document.getElementById('welcomeNewUserMessage').value.trim(),
+                    type: document.getElementById('welcomeNewUserType').value,
+                    showOnce: true,
+                    targetUsers: 'new'
+                },
+                global: {
+                    enabled: document.getElementById('welcomeGlobalEnabled').checked,
+                    title: document.getElementById('welcomeGlobalTitle').value.trim(),
+                    message: document.getElementById('welcomeGlobalMessage').value.trim(),
+                    type: 'info',
+                    showOnce: document.getElementById('welcomeGlobalShowOnce').checked,
+                    targetUsers: 'all'
+                }
+            };
+            
+            database.ref('welcomeMessages').set(welcomeMessages).then(() => {
+                showToast('Messages de bienvenue sauvegardes!', 'success');
+                logAudit('welcome_messages_updated', 'All 3 types configured');
+                
+                // Mettre a jour le badge de statut
+                const activeCount = [
+                    welcomeMessages.firstInstall.enabled,
+                    welcomeMessages.newUserOnDevice.enabled,
+                    welcomeMessages.global.enabled
+                ].filter(Boolean).length;
+                
+                const badge = document.getElementById('welcomeStatus');
+                badge.textContent = activeCount + ' type(s) actif(s)';
+                badge.style.background = activeCount > 0 ? 'var(--xnrgy-green)' : 'var(--xnrgy-text-muted)';
+            }).catch(err => {
+                showToast('Erreur: ' + err.message, 'error');
+            });
+        }
+
+        // ==================== RAFRAICHIR BROADCASTS ====================
+        function refreshBroadcasts() {
+            updateBroadcastsList();
+            showToast('Liste actualisee', 'info');
         }
 
         function forceLogoutAll() {
@@ -2626,6 +3682,17 @@
             
             document.getElementById('page-' + pageId).classList.add('active');
             event.target.closest('.nav-item')?.classList.add('active');
+            
+            // Charger les donnees specifiques a la page
+            if (pageId === 'telemetry') {
+                updateTelemetryPage();
+            } else if (pageId === 'audit') {
+                updateAuditPage();
+            } else if (pageId === 'security') {
+                loadSecuritySettings();
+            } else if (pageId === 'settings') {
+                loadAppSettings();
+            }
         }
 
         function showToast(message, type = 'info') {
@@ -2984,10 +4051,253 @@
         function filterUsersByRole(role) { /* TODO */ }
         function filterUsersByStatus(status) { /* TODO */ }
         function filterDevicesByStatus(status) { /* TODO */ }
-        function saveSecuritySettings() { showToast('Parametres sauvegardes', 'success'); }
-        function saveSettings() { showToast('Parametres sauvegardes', 'success'); }
+        
+        async function saveSecuritySettings() {
+            try {
+                const settings = {
+                    maxLoginAttempts: parseInt(document.getElementById('maxLoginAttempts').value) || 5,
+                    lockoutDuration: parseInt(document.getElementById('lockoutDuration').value) || 30,
+                    sessionTimeout: parseInt(document.getElementById('sessionTimeout').value) || 480,
+                    maxSessions: parseInt(document.getElementById('maxSessions').value) || 3,
+                    enforceDeviceApproval: document.getElementById('enforceDeviceApproval').checked,
+                    allowMultipleSessions: document.getElementById('allowMultipleSessions').checked,
+                    enableIpWhitelist: document.getElementById('enableIpWhitelist').checked
+                };
+                
+                await database.ref('security/loginPolicy').update({
+                    maxLoginAttempts: settings.maxLoginAttempts,
+                    lockoutDuration: settings.lockoutDuration,
+                    sessionTimeout: settings.sessionTimeout,
+                    maxConcurrentSessions: settings.maxSessions
+                });
+                
+                await database.ref('security/devicePolicy').update({
+                    requireApproval: settings.enforceDeviceApproval,
+                    allowMultipleSessions: settings.allowMultipleSessions
+                });
+                
+                await database.ref('security/networkPolicy').update({
+                    enableIpWhitelist: settings.enableIpWhitelist
+                });
+                
+                // Mettre a jour les donnees locales
+                if (!appData.security) appData.security = {};
+                appData.security.loginPolicy = { ...appData.security.loginPolicy, ...settings };
+                
+                logAudit('security_settings_updated', 'Parametres de securite modifies');
+                showToast('Parametres de securite sauvegardes', 'success');
+            } catch (error) {
+                console.error('Erreur sauvegarde securite:', error);
+                showToast('Erreur: ' + error.message, 'error');
+            }
+        }
+        
+        async function saveSettings() {
+            try {
+                const settings = {
+                    appName: document.getElementById('appName').value,
+                    shortName: document.getElementById('appShortName').value,
+                    supportEmail: document.getElementById('supportEmail').value,
+                    heartbeatInterval: parseInt(document.getElementById('heartbeatInterval').value) || 60000,
+                    debugMode: document.getElementById('debugMode').checked,
+                    telemetryEnabled: document.getElementById('enableTelemetry').checked
+                };
+                
+                await database.ref('appConfig').update({
+                    appName: settings.appName,
+                    shortName: settings.shortName,
+                    supportEmail: settings.supportEmail
+                });
+                
+                await database.ref('featureFlags').update({
+                    debugMode: settings.debugMode,
+                    telemetryCollection: settings.telemetryEnabled
+                });
+                
+                await database.ref('devices/templateDevice/heartbeat').update({
+                    intervalMs: settings.heartbeatInterval
+                });
+                
+                // Mettre a jour les donnees locales
+                if (!appData.appConfig) appData.appConfig = {};
+                appData.appConfig.appName = settings.appName;
+                appData.appConfig.shortName = settings.shortName;
+                
+                logAudit('app_settings_updated', 'Configuration application modifiee');
+                showToast('Parametres sauvegardes', 'success');
+            } catch (error) {
+                console.error('Erreur sauvegarde parametres:', error);
+                showToast('Erreur: ' + error.message, 'error');
+            }
+        }
+        
         function scheduleMaintenace() { showToast('Maintenance planifiee', 'success'); }
-        function exportAuditLogs() { showToast('Export des logs...', 'info'); }
+        
+        // ==================== LOAD SETTINGS ====================
+        function loadSecuritySettings() {
+            const loginPolicy = appData.security?.loginPolicy || {};
+            const devicePolicy = appData.security?.devicePolicy || {};
+            const networkPolicy = appData.security?.networkPolicy || {};
+            
+            document.getElementById('maxLoginAttempts').value = loginPolicy.maxLoginAttempts || 5;
+            document.getElementById('lockoutDuration').value = loginPolicy.lockoutDuration || 30;
+            document.getElementById('sessionTimeout').value = loginPolicy.sessionTimeout || 480;
+            document.getElementById('maxSessions').value = loginPolicy.maxConcurrentSessions || 3;
+            document.getElementById('enforceDeviceApproval').checked = devicePolicy.requireApproval || false;
+            document.getElementById('allowMultipleSessions').checked = devicePolicy.allowMultipleSessions !== false;
+            document.getElementById('enableIpWhitelist').checked = networkPolicy.enableIpWhitelist || false;
+        }
+        
+        function loadAppSettings() {
+            const appConfig = appData.appConfig || {};
+            const featureFlags = appData.featureFlags || {};
+            
+            document.getElementById('appName').value = appConfig.appName || 'XNRGY Engineering Automation Tools';
+            document.getElementById('appShortName').value = appConfig.shortName || 'XEAT';
+            document.getElementById('supportEmail').value = appConfig.supportEmail || '';
+            document.getElementById('heartbeatInterval').value = appData.devices?.templateDevice?.heartbeat?.intervalMs || 60000;
+            document.getElementById('debugMode').checked = featureFlags.debugMode || false;
+            document.getElementById('enableTelemetry').checked = featureFlags.telemetryCollection !== false;
+        }
+        
+        // ==================== TELEMETRY ====================
+        function updateTelemetryPage() {
+            const stats = appData.statistics?.global || {};
+            
+            // Mettre a jour les compteurs
+            document.getElementById('teleTotalSessions').textContent = stats.totalSessions || 0;
+            document.getElementById('teleTotalUploads').textContent = stats.totalUploads || 0;
+            document.getElementById('teleTotalModules').textContent = stats.totalModules || 0;
+            document.getElementById('teleTotalErrors').textContent = stats.totalErrors || 0;
+            
+            // Mettre a jour l'utilisation par module
+            const moduleUsage = appData.statistics?.byModule || {};
+            const moduleContainer = document.getElementById('moduleUsage');
+            
+            if (Object.keys(moduleUsage).length === 0) {
+                moduleContainer.innerHTML = '<p style="color: var(--xnrgy-text-muted);">Aucune donnee d\'utilisation disponible</p>';
+                return;
+            }
+            
+            let html = '<div class="module-usage-list">';
+            for (const [moduleName, count] of Object.entries(moduleUsage)) {
+                const displayName = moduleName.replace(/_/g, ' ').replace(/([A-Z])/g, ' $1').trim();
+                html += `
+                    <div class="module-usage-item" style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--xnrgy-border-light);">
+                        <span style="font-weight: 500;">${displayName}</span>
+                        <span style="color: var(--xnrgy-cyan);">${count} utilisations</span>
+                    </div>
+                `;
+            }
+            html += '</div>';
+            moduleContainer.innerHTML = html;
+        }
+        
+        // ==================== AUDIT LOGS ====================
+        function updateAuditPage() {
+            const auditLogs = appData.auditLog || {};
+            const tbody = document.getElementById('auditTable');
+            
+            // Convertir en array et trier par timestamp (plus recent en premier)
+            const logsArray = Object.entries(auditLogs)
+                .filter(([k, v]) => k !== 'placeholder' && v)
+                .map(([id, log]) => ({ id, ...log }))
+                .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+            
+            if (logsArray.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--xnrgy-text-muted);">Aucun log disponible</td></tr>';
+                return;
+            }
+            
+            // Afficher les 100 derniers logs
+            const recentLogs = logsArray.slice(0, 100);
+            
+            tbody.innerHTML = recentLogs.map(log => {
+                const actionColor = getActionColor(log.action, log.category);
+                const icon = getActionIcon(log.action, log.category);
+                
+                return `
+                    <tr>
+                        <td style="white-space: nowrap;">${formatDate(log.timestamp)}</td>
+                        <td>
+                            <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                <span style="color: ${actionColor};">${icon}</span>
+                                ${log.action || 'N/A'}
+                            </span>
+                        </td>
+                        <td>${log.userName || log.userId || 'Systeme'}</td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(log.details || '')}">${log.details || '-'}</td>
+                        <td>${log.ipAddress || 'local'}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+        
+        function getActionColor(action, category) {
+            if (category === 'error' || action?.includes('error')) return 'var(--xnrgy-red)';
+            if (category === 'session' || action?.includes('session')) return 'var(--xnrgy-green)';
+            if (action?.includes('delete') || action?.includes('disable')) return 'var(--xnrgy-orange)';
+            if (action?.includes('create') || action?.includes('add')) return 'var(--xnrgy-cyan)';
+            return 'var(--xnrgy-text-secondary)';
+        }
+        
+        function getActionIcon(action, category) {
+            if (category === 'error' || action?.includes('error')) return '[-]';
+            if (category === 'session') return '[>]';
+            if (action?.includes('delete')) return '[x]';
+            if (action?.includes('create') || action?.includes('add')) return '[+]';
+            if (action?.includes('update') || action?.includes('modify')) return '[~]';
+            return '[i]';
+        }
+        
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        
+        function exportAuditLogs() {
+            const auditLogs = appData.auditLog || {};
+            
+            // Convertir en array et trier
+            const logsArray = Object.entries(auditLogs)
+                .filter(([k, v]) => k !== 'placeholder' && v)
+                .map(([id, log]) => ({ id, ...log }))
+                .sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+            
+            if (logsArray.length === 0) {
+                showToast('Aucun log a exporter', 'warning');
+                return;
+            }
+            
+            // Creer le CSV
+            const headers = ['Date/Heure', 'Action', 'Categorie', 'Utilisateur', 'Device', 'Details', 'IP', 'Succes'];
+            const csvRows = [headers.join(';')];
+            
+            logsArray.forEach(log => {
+                const row = [
+                    log.timestamp || '',
+                    log.action || '',
+                    log.category || '',
+                    log.userName || log.userId || '',
+                    log.deviceId || '',
+                    (log.details || '').replace(/;/g, ',').replace(/\n/g, ' '),
+                    log.ipAddress || 'local',
+                    log.success !== false ? 'Oui' : 'Non'
+                ];
+                csvRows.push(row.join(';'));
+            });
+            
+            const csvContent = csvRows.join('\n');
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `xeat-audit-logs-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showToast(`${logsArray.length} logs exportes`, 'success');
+        }
     </script>
 </body>
 </html>

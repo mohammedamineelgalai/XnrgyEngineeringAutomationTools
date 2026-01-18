@@ -1,27 +1,109 @@
 ﻿#######################################################################
 #  XNRGY Engineering Automation Tools - BUILD & RUN SCRIPT
-#  Version: 1.0.0
+#  Version: 2.3.0
 #  Author: Mohammed Amine Elgalai - XNRGY Climate Systems ULC
-#  Date: 2026-01-02
+#  Date: 2026-01-17
 #
 #  Usage:
-#    .\build-and-run.ps1              # Build Release + Run
-#    .\build-and-run.ps1 -Debug       # Build Debug + Run
-#    .\build-and-run.ps1 -Clean       # Clean + Build Release + Run
-#    .\build-and-run.ps1 -BuildOnly   # Build sans lancer
-#    .\build-and-run.ps1 -KillOnly    # Tuer les instances existantes
+#    .\build-and-run.ps1                    # Build Release + Run
+#    .\build-and-run.ps1 -Debug             # Build Debug + Run
+#    .\build-and-run.ps1 -Clean             # Clean + Build Release + Run
+#    .\build-and-run.ps1 -BuildOnly         # Build sans lancer
+#    .\build-and-run.ps1 -KillOnly          # Tuer les instances existantes
+#    .\build-and-run.ps1 -WithInstaller     # Build App + Installer
+#    .\build-and-run.ps1 -InstallerOnly     # Build uniquement l'installateur
+#    .\build-and-run.ps1 -CreatePackage     # Build App + Installer + ZIP
+#    .\build-and-run.ps1 -Deploy            # Build + Deploy Firebase (HTML + Rules + Config)
+#    .\build-and-run.ps1 -DeployAll         # Deploy Firebase complet (hosting + rules + database)
+#    .\build-and-run.ps1 -WithInstaller -Deploy  # Build + Installer + Deploy Firebase complet
+#    .\build-and-run.ps1 -Publish           # Build + Installer + Publish to GitHub Releases
+#    .\build-and-run.ps1 -Publish -NewVersion "1.1.0"  # Create new version on GitHub
+#    .\build-and-run.ps1 -SyncFirebase      # Sync Firebase data AVANT deploiement
+#    .\build-and-run.ps1 -Auto              # [ROBO MODE] Tout automatique: Clean+Build+Sign+Installer+Sync+Deploy+Publish
+#    .\build-and-run.ps1 -Auto              # [ROBO MODE] Tout automatique: Build+Sign+Installer+Sync+Deploy+Publish
 #######################################################################
 
 param(
     [switch]$Debug,
     [switch]$Clean,
     [switch]$BuildOnly,
-    [switch]$KillOnly
+    [switch]$KillOnly,
+    [switch]$WithInstaller,
+    [switch]$InstallerOnly,
+    [switch]$CreatePackage,
+    [switch]$DeployAdmin,      # Legacy - Deploy hosting only
+    [switch]$Deploy,           # Deploy hosting + rules + config
+    [switch]$DeployAll,        # Alias pour Deploy
+    [switch]$Publish,          # Publish to GitHub Releases
+    [switch]$SyncFirebase,     # Sync Firebase data avant deploy
+    [switch]$Auto,             # MODE ROBO: Tout automatique dans l'ordre
+    [string]$NewVersion = ""   # New version number (empty = update existing)
 )
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MODE AUTO (ROBO) - Sequence complete automatique
+# ═══════════════════════════════════════════════════════════════════════════════
+if ($Auto) {
+    Write-Host ""
+    Write-Host "╔═══════════════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
+    Write-Host "║     [ROBO MODE] SEQUENCE AUTOMATIQUE COMPLETE ACTIVEE             ║" -ForegroundColor Magenta
+    Write-Host "╠═══════════════════════════════════════════════════════════════════╣" -ForegroundColor Magenta
+    Write-Host "║  Sequence obligatoire:                                            ║" -ForegroundColor Magenta
+    Write-Host "║    1. Kill instances                                              ║" -ForegroundColor White
+    Write-Host "║    2. Clean projet                                                ║" -ForegroundColor White
+    Write-Host "║    3. Build Release + Signature                                   ║" -ForegroundColor White
+    Write-Host "║    4. Build Installer + Signature                                 ║" -ForegroundColor White
+    Write-Host "║    5. Sync Firebase (preserver devices/users/auditLog)            ║" -ForegroundColor White
+    Write-Host "║    6. Deploy Firebase (Hosting + Rules + Config)                  ║" -ForegroundColor White
+    Write-Host "║    7. Publish GitHub Releases                                     ║" -ForegroundColor White
+    Write-Host "╚═══════════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+    Write-Host ""
+    
+    # Activer tous les flags necessaires
+    $Clean = $true
+    $WithInstaller = $true
+    $SyncFirebase = $true
+    $Deploy = $true
+    $Publish = $true
+}
+
+# Si DeployAll est specifie, activer Deploy
+if ($DeployAll) { $Deploy = $true }
+# Si Publish est specifie, activer WithInstaller
+if ($Publish) { $WithInstaller = $true }
 
 $ErrorActionPreference = "Stop"
 $ProjectName = "XnrgyEngineeringAutomationTools"
+$InstallerName = "XnrgyInstaller"
 $Configuration = if ($Debug) { "Debug" } else { "Release" }
+
+# GitHub Release Settings
+$GitHubOwner = "mohammedamineelgalai"
+$GitHubRepo = "XnrgyEngineeringAutomationTools"
+$GitHubReleasesUrl = "https://github.com/$GitHubOwner/$GitHubRepo/releases"
+
+# Chemins Firebase
+$FirebaseDir = "$PSScriptRoot\Firebase Realtime Database configuration"
+$FirebaseCLI = "$FirebaseDir\firebase-tools-instant-win.exe"
+$AdminPanelDir = "$FirebaseDir\admin-panel"
+$FirebaseRulesFile = "$FirebaseDir\firebase-rules.json"
+$FirebaseInitFile = "$FirebaseDir\firebase-init.json"
+$FirebaseDatabaseURL = "https://xeat-remote-control-default-rtdb.firebaseio.com"
+$SyncFirebaseScript = "$PSScriptRoot\Sync-Firebase.ps1"
+
+# Code Signing Settings
+$SigningDir = "$PSScriptRoot\.signing"
+$SigningCertFile = "$SigningDir\XnrgyCodeSigning.pfx"
+$SigningCertPassword = "Xnrgy2026!"
+$SigningTimestampServer = "http://timestamp.digicert.com"
+
+# Calculer le nombre d'etapes dynamiquement
+$TotalSteps = 4  # Base: Kill, Clean, Build App, Run
+if ($WithInstaller -or $InstallerOnly -or $CreatePackage) { $TotalSteps = 6 }
+if ($CreatePackage) { $TotalSteps = 7 }
+if ($Deploy) { $TotalSteps += 3 }  # +3 etapes: Hosting, Rules, Config
+if ($Publish) { $TotalSteps += 1 }  # +1 etape: GitHub Release
+if ($DeployAdmin) { $TotalSteps = 1 }  # Mode standalone legacy
 
 # Se positionner dans le répertoire du script (important pour chemins relatifs)
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -32,8 +114,12 @@ function Show-Header {
     Clear-Host
     Write-Host ""
     Write-Host "╔═══════════════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
-    Write-Host "║     XNRGY ENGINEERING AUTOMATION TOOLS - BUILD & RUN v1.0.0       ║" -ForegroundColor Cyan
-    Write-Host "║     Configuration: $Configuration                                         ║" -ForegroundColor Cyan
+    Write-Host "║     XNRGY ENGINEERING AUTOMATION TOOLS - BUILD & RUN v2.3.0       ║" -ForegroundColor Cyan
+    if ($Auto) {
+        Write-Host "║     Mode: [ROBO] AUTOMATIQUE COMPLET                              ║" -ForegroundColor Magenta
+    } else {
+        Write-Host "║     Configuration: $($Configuration.PadRight(43))║" -ForegroundColor Cyan
+    }
     Write-Host "╚═══════════════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
 }
@@ -132,7 +218,184 @@ function Stop-ExistingInstances {
     Start-Sleep -Seconds 2
 }
 
+# Fonction pour copier TOUTES les dependances
+function Copy-AllDependencies {
+    param([string]$SourceDir, [string]$DestDir)
+    
+    Write-Host "        [>] Copie de TOUTES les dependances..." -ForegroundColor Cyan
+    
+    # Supprimer et recreer le dossier destination
+    if (Test-Path $DestDir) {
+        Remove-Item $DestDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    New-Item -ItemType Directory -Path $DestDir -Force | Out-Null
+    
+    # Extensions a copier (TOUT ce qui est necessaire)
+    $IncludeExtensions = @("*.exe", "*.dll", "*.config", "*.json", "*.ico", "*.png", "*.jpg", "*.gif", "*.bmp", "*.xaml", "*.resources", "*.pri")
+    
+    # Fichiers a exclure
+    $ExcludePatterns = @("*.pdb", "*.xml", "*.vshost.*", "*.CodeAnalysisLog.*", "*TestAdapter*", "*nunit*", "*xunit*", "*moq*")
+    
+    $totalFiles = 0
+    $totalSize = 0
+    
+    # Copier tous les fichiers
+    foreach ($ext in $IncludeExtensions) {
+        $files = Get-ChildItem -Path $SourceDir -Filter $ext -ErrorAction SilentlyContinue
+        foreach ($file in $files) {
+            $exclude = $false
+            foreach ($pattern in $ExcludePatterns) {
+                if ($file.Name -like $pattern) { $exclude = $true; break }
+            }
+            if (-not $exclude) {
+                Copy-Item $file.FullName -Destination $DestDir -Force
+                $totalFiles++
+                $totalSize += $file.Length
+            }
+        }
+    }
+    
+    # Copier les sous-dossiers importants (runtimes, etc.)
+    $SubFolders = @("runtimes", "ref", "lib", "Resources", "Themes", "Assets", "Images", "x86", "x64")
+    foreach ($folder in $SubFolders) {
+        $subPath = Join-Path $SourceDir $folder
+        if (Test-Path $subPath) {
+            Copy-Item $subPath -Destination (Join-Path $DestDir $folder) -Recurse -Force
+            $subFiles = (Get-ChildItem (Join-Path $DestDir $folder) -Recurse -File -ErrorAction SilentlyContinue).Count
+            $totalFiles += $subFiles
+            Write-Host "        [+] Dossier '$folder' ($subFiles fichiers)" -ForegroundColor Gray
+        }
+    }
+    
+    # Copier l'icone depuis Resources si manquante
+    $IconSource = Join-Path $ScriptDir "Resources\XnrgyEngineeringAutomationTools.ico"
+    $IconDest = Join-Path $DestDir "XnrgyEngineeringAutomationTools.ico"
+    if ((Test-Path $IconSource) -and -not (Test-Path $IconDest)) {
+        Copy-Item $IconSource -Destination $IconDest -Force
+        $totalFiles++
+    }
+    
+    # Creer le dossier Logs
+    New-Item -ItemType Directory -Path (Join-Path $DestDir "Logs") -Force | Out-Null
+    
+    $sizeMB = [math]::Round($totalSize / 1MB, 2)
+    Write-Host "        [+] $totalFiles fichiers copies ($sizeMB MB)" -ForegroundColor Green
+    
+    # Verifier les DLL critiques (noms exacts des packages NuGet)
+    $CriticalDLLs = @(
+        "Newtonsoft.Json.dll",
+        "UglyToad.PdfPig.dll",
+        "EPPlus.dll",
+        "NLog.dll",
+        "CommunityToolkit.Mvvm.dll",
+        "System.Text.Json.dll",
+        "System.Memory.dll",
+        "System.Buffers.dll"
+    )
+    
+    $missing = @()
+    foreach ($dll in $CriticalDLLs) {
+        if (-not (Test-Path (Join-Path $DestDir $dll))) { $missing += $dll }
+    }
+    
+    if ($missing.Count -gt 0) {
+        Write-Host "        [!] DLLs manquantes: $($missing -join ', ')" -ForegroundColor Yellow
+    } else {
+        Write-Host "        [+] Toutes les DLLs critiques presentes" -ForegroundColor Green
+    }
+    
+    return $totalFiles
+}
+
+# Fonction pour signer un executable avec le certificat XNRGY
+function Sign-Executable {
+    param([string]$ExePath)
+    
+    if (-not (Test-Path $SigningCertFile)) {
+        Write-Host "        [!] Certificat de signature introuvable: $SigningCertFile" -ForegroundColor Yellow
+        Write-Host "        [i] L'executable ne sera pas signe" -ForegroundColor Gray
+        return $false
+    }
+    
+    # Trouver signtool.exe
+    $signtoolPaths = @(
+        "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe",
+        "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22000.0\x64\signtool.exe",
+        "C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x64\signtool.exe",
+        "C:\Program Files (x86)\Windows Kits\10\App Certification Kit\signtool.exe"
+    )
+    
+    $signtool = $null
+    foreach ($path in $signtoolPaths) {
+        if (Test-Path $path) {
+            $signtool = $path
+            break
+        }
+    }
+    
+    if (-not $signtool) {
+        Write-Host "        [!] signtool.exe introuvable - Installation Windows SDK requise" -ForegroundColor Yellow
+        return $false
+    }
+    
+    try {
+        Write-Host "        [>] Signature de: $(Split-Path $ExePath -Leaf)" -ForegroundColor Cyan
+        
+        $signArgs = @(
+            "sign",
+            "/f", $SigningCertFile,
+            "/p", $SigningCertPassword,
+            "/tr", $SigningTimestampServer,
+            "/td", "sha256",
+            "/fd", "sha256",
+            "/d", "XNRGY Engineering Automation Tools",
+            "/du", "https://github.com/mohammedamineelgalai/XnrgyEngineeringAutomationTools",
+            $ExePath
+        )
+        
+        $signOutput = & $signtool $signArgs 2>&1
+        
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "        [+] Signature reussie!" -ForegroundColor Green
+            return $true
+        } else {
+            Write-Host "        [-] Echec signature: $signOutput" -ForegroundColor Red
+            return $false
+        }
+    } catch {
+        Write-Host "        [-] Erreur signature: $($_.Exception.Message)" -ForegroundColor Red
+        return $false
+    }
+}
+
 Show-Header
+
+# Mode DeployAdmin - Deployer admin-panel sur Firebase
+if ($DeployAdmin) {
+    Write-Host "  [1/1] Deploiement Admin Panel sur Firebase Hosting..." -ForegroundColor Yellow
+    
+    if (-not (Test-Path $FirebaseCLI)) {
+        Write-Host "        [-] Firebase CLI introuvable: $FirebaseCLI" -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+    
+    $adminPanelDir = "$ScriptDir\Firebase Realtime Database configuration\admin-panel"
+    Push-Location $adminPanelDir
+    
+    & $FirebaseCLI deploy --only hosting
+    $deployResult = $LASTEXITCODE
+    
+    Pop-Location
+    Pop-Location
+    
+    if ($deployResult -eq 0) {
+        Write-Host "        [+] Deploiement reussi!" -ForegroundColor Green
+    } else {
+        Write-Host "        [-] Echec du deploiement" -ForegroundColor Red
+    }
+    exit $deployResult
+}
 
 # Mode KillOnly
 if ($KillOnly) {
@@ -205,23 +468,427 @@ if (-not (Test-Path $exePath)) {
 $exeSize = [math]::Round((Get-Item $exePath).Length / 1MB, 2)
 Write-Host "        Executable: $exePath ($exeSize MB)" -ForegroundColor DarkGray
 
-# ETAPE 4: Lancer l'application (sauf BuildOnly)
-if (-not $BuildOnly) {
+# Signer l'executable principal
+Write-Host "        [>] Signature de l'executable..." -ForegroundColor Cyan
+Sign-Executable -ExePath (Join-Path $PSScriptRoot $exePath)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ETAPE 4: Compilation de l'installateur (si demande)
+# ═══════════════════════════════════════════════════════════════════════════════
+if ($WithInstaller -or $InstallerOnly -or $CreatePackage) {
     Write-Host ""
-    Write-Host "  [4/4] Lancement de l'application..." -ForegroundColor Yellow
+    Write-Host "  [4/$TotalSteps] Preparation de l'installateur..." -ForegroundColor Yellow
+    
+    $InstallerBinRelease = "Installer\bin\$Configuration"
+    $FilesDir = "$InstallerBinRelease\Files"
+    $SourceBinDir = "bin\$Configuration"
+    
+    # Utiliser la nouvelle fonction qui copie TOUT
+    $fileCount = Copy-AllDependencies -SourceDir $SourceBinDir -DestDir $FilesDir
+    
+    # Compiler l'installateur
+    Write-Host ""
+    Write-Host "  [5/$TotalSteps] Compilation de l'installateur..." -ForegroundColor Yellow
+    
+    $installerArgs = @(
+        "Installer\$InstallerName.csproj",
+        "/p:Configuration=$Configuration",
+        "/t:Rebuild",
+        "/v:minimal",
+        "/nologo",
+        "/m"
+    )
+    
+    $installerOutput = & $msbuildPath $installerArgs 2>&1
+    $installerSuccess = $LASTEXITCODE -eq 0
+    
+    if (-not $installerSuccess) {
+        Write-Host "        [-] ERREUR compilation installateur" -ForegroundColor Red
+        Write-Host $installerOutput -ForegroundColor Red
+        Pop-Location
+        exit 1
+    }
+    
+    $setupExe = "$InstallerBinRelease\XNRGYEngineeringAutomationToolsSetup.exe"
+    if (Test-Path $setupExe) {
+        $setupSize = [math]::Round((Get-Item $setupExe).Length / 1MB, 2)
+        Write-Host "        [+] Installateur compile ($setupSize MB)" -ForegroundColor Green
+        
+        # Signer l'installateur
+        Write-Host "        [>] Signature de l'installateur..." -ForegroundColor Cyan
+        Sign-Executable -ExePath (Join-Path $PSScriptRoot $setupExe)
+    } else {
+        Write-Host "        [-] Installateur non trouve" -ForegroundColor Red
+    }
+    
+    # Creer package ZIP si demande
+    if ($CreatePackage) {
+        Write-Host ""
+        Write-Host "  [6/$TotalSteps] Creation du package ZIP..." -ForegroundColor Yellow
+        
+        $ZipName = "XNRGYEngineeringAutomationToolsSetup_v1.0.0.zip"
+        $ZipPath = "$InstallerBinRelease\$ZipName"
+        
+        if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force }
+        
+        # Creer dossier temp pour le ZIP
+        $TempDir = Join-Path $env:TEMP "XnrgySetupPackage"
+        if (Test-Path $TempDir) { Remove-Item $TempDir -Recurse -Force }
+        New-Item -ItemType Directory -Path $TempDir -Force | Out-Null
+        
+        Copy-Item $setupExe -Destination $TempDir -Force
+        Copy-Item $FilesDir -Destination "$TempDir\Files" -Recurse -Force
+        
+        Compress-Archive -Path "$TempDir\*" -DestinationPath $ZipPath -Force
+        
+        $ZipSize = [math]::Round((Get-Item $ZipPath).Length / 1MB, 2)
+        Write-Host "        [+] Package ZIP cree ($ZipSize MB)" -ForegroundColor Green
+        Write-Host "        Chemin: $ZipPath" -ForegroundColor DarkGray
+        
+        Remove-Item $TempDir -Recurse -Force
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ETAPE SYNC: Synchroniser Firebase AVANT deploiement (preserver devices/users)
+# ═══════════════════════════════════════════════════════════════════════════════
+if ($SyncFirebase -or $Deploy) {
+    Write-Host ""
+    Write-Host "  ════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+    Write-Host "        SYNCHRONISATION FIREBASE (Preservation donnees)" -ForegroundColor Magenta
+    Write-Host "  ════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+    
+    if (Test-Path $SyncFirebaseScript) {
+        Write-Host "        [>] Telechargement des donnees dynamiques..." -ForegroundColor Yellow
+        try {
+            # Executer le script de sync
+            & $SyncFirebaseScript -PreDeploy
+            Write-Host "        [+] Synchronisation terminee" -ForegroundColor Green
+        }
+        catch {
+            Write-Host "        [!] Avertissement sync: $($_.Exception.Message)" -ForegroundColor Yellow
+            Write-Host "        [i] Deploiement continue avec les donnees locales" -ForegroundColor Gray
+        }
+    } else {
+        Write-Host "        [!] Script Sync-Firebase.ps1 introuvable" -ForegroundColor Yellow
+    }
+    Write-Host ""
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ETAPE DEPLOY: Deployer Firebase complet (Hosting + Rules + Config)
+# ═══════════════════════════════════════════════════════════════════════════════
+if ($Deploy) {
+    $baseStep = if ($CreatePackage) { 7 } elseif ($WithInstaller -or $InstallerOnly) { 6 } else { 4 }
+    
+    # Verifier que les fichiers existent
+    if (-not (Test-Path $FirebaseCLI)) {
+        Write-Host "        [-] Firebase CLI introuvable: $FirebaseCLI" -ForegroundColor Red
+    } elseif (-not (Test-Path $AdminPanelDir)) {
+        Write-Host "        [-] Dossier admin-panel introuvable: $AdminPanelDir" -ForegroundColor Red
+    } else {
+        Write-Host ""
+        Write-Host "  ════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+        Write-Host "        DEPLOIEMENT FIREBASE COMPLET" -ForegroundColor Cyan
+        Write-Host "        Projet: xeat-remote-control" -ForegroundColor Gray
+        Write-Host "  ════════════════════════════════════════════════════════════════" -ForegroundColor Cyan
+        
+        # Lancer le terminal Firebase UNE SEULE FOIS pour toutes les commandes
+        Write-Host ""
+        Write-Host "  [$($baseStep + 1)/$TotalSteps] Ouverture terminal Firebase..." -ForegroundColor Yellow
+        
+        $proc = Start-Process -FilePath $FirebaseCLI -WorkingDirectory $FirebaseDir -PassThru
+        
+        Write-Host "        [~] Attente initialisation Firebase CLI (~6 sec)..." -ForegroundColor DarkGray
+        Start-Sleep -Seconds 6
+        
+        # Configurer SendKeys
+        Add-Type -AssemblyName System.Windows.Forms
+        $wshell = New-Object -ComObject WScript.Shell
+        $wshell.AppActivate($proc.Id) | Out-Null
+        Start-Sleep -Milliseconds 500
+        
+        # ─────────────────────────────────────────────────────────────────────
+        # ETAPE A: Deployer Hosting (admin-panel HTML)
+        # ─────────────────────────────────────────────────────────────────────
+        Write-Host ""
+        Write-Host "  [$($baseStep + 1)/$TotalSteps] Deploiement HOSTING (admin-panel)..." -ForegroundColor Yellow
+        Write-Host "        [>] URL: https://xeat-remote-control.web.app/" -ForegroundColor Cyan
+        
+        [System.Windows.Forms.SendKeys]::SendWait("firebase deploy --only hosting")
+        [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+        
+        Write-Host "        [+] Commande hosting envoyee!" -ForegroundColor Green
+        Write-Host "        [~] Attente deploiement hosting (~15 sec)..." -ForegroundColor DarkGray
+        Start-Sleep -Seconds 15
+        
+        # Reactiver la fenetre
+        $wshell.AppActivate($proc.Id) | Out-Null
+        Start-Sleep -Milliseconds 300
+        
+        # ─────────────────────────────────────────────────────────────────────
+        # ETAPE B: Deployer Rules (firebase deploy --only database)
+        # ─────────────────────────────────────────────────────────────────────
+        Write-Host ""
+        Write-Host "  [$($baseStep + 2)/$TotalSteps] Deploiement RULES (database.rules.json)..." -ForegroundColor Yellow
+        
+        if (Test-Path $FirebaseRulesFile) {
+            Write-Host "        [>] Fichier: $FirebaseRulesFile" -ForegroundColor Gray
+            Write-Host "        [>] Commande: firebase deploy --only database" -ForegroundColor Gray
+            
+            # La bonne commande est firebase deploy --only database
+            # qui utilise le fichier database.rules.json configure dans firebase.json
+            [System.Windows.Forms.SendKeys]::SendWait("firebase deploy --only database")
+            [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+            
+            Write-Host "        [+] Commande rules envoyee!" -ForegroundColor Green
+            Write-Host "        [~] Attente deploiement rules (~8 sec)..." -ForegroundColor DarkGray
+            Start-Sleep -Seconds 8
+            
+            # Reactiver la fenetre
+            $wshell.AppActivate($proc.Id) | Out-Null
+            Start-Sleep -Milliseconds 300
+        } else {
+            Write-Host "        [!] Fichier firebase-rules.json introuvable - IGNORE" -ForegroundColor Yellow
+        }
+        
+        # ─────────────────────────────────────────────────────────────────────
+        # ETAPE C: Deployer Config initiale (firebase-init.json) via CLI
+        # ─────────────────────────────────────────────────────────────────────
+        Write-Host ""
+        Write-Host "  [$($baseStep + 3)/$TotalSteps] Deploiement CONFIG (firebase-init.json)..." -ForegroundColor Yellow
+        
+        if (Test-Path $FirebaseInitFile) {
+            Write-Host "        [>] Fichier: $FirebaseInitFile" -ForegroundColor Gray
+            Write-Host "        [>] Database: $FirebaseDatabaseURL" -ForegroundColor Gray
+            
+            # Compacter le JSON sur une seule ligne (Firebase CLI gere mieux)
+            $tempJsonFile = "$FirebaseDir\config-deploy.json"
+            $jsonContent = Get-Content $FirebaseInitFile -Raw -Encoding UTF8 | ConvertFrom-Json | ConvertTo-Json -Depth 100 -Compress
+            $jsonContent | Out-File $tempJsonFile -Encoding UTF8 -NoNewline
+            
+            $jsonSize = [math]::Round((Get-Item $tempJsonFile).Length / 1KB, 2)
+            Write-Host "        [i] JSON compacte: $jsonSize KB (1 ligne)" -ForegroundColor DarkGray
+            
+            # Utiliser database:set avec -y (--yes) pour eviter la confirmation interactive
+            [System.Windows.Forms.SendKeys]::SendWait("firebase database:set / config-deploy.json -y")
+            [System.Windows.Forms.SendKeys]::SendWait("{ENTER}")
+            
+            Write-Host "        [+] Commande config envoyee!" -ForegroundColor Green
+            Write-Host "        [~] Attente deploiement config (~20 sec pour gros fichier)..." -ForegroundColor DarkGray
+            Start-Sleep -Seconds 20
+            
+            # Nettoyer le fichier temporaire
+            Remove-Item $tempJsonFile -Force -ErrorAction SilentlyContinue
+        } else {
+            Write-Host "        [!] Fichier firebase-init.json introuvable - IGNORE" -ForegroundColor Yellow
+        }
+        
+        Write-Host ""
+        Write-Host "  ════════════════════════════════════════════════════════════════" -ForegroundColor Green
+        Write-Host "        DEPLOIEMENT FIREBASE TERMINE!" -ForegroundColor Green
+        Write-Host "  ════════════════════════════════════════════════════════════════" -ForegroundColor Green
+        Write-Host ""
+        Write-Host "        [i] Admin Panel: https://xeat-remote-control.web.app/" -ForegroundColor Cyan
+        Write-Host "        [i] Database:    $FirebaseDatabaseURL" -ForegroundColor Cyan
+        Write-Host ""
+        Write-Host "        [!] Verifiez la fenetre Firebase pour confirmer le succes" -ForegroundColor Yellow
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ETAPE PUBLISH: Publier sur GitHub Releases via API REST
+# ═══════════════════════════════════════════════════════════════════════════════
+if ($Publish) {
+    $publishStep = $TotalSteps - 1  # Avant derniere etape (avant Run)
+    if ($BuildOnly -or $InstallerOnly -or $CreatePackage) { $publishStep = $TotalSteps }
+    
+    Write-Host ""
+    Write-Host "  ════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+    Write-Host "        PUBLICATION GITHUB RELEASES (API)" -ForegroundColor Magenta
+    Write-Host "        Repo: $GitHubOwner/$GitHubRepo" -ForegroundColor Gray
+    Write-Host "  ════════════════════════════════════════════════════════════════" -ForegroundColor Magenta
+    
+    # Verifier que l'installateur existe
+    $InstallerBinRelease = "Installer\bin\$Configuration"
+    $setupExe = "$InstallerBinRelease\XNRGYEngineeringAutomationToolsSetup.exe"
+    $setupExeFullPath = Join-Path $PSScriptRoot $setupExe
+    
+    if (-not (Test-Path $setupExeFullPath)) {
+        Write-Host "        [-] Installateur introuvable: $setupExe" -ForegroundColor Red
+        Write-Host "        [!] Utilisez -WithInstaller pour creer l'installateur d'abord" -ForegroundColor Yellow
+    } else {
+        Write-Host ""
+        Write-Host "  [$publishStep/$TotalSteps] Publication via GitHub API..." -ForegroundColor Yellow
+        
+        # Token GitHub - Ordre de priorite:
+        # 1. Variable d'environnement GITHUB_TOKEN (comme backup-all-projects-complete.ps1)
+        # 2. Fichier local .github-token
+        # 3. Demander a l'utilisateur
+        $GitHubToken = $null
+        $tokenFile = "$PSScriptRoot\.github-token"
+        
+        # 1. Essayer la variable d'environnement
+        if ($env:GITHUB_TOKEN) {
+            $GitHubToken = $env:GITHUB_TOKEN
+            Write-Host "        [+] Token charge depuis `$env:GITHUB_TOKEN" -ForegroundColor Green
+        }
+        # 2. Essayer le fichier local
+        elseif (Test-Path $tokenFile) {
+            $GitHubToken = (Get-Content $tokenFile -Raw).Trim()
+            Write-Host "        [+] Token charge depuis .github-token" -ForegroundColor Green
+        }
+        
+        # 3. Si toujours pas de token, demander
+        if ([string]::IsNullOrEmpty($GitHubToken)) {
+            Write-Host ""
+            Write-Host "        [!] Token GitHub requis pour l'upload automatique" -ForegroundColor Yellow
+            Write-Host "        [i] Option 1: Definir `$env:GITHUB_TOKEN = 'ghp_...'" -ForegroundColor Cyan
+            Write-Host "        [i] Option 2: Entrer le token ci-dessous (sera sauvegarde)" -ForegroundColor Cyan
+            Write-Host ""
+            $GitHubToken = Read-Host "        Entrez votre GitHub Personal Access Token"
+            
+            if (-not [string]::IsNullOrEmpty($GitHubToken)) {
+                # Sauvegarder le token pour les prochaines fois
+                $GitHubToken | Out-File $tokenFile -Encoding UTF8 -NoNewline
+                Write-Host "        [+] Token sauvegarde dans .github-token" -ForegroundColor Green
+                
+                # Ajouter au .gitignore si pas deja present
+                $gitignore = "$PSScriptRoot\.gitignore"
+                if (Test-Path $gitignore) {
+                    $content = Get-Content $gitignore -Raw
+                    if ($content -notmatch "\.github-token") {
+                        Add-Content $gitignore "`n.github-token"
+                    }
+                } else {
+                    ".github-token" | Out-File $gitignore -Encoding UTF8
+                }
+            }
+        }
+        
+        if ([string]::IsNullOrEmpty($GitHubToken)) {
+            Write-Host "        [-] Token non fourni - Publication annulee" -ForegroundColor Red
+        } else {
+            # Determiner la version
+            $version = if ($NewVersion -ne "") { $NewVersion } else { "1.0.0" }
+            $tagName = if ($version.StartsWith("v")) { $version } else { "v$version" }
+            
+            # Headers pour l'API GitHub
+            $headers = @{
+                "Authorization" = "Bearer $GitHubToken"
+                "Accept" = "application/vnd.github+json"
+                "X-GitHub-Api-Version" = "2022-11-28"
+            }
+            
+            $apiBase = "https://api.github.com/repos/$GitHubOwner/$GitHubRepo"
+            
+            try {
+                # Verifier si la release existe deja
+                Write-Host "        [>] Verification release existante..." -ForegroundColor Gray
+                $releaseUrl = "$apiBase/releases/tags/$tagName"
+                $existingRelease = $null
+                
+                try {
+                    $existingRelease = Invoke-RestMethod -Uri $releaseUrl -Headers $headers -Method Get
+                    Write-Host "        [i] Release $tagName trouvee (ID: $($existingRelease.id))" -ForegroundColor Cyan
+                } catch {
+                    if ($_.Exception.Response.StatusCode -ne 404) {
+                        throw
+                    }
+                    Write-Host "        [i] Release $tagName n'existe pas encore" -ForegroundColor Gray
+                }
+                
+                $releaseId = $null
+                
+                if ($existingRelease -and $NewVersion -eq "") {
+                    # Utiliser la release existante
+                    $releaseId = $existingRelease.id
+                    Write-Host "        [>] Mise a jour de la release existante..." -ForegroundColor Cyan
+                    
+                    # Supprimer l'ancien asset s'il existe
+                    $assetName = "XNRGYEngineeringAutomationToolsSetup.exe"
+                    $existingAssets = $existingRelease.assets | Where-Object { $_.name -eq $assetName }
+                    
+                    foreach ($asset in $existingAssets) {
+                        Write-Host "        [>] Suppression ancien fichier: $($asset.name)..." -ForegroundColor Gray
+                        $deleteUrl = "$apiBase/releases/assets/$($asset.id)"
+                        Invoke-RestMethod -Uri $deleteUrl -Headers $headers -Method Delete | Out-Null
+                    }
+                } else {
+                    # Creer une nouvelle release
+                    Write-Host "        [>] Creation nouvelle release $tagName..." -ForegroundColor Cyan
+                    
+                    $releaseBody = @{
+                        tag_name = $tagName
+                        target_commitish = "main"
+                        name = "XEAT $version"
+                        body = "## XNRGY Engineering Automation Tools $version`n`n### Installation`n1. Telecharger ``XNRGYEngineeringAutomationToolsSetup.exe```n2. Executer l'installateur`n3. Suivre les instructions`n`n### Build Info`n- Date: $(Get-Date -Format 'yyyy-MM-dd HH:mm')`n- Configuration: $Configuration"
+                        draft = $false
+                        prerelease = $false
+                    } | ConvertTo-Json
+                    
+                    $createUrl = "$apiBase/releases"
+                    $newRelease = Invoke-RestMethod -Uri $createUrl -Headers $headers -Method Post -Body $releaseBody -ContentType "application/json"
+                    $releaseId = $newRelease.id
+                    Write-Host "        [+] Release creee (ID: $releaseId)" -ForegroundColor Green
+                }
+                
+                # Uploader le fichier
+                Write-Host "        [>] Upload du fichier..." -ForegroundColor Cyan
+                $fileName = Split-Path $setupExeFullPath -Leaf
+                $fileSize = (Get-Item $setupExeFullPath).Length
+                $fileSizeMB = [math]::Round($fileSize / 1MB, 2)
+                Write-Host "        [i] Fichier: $fileName ($fileSizeMB MB)" -ForegroundColor Gray
+                
+                $uploadUrl = "https://uploads.github.com/repos/$GitHubOwner/$GitHubRepo/releases/$releaseId/assets?name=$fileName"
+                
+                $uploadHeaders = @{
+                    "Authorization" = "Bearer $GitHubToken"
+                    "Accept" = "application/vnd.github+json"
+                    "Content-Type" = "application/octet-stream"
+                }
+                
+                $fileBytes = [System.IO.File]::ReadAllBytes($setupExeFullPath)
+                $uploadResult = Invoke-RestMethod -Uri $uploadUrl -Headers $uploadHeaders -Method Post -Body $fileBytes
+                
+                Write-Host ""
+                Write-Host "        [+] PUBLICATION REUSSIE!" -ForegroundColor Green
+                Write-Host "        [i] URL: https://github.com/$GitHubOwner/$GitHubRepo/releases/tag/$tagName" -ForegroundColor Cyan
+                Write-Host "        [i] Download: $($uploadResult.browser_download_url)" -ForegroundColor Cyan
+                
+            } catch {
+                Write-Host "        [-] ERREUR: $($_.Exception.Message)" -ForegroundColor Red
+                if ($_.Exception.Response) {
+                    $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
+                    $errorBody = $reader.ReadToEnd()
+                    Write-Host "        [-] Details: $errorBody" -ForegroundColor Red
+                }
+            }
+        }
+    }
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ETAPE FINALE: Lancer l'application (sauf BuildOnly ou InstallerOnly)
+# ═══════════════════════════════════════════════════════════════════════════════
+$lastStep = if ($Publish) { $TotalSteps } elseif ($Deploy) { $TotalSteps } elseif ($CreatePackage) { 7 } elseif ($WithInstaller -or $InstallerOnly) { 6 } else { 4 }
+
+if (-not $BuildOnly -and -not $InstallerOnly -and -not $CreatePackage) {
+    Write-Host ""
+    Write-Host "  [$lastStep/$TotalSteps] Lancement de l'application..." -ForegroundColor Yellow
     try {                                                                                       
         Start-Process -FilePath $exePath
-        Write-Host "        ✓ Application lancee" -ForegroundColor Green
+        Write-Host "        [+] Application lancee" -ForegroundColor Green
     } catch {
-        Write-Host "        ✗ ERREUR: Impossible de lancer l'application" -ForegroundColor Red
+        Write-Host "        [-] ERREUR: Impossible de lancer l'application" -ForegroundColor Red
         Pop-Location
         exit 1
     }
 } else {
     Write-Host ""
-    Write-Host "  [4/4] Lancement de l'application..." -ForegroundColor DarkGray
-    Write-Host "        - Ignore (mode BuildOnly)" -ForegroundColor DarkGray
-} 
+    Write-Host "  [$lastStep/$TotalSteps] Lancement de l'application..." -ForegroundColor DarkGray
+    Write-Host "        - Ignore (mode BuildOnly/InstallerOnly)" -ForegroundColor DarkGray
+}
 
 # Restaurer le répertoire original
 Pop-Location

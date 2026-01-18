@@ -13,14 +13,15 @@ namespace XnrgyEngineeringAutomationTools.Services
     /// <summary>
     /// Service pour la verification de la configuration Firebase Realtime Database
     /// Permet le controle a distance de l'application (kill switch, maintenance, mises a jour)
+    /// OPTIMISE: Chargement parallele et cache pour performance au demarrage
     /// </summary>
     public class FirebaseRemoteConfigService
     {
         // URL de la Firebase Realtime Database
         private const string FIREBASE_DATABASE_URL = "https://xeat-remote-control-default-rtdb.firebaseio.com";
         
-        // Timeout pour les requetes HTTP
-        private static readonly TimeSpan HTTP_TIMEOUT = TimeSpan.FromSeconds(10);
+        // Timeout reduit pour les requetes HTTP (5 secondes au lieu de 10)
+        private static readonly TimeSpan HTTP_TIMEOUT = TimeSpan.FromSeconds(5);
 
         // Version actuelle de l'application
         private static readonly string CURRENT_VERSION = GetCurrentVersion();
@@ -29,6 +30,14 @@ namespace XnrgyEngineeringAutomationTools.Services
         private static readonly string CURRENT_USER = Environment.UserName?.ToLowerInvariant() ?? "unknown";
         private static readonly string CURRENT_DEVICE = $"{Environment.MachineName}_{Environment.UserName}".Replace(".", "_");
 
+        // Cache des donnees Firebase pour eviter les appels multiples
+        private static Dictionary<string, FirebaseDevice> _cachedDevices;
+        private static Dictionary<string, FirebaseUser> _cachedUsers;
+        private static Dictionary<string, BroadcastMessage> _cachedBroadcasts;
+        private static WelcomeMessagesConfig _cachedWelcomeMessages;
+        private static DateTime _cacheExpiry = DateTime.MinValue;
+        private static readonly TimeSpan CACHE_DURATION = TimeSpan.FromMinutes(5);
+
         private static readonly HttpClient _httpClient = new HttpClient
         {
             Timeout = HTTP_TIMEOUT
@@ -36,15 +45,36 @@ namespace XnrgyEngineeringAutomationTools.Services
 
         /// <summary>
         /// Verifie la configuration Firebase et retourne le resultat
+        /// OPTIMISE: Chargement parallele de toutes les donnees pour performance
         /// </summary>
         public static async Task<FirebaseCheckResult> CheckConfigurationAsync()
         {
+            var stopwatch = Stopwatch.StartNew();
+            
             try
             {
                 Logger.Log("[>] Verification Firebase en cours...");
 
-                // Lire les donnees Firebase
-                var config = await FetchFirebaseConfigAsync();
+                // OPTIMISATION: Charger TOUTES les donnees en parallele en un seul bloc
+                var configTask = FetchFirebaseConfigAsync();
+                var devicesTask = FetchJsonAsync<Dictionary<string, FirebaseDevice>>("/devices.json");
+                var usersTask = FetchJsonAsync<Dictionary<string, FirebaseUser>>("/users.json");
+                var broadcastsTask = FetchJsonAsync<Dictionary<string, BroadcastMessage>>("/broadcasts.json");
+                var welcomeTask = FetchJsonAsync<WelcomeMessagesConfig>("/welcomeMessages.json");
+
+                // Attendre tous les appels en parallele (max 5 secondes grace au timeout)
+                await Task.WhenAll(configTask, devicesTask, usersTask, broadcastsTask, welcomeTask);
+                
+                // Recuperer les resultats et mettre en cache
+                var config = await configTask;
+                _cachedDevices = await devicesTask;
+                _cachedUsers = await usersTask;
+                _cachedBroadcasts = await broadcastsTask;
+                _cachedWelcomeMessages = await welcomeTask;
+                _cacheExpiry = DateTime.Now.Add(CACHE_DURATION);
+
+                Logger.Log($"[+] Donnees Firebase chargees en {stopwatch.ElapsedMilliseconds}ms");
+
                 if (config == null)
                 {
                     Logger.Log("[!] Impossible de lire la configuration Firebase - Mode hors ligne", Logger.LogLevel.WARNING);
@@ -53,7 +83,7 @@ namespace XnrgyEngineeringAutomationTools.Services
 
                 var result = new FirebaseCheckResult { Success = true };
 
-                // 1. Verifier le Kill Switch global
+                // 1. Verifier le Kill Switch global (PRIORITE HAUTE)
                 if (config.Commands?.Global?.KillSwitch == true)
                 {
                     result.KillSwitchActive = true;
@@ -63,8 +93,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                     return result;
                 }
 
-                // 2. Verifier le DEVICE et l'UTILISATEUR sur ce device (structure hierarchique)
-                var deviceStatus = await CheckDeviceStatusAsync();
+                // 2. Verifier le DEVICE et l'UTILISATEUR sur ce device (utilise le cache)
+                var deviceStatus = CheckDeviceStatusFromCache();
                 
                 // 2a. Device entier suspendu
                 if (deviceStatus.deviceDisabled)
@@ -86,8 +116,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                     return result;
                 }
 
-                // 3. Verifier si l'utilisateur est desactive globalement (optionnel - garde pour compatibilite)
-                var userStatus = await CheckUserStatusAsync();
+                // 3. Verifier si l'utilisateur est desactive globalement (utilise le cache)
+                var userStatus = CheckUserStatusFromCache();
                 if (userStatus.isDisabled)
                 {
                     result.UserDisabled = true;
@@ -133,8 +163,8 @@ namespace XnrgyEngineeringAutomationTools.Services
                     }
                 }
 
-                // 6. Verifier les messages broadcast
-                var broadcast = await CheckBroadcastMessageAsync();
+                // 6. Verifier les messages broadcast (utilise le cache)
+                var broadcast = CheckBroadcastMessageFromCache();
                 if (broadcast.hasMessage)
                 {
                     result.HasBroadcastMessage = true;
@@ -144,34 +174,42 @@ namespace XnrgyEngineeringAutomationTools.Services
                     Logger.Log($"[i] Message broadcast recu: {broadcast.title}");
                 }
 
+                // 7. Verifier le message de bienvenue (utilise le cache)
+                var welcome = CheckWelcomeMessageFromCache();
+                if (welcome.hasMessage)
+                {
+                    result.HasWelcomeMessage = true;
+                    result.WelcomeTitle = welcome.title;
+                    result.WelcomeMessage = welcome.message;
+                    result.WelcomeType = welcome.type;
+                    Logger.Log($"[i] Message de bienvenue actif: {welcome.title}");
+                }
+
+                Logger.Log($"[+] Verification Firebase terminee en {stopwatch.ElapsedMilliseconds}ms");
                 return result;
             }
             catch (Exception ex)
             {
-                Logger.Log($"[!] Erreur Firebase: {ex.Message}", Logger.LogLevel.WARNING);
+                Logger.Log($"[!] Erreur Firebase ({stopwatch.ElapsedMilliseconds}ms): {ex.Message}", Logger.LogLevel.WARNING);
                 // En cas d'erreur, continuer normalement (mode hors ligne)
                 return FirebaseCheckResult.CreateSuccess();
             }
         }
 
         /// <summary>
-        /// Verifie si l'utilisateur actuel est desactive
-        /// Compatible avec l'ancienne ET la nouvelle structure Firebase
+        /// Verifie le statut utilisateur depuis le cache (pas d'appel reseau)
         /// </summary>
-        private static async Task<(bool isDisabled, string message)> CheckUserStatusAsync()
+        private static (bool isDisabled, string message) CheckUserStatusFromCache()
         {
             try
             {
-                // Chercher l'utilisateur par email ou username
-                var users = await FetchJsonAsync<Dictionary<string, FirebaseUser>>("/users.json");
-                if (users == null) return (false, null);
+                if (_cachedUsers == null) return (false, null);
 
-                foreach (var kvp in users)
+                foreach (var kvp in _cachedUsers)
                 {
                     var user = kvp.Value;
                     if (user == null) continue;
 
-                    // Utiliser les methodes de compatibilite pour lire les valeurs
                     string userEmail = user.GetEmail().ToLowerInvariant();
                     string userName = user.GetDisplayName().ToLowerInvariant();
 
@@ -179,7 +217,6 @@ namespace XnrgyEngineeringAutomationTools.Services
                         (!string.IsNullOrEmpty(userEmail) && userEmail.Contains("@") && 
                          CURRENT_USER.Contains(userEmail.Split('@')[0])))
                     {
-                        // Verifier si le compte est desactive OU bloque
                         bool isBlocked = user.status?.blocked == true;
                         bool isDisabled = !user.IsEnabled();
                         
@@ -203,47 +240,36 @@ namespace XnrgyEngineeringAutomationTools.Services
         }
 
         /// <summary>
-        /// Verifie si le DEVICE (poste de travail) actuel est desactive dans Firebase
-        /// Verifie AUSSI si l'utilisateur Windows actuel est desactive sur ce device
-        /// Structure hierarchique: devices/[ID]/enabled (poste) + devices/[ID]/users/[USER]/enabled (user sur poste)
+        /// Verifie le statut device depuis le cache (pas d'appel reseau)
         /// </summary>
-        private static async Task<(bool deviceDisabled, string deviceMessage, string deviceReason, 
-                                   bool userDisabled, string userMessage, string userReason)> CheckDeviceStatusAsync()
+        private static (bool deviceDisabled, string deviceMessage, string deviceReason, 
+                       bool userDisabled, string userMessage, string userReason) CheckDeviceStatusFromCache()
         {
             try
             {
-                // Lire tous les devices depuis Firebase
-                var devices = await FetchJsonAsync<Dictionary<string, FirebaseDevice>>("/devices.json");
-                if (devices == null) return (false, null, null, false, null, null);
+                if (_cachedDevices == null) return (false, null, null, false, null, null);
 
-                // Chercher ce device par son ID ou par MachineName
                 string currentUserLower = CURRENT_USER.ToLowerInvariant();
                 
-                foreach (var kvp in devices)
+                foreach (var kvp in _cachedDevices)
                 {
                     var deviceId = kvp.Key;
                     var device = kvp.Value;
                     if (device == null) continue;
 
-                    // Correspondance par ID complet (MACHINE_user) ou par MachineName seul
                     bool isThisDevice = 
                         deviceId.Equals(CURRENT_DEVICE, StringComparison.OrdinalIgnoreCase) ||
                         (device.MachineName?.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase) ?? false);
 
                     if (isThisDevice)
                     {
-                        // === ETAPE 1: Verifier si le DEVICE ENTIER est bloque ===
-                        // Utiliser la nouvelle methode IsBlocked() qui gere les deux structures
                         if (device.IsBlocked())
                         {
                             string message = device.GetBlockedMessage();
                             string reason = device.Status?.BlockReason ?? device.DisabledReason ?? "suspended";
-
-                            Logger.Log($"[-] Device bloque: {CURRENT_DEVICE} - Raison: {reason}", Logger.LogLevel.ERROR);
                             return (true, message, reason, false, null, null);
                         }
 
-                        // === ETAPE 2: Verifier si l'UTILISATEUR est desactive sur ce device ===
                         if (device.Users != null && device.Users.Count > 0)
                         {
                             foreach (var userKvp in device.Users)
@@ -252,7 +278,6 @@ namespace XnrgyEngineeringAutomationTools.Services
                                 var deviceUser = userKvp.Value;
                                 if (deviceUser == null) continue;
 
-                                // Correspondance par username
                                 bool isThisUser = 
                                     userId.Contains(currentUserLower) || 
                                     currentUserLower.Contains(userId) ||
@@ -273,7 +298,6 @@ namespace XnrgyEngineeringAutomationTools.Services
                                             case "revoked":
                                                 userMessage = $"L'acces de {CURRENT_USER} a ce poste a ete revoque.";
                                                 break;
-                                            case "suspended":
                                             default:
                                                 userMessage = $"Votre compte ({CURRENT_USER}) a ete suspendu sur ce poste.";
                                                 break;
@@ -299,31 +323,26 @@ namespace XnrgyEngineeringAutomationTools.Services
         }
 
         /// <summary>
-        /// Verifie s'il y a un message broadcast actif
+        /// Verifie les broadcasts depuis le cache (pas d'appel reseau)
         /// </summary>
-        private static async Task<(bool hasMessage, string title, string message, string type)> CheckBroadcastMessageAsync()
+        private static (bool hasMessage, string title, string message, string type) CheckBroadcastMessageFromCache()
         {
             try
             {
-                var broadcasts = await FetchJsonAsync<Dictionary<string, BroadcastMessage>>("/broadcasts.json");
-                if (broadcasts == null) return (false, null, null, null);
+                if (_cachedBroadcasts == null) return (false, null, null, null);
 
                 long currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-                foreach (var kvp in broadcasts)
+                foreach (var kvp in _cachedBroadcasts)
                 {
-                    if (kvp.Key == "placeholder") continue; // Ignorer le placeholder
+                    if (kvp.Key == "placeholder") continue;
                     
                     var broadcast = kvp.Value;
                     if (broadcast == null) continue;
                     
-                    // Utiliser la methode IsActive() qui gere les deux structures
                     if (!broadcast.IsActive()) continue;
-
-                    // Verifier l'expiration (si definie)
                     if (broadcast.ExpiresAt > 0 && broadcast.ExpiresAt < currentTime) continue;
 
-                    // Verifier le ciblage
                     string targetType = broadcast.GetTargetType();
                     bool isTargeted = false;
 
@@ -343,13 +362,12 @@ namespace XnrgyEngineeringAutomationTools.Services
                                         CURRENT_DEVICE.ToLowerInvariant().Contains(targetDevice.ToLowerInvariant());
                             break;
                         default:
-                            isTargeted = true; // Par defaut, cibler tout le monde
+                            isTargeted = true;
                             break;
                     }
 
                     if (isTargeted)
                     {
-                        Logger.Log($"[i] Broadcast recu: {broadcast.Title} - Type: {broadcast.Type}");
                         return (true, broadcast.Title ?? "Message", broadcast.Message, broadcast.Type ?? "info");
                     }
                 }
@@ -364,7 +382,157 @@ namespace XnrgyEngineeringAutomationTools.Services
         }
 
         /// <summary>
+        /// Verifie les messages de bienvenue depuis le cache (pas d'appel reseau)
+        /// </summary>
+        private static (bool hasMessage, string title, string message, string type) CheckWelcomeMessageFromCache()
+        {
+            try
+            {
+                if (_cachedWelcomeMessages == null) return (false, null, null, null);
+                
+                var welcomeMessages = _cachedWelcomeMessages;
+                var seenMessages = LoadSeenWelcomeMessages();
+                string currentUserKey = $"{Environment.MachineName}_{Environment.UserName}";
+                
+                // 1. Premier lancement (firstInstall)
+                if (welcomeMessages.FirstInstall?.Enabled == true)
+                {
+                    string firstInstallKey = $"firstInstall_{currentUserKey}";
+                    if (!seenMessages.Contains(firstInstallKey))
+                    {
+                        MarkWelcomeMessageAsSeen(firstInstallKey);
+                        return (true,
+                            welcomeMessages.FirstInstall.Title ?? "Bienvenue!",
+                            welcomeMessages.FirstInstall.Message,
+                            welcomeMessages.FirstInstall.Type ?? "info");
+                    }
+                }
+                
+                // 2. Nouvel utilisateur sur ce device
+                if (welcomeMessages.NewUserOnDevice?.Enabled == true)
+                {
+                    string newUserKey = $"newUserOnDevice_{currentUserKey}";
+                    if (!seenMessages.Contains(newUserKey))
+                    {
+                        MarkWelcomeMessageAsSeen(newUserKey);
+                        return (true,
+                            welcomeMessages.NewUserOnDevice.Title ?? "Bienvenue sur ce poste!",
+                            welcomeMessages.NewUserOnDevice.Message,
+                            welcomeMessages.NewUserOnDevice.Type ?? "info");
+                    }
+                }
+                
+                // 3. Message global
+                if (welcomeMessages.Global?.Enabled == true)
+                {
+                    string globalKey = $"global_{welcomeMessages.Global.Title?.GetHashCode() ?? 0}";
+                    if (!seenMessages.Contains(globalKey))
+                    {
+                        MarkWelcomeMessageAsSeen(globalKey);
+                        return (true,
+                            welcomeMessages.Global.Title ?? "Information",
+                            welcomeMessages.Global.Message,
+                            welcomeMessages.Global.Type ?? "info");
+                    }
+                }
+
+                return (false, null, null, null);
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur verification welcome: {ex.Message}", Logger.LogLevel.DEBUG);
+                return (false, null, null, null);
+            }
+        }
+
+        /// <summary>
+        /// Verifie s'il y a un message broadcast actif (version async pour compatibilite)
+        /// </summary>
+        private static async Task<(bool hasMessage, string title, string message, string type)> CheckBroadcastMessageAsync()
+        {
+            // Utiliser le cache si disponible
+            if (_cachedBroadcasts != null && DateTime.Now < _cacheExpiry)
+            {
+                return CheckBroadcastMessageFromCache();
+            }
+            
+            // Sinon charger depuis Firebase
+            _cachedBroadcasts = await FetchJsonAsync<Dictionary<string, BroadcastMessage>>("/broadcasts.json");
+            return CheckBroadcastMessageFromCache();
+        }
+
+        /// <summary>
+        /// Verifie le message de bienvenue (version async pour compatibilite)
+        /// </summary>
+        private static async Task<(bool hasMessage, string title, string message, string type)> CheckWelcomeMessageAsync()
+        {
+            // Utiliser le cache si disponible
+            if (_cachedWelcomeMessages != null && DateTime.Now < _cacheExpiry)
+            {
+                return CheckWelcomeMessageFromCache();
+            }
+            
+            // Sinon charger depuis Firebase
+            _cachedWelcomeMessages = await FetchJsonAsync<WelcomeMessagesConfig>("/welcomeMessages.json");
+            return CheckWelcomeMessageFromCache();
+        }
+
+        // Chemin du fichier de suivi des messages de bienvenue vus
+        private static readonly string WelcomeSeenFilePath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "XNRGY", "XEAT", "welcome_seen.json");
+
+        /// <summary>
+        /// Charge la liste des messages de bienvenue deja vus
+        /// </summary>
+        private static List<string> LoadSeenWelcomeMessages()
+        {
+            try
+            {
+                if (File.Exists(WelcomeSeenFilePath))
+                {
+                    string json = File.ReadAllText(WelcomeSeenFilePath);
+                    return JsonSerializer.Deserialize<List<string>>(json) ?? new List<string>();
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur lecture welcome_seen: {ex.Message}", Logger.LogLevel.DEBUG);
+            }
+            return new List<string>();
+        }
+
+        /// <summary>
+        /// Marque un message de bienvenue comme vu
+        /// </summary>
+        private static void MarkWelcomeMessageAsSeen(string messageKey)
+        {
+            try
+            {
+                var seenMessages = LoadSeenWelcomeMessages();
+                if (!seenMessages.Contains(messageKey))
+                {
+                    seenMessages.Add(messageKey);
+                    
+                    string dir = Path.GetDirectoryName(WelcomeSeenFilePath);
+                    if (!Directory.Exists(dir))
+                    {
+                        Directory.CreateDirectory(dir);
+                    }
+                    
+                    File.WriteAllText(WelcomeSeenFilePath, JsonSerializer.Serialize(seenMessages));
+                    Logger.Log($"[i] Message de bienvenue marque comme vu: {messageKey}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log($"[!] Erreur sauvegarde welcome_seen: {ex.Message}", Logger.LogLevel.DEBUG);
+            }
+        }
+
+        /// <summary>
         /// Recupere la configuration depuis Firebase
+        /// OPTIMISE: Charge plusieurs endpoints en parallele
         /// </summary>
         private static async Task<FirebaseConfig> FetchFirebaseConfigAsync()
         {
@@ -372,16 +540,70 @@ namespace XnrgyEngineeringAutomationTools.Services
             {
                 // Lire les endpoints necessaires en parallele
                 var appConfigTask = FetchJsonAsync<AppConfig>("/appConfig.json");
-                var commandsTask = FetchJsonAsync<GlobalCommands>("/commands.json");
-                var versionInfoTask = FetchJsonAsync<VersionInfo>("/versionInfo.json");
+                var killSwitchTask = FetchJsonAsync<KillSwitchConfig>("/killSwitch.json");
+                var maintenanceTask = FetchJsonAsync<MaintenanceConfig>("/maintenance.json");
+                var forceUpdateTask = FetchJsonAsync<ForceUpdateConfig>("/forceUpdate.json");
+                var updatesTask = FetchJsonAsync<UpdatesConfig>("/updates.json");
 
-                await Task.WhenAll(appConfigTask, commandsTask, versionInfoTask);
+                await Task.WhenAll(appConfigTask, killSwitchTask, maintenanceTask, forceUpdateTask, updatesTask);
+
+                // Construire le resultat avec la bonne structure
+                var appConfig = await appConfigTask ?? new AppConfig();
+                var killSwitch = await killSwitchTask;
+                var maintenance = await maintenanceTask;
+                var forceUpdate = await forceUpdateTask;
+                var updates = await updatesTask;
+                
+                // Mapper vers les anciennes structures pour compatibilite
+                // Kill Switch: /killSwitch/global/enabled -> Commands.Global.KillSwitch
+                if (killSwitch?.Global != null && killSwitch.Global.Enabled)
+                {
+                    appConfig.MaintenanceMode = false; // Ne pas confondre avec maintenance
+                }
+                
+                // Maintenance: /maintenance/enabled -> AppConfig.MaintenanceMode
+                if (maintenance?.Enabled == true)
+                {
+                    appConfig.MaintenanceMode = true;
+                    appConfig.MaintenanceMessage = maintenance.Message;
+                }
+                
+                // Force Update: /forceUpdate/enabled -> AppConfig.ForceUpdate
+                if (forceUpdate?.Enabled == true)
+                {
+                    appConfig.ForceUpdate = true;
+                    appConfig.MinVersion = forceUpdate.MinimumVersion;
+                }
+                
+                // Version: /updates/latest/version -> VersionInfo.Latest.Version
+                var versionInfo = new VersionInfo();
+                if (updates?.Latest != null)
+                {
+                    versionInfo.Latest = new LatestVersion
+                    {
+                        Version = updates.Latest.Version,
+                        DownloadUrl = updates.Latest.DownloadUrl,
+                        Changelog = updates.Latest.ReleaseNotes,
+                        ReleaseDate = updates.Latest.PublishedAt
+                    };
+                }
+                
+                // Construire la config avec le kill switch
+                var commands = new GlobalCommands
+                {
+                    Global = new GlobalCommandSettings
+                    {
+                        KillSwitch = killSwitch?.Global?.Enabled ?? false,
+                        KillSwitchMessage = killSwitch?.Global?.Message ?? "Application desactivee par administrateur",
+                        ForceUpdate = forceUpdate?.Enabled ?? false
+                    }
+                };
 
                 return new FirebaseConfig
                 {
-                    AppConfig = await appConfigTask,
-                    Commands = await commandsTask,
-                    VersionInfo = await versionInfoTask
+                    AppConfig = appConfig,
+                    Commands = commands,
+                    VersionInfo = versionInfo
                 };
             }
             catch (Exception ex)

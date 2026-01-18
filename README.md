@@ -1,4 +1,4 @@
-﻿# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools
+﻿# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools (XEAT)# XNRGY Engineering Automation Tools
 
 
 
@@ -6,15 +6,15 @@
 
 >
 
-> Developpe par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
+> Developpe par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiee** pour Autodesk Vault Professional 2026 et Inventor Professional 2026.2
 
 >
 
-> **Version**: v1.0.0 | **Release**: R 2026-01-10>>
+> **Version**: v1.0.0 | **Release**: R 2026-01-15>
 
 
 
----> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC
+---> Developpe par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2> **Suite d'outils d'automatisation engineering unifiée** pour Autodesk Vault Professional 2026 & Inventor Professional 2026.2
 
 
 
@@ -22,7 +22,7 @@
 
 
 
-**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisee (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering developpes pour XNRGY Climate Systems. Cette suite vise a simplifier et accelerer les workflows des equipes de design en integrant la gestion Vault, les manipulations Inventor, et les validations qualite dans une interface unifiee.> **Version**: v1.0.0 | **Release**: R 2026-01-10---
+**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisee (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering developpes pour XNRGY Climate Systems. Cette suite vise a simplifier et accelerer les workflows des equipes de design en integrant la gestion Vault, les manipulations Inventor, et les validations qualite dans une interface unifiee.> **Version**: v1.0.0 | **Release**: R 2026-01-10>>
 
 
 
@@ -30,7 +30,7 @@
 
 
 
-Remplacer les multiples applications standalone par une **plateforme unique** avec :---## Description
+Remplacer les multiples applications standalone par une **plateforme unique** avec :---> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC> Développé par **Mohammed Amine Elgalai** - XNRGY Climate Systems ULC
 
 - Connexion centralisee a Vault et Inventor
 
@@ -38,299 +38,632 @@ Remplacer les multiples applications standalone par une **plateforme unique** av
 
 - Partage de services communs (logging, configuration chiffree AES-256)
 
-- Deploiement multi-sites et maintenance simplifiee## Description**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
+- Deploiement multi-sites et maintenance simplifiee## Description>
 
 - Parametres centralises via Vault (50+ utilisateurs, 3 sites)
 
+- **Controle a distance via Firebase** (kill switch, maintenance, mises a jour)
 
 
----
 
-**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.### Objectif Principal
+---**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisee (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering developpes pour XNRGY Climate Systems. Cette suite vise a simplifier et accelerer les workflows des equipes de design en integrant la gestion Vault, les manipulations Inventor, et les validations qualite dans une interface unifiee.> **Version**: v1.0.0 | **Release**: R 2026-01-10---
+
+
 
 ## Modules Integres (9 Modules)
 
 
 
-| Module | Description | Statut |
+| Module | Description | Statut |### Objectif Principal
 
-|--------|-------------|--------|### Objectif PrincipalRemplacer les multiples applications standalone par une **plateforme unique** avec :
+|--------|-------------|--------|
 
-| **Upload Module** | Upload automatise vers Vault avec proprietes (Project/Ref/Module) | 100% |
+| **Upload Module** | Upload automatise vers Vault avec proprietes (Project/Ref/Module) | [+] 100% |
 
-| **Creer Module** | Copy Design natif depuis template Library ou projet existant | 100% |- Connexion centralisée à Vault & Inventor
+| **Creer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
 
-| **Place Equipment** | Placement equipements avec Copy Design automatise | 100% |
+| **Place Equipment** | Placement equipements avec Copy Design automatise | [+] 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :---## Description
 
-| **Smart Tools** | 25+ outils: creation IPT/STEP, generation PDF, iLogic Forms, BOM, etc. | 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :- Interface utilisateur moderne et cohérente (thèmes sombre/clair)
+| **Smart Tools** | 25+ outils: creation IPT/STEP, generation PDF, iLogic Forms, BOM, etc. | [+] 100% |
 
-| **Checklist HVAC** | Validation modules AHU avec stockage Vault | 100% |
+| **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |- Connexion centralisee a Vault et Inventor
 
-| **ACP** | Assistant Conception Projet - validation points critiques | 100% |- Connexion centralisée à Vault & Inventor- Partage de services communs (logging, configuration chiffrée AES-256)
+| **ACP** | Assistant Conception Projet - validation points critiques | [+] 100% |
 
-| **Upload Template** | Upload templates vers Vault (reserve Admin) | 100% |
+| **Upload Template** | Upload templates vers Vault (reserve Admin) | [+] 100% |- Interface utilisateur moderne et coherente (themes sombre/clair)
 
-| **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% precision) | 100% |- Interface utilisateur moderne et cohérente (thèmes sombre/clair)- Déploiement multi-sites et maintenance simplifiée
+| **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% precision) | [+] 100% |
 
-| **Update Workspace** | Synchronisation librairies et outils depuis Vault | 100% |
-
-- Partage de services communs (logging, configuration chiffrée AES-256)- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
-
----
-
-- Déploiement multi-sites et maintenance simplifiée
-
-## Fonctionnalites Cles
-
-- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)---
-
-### Centralisation UI (NOUVEAU - Janvier 2026)
+| **Update Workspace** | Synchronisation librairies et outils depuis Vault | [+] 100% |- Partage de services communs (logging, configuration chiffree AES-256)
 
 
 
-Toutes les metadonnees de l'application sont centralisees dans `Styles/XnrgyStyles.xaml` :
+---- Deploiement multi-sites et maintenance simplifiee## Description**XNRGY Engineering Automation Tools** est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.
 
----## Modules Intégrés
 
-```xml
 
-<!-- Variables globales - MODIFIER ICI UNIQUEMENT -->
+## Fonctionnalites Cles- Parametres centralises via Vault (50+ utilisateurs, 3 sites)
+
+
+
+### Centralisation UI
+
+Toutes les metadonnees de l'application sont centralisees dans `Styles/XnrgyStyles.xaml`:
+
+```xml---
 
 <sys:String x:Key="AppVersion">v1.0.0</sys:String>
 
-<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>## Modules Intégrés (9 Modules)| Module | Description | Statut |
+<sys:String x:Key="AppReleaseDate">R 2026-01-15</sys:String>**XNRGY Engineering Automation Tools** (XEAT) est une application hub centralisée (WPF/.NET Framework 4.8) qui regroupe tous les outils d'automatisation engineering développés pour XNRGY Climate Systems. Cette suite vise à simplifier et accélérer les workflows des équipes de design en intégrant la gestion Vault, les manipulations Inventor, et les validations qualité dans une interface unifiée.### Objectif Principal
 
 <sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
 
-<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>|--------|-------------|--------|
-
-<sys:String x:Key="AppShortName">XEAT</sys:String>
-
-<sys:String x:Key="AppFullName">XNRGY Engineering Automation Tools</sys:String>| Module | Description | Statut || **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |
+<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>## Modules Integres (9 Modules)
 
 ```
 
-|--------|-------------|--------|| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
 
-**Avantages:**
-
-- Mise a jour de version/date en **un seul endroit**| **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | ✅ 100% || **Réglages Admin** | Configuration centralisée et synchronisée via Vault (AES-256) | [+] 100% |
-
-- Tous les titres de fenetres utilisent `StaticResource`
-
-- Toutes les barres copyright utilisent `StaticResource`| **Créer Module** | Copy Design natif depuis template Library ou projet existant | ✅ 100% || **Upload Template** | Upload templates vers Vault (réservé Admin) | [+] 100% |
-
-- 22+ fenetres synchronisees automatiquement
-
-| **Place Equipment** | Placement équipements avec Copy Design automatisé | ✅ 100% || **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |
 
 ### Configuration Centralisee via Vault
 
-| **Smart Tools** | 25+ outils: création IPT/STEP, génération PDF, iLogic Forms, BOM, etc. | ✅ 100% || **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | [~] Planifié |
+- Chiffrement AES-256 des fichiers de configuration| Module | Description | Statut |
 
-- Chiffrement AES-256 des fichiers de configuration
+- Synchronisation automatique au demarrage
 
-- Synchronisation automatique au demarrage| **Checklist HVAC** | Validation modules AHU avec stockage Vault | ✅ 100% || **DXF Verifier** | Validation des fichiers DXF avant envoi | [~] Migration |
+- Acces administrateur verifie via Vault API|--------|-------------|--------|### Objectif PrincipalRemplacer les multiples applications standalone par une **plateforme unique** avec :
 
-- Acces administrateur verifie via Vault API
+- Support 50+ utilisateurs sur 3 sites
 
-- Support 50+ utilisateurs sur 3 sites| **ACP** | Assistant Conception Projet - validation points critiques | ✅ 100% || **Time Tracker** | Analyse temps de travail modules HVAC | [~] Migration |
+| **Upload Module** | Upload automatise vers Vault avec proprietes (Project/Ref/Module) | 100% |
+
+### Firebase Remote Control (NOUVEAU - Janvier 2026)
+
+Integration Firebase Realtime Database pour le controle a distance:| **Creer Module** | Copy Design natif depuis template Library ou projet existant | 100% |- Connexion centralisée à Vault & Inventor
+
+- **Kill Switch**: Blocage instantane de l'application (global, par site, par device)
+
+- **Maintenance Mode**: Desactivation temporaire avec message personnalise| **Place Equipment** | Placement equipements avec Copy Design automatise | 100% |
+
+- **Force Update**: Mise a jour obligatoire vers une version minimum
+
+- **Broadcast Messages**: Diffusion d'annonces a tous les utilisateurs| **Smart Tools** | 25+ outils: creation IPT/STEP, generation PDF, iLogic Forms, BOM, etc. | 100% |Remplacer les multiples applications standalone par une **plateforme unique** avec :- Interface utilisateur moderne et cohérente (thèmes sombre/clair)
+
+- **Device Tracking**: Suivi des postes de travail en temps reel
+
+- **Audit Logs**: Enregistrement des erreurs et sessions dans Firebase| **Checklist HVAC** | Validation modules AHU avec stockage Vault | 100% |
+
+- **Admin Console**: Interface web complete pour la gestion
+
+| **ACP** | Assistant Conception Projet - validation points critiques | 100% |- Connexion centralisée à Vault & Inventor- Partage de services communs (logging, configuration chiffrée AES-256)
+
+---
+
+| **Upload Template** | Upload templates vers Vault (reserve Admin) | 100% |
+
+## Firebase Integration
+
+| **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% precision) | 100% |- Interface utilisateur moderne et cohérente (thèmes sombre/clair)- Déploiement multi-sites et maintenance simplifiée
+
+### Architecture
+
+```| **Update Workspace** | Synchronisation librairies et outils depuis Vault | 100% |
+
+Firebase Realtime Database
+
+├── appConfig/           # Configuration application- Partage de services communs (logging, configuration chiffrée AES-256)- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)
+
+├── broadcasts/          # Messages de diffusion
+
+├── devices/             # Registre des postes de travail---
+
+├── featureFlags/        # Feature toggles
+
+├── forceUpdate/         # Configuration mise a jour forcee- Déploiement multi-sites et maintenance simplifiée
+
+├── killSwitch/          # Configuration kill switch
+
+├── maintenance/         # Mode maintenance## Fonctionnalites Cles
+
+├── security/            # Parametres securite
+
+├── statistics/          # Statistiques d'utilisation- Paramètres centralisés via Vault (50+ utilisateurs, 3 sites)---
+
+├── auditLog/            # Journal des actions et erreurs
+
+├── users/               # Gestion utilisateurs### Centralisation UI (NOUVEAU - Janvier 2026)
+
+└── welcomeMessages/     # Messages de bienvenue
+
+```
 
 
 
-### Smart Tools (25+ Outils)| **Upload Template** | Upload templates vers Vault (réservé Admin) | ✅ 100% || **Update Workspace** | Synchronisation librairies depuis Vault | [~] Planifié |
+### Console AdminToutes les metadonnees de l'application sont centralisees dans `Styles/XnrgyStyles.xaml` :
+
+Interface web complete dans `Firebase Realtime Database configuration/admin-panel/`:
+
+- **Dashboard**: Vue d'ensemble en temps reel---## Modules Intégrés
+
+- **Utilisateurs**: Gestion des utilisateurs et permissions
+
+- **Appareils**: Suivi des postes de travail```xml
+
+- **Securite**: Kill Switch, Maintenance, Mise a jour forcee
+
+- **Broadcasts**: Gestion des annonces<!-- Variables globales - MODIFIER ICI UNIQUEMENT -->
+
+- **Telemetrie**: Statistiques d'utilisation
+
+- **Audit Logs**: Historique des actions<sys:String x:Key="AppVersion">v1.0.0</sys:String>
 
 
 
-| Categorie | Outils || **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% précision) | ✅ 100% |
-
-|-----------|--------|
-
-| **Creation** | Creer IPT, Creer STEP/IPT, Creer PDF, Creer PNG || **Update Workspace** | Synchronisation librairies et outils depuis Vault | ✅ 100% |---
-
-| **Export** | Export IAM, Export Drawing, Export BOM |
-
-| **iProperties** | Gestionnaire Proprietes Batch, iProperties Summary |
-
-| **Analyse** | Rapport Contraintes, Analyse Assembly |
-
-| **Utilitaires** | Rename Files, Copy Files, Delete Backup Files |---## Architecture du Projet
+### Scripts de Deploiement<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>## Modules Intégrés (9 Modules)| Module | Description | Statut |
 
 
+
+#### build-and-run.ps1 (v2.2.0)<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>
+
+Script principal de build et deploiement:
+
+```powershell<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>|--------|-------------|--------|
+
+# Build simple
+
+.\build-and-run.ps1<sys:String x:Key="AppShortName">XEAT</sys:String>
+
+
+
+# Build + Deploy Firebase<sys:String x:Key="AppFullName">XNRGY Engineering Automation Tools</sys:String>| Module | Description | Statut || **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | [+] 100% |
+
+.\build-and-run.ps1 -Deploy
+
+```
+
+# Build + Deploy + Publish GitHub
+
+.\build-and-run.ps1 -Deploy -Publish|--------|-------------|--------|| **Créer Module** | Copy Design natif depuis template Library ou projet existant | [+] 100% |
+
+
+
+# Sync donnees avant deploy (preserve devices/users/auditLog)**Avantages:**
+
+.\build-and-run.ps1 -SyncFirebase -Deploy
+
+```- Mise a jour de version/date en **un seul endroit**| **Upload Module** | Upload automatisé vers Vault avec propriétés (Project/Ref/Module) | ✅ 100% || **Réglages Admin** | Configuration centralisée et synchronisée via Vault (AES-256) | [+] 100% |
+
+
+
+#### Sync-Firebase.ps1- Tous les titres de fenetres utilisent `StaticResource`
+
+Script de synchronisation pour preserver les donnees dynamiques avant deploiement:
+
+```powershell- Toutes les barres copyright utilisent `StaticResource`| **Créer Module** | Copy Design natif depuis template Library ou projet existant | ✅ 100% || **Upload Template** | Upload templates vers Vault (réservé Admin) | [+] 100% |
+
+# Mode interactif
+
+.\Sync-Firebase.ps1- 22+ fenetres synchronisees automatiquement
+
+
+
+# Mode pre-deployment (automatique)| **Place Equipment** | Placement équipements avec Copy Design automatisé | ✅ 100% || **Checklist HVAC** | Validation modules AHU avec stockage Vault | [+] 100% |
+
+.\Sync-Firebase.ps1 -PreDeploy
+
+```### Configuration Centralisee via Vault
+
+
+
+**Donnees preservees:**| **Smart Tools** | 25+ outils: création IPT/STEP, génération PDF, iLogic Forms, BOM, etc. | ✅ 100% || **Smart Tools** | Création IPT/STEP, génération PDF, iLogic Forms | [~] Planifié |
+
+- devices (postes enregistres)
+
+- users (utilisateurs)- Chiffrement AES-256 des fichiers de configuration
+
+- userActiveSessions (sessions actives)
+
+- auditLog (journal des actions)- Synchronisation automatique au demarrage| **Checklist HVAC** | Validation modules AHU avec stockage Vault | ✅ 100% || **DXF Verifier** | Validation des fichiers DXF avant envoi | [~] Migration |
+
+- statistics (statistiques)
+
+- telemetryEvents (telemetrie)- Acces administrateur verifie via Vault API
+
+- errorReports (rapports d'erreurs)
+
+- broadcasts (messages actifs)- Support 50+ utilisateurs sur 3 sites| **ACP** | Assistant Conception Projet - validation points critiques | ✅ 100% || **Time Tracker** | Analyse temps de travail modules HVAC | [~] Migration |
+
+
+
+### Services C#
+
+
+
+#### FirebaseAuditService.cs### Smart Tools (25+ Outils)| **Upload Template** | Upload templates vers Vault (réservé Admin) | ✅ 100% || **Update Workspace** | Synchronisation librairies depuis Vault | [~] Planifié |
+
+Service singleton pour l'envoi des erreurs et sessions a Firebase:
+
+```csharp
+
+// Initialisation au demarrage
+
+await FirebaseAuditService.Instance.InitializeAsync();| Categorie | Outils || **DXF Verifier** | Validation des fichiers DXF/CSV vs PDF (~97% précision) | ✅ 100% |
+
+
+
+// Envoi automatique des erreurs (via Logger)|-----------|--------|
+
+Logger.LogException("Context", exception);  // Envoie automatiquement a Firebase
+
+Logger.Error("Message");                     // Envoie automatiquement a Firebase| **Creation** | Creer IPT, Creer STEP/IPT, Creer PDF, Creer PNG || **Update Workspace** | Synchronisation librairies et outils depuis Vault | ✅ 100% |---
+
+
+
+// Fin de session| **Export** | Export IAM, Export Drawing, Export BOM |
+
+await FirebaseAuditService.Instance.RegisterSessionEndAsync();
+
+```| **iProperties** | Gestionnaire Proprietes Batch, iProperties Summary |
+
+
+
+#### FirebaseRemoteConfigService.cs| **Analyse** | Rapport Contraintes, Analyse Assembly |
+
+Verification de la configuration au demarrage:
+
+- Kill Switch (global, par site, par device, par utilisateur)| **Utilitaires** | Rename Files, Copy Files, Delete Backup Files |---## Architecture du Projet
+
+- Mode Maintenance
+
+- Mise a jour disponible/forcee
+
+- Messages broadcast
+
+---
 
 ---
 
 
 
+## Prerequis
+
 ## Architecture du Projet## Fonctionnalités Clés```
 
+### Logiciels Requis
+
+- **Windows 10/11** (x64)
+
+- **Autodesk Inventor Professional 2026.2**
+
+- **Autodesk Vault Professional 2026** (SDK v31.0.84)```XnrgyEngineeringAutomationTools/
+
+- **.NET Framework 4.8**
+
+- **Visual Studio 2022** (pour le developpement)XnrgyEngineeringAutomationTools/
 
 
-```XnrgyEngineeringAutomationTools/
 
-XnrgyEngineeringAutomationTools/
+### Acces Reseau+-- App.xaml(.cs)                    # Point d'entree application### Centralisation UI (NOUVEAU - Janvier 2026)├── App.xaml(.cs)                    # Point d'entrée application
 
-+-- App.xaml(.cs)                    # Point d'entree application### Centralisation UI (NOUVEAU - Janvier 2026)├── App.xaml(.cs)                    # Point d'entrée application
+- Serveur Vault: `XNRGY-VAULT` / `XNRGY-VAULT2`
 
-+-- MainWindow.xaml(.cs)             # Dashboard principal (hub)
+- Firebase: `xeat-remote-control-default-rtdb.firebaseio.com`+-- MainWindow.xaml(.cs)             # Dashboard principal (hub)
 
-+-- appsettings.json                 # Configuration utilisateur├── MainWindow.xaml(.cs)             # Dashboard principal (hub)
 
-|
 
-+-- Modules/                         # === MODULES FONCTIONNELS ===Toutes les métadonnées de l'application sont centralisées dans `Styles/XnrgyStyles.xaml` :├── appsettings.json                 # Configuration utilisateur
+---+-- appsettings.json                 # Configuration utilisateur├── MainWindow.xaml(.cs)             # Dashboard principal (hub)
 
-|   +-- UploadModule/                # Upload vers Vault
+
+
+## Installation|
+
+
+
+### Pour les Utilisateurs+-- Modules/                         # === MODULES FONCTIONNELS ===Toutes les métadonnées de l'application sont centralisées dans `Styles/XnrgyStyles.xaml` :├── appsettings.json                 # Configuration utilisateur
+
+1. Telecharger depuis GitHub Releases ou Vault
+
+2. Executer `XnrgyInstaller.exe`|   +-- UploadModule/                # Upload vers Vault
+
+3. L'installeur enregistre automatiquement le poste dans Firebase
 
 |   |   +-- Models/│
 
-|   |   |   +-- VaultUploadFileItem.cs
+### Pour les Developpeurs
 
-|   |   |   +-- VaultUploadModels.cs```xml├── Modules/                         # Modules fonctionnels isolés
+```powershell|   |   |   +-- VaultUploadFileItem.cs
 
-|   |   +-- Views/
+# Cloner le depot
 
-|   |       +-- UploadModuleWindow.xaml(.cs)<!-- Variables globales - MODIFIER ICI UNIQUEMENT -->│   ├── UploadModule/                # Module Upload Vault
+git clone https://github.com/MohammedAmineElgalai/XnrgyEngineeringAutomationTools.git|   |   |   +-- VaultUploadModels.cs```xml├── Modules/                         # Modules fonctionnels isolés
 
-|   |
 
-|   +-- CreateModule/                # Pack and Go / Copy Design<sys:String x:Key="AppVersion">v1.0.0</sys:String>│   │   ├── Models/
 
-|   |   +-- Models/
+# Build|   |   +-- Views/
 
-|   |   |   +-- CreateModuleRequest.cs<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>│   │   │   ├── VaultUploadFileItem.cs
+cd XnrgyEngineeringAutomationTools
 
-|   |   |   +-- CreateModuleSettings.cs
+.\build-and-run.ps1|   |       +-- UploadModuleWindow.xaml(.cs)<!-- Variables globales - MODIFIER ICI UNIQUEMENT -->│   ├── UploadModule/                # Module Upload Vault
 
-|   |   +-- Services/<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>│   │   │   └── VaultUploadModels.cs
 
-|   |   |   +-- InventorCopyDesignService.cs  # ~3000 lignes
+
+# Build + Deploy complet|   |
+
+.\build-and-run.ps1 -Deploy -Publish
+
+```|   +-- CreateModule/                # Pack and Go / Copy Design<sys:String x:Key="AppVersion">v1.0.0</sys:String>│   │   ├── Models/
+
+
+
+---|   |   +-- Models/
+
+
+
+## Configuration|   |   |   +-- CreateModuleRequest.cs<sys:String x:Key="AppReleaseDate">R 2026-01-10</sys:String>│   │   │   ├── VaultUploadFileItem.cs
+
+
+
+### Fichiers de Configuration|   |   |   +-- CreateModuleSettings.cs
+
+| Fichier | Description |
+
+|---------|-------------||   |   +-- Services/<sys:String x:Key="AppAuthor">Mohammed Amine Elgalai</sys:String>│   │   │   └── VaultUploadModels.cs
+
+| `appsettings.json` | Configuration locale (Vault server, chemins) |
+
+| `firebase-init.json` | Structure Firebase initiale ||   |   |   +-- InventorCopyDesignService.cs  # ~3000 lignes
+
+| `XnrgyStyles.xaml` | Metadonnees application |
 
 |   |   |   +-- ModuleCopyService.cs<sys:String x:Key="AppCompany">XNRGY CLIMATE SYSTEMS ULC</sys:String>│   │   └── Views/
 
-|   |   |   +-- PdfCoverService.cs
+### Variables d'Environnement (optionnel)
 
-|   |   +-- Views/<sys:String x:Key="AppShortName">XEAT</sys:String>│   │       └── UploadModuleWindow.xaml(.cs)
+```|   |   |   +-- PdfCoverService.cs
+
+XEAT_VAULT_SERVER=XNRGY-VAULT
+
+XEAT_DEBUG_MODE=false|   |   +-- Views/<sys:String x:Key="AppShortName">XEAT</sys:String>│   │       └── UploadModuleWindow.xaml(.cs)
+
+```
 
 |   |       +-- CreateModuleWindow.xaml(.cs)
 
+---
+
 |   |       +-- CreateModuleSettingsWindow.xaml(.cs)<sys:String x:Key="AppFullName">XNRGY Engineering Automation Tools</sys:String>│   │
 
-|   |
-
-|   +-- PlaceEquipment/              # Placement equipements (NOUVEAU)```│   ├── CreateModule/                # Module Pack & Go / Copy Design
-
-|   |   +-- Models/
-
-|   |   |   +-- EquipmentPlacementModels.cs│   │   ├── Models/
-
-|   |   +-- Services/
-
-|   |   |   +-- EquipmentPlacementService.cs**Avantages:**│   │   │   ├── CreateModuleRequest.cs
-
-|   |   |   +-- EquipmentCopyDesignService.cs
-
-|   |   +-- Views/- Mise à jour de version/date en **un seul endroit**│   │   │   └── CreateModuleSettings.cs
-
-|   |       +-- PlaceEquipmentWindow.xaml(.cs)  # ~4200 lignes
-
-|   |- Tous les titres de fenêtres utilisent `StaticResource`│   │   ├── Services/
-
-|   +-- SmartTools/                  # 25+ outils Inventor (COMPLET)
-
-|   |   +-- Resources/- Toutes les barres copyright utilisent `StaticResource`│   │   │   ├── InventorCopyDesignService.cs
-
-|   |   +-- Services/
-
-|   |   |   +-- SmartToolsService.cs  # ~5700 lignes- 22+ fenêtres synchronisées automatiquement│   │   │   └── ModuleCopyService.cs
-
-|   |   +-- Views/
-
-|   |       +-- SmartToolsWindow.xaml(.cs)│   │   └── Views/
-
-|   |       +-- ConstraintReportWindow.xaml(.cs)
-
-|   |       +-- CustomPropertyBatchWindow.xaml(.cs)### Configuration Centralisée via Vault│   │       ├── CreateModuleWindow.xaml(.cs)
-
-|   |       +-- ExportOptionsWindow.xaml(.cs)
-
-|   |       +-- HtmlPopupWindow.xaml(.cs)│   │       └── CreateModuleSettingsWindow.xaml(.cs)
-
-|   |       +-- IPropertiesWindow.xaml(.cs)
-
-|   |       +-- ProgressWindow.xaml(.cs)- Chiffrement AES-256 des fichiers de configuration│   │
-
-|   |       +-- SmartProgressWindow.xaml(.cs)
-
-|   |- Synchronisation automatique au démarrage│   ├── UploadTemplate/              # Module Upload Template
-
-|   +-- ChecklistHVAC/               # Validation AHU
-
-|   |   +-- Services/- Accès administrateur vérifié via Vault API│   │   └── Views/
-
-|   |   |   +-- ChecklistSyncService.cs
-
-|   |   +-- Views/- Support 50+ utilisateurs sur 3 sites│   │       └── UploadTemplateWindow.xaml(.cs)
-
-|   |       +-- ChecklistHVACWindow.xaml(.cs)
-
-|   |│   │
-
-|   +-- ACP/                         # Assistant Conception Projet
-
-|   |   +-- Services/### Smart Tools (25+ Outils)│   └── ChecklistHVAC/              # Module Checklist HVAC
-
-|   |   |   +-- ACPExcelService.cs
-
-|   |   |   +-- ACPSyncService.cs│       └── Views/
-
-|   |   +-- Views/
-
-|   |       +-- ACPWindow.xaml(.cs)| Catégorie | Outils |│           └── ChecklistHVACWindow.xaml(.cs)
+## Logs
 
 |   |
 
-|   +-- UploadTemplate/              # Upload Template (Admin)|-----------|--------|│
+### Emplacements
 
-|   |   +-- Views/
+- **Application**: `bin\Release\Logs\VaultSDK_POC_*.log`|   +-- PlaceEquipment/              # Placement equipements (NOUVEAU)```│   ├── CreateModule/                # Module Pack & Go / Copy Design
 
-|   |       +-- UploadTemplateWindow.xaml(.cs)| **Création** | Créer IPT, Créer STEP/IPT, Créer PDF, Créer PNG |├── Shared/                          # Composants partagés
+- **Installer**: `%AppData%\XnrgyInstaller\Logs\`
 
-|   |
+- **Firebase**: Console Admin > Audit Logs|   |   +-- Models/
 
-|   +-- DXFVerifier/                 # Validation DXF (MIGRE)| **Export** | Export IAM, Export Drawing, Export BOM |│   ├── Views/                       # Fenêtres partagées
 
-|   |   +-- Services/
 
-|   |   |   +-- PdfAnalyzer.cs| **iProperties** | Gestionnaire Propriétés Batch, iProperties Summary |│   │   ├── LoginWindow.xaml(.cs)    # Connexion Vault
+### Format|   |   |   +-- EquipmentPlacementModels.cs│   │   ├── Models/
 
-|   |   |   +-- ExcelManager.cs
+```
 
-|   |   +-- Views/| **Analyse** | Rapport Contraintes, Analyse Assembly |│   │   ├── ModuleSelectionWindow.xaml(.cs)  # Sélection module
+[2026-01-15 14:30:22.123] [INFO   ] [+] Message|   |   +-- Services/
 
-|   |       +-- DXFVerifierWindow.xaml(.cs)
+[2026-01-15 14:30:23.456] [ERROR  ] [-] Erreur message
 
-|   || **Utilitaires** | Rename Files, Copy Files, Delete Backup Files |│   │   ├── PreviewWindow.xaml(.cs)  # Prévisualisation
+```|   |   |   +-- EquipmentPlacementService.cs**Avantages:**│   │   │   ├── CreateModuleRequest.cs
 
-|   +-- UpdateWorkspace/             # Sync Workspace
 
-|       +-- Views/│   │   └── XnrgyMessageBox.xaml(.cs)  # MessageBox moderne
 
-|           +-- UpdateWorkspaceWindow.xaml(.cs)
+---|   |   |   +-- EquipmentCopyDesignService.cs
 
-|---│   ├── Models/                      # Modèles partagés (vide pour l'instant)
 
-+-- Shared/                          # === COMPOSANTS PARTAGES ===
 
-|   +-- Views/│   └── Services/                    # Services partagés (vide pour l'instant)
+## Regles de Developpement|   |   +-- Views/- Mise à jour de version/date en **un seul endroit**│   │   │   └── CreateModuleSettings.cs
+
+
+
+### Build Tools|   |       +-- PlaceEquipmentWindow.xaml(.cs)  # ~4200 lignes
+
+- **NET Framework 4.8**: MSBuild uniquement (pas `dotnet build`)
+
+- Utiliser toujours `.\build-and-run.ps1`|   |- Tous les titres de fenêtres utilisent `StaticResource`│   │   ├── Services/
+
+
+
+### Emojis dans le Code|   +-- SmartTools/                  # 25+ outils Inventor (COMPLET)
+
+**INTERDITS** dans le code C#, logs, messages:
+
+```csharp|   |   +-- Resources/- Toutes les barres copyright utilisent `StaticResource`│   │   │   ├── InventorCopyDesignService.cs
+
+// INTERDIT
+
+Logger.Info("✅ Connexion etablie");|   |   +-- Services/
+
+
+
+// CORRECT|   |   |   +-- SmartToolsService.cs  # ~5700 lignes- 22+ fenêtres synchronisées automatiquement│   │   │   └── ModuleCopyService.cs
+
+Logger.Info("[+] Connexion etablie");
+
+```|   |   +-- Views/
+
+
+
+**AUTORISES** dans les interfaces XAML:|   |       +-- SmartToolsWindow.xaml(.cs)│   │   └── Views/
+
+```xml
+
+<!-- OK pour XAML -->|   |       +-- ConstraintReportWindow.xaml(.cs)
+
+<TextBlock Text="✅ Succes"/>
+
+```|   |       +-- CustomPropertyBatchWindow.xaml(.cs)### Configuration Centralisée via Vault│   │       ├── CreateModuleWindow.xaml(.cs)
+
+
+
+### Marqueurs ASCII|   |       +-- ExportOptionsWindow.xaml(.cs)
+
+| Interdit | Remplacement | Usage |
+
+|----------|--------------|-------||   |       +-- HtmlPopupWindow.xaml(.cs)│   │       └── CreateModuleSettingsWindow.xaml(.cs)
+
+| ❌ | [-] | Erreur |
+
+| ✅ | [+] | Succes ||   |       +-- IPropertiesWindow.xaml(.cs)
+
+| ⚠️ | [!] | Avertissement |
+
+| 🔄 | [>] | Traitement ||   |       +-- ProgressWindow.xaml(.cs)- Chiffrement AES-256 des fichiers de configuration│   │
+
+| 📁 | [i] | Info |
+
+| ⏳ | [~] | Attente ||   |       +-- SmartProgressWindow.xaml(.cs)
+
+
+
+---|   |- Synchronisation automatique au démarrage│   ├── UploadTemplate/              # Module Upload Template
+
+
+
+## Architecture du Projet|   +-- ChecklistHVAC/               # Validation AHU
+
+
+
+```|   |   +-- Services/- Accès administrateur vérifié via Vault API│   │   └── Views/
+
+XnrgyEngineeringAutomationTools/
+
+├── App.xaml(.cs)                    # Point d'entree + Firebase check|   |   |   +-- ChecklistSyncService.cs
+
+├── MainWindow.xaml(.cs)             # Fenetre principale hub
+
+├── Modules/                         # Modules fonctionnels|   |   +-- Views/- Support 50+ utilisateurs sur 3 sites│   │       └── UploadTemplateWindow.xaml(.cs)
+
+│   ├── UploadVault/                 # Upload vers Vault
+
+│   ├── CreateModule/                # Copy Design|   |       +-- ChecklistHVACWindow.xaml(.cs)
+
+│   ├── PlaceEquipment/              # Placement equipements
+
+│   ├── SmartTools/                  # Outils Inventor|   |│   │
+
+│   ├── ChecklistHVAC/               # Validation AHU
+
+│   ├── ACP/                         # Assistant Conception|   +-- ACP/                         # Assistant Conception Projet
+
+│   ├── UploadTemplates/             # Upload templates
+
+│   ├── DXFVerifier/                 # Validation DXF|   |   +-- Services/### Smart Tools (25+ Outils)│   └── ChecklistHVAC/              # Module Checklist HVAC
+
+│   └── UpdateWorkspace/             # Sync Workspace
+
+├── Services/                        # Services partages|   |   |   +-- ACPExcelService.cs
+
+│   ├── VaultSDKService.cs           # API Vault SDK
+
+│   ├── Logger.cs                    # Logging + Firebase|   |   |   +-- ACPSyncService.cs│       └── Views/
+
+│   ├── FirebaseAuditService.cs      # Audit Firebase
+
+│   ├── FirebaseRemoteConfigService.cs # Config distante|   |   +-- Views/
+
+│   ├── DeviceTrackingService.cs     # Tracking device
+
+│   └── AutoUpdateService.cs         # Mises a jour|   |       +-- ACPWindow.xaml(.cs)| Catégorie | Outils |│           └── ChecklistHVACWindow.xaml(.cs)
+
+├── Installer/                       # Installeur
+
+│   ├── InstallationService.cs       # Logique installation|   |
+
+│   └── FirebaseService.cs           # Firebase pour installer
+
+├── Firebase Realtime Database configuration/|   +-- UploadTemplate/              # Upload Template (Admin)|-----------|--------|│
+
+│   ├── firebase-init.json           # Structure initiale
+
+│   └── admin-panel/                 # Console admin web|   |   +-- Views/
+
+│       └── index.html               # Interface admin
+
+├── Styles/|   |       +-- UploadTemplateWindow.xaml(.cs)| **Création** | Créer IPT, Créer STEP/IPT, Créer PDF, Créer PNG |├── Shared/                          # Composants partagés
+
+│   └── XnrgyStyles.xaml             # Styles + metadonnees
+
+├── build-and-run.ps1                # Script build (v2.2.0)|   |
+
+└── Sync-Firebase.ps1                # Script sync Firebase
+
+```|   +-- DXFVerifier/                 # Validation DXF (MIGRE)| **Export** | Export IAM, Export Drawing, Export BOM |│   ├── Views/                       # Fenêtres partagées
+
+
+
+---|   |   +-- Services/
+
+
+
+## Changelog Recent|   |   |   +-- PdfAnalyzer.cs| **iProperties** | Gestionnaire Propriétés Batch, iProperties Summary |│   │   ├── LoginWindow.xaml(.cs)    # Connexion Vault
+
+
+
+### v1.0.0 (2026-01-15)|   |   |   +-- ExcelManager.cs
+
+- **Firebase Integration**: Kill switch, maintenance, force update, broadcasts
+
+- **Audit Logs Firebase**: Erreurs et sessions envoyees automatiquement|   |   +-- Views/| **Analyse** | Rapport Contraintes, Analyse Assembly |│   │   ├── ModuleSelectionWindow.xaml(.cs)  # Sélection module
+
+- **Installer Firebase**: Enregistrement install/uninstall dans Firebase
+
+- **Sync-Firebase.ps1**: Preservation des donnees dynamiques lors des deploiements|   |       +-- DXFVerifierWindow.xaml(.cs)
+
+- **Admin Console**: Interface web complete pour gestion Firebase
+
+- **build-and-run.ps1 v2.2.0**: Nouveaux parametres -Deploy, -SyncFirebase, -Publish|   || **Utilitaires** | Rename Files, Copy Files, Delete Backup Files |│   │   ├── PreviewWindow.xaml(.cs)  # Prévisualisation
+
+- 9 modules integres et fonctionnels
+
+- Code signing avec certificat XNRGY|   +-- UpdateWorkspace/             # Sync Workspace
+
+
+
+---|       +-- Views/│   │   └── XnrgyMessageBox.xaml(.cs)  # MessageBox moderne
+
+
+
+## Auteur|           +-- UpdateWorkspaceWindow.xaml(.cs)
+
+
+
+**Mohammed Amine Elgalai**  |---│   ├── Models/                      # Modèles partagés (vide pour l'instant)
+
+Vault/Inventor Software Developer  
+
+XNRGY Climate Systems ULC+-- Shared/                          # === COMPOSANTS PARTAGES ===
+
+
+
+- GitHub: [@MohammedAmineElgalai](https://github.com/MohammedAmineElgalai)|   +-- Views/│   └── Services/                    # Services partagés (vide pour l'instant)
+
+- Email: melgalai@xnrgy.com
 
 |       +-- LoginWindow.xaml(.cs)         # Connexion Vault
 
+---
+
 |       +-- ModuleSelectionWindow.xaml(.cs)## Architecture du Projet│
+
+## Licence
 
 |       +-- PreviewWindow.xaml(.cs)
 
-|       +-- XnrgyMessageBox.xaml(.cs)     # MessageBox moderne├── Services/                        # Services métier partagés
+Copyright (c) 2024-2026 XNRGY Climate Systems ULC. Tous droits reserves.
+
+Usage interne uniquement.|       +-- XnrgyMessageBox.xaml(.cs)     # MessageBox moderne├── Services/                        # Services métier partagés
+
 
 |
 
@@ -2069,3 +2402,63 @@ Le dossier `Shared/` contient tous les composants réutilisables entre modules :
 - VerticalContentAlignment="Center" sur tous les boutons
 - ProgressBar hauteur réduite à 34px pour alignement
 - Effets glow brillants sur toutes les barres de progression (#00FF7F, BlurRadius=20, Opacity=0.85)
+
+---
+
+## Firebase Remote Control System
+
+L'application integre **Firebase Realtime Database** pour le controle a distance complet:
+
+### Fonctionnalites
+- **Kill Switch**: Desactivation globale instantanee de l'application
+- **Maintenance Mode**: Message de maintenance avec compte a rebours
+- **Force Update**: Mise a jour obligatoire avec blocage optionnel
+- **Device Tracking**: Suivi temps reel des postes (CPU, RAM, heartbeat 30s)
+- **Broadcasts**: Messages push vers les utilisateurs (info/warning/error)
+- **User/Device Blocking**: Blocage granulaire par utilisateur ou poste
+
+### Firebase URL
+```
+https://xeat-remote-control-default-rtdb.firebaseio.com
+```
+
+### Admin Panel
+- **Chemin**: `Firebase Realtime Database configuration/admin-panel/index.html`
+- **Auth**: Firebase Authentication (admin@xnrgy.com)
+- **Dashboard**: Stats temps reel, postes en ligne, activite
+- **Controles**: Kill Switch, Maintenance, Force Update
+- **Gestion**: Utilisateurs, Postes (details hardware), Sites
+- **Communication**: Broadcasts, Audit logs
+
+---
+
+## Custom Installer
+
+Installateur WPF personnalise multi-etapes remplacant les installateurs standards.
+
+### Structure
+```
+Installer/
+ XnrgyInstaller.csproj
+ InstallerWindow.xaml(.cs)
+ InstallerService.cs
+ Build-Installer.ps1
+```
+
+### Build Commands
+```powershell
+.\build-and-run.ps1 -WithInstaller       # App + Installer
+.\build-and-run.ps1 -InstallerOnly       # Installer seul
+.\build-and-run.ps1 -WithInstaller -CreatePackage  # + ZIP distribution
+```
+
+### Pages Wizard
+1. Welcome - Logo et version
+2. License - Acceptation EULA
+3. Destination - Choix dossier + espace requis
+4. Progress - Installation avec log
+5. Complete - Succes/Echec + Lancer app
+
+---
+
+*Derniere mise a jour : 17 Janvier 2026*

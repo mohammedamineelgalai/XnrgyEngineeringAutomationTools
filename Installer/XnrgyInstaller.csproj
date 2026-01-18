@@ -42,6 +42,8 @@
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml">
       <RequiredTargetFramework>4.0</RequiredTargetFramework>
@@ -74,6 +76,7 @@
       <DependentUpon>InstallerWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FirebaseService.cs" />
     <Compile Include="InstallationService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

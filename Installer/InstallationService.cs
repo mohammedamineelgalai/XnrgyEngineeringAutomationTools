@@ -91,12 +91,26 @@ namespace XnrgyInstaller
                     await Task.Delay(200);
                 }
 
-                // Etape 4: Enregistrement Windows (85-95%)
+                // Etape 4: Enregistrement Windows (85-90%)
                 progress.Report(new InstallationProgress { Percentage = 85, CurrentAction = "Enregistrement dans Windows..." });
                 RegisterUninstaller(options.InstallPath);
                 await Task.Delay(300);
 
-                // Etape 5: Finalisation (95-100%)
+                // Etape 5: Enregistrement Firebase (90-95%)
+                progress.Report(new InstallationProgress { Percentage = 90, CurrentAction = "Enregistrement dans le cloud..." });
+                try
+                {
+                    var firebaseService = new FirebaseService();
+                    await firebaseService.RegisterInstallationAsync();
+                }
+                catch (Exception fbEx)
+                {
+                    LogError($"[!] Firebase registration warning: {fbEx.Message}");
+                    // Continue meme si Firebase echoue
+                }
+                await Task.Delay(300);
+
+                // Etape 6: Finalisation (95-100%)
                 progress.Report(new InstallationProgress { Percentage = 95, CurrentAction = "Finalisation..." });
                 CreateUninstallScript(options.InstallPath);
                 await Task.Delay(300);
@@ -130,22 +144,35 @@ namespace XnrgyInstaller
                     return false;
                 }
 
+                // Enregistrer la desinstallation dans Firebase AVANT de supprimer
+                progress.Report(new InstallationProgress { Percentage = 5, CurrentAction = "Notification du cloud..." });
+                try
+                {
+                    var firebaseService = new FirebaseService();
+                    await firebaseService.RegisterUninstallationAsync();
+                }
+                catch (Exception fbEx)
+                {
+                    LogError($"[!] Firebase unregistration warning: {fbEx.Message}");
+                }
+                await Task.Delay(300);
+
                 // Fermer l'application si elle est en cours
-                progress.Report(new InstallationProgress { Percentage = 10, CurrentAction = "Fermeture de l'application..." });
+                progress.Report(new InstallationProgress { Percentage = 15, CurrentAction = "Fermeture de l'application..." });
                 KillRunningProcesses();
                 await Task.Delay(500);
 
                 // Supprimer les raccourcis
-                progress.Report(new InstallationProgress { Percentage = 30, CurrentAction = "Suppression des raccourcis..." });
+                progress.Report(new InstallationProgress { Percentage = 35, CurrentAction = "Suppression des raccourcis..." });
                 RemoveShortcuts();
                 await Task.Delay(300);
 
                 // Supprimer les fichiers
-                progress.Report(new InstallationProgress { Percentage = 50, CurrentAction = "Suppression des fichiers..." });
+                progress.Report(new InstallationProgress { Percentage = 55, CurrentAction = "Suppression des fichiers..." });
                 await DeleteDirectoryAsync(installPath);
 
                 // Nettoyer le registre
-                progress.Report(new InstallationProgress { Percentage = 80, CurrentAction = "Nettoyage du registre..." });
+                progress.Report(new InstallationProgress { Percentage = 85, CurrentAction = "Nettoyage du registre..." });
                 RemoveUninstallerRegistry();
                 await Task.Delay(300);
 

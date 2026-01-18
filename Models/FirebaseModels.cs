@@ -5,6 +5,7 @@ namespace XnrgyEngineeringAutomationTools.Models
 {
     /// <summary>
     /// Modeles pour la configuration Firebase Realtime Database
+    /// Structure alignee avec firebase-init.json
     /// </summary>
     public class FirebaseConfig
     {
@@ -48,6 +49,161 @@ namespace XnrgyEngineeringAutomationTools.Models
         public string ReleaseDate { get; set; }
         public string Changelog { get; set; }
     }
+    
+    // ==========================================
+    // NOUVELLES CLASSES - Structure Firebase-init.json
+    // ==========================================
+    
+    /// <summary>
+    /// Configuration Kill Switch - /killSwitch
+    /// </summary>
+    public class KillSwitchConfig
+    {
+        public KillSwitchGlobal Global { get; set; }
+        public Dictionary<string, KillSwitchSite> BySite { get; set; }
+        public Dictionary<string, KillSwitchDept> ByDepartment { get; set; }
+    }
+    
+    public class KillSwitchGlobal
+    {
+        public bool Enabled { get; set; }
+        public string Reason { get; set; }
+        public string Message { get; set; }
+        public string ActivatedAt { get; set; }
+        public string ActivatedBy { get; set; }
+        public bool AllowAdmins { get; set; }
+    }
+    
+    public class KillSwitchSite
+    {
+        public bool Enabled { get; set; }
+        public string Reason { get; set; }
+        public string Message { get; set; }
+    }
+    
+    public class KillSwitchDept
+    {
+        public bool Enabled { get; set; }
+        public string Reason { get; set; }
+    }
+    
+    /// <summary>
+    /// Configuration Maintenance - /maintenance
+    /// </summary>
+    public class MaintenanceConfig
+    {
+        public bool Enabled { get; set; }
+        public string Message { get; set; }
+        public string DetailedMessage { get; set; }
+        public string StartTime { get; set; }
+        public string EstimatedEndTime { get; set; }
+        public bool AllowReadOnly { get; set; }
+        public bool AllowAdmins { get; set; }
+        public bool ShowCountdown { get; set; }
+        public MaintenanceScheduled ScheduledMaintenance { get; set; }
+    }
+    
+    public class MaintenanceScheduled
+    {
+        public bool Enabled { get; set; }
+        public string ScheduledStart { get; set; }
+        public string ScheduledEnd { get; set; }
+        public int NotifyBeforeMinutes { get; set; }
+    }
+    
+    /// <summary>
+    /// Configuration Force Update - /forceUpdate
+    /// </summary>
+    public class ForceUpdateConfig
+    {
+        public bool Enabled { get; set; }
+        public string Message { get; set; }
+        public string MinimumVersion { get; set; }
+        public bool CriticalUpdate { get; set; }
+        public bool BlockAppUntilUpdated { get; set; }
+        public int GracePeriodHours { get; set; }
+        public string DownloadUrl { get; set; }
+        public string Sha256Checksum { get; set; }
+    }
+    
+    /// <summary>
+    /// Configuration Updates - /updates
+    /// </summary>
+    public class UpdatesConfig
+    {
+        public UpdateLatest Latest { get; set; }
+        public Dictionary<string, UpdateHistory> History { get; set; }
+        public UpdateChannels Channels { get; set; }
+    }
+    
+    public class UpdateLatest
+    {
+        public string Version { get; set; }
+        public string DownloadUrl { get; set; }
+        public string DownloadUrlMirror { get; set; }
+        public string ReleaseNotes { get; set; }
+        public string ReleaseNotesUrl { get; set; }
+        public string PublishedAt { get; set; }
+        public string PublishedBy { get; set; }
+        public bool IsCritical { get; set; }
+        public string FileSize { get; set; }
+        public string Sha256 { get; set; }
+    }
+    
+    public class UpdateHistory
+    {
+        public string Version { get; set; }
+        public string PublishedAt { get; set; }
+        public string Notes { get; set; }
+    }
+    
+    public class UpdateChannels
+    {
+        public string Stable { get; set; }
+        public string Beta { get; set; }
+        public string Dev { get; set; }
+    }
+
+    /// <summary>
+    /// Configuration du message de bienvenue (legacy - single message)
+    /// </summary>
+    public class WelcomeMessageConfig
+    {
+        public bool Enabled { get; set; }
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public string Type { get; set; } // "info", "warning", "success"
+        public string UpdatedAt { get; set; }
+        public string UpdatedBy { get; set; }
+    }
+
+    /// <summary>
+    /// Configuration des messages de bienvenue (nouveau systeme multi-messages)
+    /// </summary>
+    public class WelcomeMessagesConfig
+    {
+        /// <summary>Message affiche au premier lancement apres installation</summary>
+        public WelcomeMessageItem FirstInstall { get; set; }
+        
+        /// <summary>Message affiche pour un nouvel utilisateur Windows sur un poste deja installe</summary>
+        public WelcomeMessageItem NewUserOnDevice { get; set; }
+        
+        /// <summary>Message global optionnel pour tous les utilisateurs</summary>
+        public WelcomeMessageItem Global { get; set; }
+    }
+
+    /// <summary>
+    /// Element de message de bienvenue
+    /// </summary>
+    public class WelcomeMessageItem
+    {
+        public bool Enabled { get; set; }
+        public string Title { get; set; }
+        public string Message { get; set; }
+        public string Type { get; set; } // "info", "warning", "success"
+        public bool ShowOnce { get; set; } // Si true, ne s'affiche qu'une fois par utilisateur
+        public string TargetUsers { get; set; } // "all", "new", "specific"
+    }
 
     /// <summary>
     /// Resultat de la verification Firebase
@@ -85,6 +241,12 @@ namespace XnrgyEngineeringAutomationTools.Models
         public string BroadcastTitle { get; set; }
         public string BroadcastMessage { get; set; }
         public string BroadcastType { get; set; } // "info", "warning", "error"
+        
+        // Message de bienvenue (affiche au demarrage)
+        public bool HasWelcomeMessage { get; set; }
+        public string WelcomeTitle { get; set; }
+        public string WelcomeMessage { get; set; }
+        public string WelcomeType { get; set; }
 
         public static FirebaseCheckResult CreateError(string message)
         {

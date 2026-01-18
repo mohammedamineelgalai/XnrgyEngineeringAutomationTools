@@ -114,6 +114,43 @@ namespace XnrgyEngineeringAutomationTools.Views
             return type?.ToLowerInvariant() == "error" && !window.ShouldContinue;
         }
 
+        /// <summary>
+        /// Affiche un message de bienvenue au demarrage
+        /// Ne bloque jamais l'application
+        /// </summary>
+        public static void ShowWelcomeMessage(string title, string message, string type)
+        {
+            var window = new FirebaseAlertWindow();
+            window.ConfigureWelcome(title, message, type);
+            window.ShowDialog();
+        }
+
+        private void ConfigureWelcome(string title, string message, string type)
+        {
+            // Toujours utiliser un style accueillant (vert ou cyan)
+            var greenBrush = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(0, 210, 106));
+            var cyanBrush = new System.Windows.Media.SolidColorBrush(
+                System.Windows.Media.Color.FromRgb(0, 212, 255));
+            
+            var colorBrush = type?.ToLowerInvariant() == "success" ? greenBrush : cyanBrush;
+            
+            AlertIcon.Text = "🎉";
+            AlertIcon.Foreground = colorBrush;
+            AlertTitle.Text = title ?? "Bienvenue!";
+            AlertTitle.Foreground = colorBrush;
+            
+            // Remplacer les \n par de vrais retours a la ligne
+            AlertMessage.Text = message?.Replace("\\n", "\n") ?? "Bienvenue dans XNRGY Engineering Automation Tools!";
+            
+            PrimaryButton.Content = "Commencer";
+            PrimaryButton.Background = colorBrush;
+            SecondaryButton.Visibility = Visibility.Collapsed;
+            VersionInfoPanel.Visibility = Visibility.Collapsed;
+            
+            ShouldContinue = true; // Ne bloque jamais
+        }
+
         private void ConfigureKillSwitch(string message)
         {
             var redBrush = new System.Windows.Media.SolidColorBrush(
